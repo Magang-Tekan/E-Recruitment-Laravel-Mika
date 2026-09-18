@@ -11,10 +11,11 @@ use App\Models\Job;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Livewire\Traits\WithTableSkeleton;
 
 class InterviewScheduleTable extends Component
 {
-    use WithPagination;
+    use WithPagination, WithTableSkeleton;
 
     public $search = '';
     public $statusFilter = '';

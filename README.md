@@ -1,6 +1,6 @@
 # 💼 E-Recruitment System (Laravel & Livewire)
 
-Aplikasi web sistem rekrutmen terpadu, seleksi berkas, asesmen psikotes (DISC Test), dan manajemen kandidat berbasis **Laravel 12**, **Livewire 3**, dan **TailwindCSS**.
+Aplikasi web sistem rekrutmen terpadu, seleksi berkas, asesmen psikotes (DISC Test), dan manajemen kandidat berbasis **Laravel 13**, **Livewire 3**, dan **TailwindCSS**.
 
 ---
 
@@ -18,7 +18,7 @@ Aplikasi web sistem rekrutmen terpadu, seleksi berkas, asesmen psikotes (DISC Te
   - [7. Buat Storage Symlink](#7-buat-storage-symlink)
   - [8. Install Dependensi Frontend & Build Asset](#8-install-dependensi-frontend--build-asset)
   - [9. Menjalankan Aplikasi](#9-menjalankan-aplikasi)
-- [Akun Bawaan (Default Credentials)](#-akun-bawaan-default-credentials)
+- [Panduan Setup Menggunakan Docker](#-panduan-setup-menggunakan-docker)
 - [Integrasi Antrean & Notifikasi (Queue & Mail)](#-integrasi-antrean--notifikasi-queue--mail)
 - [REST API Endpoints](#-rest-api-endpoints)
 - [Troubleshooting & Solusi Masalah Umum](#-troubleshooting--solusi-masalah-umum)
@@ -203,6 +203,94 @@ Buka 3 terminal terpisah pada direktori proyek:
 
 Akses aplikasi di browser favorit Anda melalui:
 👉 **[http://localhost:8000](http://localhost:8000)** atau domain lokal Laragon Anda (misal: `http://e-recruitment-laravel.test`).
+
+---
+
+## 🐳 Panduan Setup Menggunakan Docker
+
+Jika Anda ingin menjalankan aplikasi secara terisolasi di dalam container Docker tanpa perlu menginstal PHP, Node.js, Composer, atau database secara manual di sistem lokal:
+
+### 1. Prasyarat
+Pastikan sistem Anda telah terpasang:
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (untuk Windows / macOS) atau Docker Engine & Docker Compose (untuk Linux).
+
+### 2. Siapkan File Environment Docker
+Salin file template `.env.docker.example` menjadi `.env.docker`:
+
+**Untuk Windows (PowerShell / CMD):**
+```powershell
+copy .env.docker.example .env.docker
+```
+
+**Untuk Git Bash / Linux / macOS:**
+```bash
+cp .env.docker.example .env.docker
+```
+
+> 🔒 **Catatan Keamanan & Konfigurasi:**
+> - Buka file `.env.docker` dan sesuaikan nilainya dengan kebutuhan lokal Anda.
+> - **Jangan pernah memasukkan atau membagikan kredensial rahasia/asli** (seperti password email, Google Client Secret, atau Cloudinary API Key) ke repositori publik.
+> - Tentukan nilai `DB_PASSWORD` Anda sendiri untuk database PostgreSQL di dalam file `.env.docker`.
+> - Konfigurasi mail dan OAuth Google dapat diisi sesuai kebutuhan pengujian masing-masing.
+
+### 3. Build & Jalankan Container
+Jalankan Docker Compose dalam mode background (*detached*):
+
+```bash
+docker compose up -d --build
+```
+
+Container yang akan dibuat dan dijalankan:
+- **`app`**: Runtime PHP 8.4-FPM beserta seluruh ekstensi & Composer dependencies.
+- **`web`**: Nginx web server (port bawaan: `8080`).
+- **`db`**: Database PostgreSQL 16 (port bawaan host: `5433`).
+
+### 4. Inisialisasi Aplikasi di Dalam Container
+Jalankan perintah-perintah Artisan berikut melalui container `app`:
+
+```bash
+# 1. Generate Application Key (jika belum terisi di .env.docker)
+docker compose exec app php artisan key:generate
+
+# 2. Jalankan migrasi database beserta data seeder
+docker compose exec app php artisan migrate --seed
+
+# 3. Buat symbolic link untuk storage publik
+docker compose exec app php artisan storage:link
+```
+
+### 5. Akses Aplikasi
+Buka peramban (browser) dan akses aplikasi melalui:
+👉 **[http://localhost:8080](http://localhost:8080)**
+
+*(Port web dapat diubah sesuai preferensi melalui variabel `WEB_PORT` di `.env.docker`)*
+
+### 6. Perintah Operasional Docker yang Berguna
+- **Melihat status container yang sedang berjalan:**
+  ```bash
+  docker compose ps
+  ```
+- **Melihat log container secara live:**
+  ```bash
+  docker compose logs -f app
+  docker compose logs -f web
+  ```
+- **Masuk ke terminal/shell container PHP:**
+  ```bash
+  docker compose exec app sh
+  ```
+- **Menjalankan queue worker di background:**
+  ```bash
+  docker compose exec -d app php artisan queue:work
+  ```
+- **Menghentikan container:**
+  ```bash
+  docker compose down
+  ```
+- **Menghentikan container sekaligus menghapus volume database (reset data):**
+  ```bash
+  docker compose down -v
+  ```
 
 ---
 

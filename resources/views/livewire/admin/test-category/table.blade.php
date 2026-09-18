@@ -95,11 +95,11 @@
         </div>
     @endif
 
-    <!-- Main Container Card -->
-    <div class="relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+    <!-- Card 1: Header & Action Section Card -->
+    <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm p-5 sm:p-6 space-y-4">
         
-        <!-- Header & Action Section -->
-        <div class="p-5 sm:p-6 border-b border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <!-- Header & Action Row -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Daftar Kategori Soal</h3>
                 <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Kelola kategori untuk pengelompokan bank soal tes online.</p>
@@ -113,8 +113,8 @@
             </button>
         </div>
 
-        <!-- Filter & Search Toolbar -->
-        <div class="p-4 sm:p-5 bg-gray-50/70 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-800 space-y-3.5">
+        <!-- Filter & Search Toolbar Row -->
+        <div class="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-3.5">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
                 <!-- Search Input -->
                 <div class="relative lg:col-span-6">
@@ -194,6 +194,10 @@
                 @endif
             </div>
         </div>
+    </div>
+
+    <!-- Card 2: Data Table Section Card -->
+    <div class="relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
 
         <!-- Livewire Loading Overlay -->
         <div wire:loading wire:target="search, statusFilter, sortBy, previousPage, nextPage, gotoPage, resetFilters" class="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-10 transition">

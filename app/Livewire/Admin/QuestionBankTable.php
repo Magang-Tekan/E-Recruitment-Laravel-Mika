@@ -6,10 +6,11 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\QuestionBank;
 use App\Models\TestCategory;
+use App\Livewire\Traits\WithTableSkeleton;
 
 class QuestionBankTable extends Component
 {
-    use WithPagination;
+    use WithPagination, WithTableSkeleton;
 
     public $search = '';
     public $categoryId = '';

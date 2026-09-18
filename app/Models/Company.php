@@ -48,7 +48,7 @@ class Company extends Model
     }
 
     /**
-     * Get formatted logo URL (Cloudinary, external URL, or local storage)
+     * Get formatted logo URL (Penyimpanan lokal server atau URL eksternal)
      */
     public function getLogoUrlAttribute()
     {

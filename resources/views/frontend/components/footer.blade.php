@@ -7,16 +7,9 @@
             <div class="w-full lg:w-auto lg:max-w-sm space-y-4">
                 <div class="flex items-center gap-3">
                     @php
-                        $logoUrl = null;
-                        if (isset($mainCompany) && $mainCompany->logo) {
-                            if (Str::startsWith($mainCompany->logo, ['http://', 'https://', 'res.cloudinary.com'])) {
-                                $logoUrl = $mainCompany->logo;
-                            } else {
-                                $logoUrl = asset('storage/' . $mainCompany->logo);
-                            }
-                        } else {
-                            $logoUrl = asset('storage/logo/mikalight.png');
-                        }
+                        $logoUrl = (isset($mainCompany) && $mainCompany->logo_url)
+                            ? $mainCompany->logo_url
+                            : asset('storage/logo/mikalight.png');
                     @endphp
                     <img src="{{ $logoUrl }}" 
                          alt="{{ $mainCompany->name ?? 'Logo MIKA' }}" 

@@ -10,9 +10,18 @@ use App\Models\QuestionBank;
 use App\Models\Test;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use App\Livewire\Traits\WithTableSkeleton;
 
 class Dashboard extends Component
 {
+    /**
+     * Placeholder khusus dashboard skeleton saat komponen Livewire di-load secara lazy.
+     */
+    public function placeholder()
+    {
+        return view('components.skeleton.dashboard');
+    }
+
     public function render()
     {
         $user = auth()->user();

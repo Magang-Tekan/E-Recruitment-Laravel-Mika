@@ -11,7 +11,6 @@ use App\Models\TestAnswer;
 use App\Models\QuestionBank;
 use App\Models\DiscTestResult;
 use App\Services\DiscCalculatorService;
-use Cloudinary\Cloudinary;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;

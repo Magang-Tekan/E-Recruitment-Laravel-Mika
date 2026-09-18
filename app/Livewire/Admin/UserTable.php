@@ -6,10 +6,11 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\User;
 use App\Models\Role;
+use App\Livewire\Traits\WithTableSkeleton;
 
 class UserTable extends Component
 {
-    use WithPagination;
+    use WithPagination, WithTableSkeleton;
 
     public $search = '';
     public $roleFilter = '';

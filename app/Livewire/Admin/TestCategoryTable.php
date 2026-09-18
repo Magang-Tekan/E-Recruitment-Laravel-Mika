@@ -5,10 +5,11 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\TestCategory;
+use App\Livewire\Traits\WithTableSkeleton;
 
 class TestCategoryTable extends Component
 {
-    use WithPagination;
+    use WithPagination, WithTableSkeleton;
 
     public $search = '';
     public $statusFilter = '';
