@@ -105,7 +105,7 @@ new class extends Component
                 @theme-changed.window="isDark = $event.detail.isDark"
                 @click="toggle()"
                 :title="isDark ? 'Aktifkan Light Mode' : 'Aktifkan Dark Mode'"
-                class="relative flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all duration-200 group focus:outline-none overflow-hidden"
+                class="relative flex items-center justify-center w-9 h-9 rounded-full border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] hover:bg-slate-50 dark:hover:bg-[#1A2A4C] shadow-sm transition-all duration-200 group focus:outline-none overflow-hidden"
             >
                 <!-- Sun Icon (shown in dark mode) -->
                 <svg x-show="isDark" x-cloak
@@ -126,22 +126,22 @@ new class extends Component
                      x-transition:leave="transition ease-in duration-150"
                      x-transition:leave-start="opacity-100 rotate-0 scale-100"
                      x-transition:leave-end="opacity-0 rotate-90 scale-50"
-                     class="w-4 h-4 text-indigo-500 absolute" fill="currentColor" viewBox="0 0 24 24">
+                     class="w-4 h-4 text-emerald-600 absolute" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z" />
                 </svg>
             </button>
 
             <x-dropdown align="right" width="56">
                 <x-slot name="trigger">
-                    <button class="inline-flex items-center gap-2.5 px-3 py-1.5 border border-gray-200 dark:border-gray-700/80 rounded-full text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/60 focus:outline-none transition shadow-2xs group">
+                    <button class="inline-flex items-center gap-2.5 px-3 py-1.5 border border-slate-200/80 dark:border-[#1D2E54] rounded-full text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#14203A] hover:bg-slate-50 dark:hover:bg-[#1A2A4C] focus:outline-none transition shadow-2xs group">
                         <div x-data="{{ json_encode(['photo' => $photoUrl, 'initial' => $userInitial]) }}"
                              x-on:profile-updated.window="if ($event.detail && 'photo' in $event.detail) photo = $event.detail.photo"
                              class="shrink-0 flex items-center justify-center">
                             <template x-if="photo">
-                                <img :src="photo" alt="{{ $displayName }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-indigo-500/20 group-hover:ring-indigo-500/50 transition">
+                                <img :src="photo" alt="{{ $displayName }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-500/20 dark:ring-[#93F514]/30 group-hover:ring-emerald-500 dark:group-hover:ring-[#93F514] transition">
                             </template>
                             <template x-if="!photo">
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs shadow-2xs">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-500 dark:from-[#93F514] dark:to-emerald-400 dark:text-black flex items-center justify-center text-white font-bold text-xs shadow-2xs">
                                     <span x-text="initial"></span>
                                 </div>
                             </template>
@@ -149,7 +149,7 @@ new class extends Component
 
                         <div class="text-left leading-tight max-w-[150px] truncate">
                             <span class="block text-xs font-bold text-gray-800 dark:text-gray-200 truncate" x-data="{{ json_encode(['name' => $displayName]) }}" x-text="name" x-on:profile-updated.window="if ($event.detail && $event.detail.name) name = $event.detail.name"></span>
-                            <span class="block text-[9.5px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">{{ $roleLabel }}</span>
+                            <span class="block text-[9.5px] font-semibold text-emerald-600 dark:text-[#93F514] uppercase tracking-wider">{{ $roleLabel }}</span>
                         </div>
 
                         <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200 transition-transform group-hover:translate-y-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -159,9 +159,9 @@ new class extends Component
                 </x-slot>
 
                 <x-slot name="content">
-                    <div class="px-4 py-2.5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-                        <p class="text-xs font-bold text-gray-900 dark:text-white truncate">{{ $displayName }}</p>
-                        <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">{{ auth()->user()->email }}</p>
+                    <div class="px-4 py-2.5 border-b border-slate-100 dark:border-[#1D2E54] bg-slate-50/50 dark:bg-[#14203A]/50">
+                        <p class="text-xs font-bold text-slate-900 dark:text-white truncate">{{ $displayName }}</p>
+                        <p class="text-[11px] text-slate-500 dark:text-[#93A5C9] truncate">{{ auth()->user()->email }}</p>
                     </div>
 
                     <x-dropdown-link :href="url('/')">
@@ -187,7 +187,7 @@ new class extends Component
                     </x-dropdown-link>
 
                     <!-- Authentication -->
-                    <button wire:click="logout" class="w-full text-start border-t border-gray-100 dark:border-gray-700 mt-1">
+                    <button wire:click="logout" class="w-full text-start border-t border-slate-100 dark:border-[#1D2E54] mt-1">
                         <x-dropdown-link class="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40">
                             {{ __('Log Out') }}
                         </x-dropdown-link>
@@ -224,7 +224,7 @@ new class extends Component
                 @theme-changed.window="isDark = $event.detail.isDark"
                 @click="toggle()"
                 :title="isDark ? 'Aktifkan Light Mode' : 'Aktifkan Dark Mode'"
-                class="relative flex items-center justify-center w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all duration-200 focus:outline-none overflow-hidden"
+                class="relative flex items-center justify-center w-8 h-8 rounded-full border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] hover:bg-slate-50 dark:hover:bg-[#1A2A4C] shadow-sm transition-all duration-200 focus:outline-none overflow-hidden"
             >
                 <svg x-show="isDark" x-cloak
                      x-transition:enter="transition ease-out duration-200"
@@ -243,16 +243,16 @@ new class extends Component
                      x-transition:leave="transition ease-in duration-150"
                      x-transition:leave-start="opacity-100 rotate-0 scale-100"
                      x-transition:leave-end="opacity-0 rotate-90 scale-50"
-                     class="w-4 h-4 text-indigo-500 absolute" fill="currentColor" viewBox="0 0 24 24">
+                     class="w-4 h-4 text-emerald-600 absolute" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z" />
                 </svg>
             </button>
 
-            <button @click="open = ! open" class="inline-flex items-center gap-2 p-1.5 rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition" title="Toggle User Menu">
+            <button @click="open = ! open" class="inline-flex items-center gap-2 p-1.5 rounded-full border border-slate-200/80 dark:border-[#1D2E54] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#14203A] focus:outline-none transition" title="Toggle User Menu">
                 @if ($photoUrl)
                     <img src="{{ $photoUrl }}" alt="{{ $displayName }}" class="w-7 h-7 rounded-full object-cover">
                 @else
-                    <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
+                    <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 dark:from-[#93F514] dark:to-emerald-400 dark:text-black flex items-center justify-center text-white font-bold text-xs">
                         {{ $userInitial }}
                     </div>
                 @endif
@@ -272,19 +272,19 @@ new class extends Component
          x-transition:leave-start="opacity-100 translate-y-0 scale-100"
          x-transition:leave-end="opacity-0 translate-y-1 scale-95"
          @click.outside="open = false" 
-         class="sm:hidden fixed top-16 right-3 left-3 max-w-sm ml-auto z-50 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden" 
+         class="sm:hidden fixed top-16 right-3 left-3 max-w-sm ml-auto z-50 bg-white dark:bg-[#0D1527] rounded-2xl shadow-2xl border border-slate-100 dark:border-[#1D2E54] overflow-hidden" 
          x-cloak>
         <!-- Responsive Settings Options -->
         <div class="pt-3.5 pb-2">
-            <div class="px-4 pb-3 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700/80">
+            <div class="px-4 pb-3 flex items-center gap-3 border-b border-slate-100 dark:border-[#1D2E54]">
                 <div x-data="{{ json_encode(['photo' => $photoUrl, 'initial' => $userInitial]) }}"
                      x-on:profile-updated.window="if ($event.detail && 'photo' in $event.detail) photo = $event.detail.photo"
                      class="shrink-0 flex items-center justify-center">
                     <template x-if="photo">
-                        <img :src="photo" alt="{{ $displayName }}" class="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-500/20 shrink-0">
+                        <img :src="photo" alt="{{ $displayName }}" class="w-10 h-10 rounded-full object-cover ring-2 ring-emerald-500/20 dark:ring-[#93F514]/30 shrink-0">
                     </template>
                     <template x-if="!photo">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 dark:from-[#93F514] dark:to-emerald-400 dark:text-black flex items-center justify-center text-white font-bold text-sm shrink-0">
                             <span x-text="initial"></span>
                         </div>
                     </template>
@@ -293,7 +293,7 @@ new class extends Component
                     <div class="font-bold text-sm text-gray-900 dark:text-white truncate" x-data="{{ json_encode(['name' => $displayName]) }}" x-text="name" x-on:profile-updated.window="if ($event.detail && $event.detail.name) name = $event.detail.name"></div>
                     <div class="flex items-center gap-2 mt-0.5">
                         <span class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ auth()->user()->email }}</span>
-                        <span class="px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shrink-0">{{ $roleLabel }}</span>
+                        <span class="px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-emerald-100 dark:bg-[#93F514]/15 text-emerald-800 dark:text-[#93F514] border border-emerald-200 dark:border-[#93F514]/30 shrink-0">{{ $roleLabel }}</span>
                     </div>
                 </div>
             </div>
@@ -322,7 +322,7 @@ new class extends Component
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->
-                <div class="pt-1 mt-1 border-t border-gray-100 dark:border-gray-700/80">
+                <div class="pt-1 mt-1 border-t border-slate-100 dark:border-[#1D2E54]">
                     <button wire:click="logout" class="w-full text-start">
                         <x-responsive-nav-link class="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl">
                             {{ __('Log Out') }}

@@ -1,35 +1,35 @@
 <x-app-layout>
+    @php
+        $user = auth()->user();
+        $roleName = strtolower($user?->role?->name ?? '');
+        $isAdminOrRecruiter = auth()->check() && (
+            in_array($user->role_id, [1, 2]) ||
+            in_array($roleName, ['admin', 'superadmin', 'recruiter'])
+        );
+        $isEmployee = auth()->check() && ($user->role_id == 4 || $roleName === 'employee');
+        $roleLabel = $user->role?->name ?? ($isAdminOrRecruiter ? 'Admin' : ($isEmployee ? 'Employee' : 'Pelamar'));
+        $employeeProfile = $isEmployee ? $user->employeeProfile : null;
+        $adminAvatarUrl = null;
+        if (!empty($user->avatar)) {
+            $adminAvatarUrl = \Illuminate\Support\Str::startsWith($user->avatar, ['http://', 'https://'])
+                ? $user->avatar
+                : asset('storage/' . $user->avatar);
+        }
+    @endphp
+
     <div x-on:switch-tab.window="activeTab = $event.detail">
         <x-slot name="header">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Profil Saya') }}
+            <h2 class="font-bold text-xl text-slate-900 dark:text-white leading-tight">
+                {{ $isEmployee ? __('Portal Karyawan') : ($isAdminOrRecruiter ? __('Profil Internal') : __('Profil Saya')) }}
             </h2>
         </x-slot>
-
-        @php
-            $user = auth()->user();
-            $roleName = strtolower($user?->role?->name ?? '');
-            $isAdminOrRecruiter = auth()->check() && (
-                in_array($user->role_id, [1, 2]) ||
-                in_array($roleName, ['admin', 'superadmin', 'recruiter'])
-            );
-            $isEmployee = auth()->check() && ($user->role_id == 4 || $roleName === 'employee');
-            $roleLabel = $user->role?->name ?? ($isAdminOrRecruiter ? 'Admin' : ($isEmployee ? 'Employee' : 'Pelamar'));
-            $employeeProfile = $isEmployee ? $user->employeeProfile : null;
-            $adminAvatarUrl = null;
-            if (!empty($user->avatar)) {
-                $adminAvatarUrl = \Illuminate\Support\Str::startsWith($user->avatar, ['http://', 'https://'])
-                    ? $user->avatar
-                    : asset('storage/' . $user->avatar);
-            }
-        @endphp
 
         <div class="py-4 px-4 sm:px-6 lg:px-8">
             <div class="max-w-7xl mx-auto space-y-4">
 
                 @if ($isAdminOrRecruiter)
-                    <!-- Admin / Recruiter Profile View -->
-                    <div class="p-6 bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 rounded-2xl shadow-lg text-white flex flex-col sm:flex-row items-center justify-between gap-4"
+                    <!-- Admin / Recruiter Profile View (Clean Enterprise Blueprint - Non-AI) -->
+                    <div class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-blue-600 dark:border-l-[#93F514] p-6 flex flex-col sm:flex-row items-center justify-between gap-4"
                          x-data="{ 
                              bannerPhoto: @js($adminAvatarUrl), 
                              bannerName: @js(auth()->user()->name ?? 'Admin'),
@@ -41,8 +41,13 @@
                                  if ($event.detail.name) bannerName = $event.detail.name;
                              }
                          ">
-                        <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 rounded-full bg-white/15 backdrop-blur-md border-2 border-white/30 ring-2 ring-white/20 overflow-hidden flex items-center justify-center text-white text-2xl font-black shadow-inner shrink-0 relative">
+                        <!-- Subtle Technical Blueprint Dot Grid (Authentic & Non-AI) -->
+                        <div class="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.06]"
+                            style="background-image: radial-gradient(#93F514 1px, transparent 1px); background-size: 20px 20px;">
+                        </div>
+
+                        <div class="relative z-10 flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-[#14203A] border border-blue-100 dark:border-[#1D2E54] overflow-hidden flex items-center justify-center text-blue-600 dark:text-[#93F514] text-2xl font-black shadow-sm shrink-0 relative">
                                 <template x-if="bannerPhoto">
                                     <img :src="bannerPhoto" :alt="bannerName" class="w-full h-full object-cover">
                                 </template>
@@ -51,12 +56,12 @@
                                 </template>
                             </div>
                             <div>
-                                <h3 class="text-xl font-bold tracking-tight" x-text="bannerName">{{ auth()->user()->name }}</h3>
-                                <p class="text-xs text-indigo-100 mt-0.5">{{ auth()->user()->email }} &bull; <span class="px-2 py-0.5 rounded-md bg-white/20 text-white font-semibold">{{ $roleLabel }}</span></p>
+                                <h3 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white" x-text="bannerName">{{ auth()->user()->name }}</h3>
+                                <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-0.5">{{ auth()->user()->email }} &bull; <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-[#93F514]/15 dark:text-[#93F514] border border-emerald-200 dark:border-[#93F514]/30 font-semibold">{{ $roleLabel }}</span></p>
                             </div>
                         </div>
                         <a href="{{ auth()->user()->role_id == 2 || strtolower(auth()->user()->role?->name ?? '') === 'recruiter' ? route('recruiter.dashboard') : route('admin.dashboard') }}" 
-                           class="px-5 py-2.5 rounded-xl bg-white text-indigo-700 font-bold text-xs hover:bg-indigo-50 transition shadow-md shrink-0">
+                           class="relative z-10 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-slate-950 dark:shadow-[#93F514]/20 font-bold text-xs transition shrink-0 active:scale-95">
                             Buka Panel Dashboard
                         </a>
                     </div>
@@ -73,10 +78,10 @@
 
                     <!-- Profile Information & Password Form -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="p-6 bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 rounded-2xl">
+                        <div class="p-6 bg-white dark:bg-[#0D1527] shadow-sm border border-slate-200/80 dark:border-[#1D2E54] rounded-2xl">
                             <livewire:profile.update-profile-information-form />
                         </div>
-                        <div class="p-6 bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 rounded-2xl">
+                        <div class="p-6 bg-white dark:bg-[#0D1527] shadow-sm border border-slate-200/80 dark:border-[#1D2E54] rounded-2xl">
                             <livewire:profile.update-password-form />
                         </div>
                     </div>

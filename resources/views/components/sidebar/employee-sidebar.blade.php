@@ -8,7 +8,7 @@
 
     <!-- Main Sidebar Container -->
     <aside x-cloak :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-        class="fixed top-0 left-0 z-50 h-screen w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 transition-transform duration-300 ease-in-out flex flex-col justify-between shadow-xl">
+        class="fixed top-0 left-0 z-50 h-screen w-64 bg-white dark:bg-[#0D1527] border-r border-gray-200 dark:border-[#1D2E54] text-gray-700 dark:text-gray-300 transition-transform duration-300 ease-in-out flex flex-col justify-between shadow-xl">
 
         <!-- Top Section: Brand Header & Navigation -->
         <div class="flex-1 overflow-y-auto px-4 py-5 custom-scrollbar">
@@ -20,9 +20,9 @@
                         class="h-8 w-auto object-contain rounded-lg group-hover:scale-105 transition-transform duration-200">
                     <div>
                         <span
-                            class="block font-bold text-lg tracking-tight text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">E-Rekrutmen</span>
+                            class="block font-bold text-lg tracking-tight text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-[#93F514] transition-colors">E-Rekrutmen</span>
                         <span
-                            class="block text-[10px] font-semibold tracking-widest text-indigo-600 dark:text-indigo-400 uppercase">
+                            class="block text-[10px] font-semibold tracking-widest text-emerald-600 dark:text-[#93F514] uppercase">
                             Portal Karyawan
                         </span>
                     </div>
@@ -30,7 +30,7 @@
 
                 <!-- Mobile Close Button -->
                 <button @click="sidebarOpen = false"
-                    class="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+                    class="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#14203A]">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M6 18L18 6M6 6l12 12" />
@@ -45,18 +45,18 @@
                 <!-- Section 1: Dashboard -->
                 <div>
                     <div
-                        class="px-3 mb-2 text-[11px] font-bold tracking-wider text-gray-400 dark:text-gray-500 uppercase">
+                        class="px-3 mb-2 text-[11px] font-bold tracking-wider text-gray-400 dark:text-[#6378A0] uppercase">
                         Menu Utama
                     </div>
                     <div class="space-y-1">
                         <button type="button"
                             @click="activeTab = 'dashboard'; if (window.innerWidth < 1024) sidebarOpen = false;"
                             :class="(activeTab === 'dashboard' || activeTab === 'pribadi') ?
-                            'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-indigo-600 text-white shadow-md shadow-indigo-500/20 group' :
-                            'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-gray-700/60 group transition-colors'">
+                            'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold bg-emerald-600 text-white shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:text-black dark:shadow-[#93F514]/25 group' :
+                            'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-[#93F514] hover:bg-gray-100 dark:hover:bg-[#14203A] group transition-colors'">
                             <div class="flex items-center gap-3 min-w-0">
-                                <div :class="(activeTab === 'dashboard' || activeTab === 'pribadi') ? 'text-white' :
-                                'text-gray-400 dark:text-gray-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'"
+                                <div :class="(activeTab === 'dashboard' || activeTab === 'pribadi') ? 'text-white dark:text-black' :
+                                'text-gray-400 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-[#93F514]'"
                                     class="shrink-0 transition-colors">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -72,7 +72,7 @@
                 <!-- Section 2: Asesmen Karyawan -->
                 <div>
                     <div
-                        class="px-3 mb-2 text-[11px] font-bold tracking-wider text-gray-400 dark:text-gray-500 uppercase">
+                        class="px-3 mb-2 text-[11px] font-bold tracking-wider text-gray-400 dark:text-[#6378A0] uppercase">
                         Asesmen Karyawan
                     </div>
                     <div class="space-y-1">
@@ -81,11 +81,11 @@
                             @click="activeTab = 'asesmen'; if (window.innerWidth < 1024) sidebarOpen = false;"
                             :class="activeTab === 'asesmen'
                                 ?
-                                'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-indigo-600 text-white shadow-md shadow-indigo-500/20 group' :
-                                'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-gray-700/60 group transition-colors'">
+                                'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold bg-emerald-600 text-white shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:text-black dark:shadow-[#93F514]/25 group' :
+                                'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-[#93F514] hover:bg-gray-100 dark:hover:bg-[#14203A] group transition-colors'">
                             <div class="flex items-center gap-3 min-w-0">
-                                <div :class="activeTab === 'asesmen' ? 'text-white' :
-                                    'text-gray-400 dark:text-gray-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'"
+                                <div :class="activeTab === 'asesmen' ? 'text-white dark:text-black' :
+                                    'text-gray-400 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-[#93F514]'"
                                     class="shrink-0 transition-colors">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -96,9 +96,9 @@
                             </div>
                             @if ($availableTestsCount > 0)
                                 <span
-                                    :class="activeTab === 'asesmen' ? 'bg-white/20 text-white' :
-                                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30'"
-                                    class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold rounded-full">
+                                    :class="activeTab === 'asesmen' ? 'bg-black/15 text-white dark:text-black font-bold' :
+                                        'bg-emerald-100 text-emerald-700 dark:bg-[#93F514]/20 dark:text-[#93F514] border border-emerald-200 dark:border-[#93F514]/30 font-semibold'"
+                                    class="inline-flex items-center justify-center px-2 py-0.5 text-xs rounded-full">
                                     {{ $availableTestsCount }}
                                 </span>
                             @endif
@@ -109,11 +109,11 @@
                             @click="activeTab = 'riwayat'; if (window.innerWidth < 1024) sidebarOpen = false;"
                             :class="activeTab === 'riwayat'
                                 ?
-                                'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-indigo-600 text-white shadow-md shadow-indigo-500/20 group' :
-                                'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-gray-700/60 group transition-colors'">
+                                'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold bg-emerald-600 text-white shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:text-black dark:shadow-[#93F514]/25 group' :
+                                'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-[#93F514] hover:bg-gray-100 dark:hover:bg-[#14203A] group transition-colors'">
                             <div class="flex items-center gap-3 min-w-0">
-                                <div :class="activeTab === 'riwayat' ? 'text-white' :
-                                    'text-gray-400 dark:text-gray-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'"
+                                <div :class="activeTab === 'riwayat' ? 'text-white dark:text-black' :
+                                    'text-gray-400 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-[#93F514]'"
                                     class="shrink-0 transition-colors">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -124,9 +124,9 @@
                             </div>
                             @if ($completedAttemptsCount > 0)
                                 <span
-                                    :class="activeTab === 'riwayat' ? 'bg-white/20 text-white' :
-                                        'bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-300 border border-gray-200 dark:border-slate-600'"
-                                    class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold rounded-full">
+                                    :class="activeTab === 'riwayat' ? 'bg-black/15 text-white dark:text-black font-bold' :
+                                        'bg-gray-100 text-gray-600 dark:bg-[#14203A] dark:text-slate-300 border border-gray-200 dark:border-[#1D2E54] font-semibold'"
+                                    class="inline-flex items-center justify-center px-2 py-0.5 text-xs rounded-full">
                                     {{ $completedAttemptsCount }}
                                 </span>
                             @endif
@@ -137,7 +137,7 @@
                 <!-- Section 3: Pengaturan Akun -->
                 <div>
                     <div
-                        class="px-3 mb-2 text-[11px] font-bold tracking-wider text-gray-400 dark:text-gray-500 uppercase">
+                        class="px-3 mb-2 text-[11px] font-bold tracking-wider text-gray-400 dark:text-[#6378A0] uppercase">
                         Akun & Keamanan
                     </div>
                     <div class="space-y-1">
@@ -145,11 +145,11 @@
                             @click="activeTab = 'pengaturan'; if (window.innerWidth < 1024) sidebarOpen = false;"
                             :class="activeTab === 'pengaturan'
                                 ?
-                                'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-indigo-600 text-white shadow-md shadow-indigo-500/20 group' :
-                                'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-gray-700/60 group transition-colors'">
+                                'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold bg-emerald-600 text-white shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:text-black dark:shadow-[#93F514]/25 group' :
+                                'flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-[#93F514] hover:bg-gray-100 dark:hover:bg-[#14203A] group transition-colors'">
                             <div class="flex items-center gap-3 min-w-0">
-                                <div :class="activeTab === 'pengaturan' ? 'text-white' :
-                                    'text-gray-400 dark:text-gray-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'"
+                                <div :class="activeTab === 'pengaturan' ? 'text-white dark:text-black' :
+                                    'text-gray-400 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-[#93F514]'"
                                     class="shrink-0 transition-colors">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

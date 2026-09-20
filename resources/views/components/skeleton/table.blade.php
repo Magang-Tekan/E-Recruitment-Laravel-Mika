@@ -5,6 +5,7 @@
     'hasButton' => true,
     'buttonWidth' => 'w-36',
     'titleWidth' => 'w-44',
+    'circleAvatar' => true,
 ])
 
 <div {{ $attributes->merge(['class' => 'space-y-6 animate-pulse']) }} aria-hidden="true" role="status">
@@ -56,7 +57,7 @@
                                     @if ($c === 0)
                                         <!-- Column 1: Main Data (Avatar/Icon + Title + Subtitle) -->
                                         <div class="flex items-center gap-3.5">
-                                            <div class="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-700 shrink-0"></div>
+                                            <div class="w-9 h-9 {{ $circleAvatar ? 'rounded-full' : 'rounded-xl' }} bg-slate-200 dark:bg-slate-700 shrink-0"></div>
                                             <div class="space-y-1.5 flex-1">
                                                 <div class="h-3.5 bg-slate-200 dark:bg-slate-700 rounded w-36"></div>
                                                 <div class="h-2.5 bg-slate-200/70 dark:bg-slate-700/70 rounded w-24"></div>

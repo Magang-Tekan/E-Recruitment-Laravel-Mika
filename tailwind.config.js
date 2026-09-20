@@ -15,6 +15,11 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                'neon-green': '#93F514',
+                'mika-dark': '#040804',
+                'mika-surface': '#061506',
+            },
         },
     },
 
