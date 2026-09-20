@@ -79,6 +79,7 @@
                             </div>
                             <input type="text" name="search" value="{{ request('search') }}"
                                 placeholder="Cari lowongan yang Anda inginkan..."
+                                style="background-color: transparent !important; color: #111827 !important;"
                                 class="w-full py-2 bg-transparent text-gray-900 placeholder-gray-400 border-0 outline-none focus:outline-none focus:ring-0 focus:border-0 shadow-none text-sm font-medium">
                         </div>
 
