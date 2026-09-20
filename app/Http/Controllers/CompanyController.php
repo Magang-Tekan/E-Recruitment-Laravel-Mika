@@ -14,13 +14,21 @@ class CompanyController extends Controller
         return response()->json(Company::all());
     }
 
+    /**
+     * Upload logo ke penyimpanan server lokal (storage/app/public/logo).
+     * Jika ingin kembali menggunakan Cloudinary di masa depan, aktifkan blok kode Cloudinary di bawah.
+     */
     private function uploadLogo($file)
     {
+        // Simpan langsung ke penyimpanan server lokal (public disk)
+        return $file->store('logo', 'public');
+
+        /*
+        // Konfigurasi Cloudinary (dapat diaktifkan kembali jika dibutuhkan di masa mendatang):
         $cloudName = env('CLOUDINARY_CLOUD_NAME');
         $apiKey = env('CLOUDINARY_API_KEY');
         $apiSecret = env('CLOUDINARY_API_SECRET');
 
-        // Jika kredensial Cloudinary diatur di .env, unggah ke Cloudinary
         if (!empty($cloudName) && !empty($apiKey) && !empty($apiSecret)) {
             try {
                 $cloudinary = new Cloudinary([
@@ -47,9 +55,8 @@ class CompanyController extends Controller
                 // Fallback ke penyimpanan lokal jika gagal koneksi
             }
         }
-
-        // Fallback simpan ke penyimpanan lokal
         return $file->store('logo', 'public');
+        */
     }
 
     public function store(Request $request)

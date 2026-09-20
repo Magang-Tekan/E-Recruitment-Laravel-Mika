@@ -6,6 +6,6 @@
     </x-slot>
 
     <div class="py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <livewire:admin.test-category-table />
+        <livewire:admin.test-category-table lazy />
     </div>
 </x-app-layout>

@@ -100,8 +100,12 @@ new class extends Component
             'email' => $validated['email'],
         ]);
 
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
         if ($this->photo) {
-            // Delete old avatar if local file exists
+            // Delete existing uploaded photo if stored in avatars directory
             if (!empty($user->avatar) && Str::startsWith($user->avatar, 'avatars/') && !str_contains($user->avatar, '..')) {
                 if (Storage::disk('public')->exists($user->avatar)) {
                     Storage::disk('public')->delete($user->avatar);
@@ -110,23 +114,18 @@ new class extends Component
 
             $path = $this->photo->store('avatars', 'public');
             $user->avatar = $path;
-            $this->photo = null;
-        }
 
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
+            // Sync with ApplicantProfile photo if exists
+            if ($user->applicantProfile) {
+                $user->applicantProfile->update(['photo' => $path]);
+            }
+
+            $this->photo = null;
         }
 
         $user->save();
 
-        // Also synchronize applicant profile and employee profile if exist to avoid desync
-        if ($user->applicantProfile) {
-            $applicantData = ['full_name' => $user->name];
-            if ($user->avatar) {
-                $applicantData['photo'] = $user->avatar;
-            }
-            $user->applicantProfile->update($applicantData);
-        }
+        // Sync with EmployeeProfile full_name if exists
         if ($user->employeeProfile) {
             $user->employeeProfile->update(['full_name' => $user->name]);
         }
@@ -156,17 +155,17 @@ new class extends Component
 }; ?>
 
 <section>
-    <header class="flex items-start gap-4 pb-5 border-b border-gray-100 dark:border-gray-700/80">
-        <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-xs">
+    <header class="flex items-start gap-4 pb-5 border-b border-slate-100 dark:border-[#1D2E54]">
+        <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-[#14203A] border border-blue-200/80 dark:border-[#1D2E54] flex items-center justify-center text-blue-600 dark:text-[#93F514] shrink-0 shadow-xs">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
         </div>
         <div>
-            <h2 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
                 Informasi Profil
             </h2>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+            <p class="mt-1 text-xs text-slate-500 dark:text-[#93A5C9] leading-relaxed">
                 Perbarui foto profil, nama lengkap, dan alamat email utama akun Anda.
             </p>
         </div>
@@ -175,27 +174,27 @@ new class extends Component
     <form wire:submit="updateProfileInformation" class="mt-6 space-y-5">
         
         <!-- Foto Profil -->
-        <div class="p-4 rounded-2xl bg-gray-50/70 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700/70">
-            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3">
+        <div class="p-4 rounded-2xl bg-slate-50/70 dark:bg-[#14203A]/50 border border-slate-100 dark:border-[#1D2E54]">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#93A5C9] uppercase tracking-wider mb-3">
                 Foto Profil
             </label>
 
             <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4">
                 <!-- Avatar Preview with Loading Overlay -->
                 <div class="relative group shrink-0">
-                    <div class="w-20 h-20 sm:w-22 sm:h-22 rounded-full overflow-hidden ring-4 ring-indigo-500/15 dark:ring-indigo-500/25 shadow-md border-2 border-white dark:border-gray-700 flex items-center justify-center bg-white dark:bg-gray-800 relative">
+                    <div class="w-20 h-20 sm:w-22 sm:h-22 rounded-full overflow-hidden ring-4 ring-blue-500/15 dark:ring-[#93F514]/25 shadow-md border-2 border-white dark:border-[#1D2E54] flex items-center justify-center bg-white dark:bg-[#0D1527] relative">
                         @if ($photo)
                             <img src="{{ $photo->temporaryUrl() }}" alt="Preview Foto" class="w-full h-full object-cover">
                         @elseif ($currentPhotoUrl)
                             <img src="{{ $currentPhotoUrl }}" alt="{{ $name }}" class="w-full h-full object-cover" x-on:error="$el.style.display = 'none'">
                         @else
-                            <div class="w-full h-full bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center text-white font-extrabold text-2xl shadow-inner">
+                            <div class="w-full h-full bg-blue-600 dark:bg-[#14203A] text-white dark:text-[#93F514] flex items-center justify-center font-extrabold text-2xl shadow-inner">
                                 <span>{{ strtoupper(substr($name ?: 'A', 0, 1)) }}</span>
                             </div>
                         @endif
 
                         <!-- Uploading Spinner Overlay -->
-                        <div wire:loading wire:target="photo" class="absolute inset-0 bg-gray-900/60 backdrop-blur-xs flex flex-col items-center justify-center text-white rounded-full">
+                        <div wire:loading wire:target="photo" class="absolute inset-0 bg-slate-950/60 backdrop-blur-xs flex flex-col items-center justify-center text-white rounded-full">
                             <svg class="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -215,8 +214,8 @@ new class extends Component
                 <div class="flex-1 text-center sm:text-left space-y-2.5">
                     <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                         <!-- Custom File Input Button -->
-                        <label class="cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 text-xs font-semibold rounded-xl border border-indigo-200 dark:border-indigo-800 transition duration-150 active:scale-[0.98] shadow-2xs">
-                            <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <label class="cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-[#14203A] dark:hover:bg-[#1A2A4C] text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl border border-slate-200/80 dark:border-[#1D2E54] transition duration-150 active:scale-[0.98] shadow-2xs">
+                            <svg class="w-4 h-4 text-blue-600 dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                             <span>{{ $photo || $currentPhotoUrl ? 'Ganti Foto' : 'Unggah Foto' }}</span>
@@ -225,7 +224,7 @@ new class extends Component
 
                         @if ($photo)
                             <!-- Batal Pratinjau Button -->
-                            <button type="button" wire:click="cancelUpload" class="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-xl transition duration-150 active:scale-[0.98]">
+                            <button type="button" wire:click="cancelUpload" class="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-[#14203A] dark:hover:bg-[#1A2A4C] text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl border border-slate-200/80 dark:border-[#1D2E54] transition duration-150 active:scale-[0.98]">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -245,8 +244,8 @@ new class extends Component
                         @endif
                     </div>
 
-                    <p class="text-[11px] text-gray-400 dark:text-gray-400">
-                        Format: <span class="font-medium text-gray-600 dark:text-gray-300">JPG, PNG, atau WEBP</span>. Maksimal <span class="font-medium text-gray-600 dark:text-gray-300">3 MB</span>. Rasio 1:1 disarankan.
+                    <p class="text-[11px] text-slate-400 dark:text-[#93A5C9]">
+                        Format: <span class="font-medium text-slate-600 dark:text-slate-300">JPG, PNG, atau WEBP</span>. Maksimal <span class="font-medium text-slate-600 dark:text-slate-300">3 MB</span>. Rasio 1:1 disarankan.
                     </p>
 
                     <x-input-error class="mt-1" :messages="$errors->get('photo')" />
@@ -262,11 +261,11 @@ new class extends Component
         
         <!-- Nama Lengkap -->
         <div>
-            <label for="name" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+            <label for="name" class="block text-xs font-semibold text-slate-700 dark:text-[#93A5C9] uppercase tracking-wider mb-2">
                 Nama Lengkap <span class="text-rose-500">*</span>
             </label>
             <div class="relative rounded-xl shadow-xs">
-                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
@@ -275,7 +274,7 @@ new class extends Component
                        id="name" 
                        name="name" 
                        type="text" 
-                       class="w-full pl-10 pr-4 py-2.5 bg-gray-50/70 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition duration-150" 
+                       class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-[#14203A] focus:border-blue-500 dark:focus:border-[#93F514] focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-[#93F514]/10 transition duration-150" 
                        placeholder="Masukkan nama lengkap Anda"
                        required autofocus autocomplete="name" />
             </div>
@@ -284,11 +283,11 @@ new class extends Component
 
         <!-- Alamat Email -->
         <div>
-            <label for="email" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+            <label for="email" class="block text-xs font-semibold text-slate-700 dark:text-[#93A5C9] uppercase tracking-wider mb-2">
                 Alamat Email <span class="text-rose-500">*</span>
             </label>
             <div class="relative rounded-xl shadow-xs">
-                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
@@ -297,7 +296,7 @@ new class extends Component
                        id="email" 
                        name="email" 
                        type="email" 
-                       class="w-full pl-10 pr-4 py-2.5 bg-gray-50/70 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition duration-150" 
+                       class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-[#14203A] focus:border-blue-500 dark:focus:border-[#93F514] focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-[#93F514]/10 transition duration-150" 
                        placeholder="nama@email.com"
                        required autocomplete="username" />
             </div>
@@ -313,7 +312,7 @@ new class extends Component
                     </p>
 
                     @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-semibold text-emerald-700 dark:text-emerald-400">
+                        <p class="mt-2 font-semibold text-emerald-700 dark:text-[#93F514]">
                             ✓ Tautan verifikasi baru telah dikirim ke alamat email Anda.
                         </p>
                     @endif
@@ -325,18 +324,18 @@ new class extends Component
         <div class="pt-3 flex items-center justify-between">
             <button type="submit" 
                     wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-500/20 text-white text-xs font-semibold rounded-xl shadow-md hover:shadow-indigo-500/25 transition-all duration-200 active:scale-[0.98] disabled:opacity-50">
+                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition-all duration-200 active:scale-[0.98] disabled:opacity-50">
                 <svg wire:loading.remove wire:target="updateProfileInformation" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
-                <svg wire:loading wire:target="updateProfileInformation" class="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                <svg wire:loading wire:target="updateProfileInformation" class="w-4 h-4 animate-spin text-white dark:text-black" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
                 <span>Simpan Profil</span>
             </button>
 
-            <x-action-message class="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800" on="profile-updated">
+            <x-action-message class="text-xs font-medium text-emerald-600 dark:text-[#93F514] bg-emerald-50 dark:bg-emerald-950/50 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800" on="profile-updated">
                 ✓ Profil berhasil diperbarui!
             </x-action-message>
         </div>

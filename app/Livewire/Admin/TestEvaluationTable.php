@@ -9,10 +9,11 @@ use App\Models\Company;
 use App\Models\Job;
 use App\Models\Test;
 use Illuminate\Support\Facades\DB;
+use App\Livewire\Traits\WithTableSkeleton;
 
 class TestEvaluationTable extends Component
 {
-    use WithPagination;
+    use WithPagination, WithTableSkeleton;
 
     public $search = '';
     public $companyId = '';

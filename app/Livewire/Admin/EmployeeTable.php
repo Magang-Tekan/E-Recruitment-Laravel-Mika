@@ -9,10 +9,11 @@ use App\Models\Company;
 use App\Models\Department;
 use App\Models\Position;
 use Illuminate\Validation\Rule;
+use App\Livewire\Traits\WithTableSkeleton;
 
 class EmployeeTable extends Component
 {
-    use WithPagination;
+    use WithPagination, WithTableSkeleton;
 
     public $search = '';
     public $companyId = '';

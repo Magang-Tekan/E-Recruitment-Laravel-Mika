@@ -89,18 +89,18 @@
         </div>
     @endif
 
-    <div class="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80">
+    <div class="bg-white dark:bg-[#0D1527] p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-[#1D2E54]">
         <form wire:submit.prevent="save" class="space-y-6">
 
-            <div class="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-gray-100 dark:border-gray-700">
+            <div class="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-gray-100 dark:border-[#1D2E54]">
                 <div class="relative group shrink-0">
-                    <div class="w-28 h-28 rounded-full overflow-hidden bg-indigo-100 dark:bg-indigo-950/50 border-2 border-indigo-500 shadow-md flex items-center justify-center relative">
+                    <div class="w-28 h-28 rounded-full overflow-hidden bg-indigo-100 dark:bg-[#14203A] border-2 border-indigo-500 dark:border-[#93F514] shadow-md flex items-center justify-center relative">
                         @if ($cropped_photo_base64)
                             <img src="{{ $cropped_photo_base64 }}" class="w-full h-full object-cover" alt="Foto profil">
                         @elseif ($current_photo_url)
                             <img src="{{ $current_photo_url }}" class="w-full h-full object-cover" alt="Foto profil">
                         @else
-                            <svg class="w-14 h-14 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="w-14 h-14 text-indigo-400 dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                         @endif
@@ -110,7 +110,7 @@
                 <div class="flex-1 text-center sm:text-left space-y-2">
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Foto Profil</label>
                     <div class="flex flex-wrap items-center gap-3 justify-center sm:justify-start">
-                        <label class="px-4 py-2 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-xs font-semibold rounded-xl cursor-pointer transition border border-indigo-200 dark:border-indigo-800 flex items-center gap-2">
+                        <label class="px-4 py-2 bg-indigo-50 dark:bg-[#14203A] text-indigo-700 dark:text-[#38BDF8] hover:bg-indigo-100 dark:hover:bg-[#1A2A4C] text-xs font-semibold rounded-xl cursor-pointer transition border border-indigo-200 dark:border-[#253966] flex items-center gap-2">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
@@ -118,7 +118,7 @@
                             <input type="file" @change="onFileSelect" accept="image/*" class="hidden">
                         </label>
                     </div>
-                    <p class="text-[11px] text-gray-400 dark:text-gray-500">* Anda dapat menggeser, memperbesar, dan memotong foto sebelum disimpan.</p>
+                    <p class="text-[11px] text-gray-400 dark:text-[#93A5C9]">* Anda dapat menggeser, memperbesar, dan memotong foto sebelum disimpan.</p>
                     @error('photo') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                 </div>
             </div>
@@ -203,7 +203,7 @@
                 </div>
             </div>
 
-            <div class="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-700">
+            <div class="flex justify-end pt-4 border-t border-gray-100 dark:border-[#1D2E54]">
                 <button type="submit" wire:loading.attr="disabled"
                     class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-500/20 transition duration-150 ease-in-out flex items-center gap-2">
                     <span wire:loading.remove wire:target="save">Simpan Profil</span>
@@ -223,8 +223,8 @@
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 transition-opacity bg-gray-900/75 backdrop-blur-sm" @click="cancelCrop"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white dark:bg-gray-800 rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-200 dark:border-gray-700">
-                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+            <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white dark:bg-[#0D1527] rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-200 dark:border-[#1D2E54]">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-[#1D2E54]">
                     <h3 class="text-base font-bold text-gray-900 dark:text-white">Atur & Potong Foto Profil</h3>
                     <button @click="cancelCrop" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -235,23 +235,23 @@
                 <div class="p-6 bg-gray-900 flex justify-center items-center min-h-[320px] max-h-[420px] overflow-hidden">
                     <img x-ref="cropperImage" class="max-w-full max-h-[380px] block" alt="Crop preview">
                 </div>
-                <div class="flex items-center justify-center gap-3 py-3 bg-gray-50 dark:bg-gray-900/60 border-t border-gray-100 dark:border-gray-700">
-                    <button type="button" @click="zoomIn" class="p-2 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-center gap-3 py-3 bg-gray-50 dark:bg-[#14203A] border-t border-gray-100 dark:border-[#1D2E54]">
+                    <button type="button" @click="zoomIn" class="p-2 rounded-lg bg-white dark:bg-[#14203A] text-gray-700 dark:text-[#DDE5F5] hover:bg-gray-100 dark:hover:bg-[#1A2A4C] shadow-sm border border-gray-200 dark:border-[#1D2E54]">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" /></svg>
                     </button>
-                    <button type="button" @click="zoomOut" class="p-2 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 shadow-sm border border-gray-200 dark:border-gray-700">
+                    <button type="button" @click="zoomOut" class="p-2 rounded-lg bg-white dark:bg-[#14203A] text-gray-700 dark:text-[#DDE5F5] hover:bg-gray-100 dark:hover:bg-[#1A2A4C] shadow-sm border border-gray-200 dark:border-[#1D2E54]">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" /></svg>
                     </button>
-                    <button type="button" @click="rotateLeft" class="p-2 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 shadow-sm border border-gray-200 dark:border-gray-700">
+                    <button type="button" @click="rotateLeft" class="p-2 rounded-lg bg-white dark:bg-[#14203A] text-gray-700 dark:text-[#DDE5F5] hover:bg-gray-100 dark:hover:bg-[#1A2A4C] shadow-sm border border-gray-200 dark:border-[#1D2E54]">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
                     </button>
-                    <button type="button" @click="rotateRight" class="p-2 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 shadow-sm border border-gray-200 dark:border-gray-700">
+                    <button type="button" @click="rotateRight" class="p-2 rounded-lg bg-white dark:bg-[#14203A] text-gray-700 dark:text-[#DDE5F5] hover:bg-gray-100 dark:hover:bg-[#1A2A4C] shadow-sm border border-gray-200 dark:border-[#1D2E54]">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" /></svg>
                     </button>
                 </div>
-                <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527]">
                     <button type="button" @click="cancelCrop"
-                        class="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl transition">
+                        class="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-[#93A5C9] bg-gray-100 dark:bg-[#14203A] hover:bg-gray-200 dark:hover:bg-[#1A2A4C] border border-transparent dark:border-[#1D2E54] rounded-xl transition">
                         Batal
                     </button>
                     <button type="button" @click="applyCrop"

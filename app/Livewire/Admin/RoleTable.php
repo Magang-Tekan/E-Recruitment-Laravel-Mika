@@ -5,10 +5,11 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Role;
+use App\Livewire\Traits\WithTableSkeleton;
 
 class RoleTable extends Component
 {
-    use WithPagination;
+    use WithPagination, WithTableSkeleton;
 
     public $search = '';
     public $perPage = 10;

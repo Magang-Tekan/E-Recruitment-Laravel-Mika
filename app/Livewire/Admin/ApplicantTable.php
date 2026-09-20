@@ -8,10 +8,11 @@ use App\Models\JobApplication;
 use App\Models\Company;
 use App\Models\Job;
 use Illuminate\Support\Facades\DB;
+use App\Livewire\Traits\WithTableSkeleton;
 
 class ApplicantTable extends Component
 {
-    use WithPagination;
+    use WithPagination, WithTableSkeleton;
 
     public $search = '';
     public $statusFilter = '';

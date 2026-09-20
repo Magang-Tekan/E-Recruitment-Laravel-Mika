@@ -9,10 +9,11 @@ use App\Models\Job;
 use App\Models\Company;
 use App\Models\TestCategory;
 use App\Models\QuestionBank;
+use App\Livewire\Traits\WithTableSkeleton;
 
 class TestTable extends Component
 {
-    use WithPagination;
+    use WithPagination, WithTableSkeleton;
 
     public $search = '';
     public $companyId = '';

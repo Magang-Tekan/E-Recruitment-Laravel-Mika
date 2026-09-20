@@ -16,7 +16,7 @@
 
     <!-- Main Sidebar Container -->
     <aside x-cloak :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-        class="fixed top-0 left-0 z-50 h-screen w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 transition-transform duration-300 ease-in-out flex flex-col justify-between shadow-xl">
+        class="fixed top-0 left-0 z-50 h-screen w-64 bg-white dark:bg-[#0D1527] border-r border-gray-200 dark:border-[#1D2E54] text-gray-700 dark:text-gray-300 transition-transform duration-300 ease-in-out flex flex-col justify-between shadow-xl">
 
         <!-- Top Section: Brand Header & Navigation -->
         <div class="flex-1 overflow-y-auto px-4 py-5 custom-scrollbar">
@@ -29,9 +29,9 @@
                         class="h-8 w-auto object-contain rounded-lg group-hover:scale-105 transition-transform duration-200">
                     <div>
                         <span
-                            class="block font-bold text-lg tracking-tight text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">E-Rekrutmen</span>
+                            class="block font-bold text-lg tracking-tight text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-[#93F514] transition-colors">E-Rekrutmen</span>
                         <span
-                            class="block text-[10px] font-semibold tracking-widest text-indigo-600 dark:text-indigo-400 uppercase">
+                            class="block text-[10px] font-semibold tracking-widest text-emerald-600 dark:text-[#93F514] uppercase">
                             {{ $isAdmin ? 'Panel Admin' : 'Panel Recruiter' }}
                         </span>
                     </div>
@@ -87,15 +87,15 @@
                                 </x-slot:icon>
 
                                 <a href="{{ route('admin.company') }}"
-                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.company*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.company*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Profil Perusahaan
                                 </a>
                                 <a href="{{ route('admin.department') }}"
-                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.department*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.department*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Departemen
                                 </a>
                                 <a href="{{ route('admin.position') }}"
-                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.position*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.position*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Posisi
                                 </a>
                             </x-sidebar.nested-nav-link>
@@ -129,36 +129,36 @@
                             </x-slot:icon>
 
                             <a href="{{ $isAdmin ? route('admin.candidate') : route('recruiter.candidate') }}"
-                                class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.candidate') || request()->routeIs('recruiter.candidate') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.candidate') || request()->routeIs('recruiter.candidate') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                 Kandidat Pelamar
                             </a>
 
                             @if ($isAdmin)
                                 <a href="{{ route('admin.job') }}"
-                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.job') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.job') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Lowongan Kerja
                                 </a>
                             @endif
 
                             <a href="{{ $isAdmin ? route('admin.application') : route('recruiter.application') }}"
-                                class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.application') || request()->routeIs('recruiter.application') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.application') || request()->routeIs('recruiter.application') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                 Lamaran Masuk
                             </a>
 
                             @if ($isAdmin)
                                 <a href="{{ route('admin.test') }}"
-                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.test') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.test') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Paket Ujian Tes
                                 </a>
                             @endif
 
                             <a href="{{ $isAdmin ? route('admin.test_evaluation') : route('recruiter.test_evaluation') }}"
-                                class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.test_evaluation*') || request()->routeIs('recruiter.test_evaluation*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.test_evaluation*') || request()->routeIs('recruiter.test_evaluation*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                 Evaluasi & Nilai Ujian
                             </a>
 
                             <a href="{{ $isAdmin ? route('admin.interview_schedule') : route('recruiter.interview_schedule') }}"
-                                class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.interview_schedule*') || request()->routeIs('recruiter.interview_schedule*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.interview_schedule*') || request()->routeIs('recruiter.interview_schedule*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                 Jadwal Wawancara
                             </a>
                         </x-sidebar.nested-nav-link>
@@ -186,19 +186,19 @@
 
                             @if ($isAdmin)
                                 <a href="{{ route('admin.employee_test') }}"
-                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.employee_test') || request()->routeIs('admin.employee_test.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.employee_test') || request()->routeIs('admin.employee_test.*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Paket Asesmen Karyawan
                                 </a>
                             @endif
 
                             <a href="{{ $isAdmin ? route('admin.employee_test_evaluation') : route('recruiter.employee_test_evaluation') }}"
-                                class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.employee_test_evaluation*') || request()->routeIs('recruiter.employee_test_evaluation*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.employee_test_evaluation*') || request()->routeIs('recruiter.employee_test_evaluation*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                 Hasil & Evaluasi Karyawan
                             </a>
 
                             @if ($isAdmin)
                                 <a href="{{ route('admin.employee') }}"
-                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.employee') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.employee') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Data Karyawan
                                 </a>
                             @endif
@@ -226,19 +226,19 @@
                                     </svg>
                                 </x-slot:icon>
                                 <a href="{{ route('admin.degree') }}"
-                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.degree') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.degree') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Tingkat Pendidikan
                                 </a>
                                 <a href="{{ route('admin.major') }}"
-                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.major') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.major') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Jurusan
                                 </a>
                                 <a href="{{ route('admin.test_category') }}"
-                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.test_category') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.test_category') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Kategori Soal
                                 </a>
                                 <a href="{{ route('admin.question_bank') }}"
-                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.question_bank') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.question_bank') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Bank Soal
                                 </a>
                             </x-sidebar.nested-nav-link>
@@ -261,11 +261,11 @@
                                 </x-slot:icon>
 
                                 <a href="{{ route('admin.user') }}"
-                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.user*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.user*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Kelola Pengguna
                                 </a>
                                 <a href="{{ route('admin.role') }}"
-                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.role*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.role*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Kelola Role
                                 </a>
                             </x-sidebar.nested-nav-link>

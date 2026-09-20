@@ -6,10 +6,11 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Department;
 use App\Models\Company;
+use App\Livewire\Traits\WithTableSkeleton;
 
 class DepartmentTable extends Component
 {
-    use WithPagination;
+    use WithPagination, WithTableSkeleton;
 
     public $search = '';
     public $companyFilter = '';

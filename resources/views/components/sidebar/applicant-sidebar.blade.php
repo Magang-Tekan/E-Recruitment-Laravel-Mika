@@ -12,7 +12,7 @@
 
     <!-- Main Sidebar Container -->
     <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-        class="fixed top-0 left-0 z-50 h-screen w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 transition-transform duration-300 ease-in-out flex flex-col justify-between shadow-xl">
+        class="fixed top-0 left-0 z-50 h-screen w-64 bg-white dark:bg-[#0D1527] border-r border-gray-200 dark:border-[#1D2E54] text-gray-700 dark:text-gray-300 transition-transform duration-300 ease-in-out flex flex-col justify-between shadow-xl">
 
         <!-- Top Section: Brand Header & Navigation -->
         <div class="flex-1 overflow-y-auto px-4 py-5 custom-scrollbar">
@@ -24,9 +24,9 @@
                         class="h-8 w-auto object-contain rounded-lg group-hover:scale-105 transition-transform duration-200">
                     <div>
                         <span
-                            class="block font-bold text-lg tracking-tight text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">E-Rekrutmen</span>
+                            class="block font-bold text-lg tracking-tight text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-[#93F514] transition-colors">E-Rekrutmen</span>
                         <span
-                            class="block text-[10px] font-semibold tracking-widest text-indigo-600 dark:text-indigo-400 uppercase">
+                            class="block text-[10px] font-semibold tracking-widest text-emerald-600 dark:text-[#93F514] uppercase">
                             Panel Pelamar
                         </span>
                     </div>
@@ -34,7 +34,7 @@
 
                 <!-- Mobile Close Button -->
                 <button @click="sidebarOpen = false"
-                    class="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+                    class="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#14203A]">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M6 18L18 6M6 6l12 12" />
@@ -68,41 +68,39 @@
                 <!-- Section 1: Data Profil -->
                 <div>
                     <div
-                        class="px-3 mb-2 text-[11px] font-bold tracking-wider text-gray-400 dark:text-gray-500 uppercase flex items-center justify-between">
+                        class="px-3 mb-2 text-[11px] font-bold tracking-wider text-gray-400 dark:text-[#6378A0] uppercase flex items-center justify-between">
                         <span>Data Profil</span>
-                        {{-- <span
-                            class="text-xs text-indigo-600 dark:text-indigo-400 font-extrabold">{{ $completionPercentage }}%</span> --}}
                     </div>
 
                     <!-- Profile Completeness Progress Bar Card -->
                     <div class="px-1 mb-3">
                         <div
-                            class="p-3 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/30 border border-indigo-100 dark:border-indigo-900/50 rounded-xl shadow-2xs">
+                            class="p-3 bg-slate-50 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl shadow-2xs">
                             <div
                                 class="flex items-center justify-between text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1">
                                 <span>Kelengkapan Profil</span>
-                                <span class="text-indigo-600 dark:text-indigo-400">{{ $completionPercentage }}%</span>
+                                <span class="text-emerald-600 dark:text-[#93F514] font-extrabold">{{ $completionPercentage }}%</span>
                             </div>
-                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden mb-2">
-                                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500"
+                            <div class="w-full bg-gray-200 dark:bg-[#0D1527] rounded-full h-2 overflow-hidden mb-2">
+                                <div class="bg-emerald-500 dark:bg-[#93F514] h-2 rounded-full transition-all duration-500"
                                     style="width: {{ $completionPercentage }}%"></div>
                             </div>
                             <div class="text-[10px] font-medium leading-snug">
                                 @if ($completionPercentage == 100)
                                     <div
-                                        class="p-2 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-lg text-emerald-700 dark:text-emerald-300 font-bold flex items-start gap-1.5">
+                                        class="p-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-lg text-emerald-700 dark:text-[#93F514] font-bold flex items-start gap-1.5">
                                         <span>Profilmu sudah 100% lengkap! Yuk, kirim lamaran sekarang dan buat rekruter
                                             melirik.</span>
                                     </div>
                                 @elseif ($isMandatoryComplete)
                                     <div
-                                        class="p-2 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-lg text-emerald-700 dark:text-emerald-300 font-bold flex items-start gap-1.5">
+                                        class="p-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-lg text-emerald-700 dark:text-[#93F514] font-bold flex items-start gap-1.5">
                                         <span>Profil kamu sudah cukup. Silakan kirimkan lamaran Anda sekarang
                                             juga!</span>
                                     </div>
                                 @else
                                     <div
-                                        class="p-2 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 rounded-lg text-amber-800 dark:text-amber-300">
+                                        class="p-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-lg text-amber-800 dark:text-amber-300">
                                         <div
                                             class="font-bold flex items-center gap-1 text-amber-700 dark:text-amber-400 mb-0.5">
                                             <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24"
@@ -279,12 +277,12 @@
                         <!-- Status Pencari Kerja Badge Card -->
                         <div class="px-1 mb-3">
                             <button type="button" wire:click="openJobSearchStatusModal"
-                                class="w-full p-3 text-left bg-gradient-to-r from-slate-50 to-indigo-50/50 dark:from-gray-800/80 dark:to-indigo-950/30 border border-gray-200/80 dark:border-gray-700/80 hover:border-indigo-300 dark:hover:border-indigo-700 rounded-xl transition duration-200 group relative">
+                                class="w-full p-3 text-left bg-slate-50 dark:bg-[#14203A] border border-gray-200/80 dark:border-[#1D2E54] hover:border-emerald-500/50 dark:hover:border-[#93F514]/40 rounded-xl transition duration-200 group relative">
                                 <div class="flex items-center justify-between">
                                     <span
-                                        class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status
+                                        class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-[#93A5C9]">Status
                                         Pencari Kerja</span>
-                                    <svg class="w-3.5 h-3.5 text-indigo-500 group-hover:translate-x-0.5 transition-transform"
+                                    <svg class="w-3.5 h-3.5 text-slate-400 dark:text-[#93F514] group-hover:translate-x-0.5 transition-transform"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M9 5l7 7-7 7" />
@@ -294,13 +292,13 @@
                                     @if ($job_search_status === 'Aktif')
                                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                                         <span
-                                            class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Aktif</span>
+                                            class="text-xs font-bold text-emerald-600 dark:text-[#93F514]">Aktif</span>
                                     @elseif ($job_search_status === 'Pasif')
                                         <span class="w-2 h-2 rounded-full bg-amber-500"></span>
                                         <span class="text-xs font-bold text-amber-600 dark:text-amber-400">Pasif</span>
                                     @else
                                         <span class="w-2 h-2 rounded-full bg-gray-400"></span>
-                                        <span class="text-xs font-bold text-gray-500 dark:text-gray-400">Tidak
+                                        <span class="text-xs font-bold text-gray-500 dark:text-slate-400">Tidak
                                             Aktif</span>
                                     @endif
                                 </div>
@@ -310,8 +308,8 @@
                         <!-- Generate CV Action Button -->
                         <div class="pt-1 px-1">
                             <a href="{{ route('profile.cv.preview') }}" target="_blank"
-                                class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/35 transition-all duration-200 group">
-                                <svg class="w-4 h-4 text-white group-hover:scale-110 transition-transform"
+                                class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 transition-all duration-200 active:scale-95 cursor-pointer group">
+                                <svg class="w-4 h-4 text-white dark:text-black group-hover:scale-110 transition-transform"
                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -325,7 +323,7 @@
                 <!-- Section 2: Aktivitas & Pengaturan -->
                 <div>
                     <div
-                        class="px-3 mb-2 text-[11px] font-bold tracking-wider text-gray-400 dark:text-gray-500 uppercase">
+                        class="px-3 mb-2 text-[11px] font-bold tracking-wider text-gray-400 dark:text-[#6378A0] uppercase">
                         Aktivitas & Pengaturan
                     </div>
                     <div class="space-y-1">
@@ -405,18 +403,18 @@
 
                 <!-- Modal Dialog -->
                 <div
-                    class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white dark:bg-gray-800 rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-100 dark:border-gray-700">
+                    class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white dark:bg-[#0D1527] rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-100 dark:border-[#1D2E54]">
 
                     <!-- Header -->
                     <div
-                        class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                        class="px-6 py-5 border-b border-gray-100 dark:border-[#1D2E54] flex items-center justify-between">
                         <div>
                             <h3 class="text-lg font-bold text-gray-900 dark:text-white">Status Pencari Kerja</h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Tentukan status pencarian
+                            <p class="text-xs text-gray-500 dark:text-[#93A5C9] mt-0.5">Tentukan status pencarian
                                 kerjamu</p>
                         </div>
                         <button type="button" wire:click="closeJobSearchStatusModal"
-                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                            class="text-gray-400 hover:text-gray-600 dark:hover:text-[#93F514]">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M6 18L18 6M6 6l12 12" />
@@ -425,9 +423,9 @@
                     </div>
 
                     <!-- Sub Tab Navigation -->
-                    <div class="flex border-b border-gray-200 dark:border-gray-700 px-6 pt-2">
+                    <div class="flex border-b border-gray-200 dark:border-[#1D2E54] px-6 pt-2">
                         <button type="button" wire:click="$set('activeSubTab', 'status')"
-                            class="py-3 px-4 text-xs font-bold transition border-b-2 flex items-center gap-1.5 {{ $activeSubTab === 'status' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700' }}">
+                            class="py-3 px-4 text-xs font-bold transition border-b-2 flex items-center gap-1.5 {{ $activeSubTab === 'status' ? 'border-emerald-600 text-emerald-600 dark:border-[#93F514] dark:text-[#93F514]' : 'border-transparent text-gray-500 dark:text-[#93A5C9] hover:text-gray-700 dark:hover:text-white' }}">
                             <span>Status Pencari Kerja</span>
                             <span class="text-red-500">*</span>
                         </button>
@@ -436,7 +434,7 @@
                             @if ($job_search_status === 'Tidak Aktif') disabled title="Notifikasi tidak tersedia saat status Tidak Aktif" 
                             @else 
                                 wire:click="$set('activeSubTab', 'notification')" @endif
-                            class="py-3 px-4 text-xs font-bold transition border-b-2 flex items-center gap-1.5 {{ $job_search_status === 'Tidak Aktif' ? 'opacity-40 cursor-not-allowed text-gray-400 border-transparent' : ($activeSubTab === 'notification' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700') }}">
+                            class="py-3 px-4 text-xs font-bold transition border-b-2 flex items-center gap-1.5 {{ $job_search_status === 'Tidak Aktif' ? 'opacity-40 cursor-not-allowed text-gray-400 border-transparent' : ($activeSubTab === 'notification' ? 'border-emerald-600 text-emerald-600 dark:border-[#93F514] dark:text-[#93F514]' : 'border-transparent text-gray-500 dark:text-[#93A5C9] hover:text-gray-700 dark:hover:text-white') }}">
                             <span>Periode Pengiriman Notifikasi</span>
                             <span class="text-red-500">*</span>
                         </button>
@@ -450,15 +448,15 @@
                             <div class="space-y-4">
                                 <!-- Option 1: Aktif -->
                                 <label
-                                    class="block p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 bg-gray-50/40 dark:bg-gray-900/30 cursor-pointer transition">
+                                    class="block p-4 rounded-xl border border-gray-200 dark:border-[#1D2E54] hover:border-emerald-500/50 dark:hover:border-[#93F514]/40 bg-gray-50/40 dark:bg-[#14203A] cursor-pointer transition">
                                     <div class="flex items-start gap-3">
                                         <input type="radio" wire:model.live="job_search_status" value="Aktif"
-                                            class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-700">
+                                            class="mt-1 w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500 dark:bg-[#0D1527] dark:border-[#1D2E54]">
                                         <div>
                                             <span
                                                 class="block text-sm font-bold text-gray-900 dark:text-white">Aktif</span>
                                             <span
-                                                class="block text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                                class="block text-xs text-gray-500 dark:text-[#93A5C9] mt-1 leading-relaxed">
                                                 Saya sedang mencari pekerjaan dan terbuka untuk menerima undangan
                                                 pekerjaan serta email terkait lowongan yang sesuai dengan profil saya
                                             </span>
@@ -468,15 +466,15 @@
 
                                 <!-- Option 2: Pasif -->
                                 <label
-                                    class="block p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 bg-gray-50/40 dark:bg-gray-900/30 cursor-pointer transition">
+                                    class="block p-4 rounded-xl border border-gray-200 dark:border-[#1D2E54] hover:border-emerald-500/50 dark:hover:border-[#93F514]/40 bg-gray-50/40 dark:bg-[#14203A] cursor-pointer transition">
                                     <div class="flex items-start gap-3">
                                         <input type="radio" wire:model.live="job_search_status" value="Pasif"
-                                            class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-700">
+                                            class="mt-1 w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500 dark:bg-[#0D1527] dark:border-[#1D2E54]">
                                         <div>
                                             <span
                                                 class="block text-sm font-bold text-gray-900 dark:text-white">Pasif</span>
                                             <span
-                                                class="block text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                                class="block text-xs text-gray-500 dark:text-[#93A5C9] mt-1 leading-relaxed">
                                                 Saya tidak mencari pekerjaan tetapi saya terbuka untuk menerima email
                                                 terkait lowongan yang sesuai dengan profil saya
                                             </span>
@@ -486,15 +484,15 @@
 
                                 <!-- Option 3: Tidak Aktif -->
                                 <label
-                                    class="block p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 bg-gray-50/40 dark:bg-gray-900/30 cursor-pointer transition">
+                                    class="block p-4 rounded-xl border border-gray-200 dark:border-[#1D2E54] hover:border-emerald-500/50 dark:hover:border-[#93F514]/40 bg-gray-50/40 dark:bg-[#14203A] cursor-pointer transition">
                                     <div class="flex items-start gap-3">
                                         <input type="radio" wire:model.live="job_search_status" value="Tidak Aktif"
-                                            class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-700">
+                                            class="mt-1 w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500 dark:bg-[#0D1527] dark:border-[#1D2E54]">
                                         <div>
                                             <span class="block text-sm font-bold text-gray-900 dark:text-white">Tidak
                                                 Aktif</span>
                                             <span
-                                                class="block text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                                class="block text-xs text-gray-500 dark:text-[#93A5C9] mt-1 leading-relaxed">
                                                 Saya tidak mencari pekerjaan dan tidak ingin menerima email apapun
                                             </span>
                                         </div>
@@ -515,15 +513,15 @@
                                 @else
                                     <!-- Harian -->
                                     <label
-                                        class="block p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 bg-gray-50/40 dark:bg-gray-900/30 cursor-pointer transition">
+                                        class="block p-4 rounded-xl border border-gray-200 dark:border-[#1D2E54] hover:border-emerald-500/50 dark:hover:border-[#93F514]/40 bg-gray-50/40 dark:bg-[#14203A] cursor-pointer transition">
                                         <div class="flex items-start gap-3">
                                             <input type="radio" wire:model="notification_period" value="Harian"
-                                                class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-700">
+                                                class="mt-1 w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500 dark:bg-[#0D1527] dark:border-[#1D2E54]">
                                             <div>
                                                 <span
                                                     class="block text-sm font-bold text-gray-900 dark:text-white">Harian</span>
                                                 <span
-                                                    class="block text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                                    class="block text-xs text-gray-500 dark:text-[#93A5C9] mt-1 leading-relaxed">
                                                     Kamu akan mendapatkan email terkait lowongan yang sesuai dengan
                                                     profilmu sebanyak maksimal satu kali sehari
                                                 </span>
@@ -533,15 +531,15 @@
 
                                     <!-- Mingguan -->
                                     <label
-                                        class="block p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 bg-gray-50/40 dark:bg-gray-900/30 cursor-pointer transition">
+                                        class="block p-4 rounded-xl border border-gray-200 dark:border-[#1D2E54] hover:border-emerald-500/50 dark:hover:border-[#93F514]/40 bg-gray-50/40 dark:bg-[#14203A] cursor-pointer transition">
                                         <div class="flex items-start gap-3">
                                             <input type="radio" wire:model="notification_period" value="Mingguan"
-                                                class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-700">
+                                                class="mt-1 w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500 dark:bg-[#0D1527] dark:border-[#1D2E54]">
                                             <div>
                                                 <span
                                                     class="block text-sm font-bold text-gray-900 dark:text-white">Mingguan</span>
                                                 <span
-                                                    class="block text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                                    class="block text-xs text-gray-500 dark:text-[#93A5C9] mt-1 leading-relaxed">
                                                     Kamu akan mendapatkan email terkait lowongan yang sesuai dengan
                                                     profilmu sebanyak maksimal satu kali seminggu
                                                 </span>
@@ -551,15 +549,15 @@
 
                                     <!-- Bulanan -->
                                     <label
-                                        class="block p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 bg-gray-50/40 dark:bg-gray-900/30 cursor-pointer transition">
+                                        class="block p-4 rounded-xl border border-gray-200 dark:border-[#1D2E54] hover:border-emerald-500/50 dark:hover:border-[#93F514]/40 bg-gray-50/40 dark:bg-[#14203A] cursor-pointer transition">
                                         <div class="flex items-start gap-3">
                                             <input type="radio" wire:model="notification_period" value="Bulanan"
-                                                class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-700">
+                                                class="mt-1 w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500 dark:bg-[#0D1527] dark:border-[#1D2E54]">
                                             <div>
                                                 <span
                                                     class="block text-sm font-bold text-gray-900 dark:text-white">Bulanan</span>
                                                 <span
-                                                    class="block text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                                    class="block text-xs text-gray-500 dark:text-[#93A5C9] mt-1 leading-relaxed">
                                                     Kamu akan mendapatkan email terkait lowongan yang sesuai dengan
                                                     profilmu sebanyak maksimal satu kali sebulan
                                                 </span>
@@ -572,16 +570,16 @@
 
                         <!-- Footer Actions -->
                         <div
-                            class="flex items-center justify-end gap-3 pt-6 mt-6 border-t border-gray-100 dark:border-gray-700">
+                            class="flex items-center justify-end gap-3 pt-6 mt-6 border-t border-gray-100 dark:border-[#1D2E54]">
                             <button type="button" wire:click="closeJobSearchStatusModal"
-                                class="px-5 py-2.5 text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl transition">
+                                class="px-5 py-2.5 text-xs font-semibold text-gray-600 dark:text-[#93A5C9] bg-gray-100 dark:bg-[#14203A] hover:bg-gray-200 dark:hover:bg-[#1A2A4C] dark:hover:text-white rounded-xl transition">
                                 Batal
                             </button>
                             <button type="submit" wire:loading.attr="disabled"
-                                class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-indigo-500/20 transition flex items-center gap-2">
+                                class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 transition flex items-center gap-2 active:scale-95 cursor-pointer">
                                 <span wire:loading.remove wire:target="saveJobSearchStatus">Simpan Status</span>
                                 <span wire:loading wire:target="saveJobSearchStatus" class="flex items-center gap-2">
-                                    <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                    <svg class="animate-spin h-4 w-4 text-white dark:text-black" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10"
                                             stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor"
