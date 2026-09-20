@@ -291,7 +291,7 @@
         }
 
         /* Form Controls: Inputs, Search Bar, Textarea & Select */
-        html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+        html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(.bg-transparent):not([style*="transparent"]),
         html.dark select,
         html.dark textarea {
             background-color: #14203A !important;
