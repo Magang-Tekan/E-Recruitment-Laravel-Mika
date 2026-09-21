@@ -8,6 +8,7 @@
     showEditModal: false,
     showCompleteModal: false,
     showDeleteModal: false,
+    createStep: 1,
 
     // Candidates list for searchable combobox
     allCandidates: @js($activeApplications),
@@ -51,7 +52,9 @@
         location: 'Online (Google Meet)',
         meeting_link: '',
         status: 'Scheduled',
-        notes: ''
+        notes: '',
+        applicationStatus: 'Interview', // default: ubah ke Interview
+        sendEmail: true,                // default: kirim email
     },
 
     // Helper to get candidate photo from schedule
@@ -103,6 +106,7 @@
     },
 
     openCreateModal(appId = '') {
+        this.createStep = 1;
         this.createData.job_applications_id = appId;
         this.createData.users_id = '{{ auth()->id() }}';
         this.createData.interview_date = '';
@@ -111,6 +115,7 @@
         this.createData.meeting_link = '';
         this.createData.status = 'Scheduled';
         this.createData.notes = '';
+        this.createData.sendEmail = true;
         this.candidateSearch = '';
         this.isCandidateDropdownOpen = false;
 
@@ -119,6 +124,7 @@
         } else {
             this.selectedCandidate = null;
         }
+
 
         this.showCreateModal = true;
     },
@@ -589,44 +595,46 @@
 
                             <!-- Status Sesi & Tanda Hasil Keputusan -->
                             <td class="py-4 px-4 whitespace-nowrap">
-                                <div class="space-y-1">
-                                    <!-- Status Jadwal Sesi -->
-                                    <div>
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $statusClasses }}">
-                                            <span class="w-1.5 h-1.5 rounded-full {{ strtolower($status) === 'completed' ? 'bg-emerald-500' : (strtolower($status) === 'scheduled' ? 'bg-indigo-500' : (strtolower($status) === 'rescheduled' ? 'bg-amber-500' : 'bg-rose-500')) }}"></span>
-                                            {{ $status }}
-                                        </span>
-                                    </div>
+                                <div class="flex flex-col items-start gap-1.5">
+                                    <!-- 1. Status Sesi Jadwal -->
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $statusClasses }}">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ strtolower($status) === 'completed' ? 'bg-emerald-500' : (strtolower($status) === 'scheduled' ? 'bg-indigo-500' : (strtolower($status) === 'rescheduled' ? 'bg-amber-500' : 'bg-rose-500')) }}"></span>
+                                        {{ $status }}
+                                    </span>
 
-                                    <!-- Tanda Keputusan Hasil Pelamar -->
+                                    <!-- 2. Status Keputusan Pelamar -->
                                     @if ($schedule->jobApplication)
                                         @php
                                             $appStatus = strtolower($schedule->jobApplication->status);
                                         @endphp
                                         @if ($appStatus === 'accepted')
-                                            <div>
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 shadow-xs">
-                                                    <svg class="w-3 h-3 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                    <span>Lolos (Diterima)</span>
-                                                </span>
-                                            </div>
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                                <svg class="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                <span>Lolos (Diterima)</span>
+                                            </span>
                                         @elseif ($appStatus === 'rejected')
-                                            <div>
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-200 border border-rose-300 dark:border-rose-700 shadow-xs">
-                                                    <svg class="w-3 h-3 text-rose-600 dark:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                    <span>Tidak Lolos</span>
-                                                </span>
-                                            </div>
-                                        @elseif ($appStatus === 'interview')
-                                            <div>
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                                                    <span>Tahap Interview</span>
-                                                </span>
-                                            </div>
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                                                <svg class="w-3 h-3 text-rose-600 dark:text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                                <span>Tidak Lolos</span>
+                                            </span>
+                                        @elseif (strtolower($status) === 'completed')
+                                            <button type="button" @click="openCompleteModal({{ json_encode($schedule) }})" title="Klik untuk menentukan keputusan lolos/tidak lolos pelamar ini" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:border-amber-400 dark:hover:border-amber-600 transition cursor-pointer group">
+                                                <svg class="w-3 h-3 text-amber-500 shrink-0 group-hover:scale-110 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                <span>Menunggu Keputusan</span>
+                                            </button>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                                <svg class="w-3 h-3 text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                <span>Menunggu Sesi</span>
+                                            </span>
                                         @endif
                                     @endif
                                 </div>
@@ -635,11 +643,14 @@
                             <!-- Aksi -->
                             <td class="py-4 px-4 sm:px-6 text-right whitespace-nowrap">
                                 <div class="flex items-center justify-end gap-1.5">
-                                    <!-- Selesaikan Wawancara (Quick Complete) -->
-                                    @if ($schedule->status !== 'Completed')
-                                        <button type="button" @click="openCompleteModal({{ json_encode($schedule) }})" title="Tandai Selesai & Beri Catatan" class="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 transition">
+                                    <!-- Selesaikan Wawancara / Beri Keputusan (Quick Complete) -->
+                                    @php
+                                        $canCompleteOrEvaluate = $schedule->status !== 'Completed' || ($schedule->jobApplication && strtolower($schedule->jobApplication->status) === 'interview');
+                                    @endphp
+                                    @if ($canCompleteOrEvaluate)
+                                        <button type="button" @click="openCompleteModal({{ json_encode($schedule) }})" title="{{ $schedule->status === 'Completed' ? 'Tentukan Keputusan (Lolos / Tidak Lolos)' : 'Tandai Selesai & Beri Catatan' }}" class="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
                                         </button>
                                     @endif
@@ -708,101 +719,133 @@
         @endif
     </div>
 
-    <!-- ==================== MODAL: BUAT JADWAL WAWANCARA BARU ==================== -->
-    <div x-show="showCreateModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title-create" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div x-show="showCreateModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="showCreateModal = false" class="fixed inset-0 transition-opacity bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm"></div>
+    <!-- ==================== MODAL: BUAT JADWAL WAWANCARA BARU (2-Step Wizard) ==================== -->
+    <div x-show="showCreateModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6" aria-labelledby="modal-title-create" role="dialog" aria-modal="true">
 
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        {{-- Backdrop --}}
+        <div x-show="showCreateModal"
+             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             @click="showCreateModal = false"
+             class="fixed inset-0 bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm">
+        </div>
 
-            <div x-show="showCreateModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-slate-900 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-gray-200 dark:border-slate-800">
-                
-                <div class="p-6">
-                    <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-slate-800">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                            </div>
-                            <h3 class="text-base font-bold text-gray-900 dark:text-white" id="modal-title-create">
-                                Buat Jadwal Wawancara
-                            </h3>
-                        </div>
-                        <button @click="showCreateModal = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+        {{-- Modal Panel --}}
+        <div x-show="showCreateModal"
+             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 scale-95" x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 scale-100" x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+             class="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden">
+
+            {{-- Header --}}
+            <div class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
                     </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-900 dark:text-white leading-tight" id="modal-title-create">Buat Jadwal Wawancara</h3>
+                        <p class="text-[11px] text-gray-400 dark:text-slate-500 mt-0.5">
+                            <span x-text="createStep === 1 ? 'Langkah 1 dari 2 — Data Jadwal' : 'Langkah 2 dari 2 — Konfirmasi'"></span>
+                        </p>
+                    </div>
+                </div>
+                <button @click="showCreateModal = false; createStep = 1" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
 
-                    <form action="{{ $routePrefix }}" method="POST" class="mt-4 space-y-4">
-                        @csrf
+            {{-- Progress Bar --}}
+            <div class="h-0.5 bg-gray-100 dark:bg-slate-800">
+                <div class="h-0.5 bg-indigo-500 transition-all duration-500"
+                     :style="createStep === 1 ? 'width: 50%' : 'width: 100%'"></div>
+            </div>
 
-                        <!-- Searchable Candidate Selection -->
+            {{-- FORM (semua step dalam satu form) --}}
+            <form action="{{ $routePrefix }}" method="POST" id="form-create-interview">
+                @csrf
+                <input type="hidden" name="application_status_override" value="Interview">
+                <input type="hidden" name="send_email" id="create_send_email_val" :value="createData.sendEmail ? '1' : '0'">
+                <input type="hidden" name="job_applications_id" :value="createData.job_applications_id">
+                <input type="hidden" name="users_id" :value="createData.users_id">
+                <input type="hidden" name="interview_date" :value="createData.interview_date">
+                <input type="hidden" name="interview_type" :value="createData.interview_type">
+                <input type="hidden" name="location" :value="createData.location">
+                <input type="hidden" name="meeting_link" :value="createData.meeting_link">
+                <input type="hidden" name="notes" :value="createData.notes">
+                <input type="hidden" name="status" value="Scheduled">
+
+                {{-- ===========================
+                     STEP 1 — DATA JADWAL
+                     =========================== --}}
+                <div x-show="createStep === 1" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+                    <div class="px-6 py-5 space-y-4 max-h-[68vh] overflow-y-auto">
+
+                        {{-- Pilih Kandidat --}}
                         <div class="relative" @click.outside="isCandidateDropdownOpen = false">
-                            <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
-                                Pilih Kandidat Pelamar (Tahap Wawancara / Lolos Seleksi) <span class="text-rose-500">*</span>
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+                                Kandidat Pelamar <span class="text-rose-500">*</span>
+                                <span class="font-normal text-gray-400 ml-1">(Status: Wawancara / Shortlisted)</span>
                             </label>
 
-                            <!-- Hidden input for form submission -->
-                            <input type="hidden" name="job_applications_id" :value="createData.job_applications_id" required>
-
-                            <!-- Selected Candidate Card Display -->
-                            <div x-show="selectedCandidate" class="p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 flex items-center justify-between gap-3 transition">
+                            {{-- Selected Card --}}
+                            <div x-show="selectedCandidate" class="p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 flex items-center justify-between gap-3">
                                 <div class="flex items-center gap-3 min-w-0">
                                     <template x-if="selectedCandidate && selectedCandidate.photo">
-                                        <img :src="selectedCandidate.photo" :alt="selectedCandidate.name" class="w-9 h-9 rounded-full object-cover border border-indigo-200 dark:border-indigo-800 shrink-0 shadow-xs">
+                                        <img :src="selectedCandidate.photo" :alt="selectedCandidate.name" class="w-9 h-9 rounded-full object-cover border border-indigo-200 dark:border-indigo-800 shrink-0">
                                     </template>
                                     <template x-if="!selectedCandidate || !selectedCandidate.photo">
-                                        <div class="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                                        <div class="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
                                             <span x-text="selectedCandidate ? selectedCandidate.name.charAt(0).toUpperCase() : 'K'"></span>
                                         </div>
                                     </template>
                                     <div class="min-w-0">
                                         <p class="font-bold text-gray-900 dark:text-white text-xs truncate" x-text="selectedCandidate ? selectedCandidate.name : ''"></p>
-                                        <p class="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold truncate" x-text="selectedCandidate ? (selectedCandidate.job_title + (selectedCandidate.company ? ' • ' + selectedCandidate.company : '')) : ''"></p>
+                                        <p class="text-[11px] text-indigo-600 dark:text-indigo-400 truncate" x-text="selectedCandidate ? (selectedCandidate.job_title + (selectedCandidate.company ? ' • ' + selectedCandidate.company : '')) : ''"></p>
                                         <p class="text-[10px] text-gray-400 truncate" x-text="selectedCandidate ? selectedCandidate.email : ''"></p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0">
                                     <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300" x-text="selectedCandidate ? selectedCandidate.status : ''"></span>
                                     <button type="button" @click="clearCandidate()" class="p-1 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-800 transition" title="Ganti Kandidat">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Trigger Button when no candidate selected -->
+                            {{-- Trigger --}}
                             <div x-show="!selectedCandidate">
-                                <button type="button" @click="isCandidateDropdownOpen = !isCandidateDropdownOpen" class="w-full px-3.5 py-2.5 text-left text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 hover:border-indigo-400 dark:hover:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition flex items-center justify-between">
-                                    <span class="text-gray-400">-- Klik untuk Cari & Pilih Pelamar --</span>
-                                    <svg class="w-4 h-4 text-gray-400 transition transform duration-200" :class="isCandidateDropdownOpen ? 'rotate-180 text-indigo-600' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <button type="button" @click="isCandidateDropdownOpen = !isCandidateDropdownOpen"
+                                    class="w-full px-3.5 py-2.5 text-left text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 hover:border-indigo-400 dark:hover:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition flex items-center justify-between">
+                                    <span class="text-gray-400">— Klik untuk Cari &amp; Pilih Pelamar —</span>
+                                    <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="isCandidateDropdownOpen ? 'rotate-180 text-indigo-600' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
                             </div>
 
-                            <!-- Dropdown Menu with Live Searchbar -->
-                            <div x-show="isCandidateDropdownOpen" x-cloak x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="absolute z-30 mt-1 w-full bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-xl overflow-hidden">
-                                <!-- Search Input inside dropdown -->
+                            {{-- Dropdown --}}
+                            <div x-show="isCandidateDropdownOpen" x-cloak
+                                 x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                 class="absolute z-30 mt-1 w-full bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-xl overflow-hidden">
                                 <div class="p-2.5 border-b border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/40">
                                     <div class="relative">
-                                        <input type="text" x-model="candidateSearch" placeholder="Cari nama kandidat, lowongan, atau email..." class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" @keydown.escape="isCandidateDropdownOpen = false" autofocus>
+                                        <input type="text" x-model="candidateSearch" placeholder="Cari nama, posisi, atau email..."
+                                            class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                                            @keydown.escape="isCandidateDropdownOpen = false">
                                         <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
-                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                            </svg>
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Candidates List -->
-                                <div class="max-h-52 overflow-y-auto divide-y divide-gray-50 dark:divide-slate-800/60 p-1">
+                                <div class="max-h-48 overflow-y-auto divide-y divide-gray-50 dark:divide-slate-800/60 p-1">
                                     <template x-for="cand in filteredCandidates()" :key="cand.id">
-                                        <button type="button" @click="selectCandidate(cand)" class="w-full text-left p-2.5 rounded-xl hover:bg-indigo-50/80 dark:hover:bg-slate-800/80 transition flex items-center justify-between gap-3 group">
+                                        <button type="button" @click="selectCandidate(cand)"
+                                            class="w-full text-left p-2.5 rounded-xl hover:bg-indigo-50/80 dark:hover:bg-slate-800/80 transition flex items-center justify-between gap-3 group">
                                             <div class="flex items-center gap-2.5 min-w-0">
                                                 <template x-if="cand.photo">
                                                     <img :src="cand.photo" :alt="cand.name" class="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-slate-700 shrink-0">
@@ -820,34 +863,30 @@
                                             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/60 shrink-0" x-text="cand.status"></span>
                                         </button>
                                     </template>
-
-                                    <!-- Empty state when no results -->
                                     <div x-show="filteredCandidates().length === 0" class="py-6 px-4 text-center">
-                                        <svg class="w-6 h-6 text-gray-300 dark:text-slate-600 mx-auto mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                        </svg>
+                                        <svg class="w-6 h-6 text-gray-300 dark:text-slate-600 mx-auto mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                                         <p class="text-xs font-semibold text-gray-600 dark:text-slate-300">Tidak ada kandidat ditemukan</p>
-                                        <p class="text-[11px] text-gray-400 mt-0.5">Pastikan status pelamar sudah diubah ke 'Interview' atau 'Shortlisted'.</p>
+                                        <p class="text-[11px] text-gray-400 mt-0.5">Pastikan status pelamar sudah 'Interview' atau 'Shortlisted'.</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Tanggal & Waktu Wawancara -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {{-- Waktu & Pewawancara --}}
+                        <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label for="create_interview_date" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
-                                    Waktu Wawancara (WIB) <span class="text-rose-500">*</span>
+                                <label for="create_interview_date" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+                                    Waktu Wawancara <span class="text-rose-500">*</span>
                                 </label>
-                                <input type="datetime-local" name="interview_date" id="create_interview_date" x-model="createData.interview_date" required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <input type="datetime-local" id="create_interview_date" x-model="createData.interview_date"
+                                    class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
                             </div>
-
-                            <!-- Pewawancara -->
                             <div>
-                                <label for="create_users_id" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
-                                    Pewawancara / Interviewer <span class="text-rose-500">*</span>
+                                <label for="create_users_id" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+                                    Pewawancara <span class="text-rose-500">*</span>
                                 </label>
-                                <select name="users_id" id="create_users_id" x-model="createData.users_id" required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <select id="create_users_id" x-model="createData.users_id"
+                                    class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
                                     @foreach ($interviewers as $user)
                                         <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->role->name ?? 'Staff' }})</option>
                                     @endforeach
@@ -855,80 +894,208 @@
                             </div>
                         </div>
 
-                        <!-- Pilihan Metode: Online vs Offline -->
+                        {{-- Metode --}}
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
                                 Metode Wawancara <span class="text-rose-500">*</span>
                             </label>
-                            <input type="hidden" name="interview_type" :value="createData.interview_type">
-                            
                             <div class="grid grid-cols-2 gap-3">
-                                <!-- Option Online -->
-                                <button type="button" @click="createData.interview_type = 'online'; if(!createData.location || createData.location.includes('Kantor')) createData.location = 'Online (Google Meet)';" :class="createData.interview_type === 'online' ? 'border-indigo-600 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-400'" class="p-3 rounded-xl border text-left flex items-center gap-3 transition">
+                                <button type="button"
+                                    @click="createData.interview_type = 'online'; if(!createData.location || createData.location.includes('Kantor')) createData.location = 'Online (Google Meet)';"
+                                    :class="createData.interview_type === 'online' ? 'border-indigo-500 bg-indigo-50/80 dark:bg-indigo-950/40 ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800'"
+                                    class="p-3 rounded-xl border text-left flex items-center gap-3 transition">
                                     <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                        </svg>
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                                     </div>
                                     <div>
-                                        <p class="text-xs font-bold">Online</p>
+                                        <p class="text-xs font-bold text-gray-800 dark:text-white">Online</p>
                                         <p class="text-[10px] text-gray-400">Google Meet / Zoom</p>
                                     </div>
                                 </button>
-
-                                <!-- Option Offline -->
-                                <button type="button" @click="createData.interview_type = 'offline'; if(!createData.location || createData.location.includes('Online')) createData.location = 'Kantor Mitra Karya Analitika - Ruang Wawancara HR';" :class="createData.interview_type === 'offline' ? 'border-purple-600 bg-purple-50/70 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 ring-2 ring-purple-500/20' : 'border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-400'" class="p-3 rounded-xl border text-left flex items-center gap-3 transition">
+                                <button type="button"
+                                    @click="createData.interview_type = 'offline'; if(!createData.location || createData.location.includes('Online')) createData.location = 'Kantor - Ruang Wawancara HR';"
+                                    :class="createData.interview_type === 'offline' ? 'border-purple-500 bg-purple-50/80 dark:bg-purple-950/40 ring-2 ring-purple-500/20' : 'border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800'"
+                                    class="p-3 rounded-xl border text-left flex items-center gap-3 transition">
                                     <div class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                        </svg>
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                                     </div>
                                     <div>
-                                        <p class="text-xs font-bold">Tatap Muka (Offline)</p>
+                                        <p class="text-xs font-bold text-gray-800 dark:text-white">Tatap Muka</p>
                                         <p class="text-[10px] text-gray-400">On-site di Kantor</p>
                                     </div>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Field Khusus Online: Link Meeting -->
+                        {{-- Link Meeting (Online only) --}}
                         <div x-show="createData.interview_type === 'online'" x-transition>
-                            <label for="create_meeting_link" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                            <label for="create_meeting_link" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
                                 Tautan Meeting (URL) <span class="text-blue-500">*</span>
                             </label>
-                            <input type="url" name="meeting_link" id="create_meeting_link" x-model="createData.meeting_link" placeholder="https://meet.google.com/xxx-yyyy-zzz atau link Zoom" class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
-                            <span class="text-[10px] text-gray-400 mt-1 block">Pelamar dapat langsung mengklik tautan ini dari akun pelamar mereka.</span>
+                            <input type="url" id="create_meeting_link" x-model="createData.meeting_link"
+                                placeholder="https://meet.google.com/xxx-yyyy-zzz atau link Zoom"
+                                class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                            <p class="text-[10px] text-gray-400 mt-1">Kandidat dapat langsung mengklik tautan dari akun mereka.</p>
                         </div>
 
-                        <!-- Lokasi / Ruangan -->
+                        {{-- Lokasi --}}
                         <div>
-                            <label for="create_location" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
-                                Keterangan Lokasi / Ruangan <span class="text-rose-500">*</span>
+                            <label for="create_location" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+                                Lokasi / Ruangan <span class="text-rose-500">*</span>
                             </label>
-                            <input type="text" name="location" id="create_location" x-model="createData.location" required placeholder="Contoh: Online (Google Meet) atau Gd. A Lt. 2 Ruang Meeting HR" class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                            <input type="text" id="create_location" x-model="createData.location"
+                                placeholder="Contoh: Online (Google Meet) atau Gd. A Lt. 2 Ruang HR"
+                                class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
                         </div>
 
-                        <!-- Catatan Instruksi untuk Pelamar -->
+                        {{-- Catatan --}}
                         <div>
-                            <label for="create_notes" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
-                                Catatan / Arahan untuk Kandidat (Opsional)
+                            <label for="create_notes" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+                                Catatan untuk Kandidat <span class="text-gray-400 font-normal">(Opsional)</span>
                             </label>
-                            <textarea name="notes" id="create_notes" rows="2" x-model="createData.notes" placeholder="Contoh: Harap hadir 10 menit sebelum waktu dan siapkan kartu identitas / portofolio..." class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"></textarea>
+                            <textarea id="create_notes" rows="2" x-model="createData.notes"
+                                placeholder="Contoh: Harap hadir 10 menit sebelum waktu dan siapkan kartu identitas..."
+                                class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition resize-none"></textarea>
                         </div>
 
-                        <!-- Modal Actions -->
-                        <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-slate-800">
-                            <button type="button" @click="showCreateModal = false" class="px-4 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition">
-                                Batal
-                            </button>
-                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 rounded-xl transition cursor-pointer">
-                                Simpan & Jadwalkan Wawancara
-                            </button>
-                        </div>
-                    </form>
+                    </div>
+
+                    {{-- Footer Step 1 --}}
+                    <div class="flex items-center justify-between gap-3 px-6 py-4 border-t border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50">
+                        <button type="button" @click="showCreateModal = false; createStep = 1"
+                            class="px-4 py-2 text-xs font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition">
+                            Batal
+                        </button>
+                        <button type="button"
+                            @click="
+                                if (!createData.job_applications_id) { alert('Pilih kandidat terlebih dahulu.'); return; }
+                                if (!createData.interview_date) { alert('Isi waktu wawancara terlebih dahulu.'); return; }
+                                if (!createData.location) { alert('Isi lokasi / ruangan terlebih dahulu.'); return; }
+                                createStep = 2;
+                            "
+                            class="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md shadow-indigo-600/20 transition">
+                            Lanjutkan
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
-            </div>
+                {{-- ===========================
+                     STEP 2 — KONFIRMASI & EMAIL
+                     =========================== --}}
+                <div x-show="createStep === 2" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+                    <div class="px-6 py-5 space-y-4">
+
+                        {{-- Ringkasan Jadwal --}}
+                        <div class="rounded-2xl border border-gray-100 dark:border-slate-800 overflow-hidden">
+                            <div class="px-4 py-3 bg-gray-50 dark:bg-slate-800/60 border-b border-gray-100 dark:border-slate-800">
+                                <p class="text-xs font-bold text-gray-700 dark:text-slate-300">Ringkasan Jadwal Wawancara</p>
+                            </div>
+                            <div class="divide-y divide-gray-50 dark:divide-slate-800/60">
+                                {{-- Kandidat --}}
+                                <div class="px-4 py-3 flex items-center gap-3">
+                                    <div class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-500 flex items-center justify-center shrink-0">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Kandidat</p>
+                                        <p class="text-xs font-bold text-gray-800 dark:text-white truncate" x-text="selectedCandidate ? selectedCandidate.name : '—'"></p>
+                                        <p class="text-[11px] text-indigo-500 dark:text-indigo-400 truncate" x-text="selectedCandidate ? (selectedCandidate.job_title + (selectedCandidate.company ? ' • ' + selectedCandidate.company : '')) : ''"></p>
+                                    </div>
+                                </div>
+                                {{-- Waktu --}}
+                                <div class="px-4 py-3 flex items-center gap-3">
+                                    <div class="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center shrink-0">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Waktu</p>
+                                        <p class="text-xs font-bold text-gray-800 dark:text-white"
+                                           x-text="createData.interview_date ? new Date(createData.interview_date).toLocaleString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'}) + ' WIB' : '—'"></p>
+                                    </div>
+                                </div>
+                                {{-- Metode & Lokasi --}}
+                                <div class="px-4 py-3 flex items-center gap-3">
+                                    <div class="w-7 h-7 rounded-lg shrink-0 flex items-center justify-center"
+                                         :class="createData.interview_type === 'online' ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-500' : 'bg-purple-50 dark:bg-purple-950/40 text-purple-500'">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  x-bind:d="createData.interview_type === 'online' ? 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' : 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z'" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] text-gray-400 uppercase tracking-wide font-semibold" x-text="createData.interview_type === 'online' ? 'Online' : 'Tatap Muka (Offline)'"></p>
+                                        <p class="text-xs font-bold text-gray-800 dark:text-white" x-text="createData.location || '—'"></p>
+                                        <p class="text-[11px] text-blue-500 dark:text-blue-400 truncate" x-show="createData.meeting_link" x-text="createData.meeting_link"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Status Otomatis Badge --}}
+                        <div class="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60">
+                            <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p class="text-xs text-emerald-700 dark:text-emerald-300">
+                                Status kandidat akan otomatis berubah ke <strong>Wawancara (Interview)</strong>.
+                            </p>
+                        </div>
+
+                        {{-- Checkbox Email --}}
+                        <label class="flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
+                               :class="createData.sendEmail ? 'border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/30' : 'border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50'">
+                            <div class="relative shrink-0 mt-0.5">
+                                <input type="checkbox" x-model="createData.sendEmail" class="sr-only peer"
+                                       @change="document.getElementById('create_send_email_val').value = createData.sendEmail ? '1' : '0'">
+                                <div class="w-4.5 h-4.5 w-[18px] h-[18px] rounded flex items-center justify-center border-2 transition-all"
+                                     :class="createData.sendEmail ? 'bg-indigo-600 border-indigo-600' : 'bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600'">
+                                    <svg x-show="createData.sendEmail" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    <p class="text-xs font-semibold text-gray-800 dark:text-white">Kirim Email Undangan ke Kandidat</p>
+                                </div>
+                                <p class="text-[11px] text-gray-400 dark:text-slate-500 mt-1 leading-relaxed">
+                                    Kandidat akan menerima email resmi berisi detail jadwal wawancara, lokasi, dan catatan tambahan.
+                                </p>
+                                <p class="text-[11px] font-medium mt-1.5"
+                                   :class="createData.sendEmail ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400'"
+                                   x-text="createData.sendEmail ? 'Email akan dikirim ke: ' + (selectedCandidate ? selectedCandidate.email : '—') : 'Email tidak dikirim'">
+                                </p>
+                            </div>
+                        </label>
+
+                    </div>
+
+                    {{-- Footer Step 2 --}}
+                    <div class="flex items-center justify-between gap-3 px-6 py-4 border-t border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50">
+                        <button type="button" @click="createStep = 1"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                            </svg>
+                            Kembali
+                        </button>
+                        <button type="submit" form="form-create-interview"
+                            class="inline-flex items-center gap-2 px-6 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 dark:bg-[#93F514] dark:text-black dark:hover:bg-[#82dc12] rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Simpan &amp; Jadwalkan
+                        </button>
+                    </div>
+                </div>
+
+            </form>
         </div>
     </div>
 

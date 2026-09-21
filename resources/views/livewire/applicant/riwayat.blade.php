@@ -235,14 +235,15 @@
                     default => 'Lamaran Diajukan (Submitted)',
                 };
 
-                // Determine step stage index (1: Submitted, 2: Lolos Berkas (Reviewed) / Ikut Tes, 3: Lolos Ujian (Shortlisted), 4: Wawancara, 5: Keputusan Akhir)
+                // Determine step stage index
+                // 1: Submitted, 2: Lolos Berkas (Reviewed), 3: Tes Online (Reviewed = ikut tes),
+                // 4: Shortlisted / Lolos Tes / Siap Wawancara, 5: Interview, 6: Keputusan Akhir
                 $stepStage = 1;
-                $hasCompletedTest = $app->testAttempts && $app->testAttempts->where('status', 'passed')->isNotEmpty();
 
                 if (in_array(strtolower($status), ['reviewed'])) {
                     $stepStage = 2;
                 } elseif (in_array(strtolower($status), ['shortlisted'])) {
-                    $stepStage = 3;
+                    $stepStage = 4; // Tes sudah selesai, kini menunggu wawancara
                 } elseif (in_array(strtolower($status), ['interview'])) {
                     $stepStage = 4;
                 } elseif (in_array(strtolower($status), ['accepted', 'rejected'])) {
@@ -257,9 +258,9 @@
                         <!-- Company Logo / Initials -->
                         @if ($app->job && $app->job->company && $app->job->company->logo)
                             <img src="{{ \Illuminate\Support\Str::startsWith($app->job->company->logo, ['http://', 'https://']) ? $app->job->company->logo : asset('storage/' . $app->job->company->logo) }}" alt="{{ $app->job->company->name }}"
-                                class="w-12 h-12 rounded-xl object-contain bg-slate-50 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] p-1 shrink-0">
+                                class="w-12 h-12 rounded-xl object-contain bg-white border border-slate-200 dark:border-slate-700 p-1.5 shrink-0 shadow-xs">
                         @else
-                            <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] flex items-center justify-center text-blue-600 dark:text-[#93F514] font-bold text-base shadow-xs shrink-0">
+                            <div class="w-12 h-12 rounded-xl bg-white border border-slate-200 dark:border-slate-700 flex items-center justify-center text-blue-600 dark:text-blue-600 font-bold text-base shadow-xs shrink-0">
                                 {{ strtoupper(substr($app->job->company->name ?? ($app->job->title ?? 'J'), 0, 2)) }}
                             </div>
                         @endif
@@ -326,6 +327,9 @@
                         
                         <!-- Active Progress Line -->
                         @php
+                            // Progress bar: step1=0%, step2=25%, step3=50%, step4=75%, step5=100%
+                            // Namun karena stepStage 3 tidak digunakan lagi (shortlisted langsung ke 4),
+                            // mapping: 1->0%, 2->25%, 4->75%, 5->100%
                             $progressWidths = [1 => '0%', 2 => '25%', 3 => '50%', 4 => '75%', 5 => '100%'];
                             $activeWidth = $progressWidths[$stepStage] ?? '0%';
                         @endphp
@@ -353,7 +357,7 @@
 
                         <!-- Step 3: Tes Online -->
                         <div class="relative z-10 flex flex-col items-center group">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-sm {{ $stepStage >= 3 ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black ring-4 ring-emerald-100 dark:ring-[#93F514]/20 animate-pulse' : 'bg-slate-200 dark:bg-[#0D1527] border border-slate-300 dark:border-[#1D2E54] text-slate-500 dark:text-[#93A5C9]' }}">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-sm {{ $stepStage >= 3 ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black ring-4 ring-emerald-100 dark:ring-[#93F514]/20' : 'bg-slate-200 dark:bg-[#0D1527] border border-slate-300 dark:border-[#1D2E54] text-slate-500 dark:text-[#93A5C9]' }}">
                                 {{ $stepStage > 3 ? '✓' : '3' }}
                             </div>
                             <span class="text-[11px] font-bold mt-1.5 whitespace-nowrap {{ $stepStage >= 3 ? 'text-emerald-600 dark:text-[#93F514]' : 'text-slate-400 dark:text-[#93A5C9]' }}">
@@ -363,7 +367,10 @@
 
                         <!-- Step 4: Wawancara -->
                         <div class="relative z-10 flex flex-col items-center group">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-sm {{ $stepStage >= 4 ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black ring-4 ring-emerald-100 dark:ring-[#93F514]/20' : 'bg-slate-200 dark:bg-[#0D1527] border border-slate-300 dark:border-[#1D2E54] text-slate-500 dark:text-[#93A5C9]' }}">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-sm
+                                {{ $stepStage >= 4
+                                    ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black ring-4 ring-emerald-100 dark:ring-[#93F514]/20' . ($stepStage === 4 ? ' animate-pulse' : '')
+                                    : 'bg-slate-200 dark:bg-[#0D1527] border border-slate-300 dark:border-[#1D2E54] text-slate-500 dark:text-[#93A5C9]' }}">
                                 {{ $stepStage > 4 ? '✓' : '4' }}
                             </div>
                             <span class="text-[11px] font-bold mt-1.5 whitespace-nowrap {{ $stepStage >= 4 ? 'text-emerald-600 dark:text-[#93F514]' : 'text-slate-400 dark:text-[#93A5C9]' }}">
@@ -537,9 +544,9 @@
                         <div class="flex items-center gap-3">
                             @if ($selectedApplication->job && $selectedApplication->job->company && $selectedApplication->job->company->logo)
                                 <img src="{{ \Illuminate\Support\Str::startsWith($selectedApplication->job->company->logo, ['http://', 'https://']) ? $selectedApplication->job->company->logo : asset('storage/' . $selectedApplication->job->company->logo) }}" alt="{{ $selectedApplication->job->company->name }}"
-                                    class="w-10 h-10 rounded-xl object-contain bg-white dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] p-1 shrink-0">
+                                    class="w-10 h-10 rounded-xl object-contain bg-white border border-slate-200 dark:border-slate-700 p-1 shrink-0 shadow-xs">
                             @else
-                                <div class="w-10 h-10 rounded-xl bg-blue-600 dark:bg-[#93F514] text-white dark:text-black flex items-center justify-center font-bold text-sm shrink-0">
+                                <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 dark:border-slate-700 text-blue-600 font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
                                     {{ strtoupper(substr($selectedApplication->job->company->name ?? 'J', 0, 2)) }}
                                 </div>
                             @endif

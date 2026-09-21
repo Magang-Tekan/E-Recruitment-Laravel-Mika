@@ -34,7 +34,8 @@
         if (!path) return 'Lampiran File';
         return path.split('/').pop();
     }
-}" x-init="if ('{{ $testState }}' === 'taking') { startTimer(); }">
+}" x-init="if ('{{ $testState }}' === 'taking') { startTimer(); initCopyProtection(); }"
+    x-on:livewire:navigated.window="if ('{{ $testState }}' === 'taking') { initCopyProtection(); }">
 
     <!-- Header Breadcrumb & Title -->
     <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -184,7 +185,7 @@
             <!-- Left Side: Lembar Soal & Jawaban (3 Cols) -->
             <div class="lg:col-span-3 space-y-6">
                 @if ($currentQuestion)
-                    <div class="bg-white dark:bg-[#0D1527] rounded-3xl border border-slate-200/80 dark:border-[#1D2E54] shadow-sm p-6 sm:p-8 space-y-6">
+                    <div id="soal-area" class="bg-white dark:bg-[#0D1527] rounded-3xl border border-slate-200/80 dark:border-[#1D2E54] shadow-sm p-6 sm:p-8 space-y-6">
                         <!-- Question Header -->
                         <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-[#1D2E54]">
                             <div class="flex items-center gap-2">
@@ -244,7 +245,7 @@
                         @endif
 
                         <!-- Pertanyaan Teks -->
-                        <div class="text-sm sm:text-base font-medium text-slate-900 dark:text-white whitespace-pre-line leading-relaxed">
+                        <div class="soal-teks text-sm sm:text-base font-medium text-slate-900 dark:text-white whitespace-pre-line leading-relaxed select-none">
                             {{ $currentQuestion['question'] }}
                         </div>
 
@@ -254,7 +255,7 @@
                                 $labels = ['A', 'B', 'C', 'D', 'E'];
                                 $selectedOpt = $answers[$currentQuestion['id']] ?? null;
                             @endphp
-                            <div class="space-y-3 pt-2"
+                            <div class="space-y-3 pt-2 soal-opsi"
                                  wire:key="mc-box-{{ $currentQuestion['id'] }}"
                                  wire:ignore
                                  x-data="{ selected: {{ $selectedOpt ?? 'null' }} }">
@@ -864,5 +865,187 @@
             </div>
         </div>
     @endif
+
+    {{-- ==========================================
+         PROTEKSI ANTI-COPY SOAL UJIAN
+         Mencegah user menyalin teks soal dan opsi
+         ========================================== --}}
+    <style>
+    /* Nonaktifkan seleksi teks pada area soal dan opsi pilihan ganda */
+    #soal-area .soal-teks,
+    #soal-area .soal-opsi,
+    #soal-area .soal-opsi label,
+    #soal-area .soal-opsi span {
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+        user-select: none !important;
+    }
+
+    /* Nonaktifkan drag teks pada area soal */
+    #soal-area .soal-teks,
+    #soal-area .soal-opsi {
+        -webkit-user-drag: none;
+        pointer-events: auto;
+    }
+
+    /* Hilangkan highlight seleksi */
+    #soal-area .soal-teks::selection,
+    #soal-area .soal-opsi *::selection {
+        background: transparent !important;
+    }
+    #soal-area .soal-teks::-moz-selection,
+    #soal-area .soal-opsi *::-moz-selection {
+        background: transparent !important;
+    }
+</style>
+
+<script>
+    function initCopyProtection() {
+        // Fungsi handler untuk mencegah copy
+        function blockCopy(e) {
+            const soalArea = document.getElementById('soal-area');
+            if (!soalArea) return;
+
+            // Cek apakah target event berada di dalam soal-area
+            let target = e.target;
+            let isInsideSoal = soalArea.contains(target);
+
+            // Untuk event contextmenu & copy: cek juga selected text
+            if (!isInsideSoal) {
+                const sel = window.getSelection();
+                if (sel && sel.rangeCount > 0) {
+                    const range = sel.getRangeAt(0);
+                    const ancestor = range.commonAncestorContainer;
+                    isInsideSoal = soalArea.contains(
+                        ancestor.nodeType === 3 ? ancestor.parentElement : ancestor
+                    );
+                }
+            }
+
+            if (isInsideSoal) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Tampilkan notifikasi kecil
+                showCopyBlockedToast();
+                return false;
+            }
+        }
+
+        // Hapus listener lama jika ada (hindari duplikasi)
+        document.removeEventListener('copy', window._blockCopyHandler, true);
+        document.removeEventListener('cut', window._blockCopyHandler, true);
+        document.removeEventListener('contextmenu', window._blockContextHandler, true);
+        document.removeEventListener('keydown', window._blockKeyHandler, true);
+
+        // Handler keydown untuk Ctrl+C, Ctrl+A pada area soal
+        function blockKey(e) {
+            const soalArea = document.getElementById('soal-area');
+            if (!soalArea) return;
+            const isCopy = (e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C');
+            const isSelectAll = (e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A');
+            const isCut = (e.ctrlKey || e.metaKey) && (e.key === 'x' || e.key === 'X');
+
+            if (isCopy || isSelectAll || isCut) {
+                const sel = window.getSelection();
+                if (sel && sel.rangeCount > 0) {
+                    const range = sel.getRangeAt(0);
+                    const ancestor = range.commonAncestorContainer;
+                    const el = ancestor.nodeType === 3 ? ancestor.parentElement : ancestor;
+                    if (soalArea.contains(el)) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        showCopyBlockedToast();
+                        // Hapus seleksi
+                        window.getSelection().removeAllRanges();
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // Simpan reference untuk bisa dihapus nanti
+        window._blockCopyHandler = blockCopy;
+        window._blockContextHandler = blockCopy;
+        window._blockKeyHandler = blockKey;
+
+        // Pasang listener (capture phase agar lebih awal)
+        document.addEventListener('copy', blockCopy, true);
+        document.addEventListener('cut', blockCopy, true);
+        document.addEventListener('contextmenu', blockCopy, true);
+        document.addEventListener('keydown', blockKey, true);
+    }
+
+    // Toast notifikasi saat copy diblokir
+    let _copyToastTimeout = null;
+    function showCopyBlockedToast() {
+        let toast = document.getElementById('copy-blocked-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'copy-blocked-toast';
+            toast.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+                <span>Penyalinan soal tidak diperbolehkan.</span>
+            `;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 24px;
+                left: 50%;
+                transform: translateX(-50%) translateY(80px);
+                background: #1e293b;
+                color: #f1f5f9;
+                padding: 10px 18px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+                z-index: 99999;
+                transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s ease;
+                opacity: 0;
+                border: 1px solid rgba(255,255,255,0.08);
+                white-space: nowrap;
+            `;
+            document.body.appendChild(toast);
+        }
+
+        // Tampilkan
+        clearTimeout(_copyToastTimeout);
+        requestAnimationFrame(() => {
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+            toast.style.opacity = '1';
+        });
+
+        // Sembunyikan setelah 2 detik
+        _copyToastTimeout = setTimeout(() => {
+            toast.style.transform = 'translateX(-50%) translateY(80px)';
+            toast.style.opacity = '0';
+        }, 2000);
+    }
+
+    // Jalankan saat halaman pertama load jika state adalah 'taking'
+    document.addEventListener('DOMContentLoaded', function() {
+        @if ($testState === 'taking')
+            initCopyProtection();
+        @endif
+    });
+
+    // Re-init setiap kali Livewire me-render ulang (navigasi soal)
+    document.addEventListener('livewire:load', function() {
+        @if ($testState === 'taking')
+            initCopyProtection();
+        @endif
+    });
+    document.addEventListener('livewire:update', function() {
+        @if ($testState === 'taking')
+            initCopyProtection();
+        @endif
+    });
+</script>
 
 </div>
