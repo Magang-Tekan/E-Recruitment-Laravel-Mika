@@ -855,6 +855,33 @@
                 Anda dapat memantau perkembangan nilai dan tahapan seleksi selanjutnya pada menu <strong>Riwayat Lamaran</strong>.
             </p>
 
+            {{-- Banner: Test Berikutnya Tersedia (Sequential Auto-Unlock) --}}
+            @if ($nextTest)
+                <div class="mt-4 p-4 rounded-2xl bg-blue-50 dark:bg-[#0D1527] border border-blue-200 dark:border-[#1D2E54] border-l-4 border-l-blue-600 dark:border-l-[#93F514] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-start gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-blue-600 dark:bg-[#93F514] text-white dark:text-black flex items-center justify-center shrink-0 shadow-xs">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-900 dark:text-white">Tes Berikutnya Sudah Terbuka!</p>
+                            <p class="text-xs text-slate-600 dark:text-[#93A5C9] mt-0.5">
+                                <span class="font-semibold text-blue-600 dark:text-[#93F514]">{{ $nextTest->title }}</span>
+                                &mdash; {{ $nextTest->category->name ?? 'Tes Online' }} &bull; {{ $nextTest->duration_minutes }} menit
+                            </p>
+                        </div>
+                    </div>
+                    <a href="{{ route('applicant.test', ['applicationId' => $application->id, 'testId' => $nextTest->id]) }}"
+                        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 dark:bg-[#93F514] dark:hover:bg-[#82dc12] text-white dark:text-black rounded-xl text-xs font-bold shadow-xs transition shrink-0">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                        <span>Mulai Tes Berikutnya</span>
+                    </a>
+                </div>
+            @endif
+
             <div class="pt-4">
                 <a href="{{ route('profile', ['tab' => 'riwayat']) }}" class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -864,6 +891,7 @@
                 </a>
             </div>
         </div>
+
     @endif
 
     {{-- ==========================================

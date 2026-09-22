@@ -11,6 +11,7 @@ use App\Models\TestAnswer;
 use App\Models\QuestionBank;
 use App\Models\DiscTestResult;
 use App\Services\DiscCalculatorService;
+use App\Services\TestSequenceService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -22,13 +23,17 @@ class ApplicantOnlineTest extends Component
     public $applicationId;
     public $testId;
     public $attemptId;
-    
+
     // State: 'intro', 'taking', 'completed'
     public $testState = 'intro';
 
     public $application;
     public $test;
     public $attempt;
+
+    // Sequential test support
+    public $allTests = [];    // Semua test dalam lowongan (ordered)
+    public $nextTest = null;  // Test berikutnya setelah test ini selesai
 
     public $questions = [];
     public $currentQuestionIndex = 0;
@@ -80,6 +85,13 @@ class ApplicantOnlineTest extends Component
 
         if (!$this->test) {
             abort(404, 'Paket ujian untuk lowongan ini tidak ditemukan.');
+        }
+
+        // VALIDASI GERBANG SEQUENTIAL:
+        // Pastikan test sebelumnya sudah diselesaikan sebelum mengakses test ini
+        if (!TestSequenceService::canAccessTest($this->application, $this->test)) {
+            session()->flash('error', 'Tes ini belum dapat diakses. Selesaikan tes sebelumnya terlebih dahulu.');
+            return redirect()->route('profile', ['tab' => 'riwayat']);
         }
 
         // Cek apakah pelamar memiliki riwayat pengerjaan sebelumnya
@@ -654,6 +666,21 @@ class ApplicantOnlineTest extends Component
         $completedCount = max(0, $totalQuestions - $unansweredCount);
         $progressPercent = $totalQuestions > 0 ? round(($completedCount / $totalQuestions) * 100) : 0;
 
+        // Sequential test: hitung progress semua test dalam lowongan & test berikutnya
+        $testProgress = [];
+        $nextTest = null;
+        if ($this->application && $this->application->job) {
+            // Reload application dengan testAttempts terbaru
+            $freshApplication = \App\Models\JobApplication::with(['testAttempts', 'job'])
+                ->find($this->application->id);
+            if ($freshApplication) {
+                $testProgress = TestSequenceService::buildTestProgress($freshApplication);
+                if ($this->test && $this->testState === 'completed') {
+                    $nextTest = TestSequenceService::getNextTest($freshApplication, $this->test);
+                }
+            }
+        }
+
         return view('livewire.applicant.online-test', [
             'application'          => $this->application,
             'test'                 => $this->test,
@@ -667,6 +694,8 @@ class ApplicantOnlineTest extends Component
             'progressPercent'      => $progressPercent,
             'timeRemainingSeconds' => $this->timeRemainingSeconds,
             'testState'            => $this->testState,
+            'testProgress'         => $testProgress,
+            'nextTest'             => $nextTest,
         ])->layout('layouts.app');
     }
 }

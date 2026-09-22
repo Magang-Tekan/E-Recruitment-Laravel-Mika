@@ -891,12 +891,8 @@
                         <button @click="activeStep = step.num" type="button"
                             class="group relative text-left p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer overflow-hidden"
                             :class="activeStep === step.num ? 
-                                'bg-white dark:bg-white/[0.08] border-[#93F514] dark:border-[#93F514]/70 shadow-lg shadow-gray-200/80 dark:shadow-black/60 ring-2 ring-[#93F514]/20' : 
+                                'bg-white dark:bg-white/[0.08] border-[#3b8004] dark:border-[#93F514] shadow-sm' : 
                                 'bg-white dark:bg-white/[0.02] hover:bg-gray-50 dark:hover:bg-white/[0.05] border-gray-200 dark:border-white/[0.06] hover:border-gray-300 dark:hover:border-white/15 shadow-sm dark:shadow-none'">
-                            <!-- Top subtle highlight when active -->
-                            <div x-show="activeStep === step.num" 
-                                class="absolute top-0 left-0 right-0 h-[2.5px] bg-[#93F514]">
-                            </div>
                             
                             <div class="flex items-center justify-between mb-1.5">
                                 <span class="text-xs font-extrabold tracking-wider transition-colors"
@@ -918,8 +914,6 @@
 
             <!-- Active Stage Detail Display Canvas -->
             <div class="relative rounded-3xl bg-white dark:bg-gradient-to-b dark:from-[#0a120a] dark:via-[#050905] dark:to-[#040604] border border-gray-200/90 dark:border-white/[0.08] p-6 sm:p-10 lg:p-12 shadow-xl shadow-gray-200/60 dark:shadow-2xl dark:shadow-black/80 overflow-hidden">
-                <!-- Subtle directional glow (dark mode) -->
-                <div class="absolute -top-32 right-1/4 w-[500px] h-[250px] bg-[#93F514]/[0.05] blur-[120px] rounded-full pointer-events-none hidden dark:block"></div>
 
                 <!-- ================= Step 1: Registrasi Pengguna ================= -->
                 <div x-show="activeStep === 1" x-transition:enter="transition ease-out duration-300"

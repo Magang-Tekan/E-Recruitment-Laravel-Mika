@@ -3,6 +3,7 @@
 namespace App\Livewire\Applicant;
 
 use App\Models\JobApplication;
+use App\Services\TestSequenceService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -102,6 +103,15 @@ class Riwayat extends Component
 
             $applications = $query->orderBy('applied_at', 'desc')->get();
 
+            // Bangun test progress map: application_id => array of test progress
+            $testProgressMap = [];
+            foreach ($applications as $appItem) {
+                if ($appItem->job && $appItem->job->tests && $appItem->job->tests->count() > 1) {
+                    // Hanya hitung jika ada lebih dari 1 test (untuk efisiensi)
+                    $testProgressMap[$appItem->id] = TestSequenceService::buildTestProgress($appItem);
+                }
+            }
+
             // Ambil jadwal wawancara aktif / mendatang untuk notifikasi pelamar
             $upcomingInterviews = \App\Models\InterviewSchedule::with([
                 'jobApplication.job.company',
@@ -130,10 +140,11 @@ class Riwayat extends Component
         }
 
         return view('livewire.applicant.riwayat', [
-            'applications' => $applications,
+            'applications'      => $applications,
             'selectedApplication' => $selectedApplication,
             'upcomingInterviews' => $upcomingInterviews ?? collect(),
-            'stats' => $stats,
+            'stats'             => $stats,
+            'testProgressMap'   => $testProgressMap ?? [],
         ]);
     }
 }

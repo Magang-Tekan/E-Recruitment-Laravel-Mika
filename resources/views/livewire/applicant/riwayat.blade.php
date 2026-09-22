@@ -459,35 +459,103 @@
 
                     <div class="flex items-center gap-2 shrink-0">
                         @php
-                            $availableTest = $app->job && $app->job->tests ? $app->job->tests->first() : null;
-                            $latestAttempt = $app->testAttempts ? $app->testAttempts->where('test_id', $availableTest?->id)->last() : null;
+                            $appTestProgress = $testProgressMap[$app->id] ?? null;
+                            $singleTest      = $app->job && $app->job->tests ? $app->job->tests->first() : null;
+                            $latestSingleAttempt = $singleTest
+                                ? ($app->testAttempts ? $app->testAttempts->where('test_id', $singleTest->id)->sortByDesc('id')->first() : null)
+                                : null;
                             $canTakeTest = in_array(strtolower($status), ['reviewed', 'shortlisted', 'interview', 'accepted']);
                         @endphp
 
-                        @if ($availableTest && !in_array(strtolower($status), ['rejected']))
-                            @if ($latestAttempt && $latestAttempt->status !== 'in_progress')
-                                @php
-                                    $isTestDisc = str_contains(strtolower($availableTest->category?->name ?? ''), 'disc');
-                                @endphp
-                                <!-- Sudah Mengerjakan Tes -->
-                                <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $availableTest->id]) }}"
+                        {{-- CASE A: Multiple tests → tampilkan stepper --}}
+                        @if ($appTestProgress && count($appTestProgress) > 1)
+                            @if (!in_array(strtolower($status), ['rejected']))
+                                <div class="w-full mt-1">
+                                    <p class="text-[10px] font-bold uppercase text-slate-400 dark:text-[#93A5C9] mb-2 tracking-wider">Tahapan Tes Online</p>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        @foreach ($appTestProgress as $idx => $step)
+                                            @php
+                                                $isTestDisc = str_contains(strtolower($step['test']->category?->name ?? ''), 'disc');
+                                                $testLabel  = $step['test']->title;
+                                            @endphp
+
+                                            {{-- Connector line between steps --}}
+                                            @if ($idx > 0)
+                                                <div class="flex-1 h-px bg-slate-200 dark:bg-[#1D2E54] min-w-[12px] max-w-[24px]"></div>
+                                            @endif
+
+                                            {{-- Step item --}}
+                                            @if ($step['status'] === 'completed')
+                                                <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $step['test']->id]) }}"
+                                                    title="{{ $testLabel }} — Selesai"
+                                                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-[#93F514] text-[10px] font-bold whitespace-nowrap transition hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shrink-0">
+                                                    <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                    <span class="max-w-[80px] truncate">{{ $testLabel }}</span>
+                                                </a>
+                                            @elseif ($step['status'] === 'in_progress')
+                                                <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $step['test']->id]) }}"
+                                                    title="{{ $testLabel }} — Sedang dikerjakan"
+                                                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-600 dark:bg-blue-700 border border-blue-700 dark:border-blue-600 text-white text-[10px] font-bold whitespace-nowrap transition hover:bg-blue-700 shrink-0 animate-pulse">
+                                                    <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                    <span class="max-w-[80px] truncate">{{ $testLabel }}</span>
+                                                </a>
+                                            @elseif ($step['status'] === 'unlocked' && $canTakeTest)
+                                                <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $step['test']->id]) }}"
+                                                    title="{{ $testLabel }} — Kerjakan sekarang"
+                                                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-600 dark:bg-[#93F514] border border-emerald-700 dark:border-[#93F514] text-white dark:text-black text-[10px] font-bold whitespace-nowrap transition hover:bg-emerald-500 dark:hover:bg-[#82dc12] shrink-0">
+                                                    <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <span class="max-w-[80px] truncate">{{ $testLabel }}</span>
+                                                </a>
+                                            @elseif ($step['status'] === 'unlocked' && !$canTakeTest)
+                                                <div title="{{ $testLabel }} — Menunggu seleksi berkas"
+                                                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-600 dark:text-amber-300 text-[10px] font-bold whitespace-nowrap shrink-0">
+                                                    <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <span class="max-w-[80px] truncate">{{ $testLabel }}</span>
+                                                </div>
+                                            @else
+                                                {{-- Locked --}}
+                                                <div title="{{ $testLabel }} — Selesaikan tes sebelumnya terlebih dahulu"
+                                                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-400 dark:text-[#93A5C9] text-[10px] font-bold whitespace-nowrap shrink-0 cursor-not-allowed opacity-70">
+                                                    <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                    </svg>
+                                                    <span class="max-w-[80px] truncate">{{ $testLabel }}</span>
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                        {{-- CASE B: Single test → tombol seperti semula --}}
+                        @elseif ($singleTest && !in_array(strtolower($status), ['rejected']))
+                            @if ($latestSingleAttempt && $latestSingleAttempt->status !== 'in_progress')
+                                @php $isTestDisc = str_contains(strtolower($singleTest->category?->name ?? ''), 'disc'); @endphp
+                                <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $singleTest->id]) }}"
                                     class="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-[#93F514] text-xs font-semibold rounded-xl transition">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <span>{{ $isTestDisc ? 'Lihat Status Tes' : 'Lihat Hasil Tes' }}</span>
                                 </a>
-                            @elseif ($canTakeTest || ($latestAttempt && $latestAttempt->status === 'in_progress'))
-                                <!-- Sudah Lolos Berkas / Diizinkan Ikut Tes -->
-                                <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $availableTest->id]) }}"
+                            @elseif ($canTakeTest || ($latestSingleAttempt && $latestSingleAttempt->status === 'in_progress'))
+                                <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $singleTest->id]) }}"
                                     class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-xs rounded-xl shadow-xs transition">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
-                                    <span>{{ $latestAttempt ? 'Lanjutkan Ujian' : 'Mulai Ujian Online' }}</span>
+                                    <span>{{ $latestSingleAttempt ? 'Lanjutkan Ujian' : 'Mulai Ujian Online' }}</span>
                                 </a>
                             @else
-                                <!-- Masih tahap awal Submitted (Belum Lolos Berkas) -->
                                 <div class="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 text-xs font-medium rounded-xl" title="Ujian online akan terbuka setelah berkas lamaran Anda selesai diverifikasi & disetujui tim HR.">
                                     <svg class="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -496,6 +564,7 @@
                                 </div>
                             @endif
                         @endif
+
 
                         <button wire:click="openDetail({{ $app->id }})"
                             class="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-slate-200/80 dark:border-[#1D2E54] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#14203A] text-xs font-semibold rounded-xl transition shadow-2xs">
