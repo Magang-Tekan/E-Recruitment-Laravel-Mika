@@ -217,8 +217,20 @@ class InterviewScheduleTable extends Component
             $query->where('users_id', $this->interviewerFilter);
         }
 
-        // Sorting
-        $schedules = $query->orderBy($this->sortField, $this->sortDirection)->paginate($this->perPage);
+        // Sorting: Jadwal mendatang (upcoming) paling atas secara default
+        if ($this->sortField === 'interview_date') {
+            if ($this->sortDirection === 'asc') {
+                // Mendatang paling atas (diurutkan dari waktu terdekat), lalu jadwal yang sudah lewat (terbaru dulu)
+                $schedules = $query->orderByRaw('CASE WHEN interview_date >= ? THEN 0 ELSE 1 END ASC', [$now])
+                                   ->orderByRaw('CASE WHEN interview_date >= ? THEN interview_date END ASC', [$now])
+                                   ->orderBy('interview_date', 'desc')
+                                   ->paginate($this->perPage);
+            } else {
+                $schedules = $query->orderBy('interview_date', 'desc')->paginate($this->perPage);
+            }
+        } else {
+            $schedules = $query->orderBy($this->sortField, $this->sortDirection)->paginate($this->perPage);
+        }
 
         // Data for Modal Form Selection (Hanya status Interview & Shortlisted)
         $activeApplications = JobApplication::with(['applicantProfile.user', 'job.company'])

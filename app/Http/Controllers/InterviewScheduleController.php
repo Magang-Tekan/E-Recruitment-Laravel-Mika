@@ -34,6 +34,7 @@ class InterviewScheduleController extends Controller
             'meeting_link'        => 'nullable|string|max:500',
             'status'              => 'nullable|string|in:Scheduled,Completed,Rescheduled,Cancelled,No Show',
             'notes'               => 'nullable|string|max:1000',
+            'send_email'          => 'nullable|in:0,1',
         ]);
 
         $type = $request->input('interview_type');
@@ -62,30 +63,54 @@ class InterviewScheduleController extends Controller
                 'status'              => $request->input('status', 'Scheduled'),
             ]);
 
-            // Update status lamaran ke 'Interview' jika belum
-            $application = JobApplication::find($request->job_applications_id);
+            // Status lamaran otomatis → Interview
+            $application   = JobApplication::find($request->job_applications_id);
+            $sendEmail      = $request->input('send_email', '0') === '1';
+            $targetStatus   = 'Interview';
+
             if ($application) {
                 $prevStatus = $application->status;
+
+                // Update status ke Interview jika belum
                 if (!in_array($prevStatus, ['Interview', 'Accepted'])) {
                     $application->update([
-                        'status' => 'Interview',
+                        'status' => $targetStatus,
                         'notes'  => $request->notes ?? $application->notes,
                     ]);
 
                     ApplicationStatusHistory::create([
                         'job_applications_id' => $application->id,
-                        'status'              => 'Interview',
+                        'status'              => $targetStatus,
                         'notes'               => 'Dijadwalkan wawancara (' . ucfirst($type) . ') pada ' . \Carbon\Carbon::parse($request->interview_date)->translatedFormat('d M Y H:i') . ' WIB. ' . ($request->notes ? 'Catatan: ' . $request->notes : ''),
                         'changed_by'          => auth()->id() ?? $request->users_id,
                         'changed_at'          => now(),
                     ]);
                 }
+
+                // Kirim email notifikasi jika diminta
+                if ($sendEmail) {
+                    try {
+                        $application->load(['job.company', 'applicantProfile.user']);
+                        $email = $application->applicantProfile?->user?->email;
+                        if ($email) {
+                            \Illuminate\Support\Facades\Mail::to($email)
+                                ->send(new \App\Mail\ApplicationStatusUpdatedMail(
+                                    $application,
+                                    $targetStatus,
+                                    $request->notes
+                                ));
+                        }
+                    } catch (\Exception $mailEx) {
+                        \Illuminate\Support\Facades\Log::warning('Gagal kirim email notifikasi wawancara: ' . $mailEx->getMessage());
+                    }
+                }
             }
 
             DB::commit();
 
+            $emailNote = $sendEmail ? ' Email notifikasi telah dikirim ke kandidat.' : '';
             return redirect()->route($this->getRedirectRoute())
-                ->with('create', 'Jadwal wawancara (' . ucfirst($type) . ') berhasil dibuat dan dicatat ke sistem.');
+                ->with('create', 'Jadwal wawancara (' . ucfirst($type) . ') berhasil dibuat dan dicatat ke sistem.' . $emailNote);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()

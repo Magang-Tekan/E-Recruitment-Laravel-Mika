@@ -29,8 +29,7 @@
                 <h1
                     class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#EEEEEE] leading-tight sm:leading-none max-w-4xl drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
                     Temukan Karir Impian, <br>
-                    <span
-                        class="text-transparent bg-clip-text bg-gradient-to-r from-[#93F514] via-[#75f06a] to-[#5FE6B6]">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#93F514] via-[#75f06a] to-[#5FE6B6]">
                         Wujudkan Potensi Terbaikmu
                     </span>
                 </h1>
@@ -45,8 +44,12 @@
                 @php
                     $getHomeFilterArr = function ($key) {
                         $val = request($key);
-                        if (is_array($val)) return array_values(array_filter($val, fn($v) => !is_null($v) && $v !== ''));
-                        if (is_string($val) && trim($val) !== '') return array_values(array_filter(explode(',', $val), fn($v) => trim($v) !== ''));
+                        if (is_array($val)) {
+                            return array_values(array_filter($val, fn($v) => !is_null($v) && $v !== ''));
+                        }
+                        if (is_string($val) && trim($val) !== '') {
+                            return array_values(array_filter(explode(',', $val), fn($v) => trim($v) !== ''));
+                        }
                         return [];
                     };
                     $homeSelectedCompanies = $getHomeFilterArr('company_id');
@@ -91,8 +94,7 @@
                             tempSelected: {{ json_encode(array_map('strval', $homeSelectedCompanies ?? [])) }},
                             companiesMap: {
                                 @foreach ($companies as $comp)
-                                    '{{ $comp->id }}': '{{ addslashes($comp->name) }}',
-                                @endforeach
+                                    '{{ $comp->id }}': '{{ addslashes($comp->name) }}', @endforeach
                             },
                             getDisplayText() {
                                 if (!this.selected || this.selected.length === 0) return 'Semua Perusahaan';
@@ -115,7 +117,8 @@
                                 this.selected = [...this.tempSelected];
                                 this.open = false;
                             }
-                        }" @click.outside="open = false">
+                        }"
+                            @click.outside="open = false">
 
                             <template x-for="id in selected" :key="id">
                                 <input type="hidden" name="company_id[]" :value="id">
@@ -183,9 +186,11 @@
                                 </label>
 
                                 <!-- Group Title -->
-                                <div class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                                <div
+                                    class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                                     <span>Pilihan Perusahaan</span>
-                                    <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase" x-text="tempSelected.length + ' dipilih'"></span>
+                                    <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase"
+                                        x-text="tempSelected.length + ' dipilih'"></span>
                                 </div>
 
                                 <!-- 2-Column Grid List items (Compact & Scrollable) -->
@@ -228,8 +233,7 @@
                             tempSelected: {{ json_encode(array_map('strval', $homeSelectedDepartments ?? [])) }},
                             departmentsMap: {
                                 @foreach ($departments as $dept)
-                                    '{{ $dept->id }}': '{{ addslashes($dept->name) }}',
-                                @endforeach
+                                    '{{ $dept->id }}': '{{ addslashes($dept->name) }}', @endforeach
                             },
                             getDisplayText() {
                                 if (!this.selected || this.selected.length === 0) return 'Semua Departemen';
@@ -252,7 +256,8 @@
                                 this.selected = [...this.tempSelected];
                                 this.open = false;
                             }
-                        }" @click.outside="open = false">
+                        }"
+                            @click.outside="open = false">
 
                             <template x-for="id in selected" :key="id">
                                 <input type="hidden" name="department_id[]" :value="id">
@@ -314,15 +319,18 @@
                                 <!-- All Option -->
                                 <label
                                     class="flex items-center gap-3 py-2 px-1 text-xs font-semibold text-gray-700 hover:text-black cursor-pointer border-b border-gray-100">
-                                    <input type="checkbox" :checked="tempSelected.length === 0" @change="tempSelected = []"
+                                    <input type="checkbox" :checked="tempSelected.length === 0"
+                                        @change="tempSelected = []"
                                         class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer">
                                     <span>Semua Departemen</span>
                                 </label>
 
                                 <!-- Group Title -->
-                                <div class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                                <div
+                                    class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                                     <span>Pilihan Departemen</span>
-                                    <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase" x-text="tempSelected.length + ' dipilih'"></span>
+                                    <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase"
+                                        x-text="tempSelected.length + ' dipilih'"></span>
                                 </div>
 
                                 <!-- 2-Column Grid List items (Compact & Scrollable) -->
@@ -385,7 +393,8 @@
                                 this.selected = [...this.tempSelected];
                                 this.open = false;
                             }
-                        }" @click.outside="open = false">
+                        }"
+                            @click.outside="open = false">
 
                             <template x-for="t in selected" :key="t">
                                 <input type="hidden" name="employment_type[]" :value="t">
@@ -447,15 +456,18 @@
                                 <!-- All Option -->
                                 <label
                                     class="flex items-center gap-3 py-2 px-1 text-xs font-semibold text-gray-700 hover:text-black cursor-pointer border-b border-gray-100">
-                                    <input type="checkbox" :checked="tempSelected.length === 0" @change="tempSelected = []"
+                                    <input type="checkbox" :checked="tempSelected.length === 0"
+                                        @change="tempSelected = []"
                                         class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer">
                                     <span>Semua Tipe Pekerjaan</span>
                                 </label>
 
                                 <!-- Group Title -->
-                                <div class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                                <div
+                                    class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                                     <span>Pilihan Tipe Pekerjaan</span>
-                                    <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase" x-text="tempSelected.length + ' dipilih'"></span>
+                                    <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase"
+                                        x-text="tempSelected.length + ' dipilih'"></span>
                                 </div>
 
                                 <!-- 2-Column Grid List items (Compact & Scrollable) -->
@@ -467,8 +479,7 @@
                                             <label
                                                 class="flex items-center gap-2.5 py-1.5 px-1.5 rounded-lg text-xs text-gray-600 hover:text-black hover:bg-gray-50 cursor-pointer transition"
                                                 x-show="!search || type.toLowerCase().includes(search.toLowerCase())">
-                                                <input type="checkbox" :value="type"
-                                                    x-model="tempSelected"
+                                                <input type="checkbox" :value="type" x-model="tempSelected"
                                                     class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer shrink-0">
                                                 <span x-text="type" class="truncate"></span>
                                             </label>
@@ -501,7 +512,10 @@
                                 </svg>
                                 <span class="whitespace-nowrap">Cari Lowongan</span>
                             </button>
-                            @if (request('search') || !empty($homeSelectedCompanies) || !empty($homeSelectedDepartments) || !empty($homeSelectedTypes))
+                            @if (request('search') ||
+                                    !empty($homeSelectedCompanies) ||
+                                    !empty($homeSelectedDepartments) ||
+                                    !empty($homeSelectedTypes))
                                 <a href="{{ route('home') }}" title="Reset Filter"
                                     class="p-2.5 rounded-xl lg:rounded-full bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-500 transition flex items-center justify-center border border-gray-200">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -533,26 +547,22 @@
                 <!-- Quick Stats Summary -->
                 <div
                     class="mt-14 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 w-full max-w-4xl border-t border-[#93F514]/20 pt-8">
-                    <div
-                        class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
+                    <div class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
                         data-delay="100">
                         <div class="text-2xl sm:text-3xl font-black text-[#EEEEEE]">{{ $totalJobsCount ?? 0 }}+</div>
                         <div class="text-xs text-[#93F514] font-semibold mt-1">Lowongan Aktif</div>
                     </div>
-                    <div
-                        class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
+                    <div class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
                         data-delay="200">
                         <div class="text-2xl sm:text-3xl font-black text-[#EEEEEE]">{{ $companiesCount ?? 0 }}+</div>
                         <div class="text-xs text-[#93F514] font-semibold mt-1">Perusahaan Mitra</div>
                     </div>
-                    <div
-                        class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
+                    <div class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
                         data-delay="300">
                         <div class="text-2xl sm:text-3xl font-black text-[#EEEEEE]">{{ $departmentsCount ?? 0 }}+</div>
                         <div class="text-xs text-[#93F514] font-semibold mt-1">Bidang / Departemen</div>
                     </div>
-                    <div
-                        class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
+                    <div class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
                         data-delay="400">
                         <div class="text-2xl sm:text-3xl font-black text-[#EEEEEE]">{{ $totalQuotaCount ?? 0 }}+</div>
                         <div class="text-xs text-[#93F514] font-semibold mt-1">Total Kuota Formasi</div>
@@ -698,117 +708,118 @@
                             x-transition:leave-end="opacity-0 -translate-x-8"
                             class="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
 
-                        <!-- Left Column: Typography & Description -->
-                        <div class="lg:col-span-5 flex flex-col justify-between h-full space-y-6">
-                            <div>
-                                <!-- Tag / Category Header -->
-                                <div
-                                    class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] text-xs font-bold uppercase tracking-wider mb-4">
-                                    {{-- <span class="w-2 h-2 rounded-full bg-[#93F514] animate-pulse"></span> --}}
-                                    <span x-text="slide.tag"></span>
+                            <!-- Left Column: Typography & Description -->
+                            <div class="lg:col-span-5 flex flex-col justify-between h-full space-y-6">
+                                <div>
+                                    <!-- Tag / Category Header -->
+                                    <div
+                                        class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] text-xs font-bold uppercase tracking-wider mb-4">
+                                        {{-- <span class="w-2 h-2 rounded-full bg-[#93F514] animate-pulse"></span> --}}
+                                        <span x-text="slide.tag"></span>
+                                    </div>
+
+                                    <!-- Main Slide Title -->
+                                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#EEEEEE] tracking-tight leading-tight sm:leading-snug"
+                                        x-text="slide.title">
+                                    </h2>
+
+                                    <div class="w-16 h-1 bg-gradient-to-r from-[#93F514] to-transparent rounded-full my-4">
+                                    </div>
+
+                                    <!-- Slide Paragraph -->
+                                    <p class="text-sm sm:text-base text-gray-300 font-normal leading-relaxed text-justify sm:text-left"
+                                        x-text="slide.description">
+                                    </p>
                                 </div>
 
-                                <!-- Main Slide Title -->
-                                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#EEEEEE] tracking-tight leading-tight sm:leading-snug"
-                                    x-text="slide.title">
-                                </h2>
-
-                                <div class="w-16 h-1 bg-gradient-to-r from-[#93F514] to-transparent rounded-full my-4">
-                                </div>
-
-                                <!-- Slide Paragraph -->
-                                <p class="text-sm sm:text-base text-gray-300 font-normal leading-relaxed text-justify sm:text-left"
-                                    x-text="slide.description">
-                                </p>
-                            </div>
-
-                            <!-- Left-Bottom Controls & Actions -->
-                            <div class="pt-4 flex flex-wrap items-center gap-3">
-                                <a href="{{ route('jobs.index') }}"
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#93F514] hover:bg-[#7edc0b] text-black font-extrabold text-xs sm:text-sm tracking-wide shadow-md shadow-black/40 transition duration-200">
-                                    <span>Lihat Lowongan</span>
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                            d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                    </svg>
-                                </a>
-
-                                <template x-if="companyWebsite">
-                                    <a :href="companyWebsite" target="_blank" rel="noopener noreferrer"
-                                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-[#93F514]/40 text-[#EEEEEE] hover:text-[#93F514] font-semibold text-xs sm:text-sm transition duration-200 backdrop-blur-sm">
-                                        <svg class="w-4 h-4 text-[#93F514]" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                                        </svg>
-                                        <span>Kunjungi Website</span>
-                                        <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                <!-- Left-Bottom Controls & Actions -->
+                                <div class="pt-4 flex flex-wrap items-center gap-3">
+                                    <a href="{{ route('jobs.index') }}"
+                                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#93F514] hover:bg-[#7edc0b] text-black font-extrabold text-xs sm:text-sm tracking-wide shadow-md shadow-black/40 transition duration-200">
+                                        <span>Lihat Lowongan</span>
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                         </svg>
                                     </a>
-                                </template>
+
+                                    <template x-if="companyWebsite">
+                                        <a :href="companyWebsite" target="_blank" rel="noopener noreferrer"
+                                            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-[#93F514]/40 text-[#EEEEEE] hover:text-[#93F514] font-semibold text-xs sm:text-sm transition duration-200 backdrop-blur-sm">
+                                            <svg class="w-4 h-4 text-[#93F514]" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                            </svg>
+                                            <span>Kunjungi Website</span>
+                                            <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                            </svg>
+                                        </a>
+                                    </template>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Right Column: Staggered Dynamic Photo Collage & Floating Badge -->
-                        <div class="lg:col-span-7 relative flex items-center justify-center lg:justify-end py-6 lg:py-0">
-                            <div class="relative w-full max-w-[560px] h-[340px] sm:h-[390px]">
+                            <!-- Right Column: Staggered Dynamic Photo Collage & Floating Badge -->
+                            <div
+                                class="lg:col-span-7 relative flex items-center justify-center lg:justify-end py-6 lg:py-0">
+                                <div class="relative w-full max-w-[560px] h-[340px] sm:h-[390px]">
 
-                                <!-- Main Large Photo (Left Background Layer) -->
-                                <div
-                                    class="absolute left-0 top-6 w-[56%] sm:w-[58%] h-[260px] sm:h-[310px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-br from-[#93F514]/50 via-white/10 to-transparent shadow-2xl shadow-black/80 group">
+                                    <!-- Main Large Photo (Left Background Layer) -->
                                     <div
-                                        class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/20">
-                                        <img :src="slide.img1" alt="Team Collaboration"
-                                            class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
-                                    </div>
-                                </div>
-
-                                <!-- Top-Right Secondary Photo Layer -->
-                                <div
-                                    class="absolute right-0 top-0 w-[48%] sm:w-[50%] h-[200px] sm:h-[235px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-bl from-[#93F514]/60 via-white/15 to-transparent shadow-2xl shadow-black/90 group z-10">
-                                    <div
-                                        class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/20">
-                                        <img :src="slide.img2" alt="Professional Presentation"
-                                            class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
-                                    </div>
-                                </div>
-
-                                <!-- Bottom Center/Right Overlapping Tertiary Photo -->
-                                <div
-                                    class="absolute left-[35%] sm:left-[32%] bottom-0 w-[50%] sm:w-[52%] h-[190px] sm:h-[220px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-tr from-[#93F514]/60 via-white/15 to-transparent shadow-2xl shadow-black/95 group z-20">
-                                    <div
-                                        class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/25">
-                                        <img :src="slide.img3" alt="Meeting and Discussion"
-                                            class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
-                                    </div>
-                                </div>
-
-                                <!-- Simple, Light & Modern Floating Glass Badge (Bottom Right) -->
-                                <div
-                                    class="absolute -right-1 sm:-right-3 bottom-2 z-30 transform hover:scale-105 transition-transform">
-                                    <div
-                                        class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-[#061806]/85 border border-[#93F514]/50 shadow-lg shadow-black/60 backdrop-blur-md flex items-center gap-2.5">
-                                        {{-- <div class="w-2 h-2 rounded-full bg-[#93F514] animate-ping"></div> --}}
-                                        <div>
-                                            <div class="text-[11px] sm:text-xs font-bold tracking-wider text-[#93F514] leading-none"
-                                                x-text="slide.badgeTitle">CAREER.</div>
-                                            <div class="text-[10px] text-gray-300 font-medium mt-0.5 leading-none"
-                                                x-text="slide.badgeSub">Growth & Development</div>
+                                        class="absolute left-0 top-6 w-[56%] sm:w-[58%] h-[260px] sm:h-[310px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-br from-[#93F514]/50 via-white/10 to-transparent shadow-2xl shadow-black/80 group">
+                                        <div
+                                            class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/20">
+                                            <img :src="slide.img1" alt="Team Collaboration"
+                                                class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
                                         </div>
                                     </div>
+
+                                    <!-- Top-Right Secondary Photo Layer -->
+                                    <div
+                                        class="absolute right-0 top-0 w-[48%] sm:w-[50%] h-[200px] sm:h-[235px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-bl from-[#93F514]/60 via-white/15 to-transparent shadow-2xl shadow-black/90 group z-10">
+                                        <div
+                                            class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/20">
+                                            <img :src="slide.img2" alt="Professional Presentation"
+                                                class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
+                                        </div>
+                                    </div>
+
+                                    <!-- Bottom Center/Right Overlapping Tertiary Photo -->
+                                    <div
+                                        class="absolute left-[35%] sm:left-[32%] bottom-0 w-[50%] sm:w-[52%] h-[190px] sm:h-[220px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-tr from-[#93F514]/60 via-white/15 to-transparent shadow-2xl shadow-black/95 group z-20">
+                                        <div
+                                            class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/25">
+                                            <img :src="slide.img3" alt="Meeting and Discussion"
+                                                class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
+                                        </div>
+                                    </div>
+
+                                    <!-- Simple, Light & Modern Floating Glass Badge (Bottom Right) -->
+                                    <div
+                                        class="absolute -right-1 sm:-right-3 bottom-2 z-30 transform hover:scale-105 transition-transform">
+                                        <div
+                                            class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-[#061806]/85 border border-[#93F514]/50 shadow-lg shadow-black/60 backdrop-blur-md flex items-center gap-2.5">
+                                            {{-- <div class="w-2 h-2 rounded-full bg-[#93F514] animate-ping"></div> --}}
+                                            <div>
+                                                <div class="text-[11px] sm:text-xs font-bold tracking-wider text-[#93F514] leading-none"
+                                                    x-text="slide.badgeTitle">CAREER.</div>
+                                                <div class="text-[10px] text-gray-300 font-medium mt-0.5 leading-none"
+                                                    x-text="slide.badgeSub">Growth & Development</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
-
                             </div>
+
                         </div>
+                    </template>
+                </div>
 
-                    </div>
-                </template>
-            </div>
-
-            <!-- Bottom Navigation Bar: Arrows + Live Animated Progress Indicator Lines -->
+                <!-- Bottom Navigation Bar: Arrows + Live Animated Progress Indicator Lines -->
                 <div
                     class="mt-8 pt-6 border-t border-[#93F514]/20 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <!-- Prev / Next Navigation Arrows -->
@@ -853,103 +864,102 @@
             </div>
         </section>
 
-        <!-- ==================== ALUR PENDAFTARAN DINAMIS ==================== -->
+        <!-- ==================== ALUR PENDAFTARAN & SELEKSI (INTERACTIVE PIPELINE) ==================== -->
         <section id="alur-pendaftaran"
-            class="reveal-on-scroll py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative border-t border-[#93F514]/20"
+            class="reveal-on-scroll py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative border-t border-gray-200/80 dark:border-white/[0.08]"
             x-data="{ activeStep: 1 }">
-            <div class="text-center max-w-3xl mx-auto mb-14">
-                {{-- <div class="inline-flex items-center gap-2 text-[#93F514] text-xs font-bold uppercase tracking-widest mb-3">
-                <span class="w-2 h-2 rounded-full bg-[#93F514] animate-ping"></span>
-                <span>Proses Seleksi Praktis</span>
-            </div> --}}
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-[#EEEEEE]">Alur Pendaftaran & Seleksi</h2>
-                <p class="mt-3 text-sm sm:text-base text-gray-300 leading-relaxed">
+            
+            <!-- Section Header -->
+            <div class="text-center max-w-3xl mx-auto mb-10">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Alur Pendaftaran & Seleksi</h2>
+                <p class="mt-3 text-sm sm:text-base text-gray-600 dark:text-zinc-400 leading-relaxed max-w-2xl mx-auto">
                     Ikuti 6 tahapan sistematis dan transparan untuk bergabung menjadi bagian dari talenta terbaik PT Mitra Karya Analitika (MIKA).
                 </p>
+            </div>
 
-                <!-- Dynamic Tab Step Switchers -->
-                <div
-                    class="mt-8 inline-flex p-1.5 rounded-2xl bg-[#061206] border border-[#93F514]/30 shadow-lg gap-1.5 flex-wrap justify-center">
-                    <button @click="activeStep = 1"
-                        :class="activeStep === 1 ?
-                            'bg-gradient-to-r from-[#93F514] to-[#5ef558] text-black font-extrabold shadow-sm' :
-                            'text-gray-400 hover:text-[#EEEEEE]'"
-                        class="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm transition-all duration-200 cursor-pointer">
-                        1. Registrasi Akun
-                    </button>
-                    <button @click="activeStep = 2"
-                        :class="activeStep === 2 ?
-                            'bg-gradient-to-r from-[#93F514] to-[#5ef558] text-black font-extrabold shadow-sm' :
-                            'text-gray-400 hover:text-[#EEEEEE]'"
-                        class="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm transition-all duration-200 cursor-pointer">
-                        2. Profil & CV Digital
-                    </button>
-                    <button @click="activeStep = 3"
-                        :class="activeStep === 3 ?
-                            'bg-gradient-to-r from-[#93F514] to-[#5ef558] text-black font-extrabold shadow-sm' :
-                            'text-gray-400 hover:text-[#EEEEEE]'"
-                        class="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm transition-all duration-200 cursor-pointer">
-                        3. Lamar & Seleksi Berkas
-                    </button>
-                    <button @click="activeStep = 4"
-                        :class="activeStep === 4 ?
-                            'bg-gradient-to-r from-[#93F514] to-[#5ef558] text-black font-extrabold shadow-sm' :
-                            'text-gray-400 hover:text-[#EEEEEE]'"
-                        class="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm transition-all duration-200 cursor-pointer">
-                        4. Asesmen Online (CBT)
-                    </button>
-                    <button @click="activeStep = 5"
-                        :class="activeStep === 5 ?
-                            'bg-gradient-to-r from-[#93F514] to-[#5ef558] text-black font-extrabold shadow-sm' :
-                            'text-gray-400 hover:text-[#EEEEEE]'"
-                        class="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm transition-all duration-200 cursor-pointer">
-                        5. Sesi Wawancara
-                    </button>
-                    <button @click="activeStep = 6"
-                        :class="activeStep === 6 ?
-                            'bg-gradient-to-r from-[#93F514] to-[#5ef558] text-black font-extrabold shadow-sm' :
-                            'text-gray-400 hover:text-[#EEEEEE]'"
-                        class="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm transition-all duration-200 cursor-pointer">
-                        6. Hasil & Penawaran
-                    </button>
+            <!-- Connected Interactive Pipeline Stepper Bar -->
+            <div class="mb-8">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+                    <template x-for="step in [
+                        { num: 1, id: '01', title: 'Registrasi', sub: 'Buat Akun Pelamar' },
+                        { num: 2, id: '02', title: 'Profil & CV', sub: 'Lengkapi Berkas' },
+                        { num: 3, id: '03', title: 'Seleksi Berkas', sub: 'Screening HRD' },
+                        { num: 4, id: '04', title: 'Asesmen CBT', sub: 'Ujian & Tes DISC' },
+                        { num: 5, id: '05', title: 'Wawancara', sub: 'HRD & User' },
+                        { num: 6, id: '06', title: 'Offering', sub: 'Hasil & Kontrak' }
+                    ]" :key="step.num">
+                        <button @click="activeStep = step.num" type="button"
+                            class="group relative text-left p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer overflow-hidden"
+                            :class="activeStep === step.num ? 
+                                'bg-white dark:bg-white/[0.08] border-[#3b8004] dark:border-[#93F514] shadow-sm' : 
+                                'bg-white dark:bg-white/[0.02] hover:bg-gray-50 dark:hover:bg-white/[0.05] border-gray-200 dark:border-white/[0.06] hover:border-gray-300 dark:hover:border-white/15 shadow-sm dark:shadow-none'">
+                            
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="text-xs font-extrabold tracking-wider transition-colors"
+                                    :class="activeStep === step.num ? 'text-[#3b8004] dark:text-[#93F514]' : 'text-gray-400 dark:text-zinc-500 group-hover:text-gray-600 dark:group-hover:text-zinc-400'"
+                                    x-text="step.id"></span>
+                                <span class="w-2 h-2 rounded-full transition-colors"
+                                    :class="activeStep === step.num ? 'bg-[#4fa304] dark:bg-[#93F514]' : 'bg-gray-300 dark:bg-zinc-700'"></span>
+                            </div>
+                            <div class="text-xs sm:text-sm font-bold truncate transition-colors"
+                                :class="activeStep === step.num ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-zinc-300 group-hover:text-gray-900 dark:group-hover:text-white'"
+                                x-text="step.title"></div>
+                            <div class="text-[11px] font-medium truncate mt-0.5 transition-colors"
+                                :class="activeStep === step.num ? 'text-gray-600 dark:text-zinc-400' : 'text-gray-500 dark:text-zinc-500'"
+                                x-text="step.sub"></div>
+                        </button>
+                    </template>
                 </div>
             </div>
 
-            <!-- Dynamic Step Content Display -->
-            <div
-                class="relative rounded-3xl bg-gradient-to-b from-[#071a07] via-[#051105] to-[#040804] border border-[#93F514]/40 p-8 sm:p-12 shadow-2xl shadow-black/80 overflow-hidden">
+            <!-- Active Stage Detail Display Canvas -->
+            <div class="relative rounded-3xl bg-white dark:bg-gradient-to-b dark:from-[#0a120a] dark:via-[#050905] dark:to-[#040604] border border-gray-200/90 dark:border-white/[0.08] p-6 sm:p-10 lg:p-12 shadow-xl shadow-gray-200/60 dark:shadow-2xl dark:shadow-black/80 overflow-hidden">
 
-                <!-- Step 1 Content: Registrasi Akun -->
+                <!-- ================= Step 1: Registrasi Pengguna ================= -->
                 <div x-show="activeStep === 1" x-transition:enter="transition ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-3" x-transition:enter-end="opacity-100 translate-y-0"
-                    class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                    <div class="lg:col-span-7 space-y-4">
-                        <div
-                            class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] text-xs font-bold">
-                            Tahap 01 - Registrasi Pengguna
+                    x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                    class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="space-y-3">
+                            <div class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
+                                {{-- <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span> --}}
+                                <span>Tahap 01 — Registrasi Akun</span>
+                            </div>
+                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
+                                Buat Akun Pelamar dengan Cepat & Aman
+                            </h3>
+                            <p class="text-sm sm:text-base text-gray-600 dark:text-zinc-300 leading-relaxed">
+                                Lakukan registrasi menggunakan Google Authentication atau Form Manual (Nama Lengkap, NIK KTP valid, dan Email aktif). Akun ini menjadi pusat portal seluruh aktivitas pelamaran, verifikasi dokumen, ujian seleksi, hingga penawaran kerja.
+                            </p>
                         </div>
-                        <h3 class="text-2xl sm:text-3xl font-extrabold text-[#EEEEEE]">Buat Akun Pelamar dengan Cepat & Aman</h3>
-                        <p class="text-sm sm:text-base text-gray-300 leading-relaxed">
-                            Lakukan registrasi menggunakan Google Authentication atau Form Manual (Nama Lengkap, NIK KTP valid, dan Email aktif). Akun ini menjadi pusat portal seluruh aktivitas pelamaran, verifikasi dokumen, ujian seleksi, hingga penawaran kerja.
-                        </p>
-                        <ul class="space-y-2.5 text-xs sm:text-sm text-gray-300 pt-2">
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Autentikasi instan melalui Google atau registrasi NIK valid</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Dapat diakses 24/7 secara fleksibel melalui smartphone maupun desktop</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Pemberitahuan status seleksi terkirim langsung ke akun Anda</span>
-                            </li>
-                        </ul>
-                        <div class="pt-4 flex flex-wrap items-center gap-3">
+
+                        <!-- Structured Milestone Items -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>Autentikasi Cepat</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Google OAuth atau form NIK terverifikasi.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>Akses Fleksibel</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Responsif 24/7 di smartphone & desktop.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>Pemberitahuan</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Status seleksi langsung ke portal akun.</p>
+                            </div>
+                        </div>
+
+                        <!-- Action Bar -->
+                        <div class="pt-3 flex flex-wrap items-center gap-3">
                             @auth
                                 @php
                                     $isAdminOrRecruiter =
@@ -968,372 +978,483 @@
                                         : route('profile');
                                 @endphp
                                 <a href="{{ $dashRoute }}"
-                                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#7edc0b] transition shadow-md shadow-black/30">
-                                    {{ $isAdminOrRecruiter ? 'Buka Dashboard Manajemen' : 'Buka Profil Saya' }}
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    <span>{{ $isAdminOrRecruiter ? 'Buka Dashboard Manajemen' : 'Buka Profil Saya' }}</span>
                                 </a>
                             @else
                                 <a href="{{ route('register') }}"
-                                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#7edc0b] transition shadow-md shadow-black/30">
-                                    Daftar Akun Sekarang
+                                    class="inline-flex items-center gap-3 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25 group">
+                                    <span>Daftar Akun Sekarang</span>
+                                    <span class="w-5 h-5 rounded-md bg-black/10 flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                        </svg>
+                                    </span>
                                 </a>
                             @endauth
                             <button type="button" @click="activeStep = 2"
-                                class="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-[#EEEEEE] font-semibold text-xs sm:text-sm border border-white/15 transition cursor-pointer">
-                                <span>Tahap 2: Profil & CV</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-gray-700 hover:text-gray-900 dark:text-zinc-300 dark:hover:text-white font-semibold text-xs sm:text-sm border border-gray-200 dark:border-white/10 transition cursor-pointer">
+                                <span>Lanjut: Profil & CV</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
                             </button>
                         </div>
                     </div>
-                    <div class="lg:col-span-5 flex justify-center">
-                        <div
-                            class="w-full max-w-sm p-6 rounded-2xl bg-[#050e05] border border-[#93F514]/30 shadow-xl space-y-4">
-                            <div
-                                class="w-12 h-12 rounded-xl bg-[#93F514]/15 border border-[#93F514]/40 flex items-center justify-center text-[#93F514]">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                                </svg>
+
+                    <!-- Right Column: Stage Intelligence & Guidance Panel -->
+                    <div class="lg:col-span-5">
+                        <div class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
+                            <div class="pb-3 border-b border-gray-200/80 dark:border-white/[0.06]">
+                                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Ketentuan Tahap 01</span>
                             </div>
-                            <h4 class="font-bold text-[#EEEEEE] text-base">Tips Registrasi Akun</h4>
-                            <p class="text-xs text-gray-400 leading-relaxed">
-                                Pastikan nomor NIK KTP dan alamat email yang didaftarkan aktif dan valid untuk memastikan kelancaran verifikasi identitas serta notifikasi status seleksi.
-                            </p>
+                            <div class="space-y-2">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Tips Registrasi Akun</h4>
+                                <div class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
+                                    Pastikan nomor NIK KTP dan alamat email yang didaftarkan aktif dan valid untuk memastikan kelancaran verifikasi identitas serta notifikasi status seleksi.
+                                </div>
+                            </div>
+                            <div class="pt-1 flex items-center gap-2 text-[11px] text-gray-500 dark:text-zinc-400">
+                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                                <span>Data terlindungi dengan enkripsi keamanan portal resmi MIKA</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 2 Content: Kelengkapan Profil & CV -->
+                <!-- ================= Step 2: Kelengkapan Profil & CV ================= -->
                 <div x-show="activeStep === 2" x-cloak x-transition:enter="transition ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-3" x-transition:enter-end="opacity-100 translate-y-0"
-                    class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                    <div class="lg:col-span-7 space-y-4">
-                        <div
-                            class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] text-xs font-bold">
-                            Tahap 02 - Kelengkapan Profil & CV
+                    x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                    class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="space-y-3">
+                            <div class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
+                                {{-- <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span> --}}
+                                <span>Tahap 02 — Kelengkapan Profil & CV</span>
+                            </div>
+                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
+                                Lengkapi Biodata, Riwayat & CV Digital
+                            </h3>
+                            <p class="text-sm sm:text-base text-gray-600 dark:text-zinc-300 leading-relaxed">
+                                Lengkapi profil Anda secara menyeluruh: Biodata Pribadi, Kontak Keluarga, Riwayat Pendidikan, Pengalaman Kerja, Organisasi, Prestasi, hingga Keahlian/Sertifikasi. Sistem secara otomatis menyusun data Anda menjadi format CV profesional.
+                            </p>
                         </div>
-                        <h3 class="text-2xl sm:text-3xl font-extrabold text-[#EEEEEE]">Lengkapi Biodata, Riwayat & CV Digital</h3>
-                        <p class="text-sm sm:text-base text-gray-300 leading-relaxed">
-                            Lengkapi profil Anda secara menyeluruh: Biodata Pribadi, Kontak Keluarga, Riwayat Pendidikan, Pengalaman Kerja, Organisasi, Prestasi, hingga Keahlian/Sertifikasi. Sistem secara otomatis menyusun data Anda menjadi format CV profesional.
-                        </p>
-                        <ul class="space-y-2.5 text-xs sm:text-sm text-gray-300 pt-2">
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Fitur Generate & Preview CV ATS-friendly terstandar otomatis</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Pembaruan data profil dapat dilakukan secara berkala dan fleksibel</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Dukungan unggah berkas pendukung (Ijazah, Transkrip, Sertifikat)</span>
-                            </li>
-                        </ul>
-                        <div class="pt-4 flex flex-wrap items-center gap-3">
+
+                        <!-- Structured Milestone Items -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>ATS-Friendly</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Generate & preview CV digital terstandar.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>Update Fleksibel</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Pembaruan data dapat dilakukan berkala.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>Unggah Dokumen</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Ijazah, transkrip nilai, & sertifikat.</p>
+                            </div>
+                        </div>
+
+                        <!-- Action Bar -->
+                        <div class="pt-3 flex flex-wrap items-center gap-3">
                             @auth
                                 <a href="{{ route('profile') }}"
-                                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#7edc0b] transition shadow-md shadow-black/30">
-                                    Lengkapi Profil Sekarang
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    <span>Lengkapi Profil Sekarang</span>
                                 </a>
                             @else
                                 <a href="{{ route('login') }}"
-                                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#7edc0b] transition shadow-md shadow-black/30">
-                                    Masuk untuk Lengkapi Profil
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    <span>Masuk untuk Lengkapi Profil</span>
                                 </a>
                             @endauth
                             <button type="button" @click="activeStep = 3"
-                                class="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-[#EEEEEE] font-semibold text-xs sm:text-sm border border-white/15 transition cursor-pointer">
-                                <span>Tahap 3: Lamar & Seleksi</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-gray-700 hover:text-gray-900 dark:text-zinc-300 dark:hover:text-white font-semibold text-xs sm:text-sm border border-gray-200 dark:border-white/10 transition cursor-pointer">
+                                <span>Lanjut: Lamar & Seleksi</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
                             </button>
                         </div>
                     </div>
-                    <div class="lg:col-span-5 flex justify-center">
-                        <div
-                            class="w-full max-w-sm p-6 rounded-2xl bg-[#050e05] border border-[#93F514]/30 shadow-xl space-y-4">
-                            <div
-                                class="w-12 h-12 rounded-xl bg-[#93F514]/15 border border-[#93F514]/40 flex items-center justify-center text-[#93F514]">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
+
+                    <!-- Right Column: Stage Intelligence & Guidance Panel -->
+                    <div class="lg:col-span-5">
+                        <div class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
+                            <div class="pb-3 border-b border-gray-200/80 dark:border-white/[0.06]">
+                                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Ketentuan Tahap 02</span>
                             </div>
-                            <h4 class="font-bold text-[#EEEEEE] text-base">Kelengkapan Profil</h4>
-                            <p class="text-xs text-gray-400 leading-relaxed">
-                                Profil pelamar dengan persentase kelengkapan data tinggi memiliki prioritas lebih tinggi dalam peninjauan administrasi oleh tim HRD.
-                            </p>
+                            <div class="space-y-2">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Prioritas Screening</h4>
+                                <div class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
+                                    Profil pelamar dengan persentase kelengkapan data di atas 85% memiliki prioritas lebih tinggi dalam peninjauan administrasi oleh tim HRD.
+                                </div>
+                            </div>
+                            <div class="pt-1 flex items-center gap-2 text-[11px] text-gray-500 dark:text-zinc-400">
+                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>Format resume disinkronkan otomatis ke database rekruter</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 3 Content: Lamar Posisi & Seleksi Berkas -->
+                <!-- ================= Step 3: Lamar Posisi & Seleksi Berkas ================= -->
                 <div x-show="activeStep === 3" x-cloak x-transition:enter="transition ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-3" x-transition:enter-end="opacity-100 translate-y-0"
-                    class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                    <div class="lg:col-span-7 space-y-4">
-                        <div
-                            class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] text-xs font-bold">
-                            Tahap 03 - Lamar Posisi & Seleksi Berkas
+                    x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                    class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="space-y-3">
+                            <div class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
+                                {{-- <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span> --}}
+                                <span>Tahap 03 — Seleksi Berkas</span>
+                            </div>
+                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
+                                Eksplorasi Lowongan & Seleksi Berkas
+                            </h3>
+                            <p class="text-sm sm:text-base text-gray-600 dark:text-zinc-300 leading-relaxed">
+                                Temukan posisi karir yang sesuai dengan kompetensi Anda di PT Mitra Karya Analitika (MIKA) atau grup bisnis kami. Ajukan lamaran dalam satu klik, lalu tim HRD & Rekruter akan meninjau kualifikasi dan kesesuaian berkas Anda secara transparan.
+                            </p>
                         </div>
-                        <h3 class="text-2xl sm:text-3xl font-extrabold text-[#EEEEEE]">Eksplorasi Lowongan & Seleksi Berkas</h3>
-                        <p class="text-sm sm:text-base text-gray-300 leading-relaxed">
-                            Temukan posisi karir yang sesuai dengan kompetensi Anda di PT Mitra Karya Analitika (MIKA) atau grup bisnis kami. Ajukan lamaran dalam satu klik, lalu tim HRD & Rekruter akan meninjau kualifikasi dan kesesuaian berkas Anda secara transparan.
-                        </p>
-                        <ul class="space-y-2.5 text-xs sm:text-sm text-gray-300 pt-2">
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Pengajuan lamaran praktis dengan data profil yang terintegrasi</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Pelacakan status berkas real-time (Terkirim Lolos Berkas / Reviewed)</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Notifikasi kelulusan seleksi administrasi sebelum melaju ke tahap ujian</span>
-                            </li>
-                        </ul>
-                        <div class="pt-4 flex flex-wrap items-center gap-3">
+
+                        <!-- Structured Milestone Items -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>One-Click Apply</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Lamaran praktis dengan profil terintegrasi.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>Pelacakan Status</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Update real-time (Terkirim, Review, Lolos).</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>Notifikasi Hasil</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Kelulusan administrasi sebelum ke tahap ujian.</p>
+                            </div>
+                        </div>
+
+                        <!-- Action Bar -->
+                        <div class="pt-3 flex flex-wrap items-center gap-3">
                             <a href="{{ route('jobs.index') }}"
-                                class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#7edc0b] transition shadow-md shadow-black/30">
-                                Jelajahi Lowongan Tersedia
+                                class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                <span>Jelajahi Lowongan Tersedia</span>
                             </a>
                             <button type="button" @click="activeStep = 4"
-                                class="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-[#EEEEEE] font-semibold text-xs sm:text-sm border border-white/15 transition cursor-pointer">
-                                <span>Tahap 4: Asesmen CBT</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-gray-700 hover:text-gray-900 dark:text-zinc-300 dark:hover:text-white font-semibold text-xs sm:text-sm border border-gray-200 dark:border-white/10 transition cursor-pointer">
+                                <span>Lanjut: Asesmen CBT</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
                             </button>
                         </div>
                     </div>
-                    <div class="lg:col-span-5 flex justify-center">
-                        <div
-                            class="w-full max-w-sm p-6 rounded-2xl bg-[#050e05] border border-[#93F514]/30 shadow-xl space-y-4">
-                            <div
-                                class="w-12 h-12 rounded-xl bg-[#93F514]/15 border border-[#93F514]/40 flex items-center justify-center text-[#93F514]">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
+
+                    <!-- Right Column: Stage Intelligence & Guidance Panel -->
+                    <div class="lg:col-span-5">
+                        <div class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
+                            <div class="pb-3 border-b border-gray-200/80 dark:border-white/[0.06]">
+                                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Ketentuan Tahap 03</span>
                             </div>
-                            <h4 class="font-bold text-[#EEEEEE] text-base">Seleksi Berkas (Screening)</h4>
-                            <p class="text-xs text-gray-400 leading-relaxed">
-                                Tim Rekruter akan mencocokkan latar belakang pendidikan, kompetensi, dan pengalaman kerja Anda dengan kualifikasi posisi yang dibutuhkan.
-                            </p>
+                            <div class="space-y-2">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Seleksi Administrasi</h4>
+                                <div class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
+                                    Tim Rekruter akan mencocokkan latar belakang pendidikan, kompetensi, dan pengalaman kerja Anda dengan kualifikasi formasi yang dilamar.
+                                </div>
+                            </div>
+                            <div class="pt-1 flex items-center gap-2 text-[11px] text-gray-500 dark:text-zinc-400">
+                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                <span>Transparan tanpa perantara atau pungutan biaya</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 4 Content: Ujian Asesmen Online (CBT & DISC) -->
+                <!-- ================= Step 4: Ujian Asesmen Online (CBT & DISC) ================= -->
                 <div x-show="activeStep === 4" x-cloak x-transition:enter="transition ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-3" x-transition:enter-end="opacity-100 translate-y-0"
-                    class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                    <div class="lg:col-span-7 space-y-4">
-                        <div
-                            class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] text-xs font-bold">
-                            Tahap 04 - Ujian Asesmen Online
+                    x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                    class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="space-y-3">
+                            <div class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
+                                {{-- <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span> --}}
+                                <span>Tahap 04 — Ujian Asesmen Online</span>
+                            </div>
+                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
+                                Ikuti Ujian CBT & Tes Kepribadian DISC
+                            </h3>
+                            <p class="text-sm sm:text-base text-gray-600 dark:text-zinc-300 leading-relaxed">
+                                Setelah dinyatakan lolos berkas administrasi, Anda dapat langsung mengakses sistem Ujian Online terintegrasi. Ujian meliputi Tes Kepribadian DISC (24 kuadran Most/Least) serta Tes Kompetensi Teknis (Pilihan Ganda & Soal Essay + Lampiran Berkas).
+                            </p>
                         </div>
-                        <h3 class="text-2xl sm:text-3xl font-extrabold text-[#EEEEEE]">Ikuti Ujian CBT & Tes Kepribadian DISC</h3>
-                        <p class="text-sm sm:text-base text-gray-300 leading-relaxed">
-                            Setelah dinyatakan lolos berkas administrasi, Anda dapat langsung mengakses sistem Ujian Online terintegrasi. Ujian meliputi Tes Kepribadian DISC (24 kuadran Most/Least) serta Tes Kompetensi Teknis (Pilihan Ganda & Soal Essay + Lampiran Berkas).
-                        </p>
-                        <ul class="space-y-2.5 text-xs sm:text-sm text-gray-300 pt-2">
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Sistem Computer-Based Test (CBT) dengan timer pengerjaan real-time</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Kalkulasi otomatis profil kepribadian DISC dan evaluasi essay terstandar</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Penyimpanan jawaban otomatis yang aman selama pengerjaan berlangsung</span>
-                            </li>
-                        </ul>
-                        <div class="pt-4 flex flex-wrap items-center gap-3">
+
+                        <!-- Structured Milestone Items -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>CBT Terpadu</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Timer real-time dan evaluasi terstandar.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>Tes DISC</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Kalkulasi otomatis profil kepribadian kerja.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>Auto-Save Aman</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Penyimpanan jawaban berkala anti hilang.</p>
+                            </div>
+                        </div>
+
+                        <!-- Action Bar -->
+                        <div class="pt-3 flex flex-wrap items-center gap-3">
                             @auth
                                 <a href="{{ route('profile', ['tab' => 'riwayat']) }}"
-                                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#7edc0b] transition shadow-md shadow-black/30">
-                                    Cek Status Ujian di Riwayat
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    <span>Cek Status Ujian di Riwayat</span>
                                 </a>
                             @else
                                 <a href="{{ route('login') }}"
-                                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#7edc0b] transition shadow-md shadow-black/30">
-                                    Masuk ke Portal Ujian
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    <span>Masuk ke Portal Ujian</span>
                                 </a>
                             @endauth
                             <button type="button" @click="activeStep = 5"
-                                class="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-[#EEEEEE] font-semibold text-xs sm:text-sm border border-white/15 transition cursor-pointer">
-                                <span>Tahap 5: Wawancara</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-gray-700 hover:text-gray-900 dark:text-zinc-300 dark:hover:text-white font-semibold text-xs sm:text-sm border border-gray-200 dark:border-white/10 transition cursor-pointer">
+                                <span>Lanjut: Wawancara</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
                             </button>
                         </div>
                     </div>
-                    <div class="lg:col-span-5 flex justify-center">
-                        <div
-                            class="w-full max-w-sm p-6 rounded-2xl bg-[#050e05] border border-[#93F514]/30 shadow-xl space-y-4">
-                            <div
-                                class="w-12 h-12 rounded-xl bg-[#93F514]/15 border border-[#93F514]/40 flex items-center justify-center text-[#93F514]">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                                </svg>
+
+                    <!-- Right Column: Stage Intelligence & Guidance Panel -->
+                    <div class="lg:col-span-5">
+                        <div class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
+                            <div class="pb-3 border-b border-gray-200/80 dark:border-white/[0.06]">
+                                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Ketentuan Tahap 04</span>
                             </div>
-                            <h4 class="font-bold text-[#EEEEEE] text-base">Sistem CBT Terpadu</h4>
-                            <p class="text-xs text-gray-400 leading-relaxed">
-                                Gunakan perangkat komputer/laptop dengan koneksi internet yang stabil untuk pengalaman optimal saat menyelesaikan tes DISC dan ujian teknis.
-                            </p>
+                            <div class="space-y-2">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Persiapan Ujian</h4>
+                                <div class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
+                                    Gunakan perangkat komputer/laptop dengan koneksi internet yang stabil untuk pengalaman optimal saat menyelesaikan tes DISC dan ujian teknis.
+                                </div>
+                            </div>
+                            <div class="pt-1 flex items-center gap-2 text-[11px] text-gray-500 dark:text-zinc-400">
+                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                                <span>Hasil terkomputasi langsung ke dashboard seleksi rekruter</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 5 Content: Sesi Wawancara Terjadwal -->
+                <!-- ================= Step 5: Sesi Wawancara Terjadwal ================= -->
                 <div x-show="activeStep === 5" x-cloak x-transition:enter="transition ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-3" x-transition:enter-end="opacity-100 translate-y-0"
-                    class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                    <div class="lg:col-span-7 space-y-4">
-                        <div
-                            class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] text-xs font-bold">
-                            Tahap 05 - Wawancara Terjadwal
+                    x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                    class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="space-y-3">
+                            <div class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
+                                {{-- <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span> --}}
+                                <span>Tahap 05 — Sesi Wawancara</span>
+                            </div>
+                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
+                                Sesi Interview Daring atau Tatap Muka
+                            </h3>
+                            <p class="text-sm sm:text-base text-gray-600 dark:text-zinc-300 leading-relaxed">
+                                Kandidat yang lolos tahap ujian asesmen (Shortlisted) akan dijadwalkan untuk sesi wawancara mendalam bersama tim HRD dan User. Informasi jadwal, pewawancara, serta tautan video conference (Google Meet) atau lokasi kantor ditampilkan langsung pada dashboard Anda.
+                            </p>
                         </div>
-                        <h3 class="text-2xl sm:text-3xl font-extrabold text-[#EEEEEE]">Sesi Interview Daring atau Tatap Muka</h3>
-                        <p class="text-sm sm:text-base text-gray-300 leading-relaxed">
-                            Kandidat yang lolos tahap ujian asesmen (Shortlisted) akan dijadwalkan untuk sesi wawancara mendalam bersama tim HRD dan User. Informasi jadwal, pewawancara, serta tautan video conference (Google Meet) atau lokasi kantor ditampilkan langsung pada dashboard Anda.
-                        </p>
-                        <ul class="space-y-2.5 text-xs sm:text-sm text-gray-300 pt-2">
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Undangan jadwal terintegrasi lengkap dengan nama pewawancara dan waktu (WIB)</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Akses tautan video meeting online langsung dari kartu riwayat lamaran</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Pengingat jadwal otomatis pada dashboard Anda agar tidak terlewatkan</span>
-                            </li>
-                        </ul>
-                        <div class="pt-4 flex flex-wrap items-center gap-3">
+
+                        <!-- Structured Milestone Items -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>Jadwal Terintegrasi</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Pewawancara dan waktu (WIB) tertera jelas.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>Link Meet Langsung</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Akses video call dari kartu riwayat lamaran.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>Pengingat Otomatis</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Notifikasi terjadwal di portal akun Anda.</p>
+                            </div>
+                        </div>
+
+                        <!-- Action Bar -->
+                        <div class="pt-3 flex flex-wrap items-center gap-3">
                             @auth
                                 <a href="{{ route('profile', ['tab' => 'riwayat']) }}"
-                                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#7edc0b] transition shadow-md shadow-black/30">
-                                    Pantau Jadwal Wawancara
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    <span>Pantau Jadwal Wawancara</span>
                                 </a>
                             @else
                                 <a href="{{ route('jobs.index') }}"
-                                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#7edc0b] transition shadow-md shadow-black/30">
-                                    Lihat Peluang Karir
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    <span>Lihat Peluang Karir</span>
                                 </a>
                             @endauth
                             <button type="button" @click="activeStep = 6"
-                                class="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-[#EEEEEE] font-semibold text-xs sm:text-sm border border-white/15 transition cursor-pointer">
-                                <span>Tahap 6: Hasil Akhir</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-gray-700 hover:text-gray-900 dark:text-zinc-300 dark:hover:text-white font-semibold text-xs sm:text-sm border border-gray-200 dark:border-white/10 transition cursor-pointer">
+                                <span>Lanjut: Hasil Akhir</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
                             </button>
                         </div>
                     </div>
-                    <div class="lg:col-span-5 flex justify-center">
-                        <div
-                            class="w-full max-w-sm p-6 rounded-2xl bg-[#050e05] border border-[#93F514]/30 shadow-xl space-y-4">
-                            <div
-                                class="w-12 h-12 rounded-xl bg-[#93F514]/15 border border-[#93F514]/40 flex items-center justify-center text-[#93F514]">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                </svg>
+
+                    <!-- Right Column: Stage Intelligence & Guidance Panel -->
+                    <div class="lg:col-span-5">
+                        <div class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
+                            <div class="pb-3 border-b border-gray-200/80 dark:border-white/[0.06]">
+                                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Ketentuan Tahap 05</span>
                             </div>
-                            <h4 class="font-bold text-[#EEEEEE] text-base">Persiapan Wawancara</h4>
-                            <p class="text-xs text-gray-400 leading-relaxed">
-                                Pelajari profil dan nilai inti MIKA (Menghargai, Integritas, Komitmen, Akuntabel), kenali tanggung jawab posisi, dan siapkan perangkat kamera/audio jika sesi berlangsung secara daring.
-                            </p>
+                            <div class="space-y-2">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Persiapan Wawancara</h4>
+                                <div class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
+                                    Pelajari profil dan nilai inti MIKA (Menghargai, Integritas, Komitmen, Akuntabel), kenali tanggung jawab posisi, dan siapkan perangkat kamera/audio jika sesi berlangsung secara daring.
+                                </div>
+                            </div>
+                            <div class="pt-1 flex items-center gap-2 text-[11px] text-gray-500 dark:text-zinc-400">
+                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                <span>Sesi wawancara berlangsung profesional & solutif</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 6 Content: Hasil Akhir & Penawaran Karir -->
+                <!-- ================= Step 6: Hasil Akhir & Penawaran Karir ================= -->
                 <div x-show="activeStep === 6" x-cloak x-transition:enter="transition ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-3" x-transition:enter-end="opacity-100 translate-y-0"
-                    class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                    <div class="lg:col-span-7 space-y-4">
-                        <div
-                            class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] text-xs font-bold">
-                            Tahap 06 - Hasil Akhir & Penawaran Karir
+                    x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                    class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="space-y-3">
+                            <div class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
+                                {{-- <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span> --}}
+                                <span>Tahap 06 — Hasil Akhir & Penawaran</span>
+                            </div>
+                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
+                                Pengumuman Kelulusan & Penawaran Kerja
+                            </h3>
+                            <p class="text-sm sm:text-base text-gray-600 dark:text-zinc-300 leading-relaxed">
+                                Kandidat terbaik yang terpilih akan menerima pemberitahuan kelulusan resmi dengan status Diterima (Accepted). Tim MIKA akan menerbitkan surat penawaran kerja (*Offering Letter*) resmi beserta panduan onboarding kerja.
+                            </p>
                         </div>
-                        <h3 class="text-2xl sm:text-3xl font-extrabold text-[#EEEEEE]">Pengumuman Kelulusan & Penawaran Kerja</h3>
-                        <p class="text-sm sm:text-base text-gray-300 leading-relaxed">
-                            Kandidat terbaik yang terpilih akan menerima pemberitahuan kelulusan resmi dengan status Diterima (Accepted). Tim MIKA akan menerbitkan surat penawaran kerja (*Offering Letter*) resmi beserta panduan onboarding kerja.
-                        </p>
-                        <ul class="space-y-2.5 text-xs sm:text-sm text-gray-300 pt-2">
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Pengumuman status kelulusan secara transparan dan real-time di akun Anda</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Penerbitan surat penawaran kerja (Offering Letter) resmi perusahaan</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span
-                                    class="w-5 h-5 rounded-full bg-[#93F514]/20 text-[#93F514] flex items-center justify-center font-bold text-xs">&check;</span>
-                                <span>Seluruh tahapan seleksi rekrutmen 100% bebas biaya pendaftaran (Gratis)</span>
-                            </li>
-                        </ul>
-                        <div class="pt-4 flex flex-wrap items-center gap-3">
+
+                        <!-- Structured Milestone Items -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>Hasil Transparan</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Status resmi langsung tertera di akun Anda.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>Offering Letter</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Surat penawaran resmi beserta paket benefit.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
+                                    <span>100% Gratis</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Tanpa pungutan biaya apapun dalam proses.</p>
+                            </div>
+                        </div>
+
+                        <!-- Action Bar -->
+                        <div class="pt-3 flex flex-wrap items-center gap-3">
                             @auth
                                 <a href="{{ route('profile', ['tab' => 'riwayat']) }}"
-                                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#7edc0b] transition shadow-md shadow-black/30">
-                                    Lihat Riwayat & Status Saya
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    <span>Lihat Riwayat & Status Saya</span>
                                 </a>
                             @else
                                 <a href="{{ route('register') }}"
-                                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#7edc0b] transition shadow-md shadow-black/30">
-                                    Daftar & Raih Karir Impian
+                                    class="inline-flex items-center gap-3 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25 group">
+                                    <span>Daftar & Raih Karir Impian</span>
+                                    <span class="w-5 h-5 rounded-md bg-black/10 flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                        </svg>
+                                    </span>
                                 </a>
                             @endauth
                         </div>
                     </div>
-                    <div class="lg:col-span-5 flex justify-center">
-                        <div
-                            class="w-full max-w-sm p-6 rounded-2xl bg-[#050e05] border border-[#93F514]/30 shadow-xl space-y-4">
-                            <div
-                                class="w-12 h-12 rounded-xl bg-[#93F514]/15 border border-[#93F514]/40 flex items-center justify-center text-[#93F514]">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                                </svg>
+
+                    <!-- Right Column: Stage Intelligence & Guidance Panel -->
+                    <div class="lg:col-span-5">
+                        <div class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
+                            <div class="pb-3 border-b border-gray-200/80 dark:border-white/[0.06]">
+                                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Ketentuan Tahap 06</span>
                             </div>
-                            <h4 class="font-bold text-[#EEEEEE] text-base">Selamat Bergabung!</h4>
-                            <p class="text-xs text-gray-400 leading-relaxed">
-                                Siapkan diri Anda untuk melangkah ke babak baru perjalanan karir profesional masa depan bersama PT Mitra Karya Analitika (MIKA).
-                            </p>
+                            <div class="space-y-2">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Selamat Bergabung!</h4>
+                                <div class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
+                                    Siapkan diri Anda untuk melangkah ke babak baru perjalanan karir profesional masa depan bersama PT Mitra Karya Analitika (MIKA).
+                                </div>
+                            </div>
+                            <div class="pt-1 flex items-center gap-2 text-[11px] text-gray-500 dark:text-zinc-400">
+                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                                </svg>
+                                <span>Onboarding terstruktur & pendampingan tim MIKA</span>
+                            </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </section>
 

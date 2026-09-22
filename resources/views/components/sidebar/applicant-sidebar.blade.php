@@ -345,12 +345,18 @@
                             <x-slot:append>
                                 @if ($hasUpcomingInterview)
                                     <span
-                                        class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/80">
+                                        :class="activeTab === 'riwayat'
+                                            ? 'bg-white text-emerald-800 border-white/90 shadow-2xs dark:bg-black/15 dark:text-black dark:border-black/20'
+                                            : 'bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800/60'"
+                                        class="px-2 py-0.5 text-[11px] font-semibold rounded-full border transition-colors">
                                         Wawancara
                                     </span>
                                 @elseif (!empty($applicationCount) && $applicationCount > 0)
                                     <span
-                                        class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 border border-indigo-200/80 dark:border-indigo-800/80">
+                                        :class="activeTab === 'riwayat'
+                                            ? 'bg-white text-emerald-800 border-white/90 shadow-2xs dark:bg-black/15 dark:text-black dark:border-black/20'
+                                            : 'bg-indigo-50 text-indigo-600 border-indigo-200/80 dark:border-indigo-950/70 dark:text-indigo-400 dark:border-indigo-800/80'"
+                                        class="px-2 py-0.5 text-[11px] font-semibold rounded-full border transition-colors">
                                         {{ $applicationCount }}
                                     </span>
                                 @endif
