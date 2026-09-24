@@ -59,9 +59,13 @@ class EmployeeTestController extends Controller
             $test->departments()->sync($departmentIds);
 
             if (!empty($selectedQuestions)) {
+                $orderedQuestions = QuestionBank::whereIn('id', $selectedQuestions)->get()->sortBy(function ($q) {
+                    return $q->metadata['number'] ?? $q->id;
+                })->values();
+
                 $syncData = [];
-                foreach ($selectedQuestions as $index => $qId) {
-                    $syncData[$qId] = ['order_number' => $index + 1];
+                foreach ($orderedQuestions as $index => $q) {
+                    $syncData[$q->id] = ['order_number' => $index + 1];
                 }
                 $test->questions()->sync($syncData);
             }
@@ -130,9 +134,13 @@ class EmployeeTestController extends Controller
             $test->departments()->sync($departmentIds);
 
             if (!empty($selectedQuestions)) {
+                $orderedQuestions = QuestionBank::whereIn('id', $selectedQuestions)->get()->sortBy(function ($q) {
+                    return $q->metadata['number'] ?? $q->id;
+                })->values();
+
                 $syncData = [];
-                foreach ($selectedQuestions as $index => $qId) {
-                    $syncData[$qId] = ['order_number' => $index + 1];
+                foreach ($orderedQuestions as $index => $q) {
+                    $syncData[$q->id] = ['order_number' => $index + 1];
                 }
                 $test->questions()->sync($syncData);
             } else {

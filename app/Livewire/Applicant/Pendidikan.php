@@ -29,6 +29,8 @@ class Pendidikan extends Component
     public $degree;
     public $major_id;
     public $major;
+    public $is_custom_major = false;
+    public $custom_major = '';
     public $school_name;
     public $study_program;
     public $start_year;
@@ -80,8 +82,9 @@ class Pendidikan extends Component
             'school_name' => 'required|string|max:255',
             'degree_id' => 'nullable|exists:degrees,id',
             'degree' => 'nullable|string|max:100',
-            'major_id' => 'nullable|exists:majors,id',
+            'major_id' => $this->is_custom_major ? 'nullable' : 'nullable|exists:majors,id',
             'major' => 'nullable|string|max:100',
+            'custom_major' => $this->is_custom_major ? 'required|string|max:100' : 'nullable|string|max:100',
             'study_program' => 'nullable|string|max:255',
             'start_year' => 'required|integer|digits:4|min:1950|max:' . (date('Y') + 5),
             'end_year' => $this->is_ongoing ? 'nullable' : 'nullable|integer|digits:4|gte:start_year|max:' . (date('Y') + 10),
@@ -95,6 +98,7 @@ class Pendidikan extends Component
         $isSchool = $this->isSchoolDegree();
         return [
             'school_name.required' => 'Nama sekolah / perguruan tinggi wajib diisi.',
+            'custom_major.required' => 'Nama jurusan wajib diisi jika memilih lainnya.',
             'start_year.required' => 'Tahun mulai wajib diisi.',
             'start_year.digits' => 'Tahun mulai harus 4 digit angka.',
             'end_year.gte' => 'Tahun selesai harus lebih besar atau sama dengan tahun mulai.',
@@ -102,6 +106,27 @@ class Pendidikan extends Component
                 ? 'Nilai Rata-rata harus di antara 0 sampai 100.' 
                 : 'IPK harus di antara 0.00 sampai 4.00.',
         ];
+    }
+
+    public function updatedMajorId($value)
+    {
+        if ($value === 'other') {
+            $this->is_custom_major = true;
+        } else {
+            $this->is_custom_major = false;
+            $this->custom_major = '';
+        }
+    }
+
+    public function setCustomMajorMode($isCustom)
+    {
+        $this->is_custom_major = $isCustom;
+        if ($isCustom) {
+            $this->major_id = 'other';
+        } else {
+            $this->major_id = null;
+            $this->custom_major = '';
+        }
     }
 
     public function openModal()
@@ -125,6 +150,8 @@ class Pendidikan extends Component
             'degree',
             'major_id',
             'major',
+            'is_custom_major',
+            'custom_major',
             'school_name',
             'study_program',
             'start_year',
@@ -149,6 +176,17 @@ class Pendidikan extends Component
         $this->degree = $education->degree;
         $this->major_id = $education->major_id;
         $this->major = $education->major;
+        
+        // Cek jika jurusan menggunakan custom text ("Lainnya")
+        if (empty($education->major_id) && !empty($education->major) && $education->major !== '-') {
+            $this->is_custom_major = true;
+            $this->custom_major = $education->major;
+            $this->major_id = 'other';
+        } else {
+            $this->is_custom_major = false;
+            $this->custom_major = '';
+        }
+
         $this->school_name = $education->school_name;
         $this->study_program = $education->study_program;
         $this->start_year = $education->start_year;
@@ -183,13 +221,17 @@ class Pendidikan extends Component
             $validatedData['major'] = '-';
             $validatedData['major_id'] = null;
         } else {
-            if (!empty($this->major_id)) {
+            if ($this->is_custom_major || $this->major_id === 'other') {
+                $validatedData['major_id'] = null;
+                $validatedData['major'] = trim($this->custom_major);
+            } elseif (!empty($this->major_id)) {
                 $majorObj = Major::find($this->major_id);
                 $validatedData['major'] = $majorObj ? $majorObj->name : ($this->major ?? '-');
             } else {
                 $validatedData['major'] = !empty($this->major) ? $this->major : '-';
             }
         }
+        unset($validatedData['custom_major']);
 
         if ($this->isEdit && $this->education_id) {
             $education = Education::where('profile_id', $profile->id)->where('id', $this->education_id)->firstOrFail();

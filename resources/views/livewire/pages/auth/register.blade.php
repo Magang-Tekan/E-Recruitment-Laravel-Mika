@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Models\Company;
 use App\Models\Department;
 use App\Models\Position;
 use App\Models\EmployeeProfile;
@@ -22,18 +23,22 @@ new #[Layout('layouts.guest')] class extends Component {
     // Field khusus Karyawan Internal
     public string $employee_type = 'permanent'; // 'permanent' | 'contract' | 'internship'
     public string $company_passkey = '';
+    public string $company_id = '';
     public string $department_id = '';
     public string $position_id = '';
     public string $position_title = '';
 
+    public function updatedCompanyId(): void
+    {
+        $this->department_id = '';
+        $this->position_id = '';
+        $this->position_title = '';
+    }
+
     public function updatedDepartmentId(): void
     {
-        if ($this->position_id) {
-            $pos = Position::find($this->position_id);
-            if ($pos && (string) $pos->department_id !== (string) $this->department_id) {
-                $this->position_id = '';
-            }
-        }
+        $this->position_id = '';
+        $this->position_title = '';
     }
 
     public function updatedPositionId(): void
@@ -43,14 +48,29 @@ new #[Layout('layouts.guest')] class extends Component {
             if ($pos) {
                 $this->position_title = $pos->name;
             }
+        } else {
+            $this->position_title = '';
         }
     }
 
     public function with(): array
     {
+        $companies = Company::orderBy('name')->get();
+
+        $departments = collect();
+        if (!empty($this->company_id)) {
+            $departments = Department::where('company_id', $this->company_id)->orderBy('name')->get();
+        }
+
+        $positions = collect();
+        if (!empty($this->department_id)) {
+            $positions = Position::where('department_id', $this->department_id)->orderBy('name')->get();
+        }
+
         return [
-            'departments' => Department::with('company')->orderBy('name')->get(),
-            'positions' => Position::with('department')->orderBy('name')->get(),
+            'companies' => $companies,
+            'departments' => $departments,
+            'positions' => $positions,
         ];
     }
 
@@ -76,6 +96,10 @@ new #[Layout('layouts.guest')] class extends Component {
         if ($this->account_type === 'employee') {
             $expectedPasskey = env('EMPLOYEE_REGISTRATION_PASSKEY', 'MIKA2026');
             $rules['employee_type'] = ['required', 'in:permanent,contract,internship'];
+            $rules['company_id'] = ['required', 'exists:companies,id'];
+            $rules['department_id'] = ['required', 'exists:departments,id'];
+            $rules['position_id'] = ['nullable', 'exists:positions,id'];
+            $rules['position_title'] = ['nullable', 'string', 'max:100'];
             $rules['company_passkey'] = [
                 'required',
                 'string',
@@ -85,9 +109,9 @@ new #[Layout('layouts.guest')] class extends Component {
                     }
                 },
             ];
-            $rules['department_id'] = ['nullable', 'exists:departments,id'];
-            $rules['position_id'] = ['nullable', 'exists:positions,id'];
-            $rules['position_title'] = ['nullable', 'string', 'max:100'];
+
+            $messages['company_id.required'] = 'Silakan pilih Perusahaan tempat Anda bekerja.';
+            $messages['department_id.required'] = 'Silakan pilih Departemen tempat Anda bekerja.';
         }
 
         $validated = $this->validate($rules, $messages);
@@ -103,7 +127,6 @@ new #[Layout('layouts.guest')] class extends Component {
         $user = User::create($userData);
 
         if ($this->account_type === 'employee') {
-            $dept = !empty($this->department_id) ? Department::find($this->department_id) : null;
             $pos = !empty($this->position_id) ? Position::find($this->position_id) : null;
             $finalPosTitle = $this->position_title ?: ($pos?->name ?? null);
 
@@ -112,9 +135,9 @@ new #[Layout('layouts.guest')] class extends Component {
                 [
                     'nik' => $user->nik,
                     'full_name' => $user->name,
-                    'department_id' => !empty($this->department_id) ? (int)$this->department_id : null,
+                    'company_id' => (int)$this->company_id,
+                    'department_id' => (int)$this->department_id,
                     'position_id' => !empty($this->position_id) ? (int)$this->position_id : null,
-                    'company_id' => $dept?->company_id,
                     'position_title' => $finalPosTitle,
                     'employee_type' => $this->employee_type ?: 'permanent',
                 ]
@@ -471,23 +494,60 @@ new #[Layout('layouts.guest')] class extends Component {
                             @endif
                         </div>
 
-                        <!-- EMPLOYEE ONLY: Departemen & Posisi Grid -->
+                        <!-- EMPLOYEE ONLY: Perusahaan / Entitas (Company) -->
+                        <div>
+                            <label for="company_id" class="block text-xs font-semibold text-gray-300 mb-1 flex items-center justify-between">
+                                <span>Perusahaan / Entitas <span class="text-[#93F514]">*</span></span>
+                                <span class="text-[10px] text-gray-400 font-normal">Wajib dipilih</span>
+                            </label>
+                            <div class="relative">
+                                <select wire:model.live="company_id" 
+                                        id="company_id" 
+                                        required
+                                        class="w-full px-3.5 py-2.5 bg-black/60 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white transition outline-none cursor-pointer">
+                                    <option value="" class="bg-gray-900 text-gray-400">-- Pilih Perusahaan --</option>
+                                    @foreach ($companies as $comp)
+                                        <option value="{{ $comp->id }}" class="bg-gray-900 text-white">
+                                            {{ $comp->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @if ($errors->has('company_id'))
+                                <p class="mt-1 text-xs text-red-400 font-normal">
+                                    {{ $errors->first('company_id') }}
+                                </p>
+                            @endif
+                        </div>
+
+                        <!-- EMPLOYEE ONLY: Departemen & Posisi Grid (Cascading) -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-3">
                             <!-- Departemen -->
                             <div>
-                                <label for="department_id" class="block text-xs font-semibold text-gray-300 mb-1">
-                                    Departemen / Divisi
+                                <label for="department_id" class="block text-xs font-semibold text-gray-300 mb-1 flex items-center justify-between">
+                                    <span>Departemen / Divisi <span class="text-[#93F514]">*</span></span>
+                                    @if (!$company_id)
+                                        <span class="text-[10px] text-amber-400/80 font-normal">Pilih Perusahaan dulu</span>
+                                    @endif
                                 </label>
                                 <div class="relative">
                                     <select wire:model.live="department_id" 
                                             id="department_id" 
-                                            class="w-full px-3.5 py-2.5 bg-black/60 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white transition outline-none cursor-pointer">
-                                        <option value="" class="bg-gray-900 text-gray-400">-- Pilih Departemen --</option>
-                                        @foreach ($departments as $dept)
-                                            <option value="{{ $dept->id }}" class="bg-gray-900 text-white">
-                                                {{ $dept->name }} {{ $dept->company ? '('.$dept->company->name.')' : '' }}
-                                            </option>
-                                        @endforeach
+                                            required
+                                            {{ !$company_id ? 'disabled' : '' }}
+                                            class="w-full px-3.5 py-2.5 bg-black/60 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white transition outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                                        @if (!$company_id)
+                                            <option value="" class="bg-gray-900 text-gray-400">-- Pilih Perusahaan Dahulu --</option>
+                                        @else
+                                            <option value="" class="bg-gray-900 text-gray-400">-- Pilih Departemen --</option>
+                                            @forelse ($departments as $dept)
+                                                <option value="{{ $dept->id }}" class="bg-gray-900 text-white">
+                                                    {{ $dept->name }}
+                                                </option>
+                                            @empty
+                                                <option value="" disabled class="bg-gray-900 text-gray-500">Tidak ada departemen terdaftar</option>
+                                            @endforelse
+                                        @endif
                                     </select>
                                 </div>
                                 @if ($errors->has('department_id'))
@@ -501,20 +561,29 @@ new #[Layout('layouts.guest')] class extends Component {
                             <div>
                                 <label for="position_id" class="block text-xs font-semibold text-gray-300 mb-1 flex items-center justify-between">
                                     <span>Pilih Jabatan Baku</span>
-                                    <span class="text-[10px] text-gray-400 font-normal">Otomatis</span>
+                                    @if (!$department_id)
+                                        <span class="text-[10px] text-gray-500 font-normal">Pilih Dept dulu</span>
+                                    @else
+                                        <span class="text-[10px] text-[#93F514] font-normal">Tersaring</span>
+                                    @endif
                                 </label>
                                 <div class="relative">
                                     <select wire:model.live="position_id" 
                                             id="position_id" 
-                                            class="w-full px-3.5 py-2.5 bg-black/60 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white transition outline-none cursor-pointer">
-                                        <option value="" class="bg-gray-900 text-gray-400">-- Pilih Posisi (Opsional) --</option>
-                                        @foreach ($positions as $pos)
-                                            @if (!$department_id || $department_id == $pos->department_id)
+                                            {{ !$department_id ? 'disabled' : '' }}
+                                            class="w-full px-3.5 py-2.5 bg-black/60 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white transition outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                                        @if (!$department_id)
+                                            <option value="" class="bg-gray-900 text-gray-400">-- Pilih Departemen Dahulu --</option>
+                                        @else
+                                            <option value="" class="bg-gray-900 text-gray-400">-- Pilih Posisi (Opsional) --</option>
+                                            @forelse ($positions as $pos)
                                                 <option value="{{ $pos->id }}" class="bg-gray-900 text-white">
-                                                    {{ $pos->name }} ({{ $pos->department?->name }})
+                                                    {{ $pos->name }}
                                                 </option>
-                                            @endif
-                                        @endforeach
+                                            @empty
+                                                <option value="" disabled class="bg-gray-900 text-gray-500">Tidak ada posisi terdaftar</option>
+                                            @endforelse
+                                        @endif
                                     </select>
                                 </div>
                                 @if ($errors->has('position_id'))
@@ -534,7 +603,7 @@ new #[Layout('layouts.guest')] class extends Component {
                             <input wire:model="position_title" 
                                    id="position_title" 
                                    type="text" 
-                                   placeholder="Contoh: Staff IT, Supervisor, dll"
+                                   placeholder="Contoh: Staff IT, Supervisor HR, Account Executive, dll"
                                    class="w-full px-3.5 py-2.5 bg-black/40 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white placeholder-gray-500 transition outline-none" />
                             @if ($errors->has('position_title'))
                                 <p class="mt-1 text-xs text-red-400 font-normal">

@@ -19,7 +19,7 @@ class JobController extends Controller
             'department_id' => 'required|exists:departments,id',
             'position_id' => 'nullable|exists:positions,id',
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'employment_type' => 'required|string|max:255',
             'location' => 'nullable|string|max:255',
             'salary_min' => 'nullable|numeric|min:0',

@@ -206,7 +206,37 @@
                             </div>
 
                             <!-- Jurusan (Major) -->
-                            <div>
+                            <div x-data="{
+                                open: false,
+                                search: '',
+                                majors: {{ $majors->toJson() }},
+                                get filteredMajors() {
+                                    if (!this.search) return this.majors;
+                                    return this.majors.filter(m => m.name.toLowerCase().includes(this.search.toLowerCase()));
+                                },
+                                selectMajor(id, name) {
+                                    $wire.set('major_id', id);
+                                    $wire.set('is_custom_major', false);
+                                    $wire.set('custom_major', '');
+                                    this.search = name;
+                                    this.open = false;
+                                },
+                                selectOther() {
+                                    $wire.set('major_id', 'other');
+                                    $wire.set('is_custom_major', true);
+                                    this.search = '';
+                                    this.open = false;
+                                },
+                                init() {
+                                    let currentId = $wire.get('major_id');
+                                    if (currentId === 'other' || $wire.get('is_custom_major')) {
+                                        this.search = '';
+                                    } else if (currentId) {
+                                        let found = this.majors.find(m => m.id == currentId);
+                                        if (found) this.search = found.name;
+                                    }
+                                }
+                            }" class="relative">
                                 <label
                                     class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                                     Jurusan
@@ -225,16 +255,91 @@
                                             pada kolom <strong>Program Studi / Konsentrasi</strong> di sebelah.</span>
                                     </p>
                                 @else
-                                    <select wire:model="major_id"
-                                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                                        <option value="">-- Pilih Jurusan --</option>
-                                        @foreach ($majors as $maj)
-                                            <option value="{{ $maj->id }}">{{ $maj->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('major_id')
-                                        <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
-                                    @enderror
+                                    @if ($is_custom_major)
+                                        <div class="space-y-2">
+                                            <div class="relative">
+                                                <input type="text" wire:model="custom_major"
+                                                    placeholder="Ketik nama jurusan Anda di sini..."
+                                                    autofocus
+                                                    class="w-full px-4 py-2.5 pr-10 rounded-xl border border-emerald-400/80 dark:border-[#93F514] bg-emerald-50/20 dark:bg-[#93F514]/10 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] focus:border-transparent transition placeholder:text-slate-400">
+                                                <button type="button" wire:click="setCustomMajorMode(false)"
+                                                    title="Kembali ke pilihan daftar jurusan"
+                                                    class="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 bg-slate-200 dark:bg-[#1D2E54] px-2 py-0.5 rounded-lg transition">
+                                                    Batal
+                                                </button>
+                                            </div>
+                                            <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                                                <span>* Jurusan bebas / tidak ada di daftar</span>
+                                                <button type="button" wire:click="setCustomMajorMode(false)" class="text-emerald-600 dark:text-[#93F514] hover:underline font-semibold">
+                                                    Pilih dari daftar jurusan
+                                                </button>
+                                            </div>
+                                            @error('custom_major')
+                                                <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    @else
+                                        <div class="relative" @click.away="open = false">
+                                            <div class="relative">
+                                                <input type="text"
+                                                    x-model="search"
+                                                    @focus="open = true"
+                                                    @input="open = true"
+                                                    placeholder="Ketik untuk cari jurusan..."
+                                                    class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                                
+                                                <div class="absolute right-3 top-3 pointer-events-none text-slate-400">
+                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+
+                                            <!-- Dropdown Menu List -->
+                                            <div x-show="open"
+                                                x-transition:enter="transition ease-out duration-100"
+                                                x-transition:enter-start="opacity-0 scale-95"
+                                                x-transition:enter-end="opacity-100 scale-100"
+                                                x-transition:leave="transition ease-in duration-75"
+                                                x-transition:leave-start="opacity-100 scale-100"
+                                                x-transition:leave-end="opacity-0 scale-95"
+                                                class="absolute z-30 left-0 right-0 mt-1.5 max-h-56 overflow-y-auto bg-white dark:bg-[#0D1527] border border-slate-200/90 dark:border-[#1D2E54] rounded-xl shadow-xl divide-y divide-slate-100 dark:divide-[#1D2E54]/50"
+                                                style="display: none;">
+                                                
+                                                <!-- Button Khusus: Lainnya / Tulis Sendiri (Posisi Teratas) -->
+                                                <div class="p-1 bg-emerald-50/40 dark:bg-[#14203A]/80 sticky top-0 z-10 backdrop-blur-sm border-b border-slate-100 dark:border-[#1D2E54]">
+                                                    <button type="button"
+                                                        @click="selectOther()"
+                                                        class="w-full text-left px-3 py-2 text-xs md:text-sm rounded-lg font-bold text-emerald-600 dark:text-[#93F514] hover:bg-emerald-100/70 dark:hover:bg-[#93F514]/20 flex items-center gap-2 transition">
+                                                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                                        </svg>
+                                                        <span>Jurusan Lainnya</span>
+                                                    </button>
+                                                </div>
+
+                                                <!-- Daftar Jurusan -->
+                                                <div class="p-1">
+                                                    <template x-for="maj in filteredMajors" :key="maj.id">
+                                                        <button type="button"
+                                                            @click="selectMajor(maj.id, maj.name)"
+                                                            class="w-full text-left px-3 py-2 text-xs md:text-sm rounded-lg text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-[#14203A] hover:text-emerald-600 dark:hover:text-[#93F514] flex items-center justify-between transition">
+                                                            <span x-text="maj.name"></span>
+                                                            <span x-show="$wire.major_id == maj.id" class="text-emerald-600 dark:text-[#93F514] font-bold text-xs">✓</span>
+                                                        </button>
+                                                    </template>
+
+                                                    <div x-show="filteredMajors.length === 0" class="px-3 py-2.5 text-xs text-slate-400 dark:text-slate-500 italic">
+                                                        Jurusan "<span x-text="search"></span>" tidak ditemukan di daftar. Klik opsi "Lainnya" di atas untuk mengetik sendiri.
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            @error('major_id')
+                                                <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    @endif
                                 @endif
                             </div>
 

@@ -81,7 +81,7 @@
                                         <img src="{{ $photoUrl }}" alt="{{ $profile?->full_name ?? $candidate->name }}" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm shrink-0">
                                     @else
                                         <div
-                                            class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-sm flex-shrink-0">
+                                            class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
                                             {{ strtoupper(substr($profile?->full_name ?? $candidate->name, 0, 2)) }}
                                         </div>
                                     @endif
@@ -106,9 +106,15 @@
 
                             <td class="px-6 py-4">
                                 @if ($latestEdu)
-                                    <span
-                                        class="font-semibold text-gray-800 dark:text-slate-200 block">{{ $latestEdu->degree ?? '' }}
-                                        - {{ $latestEdu->major ?? '' }}</span>
+                                    <span class="font-semibold text-gray-800 dark:text-slate-200 block">
+                                        {{ $latestEdu->degree ?? '' }}
+                                        @if($latestEdu->major && $latestEdu->major !== '-')
+                                            - {{ $latestEdu->major }}
+                                        @endif
+                                        @if($latestEdu->study_program && $latestEdu->study_program !== $latestEdu->major)
+                                            <span class="text-xs font-normal text-gray-500 dark:text-slate-400">({{ $latestEdu->study_program }})</span>
+                                        @endif
+                                    </span>
                                     <span
                                         class="text-[11px] text-gray-500 dark:text-slate-400 block">{{ $latestEdu->school_name ?? ($latestEdu->institution_name ?? '-') }}</span>
                                 @else
@@ -192,7 +198,7 @@
                     </template>
                     <template x-if="(!detailData.applicant_profile || !detailData.applicant_profile.photo) && !detailData.avatar">
                         <div
-                            class="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-base shadow-md shrink-0">
+                            class="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-base flex items-center justify-center shrink-0 shadow-2xs">
                             <span
                                 x-text="detailData.applicant_profile ? (detailData.applicant_profile.full_name || detailData.name || 'K').substring(0, 2).toUpperCase() : (detailData.name ? detailData.name.substring(0,2).toUpperCase() : 'K')"></span>
                         </div>
@@ -337,10 +343,26 @@
                                     <div>
                                         <span class="font-semibold text-gray-900 dark:text-white block"
                                             x-text="edu.school_name || edu.institution_name"></span>
-                                        <span class="text-gray-500 dark:text-slate-400 text-[11px]"
-                                            x-text="(edu.degree || '') + ' - ' + (edu.major || '') + (edu.gpa ? ' (IPK: ' + edu.gpa + ')' : '')"></span>
+                                        <div class="flex items-center flex-wrap gap-1.5 mt-0.5">
+                                            <span class="text-indigo-600 dark:text-indigo-400 font-medium text-[11px]"
+                                                x-text="edu.degree || 'Pendidikan'"></span>
+                                            <span class="text-gray-400 text-[11px]" x-show="edu.major && edu.major !== '-'">•</span>
+                                            <span class="text-gray-700 dark:text-slate-300 font-medium text-[11px]"
+                                                x-show="edu.major && edu.major !== '-'">
+                                                Jurusan: <span class="font-semibold" x-text="edu.major"></span>
+                                            </span>
+                                            <span class="text-gray-400 text-[11px]" x-show="edu.study_program && edu.study_program !== edu.major">•</span>
+                                            <span class="text-gray-600 dark:text-slate-400 text-[11px]"
+                                                x-show="edu.study_program && edu.study_program !== edu.major">
+                                                Prodi: <span class="font-medium" x-text="edu.study_program"></span>
+                                            </span>
+                                            <span class="text-gray-400 text-[11px]" x-show="edu.gpa">•</span>
+                                            <span class="text-emerald-600 dark:text-emerald-400 font-medium text-[11px]"
+                                                x-show="edu.gpa"
+                                                x-text="'IPK/Nilai: ' + edu.gpa"></span>
+                                        </div>
                                     </div>
-                                    <span class="text-gray-400 text-[11px]"
+                                    <span class="text-gray-400 text-[11px] shrink-0"
                                         x-text="edu.start_year + ' - ' + (edu.end_year || 'Sekarang')"></span>
                                 </div>
                             </template>

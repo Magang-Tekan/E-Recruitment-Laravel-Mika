@@ -373,7 +373,7 @@
                             @if ($app->applicantProfile && $app->applicantProfile->photo)
                                 <img src="{{ \Illuminate\Support\Str::startsWith($app->applicantProfile->photo, ['http://', 'https://']) ? $app->applicantProfile->photo : asset('storage/' . $app->applicantProfile->photo) }}" alt="{{ $app->applicantProfile->full_name }}" class="w-11 h-11 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm shrink-0">
                             @else
-                                <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0">
+                                <div class="w-11 h-11 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
                                     {{ strtoupper(substr($app->applicantProfile->full_name ?? 'P', 0, 2)) }}
                                 </div>
                             @endif
@@ -623,7 +623,7 @@
                                         @if ($app->applicantProfile && $app->applicantProfile->photo)
                                             <img src="{{ \Illuminate\Support\Str::startsWith($app->applicantProfile->photo, ['http://', 'https://']) ? $app->applicantProfile->photo : asset('storage/' . $app->applicantProfile->photo) }}" alt="{{ $app->applicantProfile->full_name }}" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm shrink-0">
                                         @else
-                                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0">
+                                            <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
                                                 {{ strtoupper(substr($app->applicantProfile->full_name ?? 'P', 0, 2)) }}
                                             </div>
                                         @endif
@@ -825,7 +825,7 @@
                                     class="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-md shrink-0">
                             </template>
                             <template x-if="!detailData.applicant_profile || !detailData.applicant_profile.photo">
-                                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-base shadow-md shrink-0">
+                                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-base flex items-center justify-center shrink-0 shadow-2xs">
                                     <span x-text="detailData.applicant_profile ? (detailData.applicant_profile.full_name || 'P').substring(0, 2).toUpperCase() : 'P'"></span>
                                 </div>
                             </template>
@@ -931,7 +931,24 @@
                                         <div class="p-3 bg-gray-50 dark:bg-slate-800/40 rounded-xl border border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-2">
                                             <div>
                                                 <span class="font-semibold text-gray-900 dark:text-white block" x-text="edu.school_name || edu.institution_name"></span>
-                                                <span class="text-gray-500 dark:text-slate-400 text-[11px]" x-text="(edu.degree || '') + ' - ' + (edu.major || '') + (edu.gpa ? ' (IPK: ' + edu.gpa + ')' : '')"></span>
+                                                <div class="flex items-center flex-wrap gap-1.5 mt-0.5">
+                                                    <span class="text-indigo-600 dark:text-indigo-400 font-medium text-[11px]"
+                                                        x-text="edu.degree || 'Pendidikan'"></span>
+                                                    <span class="text-gray-400 text-[11px]" x-show="edu.major && edu.major !== '-'">•</span>
+                                                    <span class="text-gray-700 dark:text-slate-300 font-medium text-[11px]"
+                                                        x-show="edu.major && edu.major !== '-'">
+                                                        Jurusan: <span class="font-semibold" x-text="edu.major"></span>
+                                                    </span>
+                                                    <span class="text-gray-400 text-[11px]" x-show="edu.study_program && edu.study_program !== edu.major">•</span>
+                                                    <span class="text-gray-600 dark:text-slate-400 text-[11px]"
+                                                        x-show="edu.study_program && edu.study_program !== edu.major">
+                                                        Prodi: <span class="font-medium" x-text="edu.study_program"></span>
+                                                    </span>
+                                                    <span class="text-gray-400 text-[11px]" x-show="edu.gpa">•</span>
+                                                    <span class="text-emerald-600 dark:text-emerald-400 font-medium text-[11px]"
+                                                        x-show="edu.gpa"
+                                                        x-text="'IPK/Nilai: ' + edu.gpa"></span>
+                                                </div>
                                             </div>
                                             <span class="text-gray-400 text-[10.5px] shrink-0 self-start" x-text="edu.start_year + ' - ' + (edu.end_year || 'Sekarang')"></span>
                                         </div>

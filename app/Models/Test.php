@@ -56,7 +56,8 @@ class Test extends Model
     public function questions(): BelongsToMany
     {
         return $this->belongsToMany(QuestionBank::class, 'test_questions', 'test_id', 'question_id')
-                    ->withPivot('order_number');
+                    ->withPivot('order_number')
+                    ->orderByPivot('order_number', 'asc');
     }
 
     public function attempts(): HasMany

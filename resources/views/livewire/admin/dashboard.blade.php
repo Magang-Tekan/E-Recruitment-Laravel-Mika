@@ -7,14 +7,15 @@
     <!-- Welcome Header Card (Clean Enterprise Blueprint - Authentic & Non-AI) -->
     <div
         class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-blue-600 dark:border-l-[#93F514] p-6 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 transition-colors">
-        
+
         <!-- Subtle Technical Blueprint Dot Grid (Authentic & Non-AI) -->
         <div class="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.06]"
             style="background-image: radial-gradient(#93F514 1px, transparent 1px); background-size: 20px 20px;">
         </div>
 
         <div class="relative z-10 flex items-start sm:items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-[#14203A] border border-blue-100 dark:border-[#1D2E54] text-blue-600 dark:text-[#93F514] flex items-center justify-center shrink-0 shadow-sm">
+            <div
+                class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-[#14203A] border border-blue-100 dark:border-[#1D2E54] text-blue-600 dark:text-[#93F514] flex items-center justify-center shrink-0 shadow-sm">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
@@ -22,7 +23,8 @@
                 </svg>
             </div>
             <div>
-                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                <h1
+                    class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                     <span>{{ $isRecruiter ? 'Selamat Datang di Panel Recruiter E-Rekrutmen' : 'Selamat Datang di Panel Admin E-Rekrutmen' }}</span>
                     <span class="text-xl">👋</span>
                 </h1>
@@ -37,7 +39,8 @@
                 <a href="{{ route('admin.job') }}"
                     class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-slate-950 dark:shadow-[#93F514]/20 font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-1.5 w-full sm:w-auto shrink-0 active:scale-95">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4">
+                        </path>
                     </svg>
                     <span>Pasang Lowongan</span>
                 </a>
@@ -147,14 +150,16 @@
                         Bank Soal</p>
                     <div class="flex items-baseline gap-2 mt-1">
                         <span class="text-2xl font-bold text-slate-900 dark:text-white">{{ $totalTests }}</span>
-                        <span class="text-xs text-slate-500 dark:text-[#7E90B5]">Paket Tes ({{ $totalQuestions }} Soal)</span>
+                        <span class="text-xs text-slate-500 dark:text-[#7E90B5]">Paket Tes ({{ $totalQuestions }}
+                            Soal)</span>
                     </div>
                 @else
                     <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-[#93A5C9]">Total
                         Kandidat</p>
                     <div class="flex items-baseline gap-2 mt-1">
                         <span class="text-2xl font-bold text-slate-900 dark:text-white">{{ $totalCandidates }}</span>
-                        <span class="text-xs text-indigo-600 dark:text-indigo-400 font-medium">Terdaftar di Sistem</span>
+                        <span class="text-xs text-indigo-600 dark:text-indigo-400 font-medium">Terdaftar di
+                            Sistem</span>
                     </div>
                 @endif
             </div>
@@ -178,8 +183,10 @@
                     <a href="{{ $applicationRoute }}"
                         class="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-[#93F514] dark:hover:text-[#aef74b] transition flex items-center gap-1 group">
                         <span>Lihat Semua</span>
-                        <svg class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        <svg class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
                         </svg>
                     </a>
                 </div>
@@ -206,11 +213,13 @@
                                                 {{ substr($app->applicantProfile->full_name ?? ($app->applicantProfile->user->name ?? 'A'), 0, 2) }}
                                             </div>
                                             <div class="min-w-0 pr-2">
-                                                <span class="font-semibold text-sm text-slate-900 dark:text-white truncate block leading-tight">
+                                                <span
+                                                    class="font-semibold text-sm text-slate-900 dark:text-white truncate block leading-tight">
                                                     {{ $app->applicantProfile->full_name ?? ($app->applicantProfile->user->name ?? 'Pelamar') }}
                                                 </span>
-                                                @if(!empty($app->applicantProfile->user->email))
-                                                    <span class="text-[11px] text-slate-400 dark:text-[#7E90B5] truncate block mt-0.5">
+                                                @if (!empty($app->applicantProfile->user->email))
+                                                    <span
+                                                        class="text-[11px] text-slate-400 dark:text-[#7E90B5] truncate block mt-0.5">
                                                         {{ $app->applicantProfile->user->email }}
                                                     </span>
                                                 @endif
@@ -218,11 +227,14 @@
                                         </div>
                                     </td>
                                     <!-- Posisi Column -->
-                                    <td class="py-3.5 px-3 align-middle text-xs font-medium text-slate-600 dark:text-[#C5D5F5]">
-                                        <span class="truncate block max-w-[190px]">{{ $app->job->title ?? '-' }}</span>
+                                    <td
+                                        class="py-3.5 px-3 align-middle text-xs font-medium text-slate-600 dark:text-[#C5D5F5]">
+                                        <span
+                                            class="truncate block max-w-[190px]">{{ $app->job->title ?? '-' }}</span>
                                     </td>
                                     <!-- Tanggal Column -->
-                                    <td class="py-3.5 px-3 align-middle text-xs text-slate-500 dark:text-[#889BC2] whitespace-nowrap">
+                                    <td
+                                        class="py-3.5 px-3 align-middle text-xs text-slate-500 dark:text-[#889BC2] whitespace-nowrap">
                                         {{ $app->applied_at ? \Carbon\Carbon::parse($app->applied_at)->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') . ' WIB' : '-' }}
                                     </td>
                                     <!-- Status Column -->
@@ -230,18 +242,30 @@
                                         @php
                                             $statusKey = strtolower(trim($app->status ?? ''));
                                             $statusClasses = [
-                                                'reviewed' => 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/15 dark:text-sky-300 dark:border-sky-500/30',
-                                                'interview' => 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30',
-                                                'shortlisted' => 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/30',
-                                                'screening' => 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:border-violet-500/30',
-                                                'accepted' => 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/30',
-                                                'hired' => 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-[#93F514]/15 dark:text-[#93F514] dark:border-[#93F514]/30',
-                                                'rejected' => 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30',
-                                                'applied' => 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30',
-                                                'submitted' => 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30',
-                                                'pending' => 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30',
+                                                'reviewed' =>
+                                                    'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/15 dark:text-sky-300 dark:border-sky-500/30',
+                                                'interview' =>
+                                                    'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30',
+                                                'shortlisted' =>
+                                                    'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/30',
+                                                'screening' =>
+                                                    'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:border-violet-500/30',
+                                                'accepted' =>
+                                                    'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/30',
+                                                'hired' =>
+                                                    'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-[#93F514]/15 dark:text-[#93F514] dark:border-[#93F514]/30',
+                                                'rejected' =>
+                                                    'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30',
+                                                'applied' =>
+                                                    'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30',
+                                                'submitted' =>
+                                                    'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30',
+                                                'pending' =>
+                                                    'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30',
                                             ];
-                                            $badgeClass = $statusClasses[$statusKey] ?? 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+                                            $badgeClass =
+                                                $statusClasses[$statusKey] ??
+                                                'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
                                         @endphp
                                         <span
                                             class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-semibold rounded-full capitalize border {{ $badgeClass }}">
@@ -251,7 +275,8 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="py-8 text-center text-sm text-slate-400 dark:text-[#889BC2]">
+                                    <td colspan="4"
+                                        class="py-8 text-center text-sm text-slate-400 dark:text-[#889BC2]">
                                         Belum ada data lamaran masuk.
                                     </td>
                                 </tr>
@@ -329,7 +354,8 @@
                                 </svg>
                             </div>
                             <span
-                                class="text-xs font-semibold group-hover:text-purple-600 dark:group-hover:text-[#93F514] transition-colors">Paket Tes</span>
+                                class="text-xs font-semibold group-hover:text-purple-600 dark:group-hover:text-[#93F514] transition-colors">Paket
+                                Tes</span>
                         </a>
                     @endif
                     <a href="{{ $isAdmin ? route('admin.test_evaluation') : route('recruiter.test_evaluation') }}"
@@ -343,7 +369,8 @@
                             </svg>
                         </div>
                         <span
-                            class="text-xs font-semibold group-hover:text-amber-600 dark:group-hover:text-[#93F514] transition-colors">Nilai Ujian</span>
+                            class="text-xs font-semibold group-hover:text-amber-600 dark:group-hover:text-[#93F514] transition-colors">Nilai
+                            Ujian</span>
                     </a>
                 </div>
             </div>
@@ -364,7 +391,8 @@
                             <div>
                                 <h4 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $job->title }}
                                 </h4>
-                                <p class="text-xs text-slate-500 dark:text-[#93A5C9]">{{ $job->department->name ?? 'Dept' }} - Kuota:
+                                <p class="text-xs text-slate-500 dark:text-[#93A5C9]">
+                                    {{ $job->department->name ?? 'Dept' }} - Kuota:
                                     {{ $job->quota ?? '-' }}</p>
                             </div>
                             <span

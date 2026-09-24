@@ -83,6 +83,7 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':recruiter'])
         Route::view('test-evaluations', 'livewire.admin.test-evaluation.index')->name('test_evaluation');
         Route::put('test-evaluations/{id}/grade', [TestEvaluationController::class, 'updateGrade'])->name('test_evaluation.grade');
         Route::get('test-evaluations/{id}/disc-pdf', [TestEvaluationController::class, 'downloadDiscPdf'])->name('test_evaluation.disc_pdf');
+        Route::get('test-evaluations/{id}/papi-pdf', [TestEvaluationController::class, 'downloadPapiPdf'])->name('test_evaluation.papi_pdf');
 
         // Employee Assessment Results (Recruiter)
         Route::view('employee-test-evaluations', 'livewire.admin.employee-test-evaluation.index')->name('employee_test_evaluation');
@@ -196,6 +197,7 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':admin'])
             Route::view('test-evaluations', 'livewire.admin.test-evaluation.index')->name('test_evaluation');
             Route::put('test-evaluations/{id}/grade', [TestEvaluationController::class, 'updateGrade'])->name('test_evaluation.grade');
             Route::get('test-evaluations/{id}/disc-pdf', [TestEvaluationController::class, 'downloadDiscPdf'])->name('test_evaluation.disc_pdf');
+            Route::get('test-evaluations/{id}/papi-pdf', [TestEvaluationController::class, 'downloadPapiPdf'])->name('test_evaluation.papi_pdf');
         });
     });
 
@@ -206,6 +208,10 @@ Route::view('profile', 'profile')
 Route::get('test-evaluations/{id}/disc-pdf', [TestEvaluationController::class, 'downloadDiscPdf'])
     ->middleware(['auth'])
     ->name('test_evaluation.disc_pdf');
+
+Route::get('test-evaluations/{id}/papi-pdf', [TestEvaluationController::class, 'downloadPapiPdf'])
+    ->middleware(['auth'])
+    ->name('test_evaluation.papi_pdf');
 
 Route::get('employee/test/{testId}', EmployeeOnlineTest::class)
     ->middleware(['auth'])

@@ -144,6 +144,64 @@
                 </div>
             </div>
 
+            <!-- Biodata Peserta Ujian (Diambil Otomatis dari Data Pribadi / Profil Pelamar) -->
+            <div
+                class="p-5 rounded-2xl bg-gradient-to-br from-blue-50/70 via-slate-50/40 to-indigo-50/50 dark:from-[#14203A]/60 dark:via-[#0D1527]/80 dark:to-[#1D2E54]/40 border border-blue-100 dark:border-[#1D2E54] shadow-2xs space-y-4">
+                <div
+                    class="flex items-center justify-between pb-3 border-b border-blue-100 dark:border-[#1D2E54]">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <svg class="w-4 h-4 text-blue-600 dark:text-[#93F514]" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            Data Peserta Ujian
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-0.5">
+                            Data pribadi diambil otomatis dari profil pendaftaran Anda untuk dicantumkan pada lembar hasil laporan & evaluasi.
+                        </p>
+                    </div>
+                    <span
+                        class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Otomatis dari Profil
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Nama Lengkap -->
+                    <div class="p-3.5 rounded-xl bg-white dark:bg-[#0D1527] border border-slate-200/80 dark:border-[#1D2E54]">
+                        <span class="block text-[11px] font-medium text-slate-500 dark:text-[#93A5C9] mb-1">Nama Lengkap</span>
+                        <span class="text-xs font-bold text-slate-900 dark:text-white truncate block">{{ $participantName ?: 'Pelamar' }}</span>
+                    </div>
+
+                    <!-- Usia -->
+                    <div class="p-3.5 rounded-xl bg-white dark:bg-[#0D1527] border border-slate-200/80 dark:border-[#1D2E54]">
+                        <span class="block text-[11px] font-medium text-slate-500 dark:text-[#93A5C9] mb-1">Usia</span>
+                        <span class="text-xs font-bold text-slate-900 dark:text-white block">{{ $participantAge ? $participantAge . ' Tahun' : '-' }}</span>
+                    </div>
+
+                    <!-- Jenis Kelamin -->
+                    <div class="p-3.5 rounded-xl bg-white dark:bg-[#0D1527] border border-slate-200/80 dark:border-[#1D2E54]">
+                        <span class="block text-[11px] font-medium text-slate-500 dark:text-[#93A5C9] mb-1">Jenis Kelamin</span>
+                        <span class="text-xs font-bold text-slate-900 dark:text-white block">
+                            {{ $participantGender === 'female' ? 'Perempuan' : 'Laki-laki' }}
+                        </span>
+                    </div>
+
+                    <!-- Tanggal Pelaksanaan Tes -->
+                    <div class="p-3.5 rounded-xl bg-white dark:bg-[#0D1527] border border-slate-200/80 dark:border-[#1D2E54]">
+                        <span class="block text-[11px] font-medium text-slate-500 dark:text-[#93A5C9] mb-1">Tanggal Tes</span>
+                        <span class="text-xs font-bold text-slate-900 dark:text-white block">
+                            {{ \Carbon\Carbon::parse($testDate)->translatedFormat('d F Y') }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Ketentuan Ujian -->
             <div class="p-4 rounded-xl bg-slate-50 dark:bg-[#14203A]/70 border border-slate-200 dark:border-[#1D2E54] text-xs text-slate-700 dark:text-slate-300 space-y-2">
                 <h3 class="font-semibold text-xs text-slate-900 dark:text-white">Peraturan & Hal yang Perlu Diperhatikan:</h3>
@@ -181,10 +239,127 @@
 
     <!-- STATE 2: SEDANG MENGERJAKAN UJIAN (TAKING TEST) -->
     @if ($testState === 'taking')
+        @php
+            $isPapiPage = collect($pageQuestions ?? [])->contains('question_type', 'papi_kostick');
+        @endphp
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
             <!-- Left Side: Lembar Soal & Jawaban (3 Cols) -->
             <div class="lg:col-span-3 space-y-6">
-                @if ($currentQuestion)
+
+                {{-- ============================================================ --}}
+                {{-- LAYOUT TABEL: PAPI KOSTICK (semua soal halaman dalam 1 tabel) --}}
+                {{-- ============================================================ --}}
+                @if ($isPapiPage)
+                    <div class="bg-white dark:bg-[#0D1527] rounded-3xl border border-slate-200/80 dark:border-[#1D2E54] shadow-sm overflow-hidden">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-[#1D2E54] bg-indigo-900 text-white">
+                            <div class="flex items-center gap-2.5">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-white/20 text-white font-black text-xs">
+                                    Soal {{ $pageStart + 1 }}–{{ min($pageStart + $questionsPerPage, $totalQuestions) }}
+                                </span>
+                                <span class="text-white/80 text-xs font-medium">dari {{ $totalQuestions }} Soal PAPI Kostick</span>
+                            </div>
+                            <span class="text-[11px] font-semibold text-white/90">Pilih 1 pernyataan yang paling sesuai diri Anda (A atau B)</span>
+                        </div>
+
+                        <!-- Tabel semua soal di halaman ini -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs border-collapse">
+                                <thead>
+                                    <tr class="border-b-2 border-slate-300 dark:border-[#1D2E54] text-center text-[11px] font-extrabold uppercase tracking-wider">
+                                        <th class="w-12 py-2.5 px-2 bg-slate-200 dark:bg-[#14203A] text-slate-700 dark:text-slate-300 border-r-2 border-slate-300 dark:border-[#1D2E54]">No</th>
+                                        <th class="w-14 py-2.5 px-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 border-r-2 border-slate-300 dark:border-[#1D2E54]">Pilih</th>
+                                        <th class="py-2.5 px-4 bg-slate-50 dark:bg-[#14203A]/50 text-slate-700 dark:text-slate-300 text-left">Pernyataan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($pageQuestions as $pgIdx => $pq)
+                                        @php
+                                            $globalIdx    = $pageStart + $pgIdx;
+                                            $selectedPapi = $answers[$pq['id']] ?? null;
+                                            $isEven       = $pgIdx % 2 === 0;
+                                        @endphp
+                                        <tbody wire:key="papi-group-{{ $pq['id'] }}" wire:ignore
+                                            x-data="{ sel: {{ $selectedPapi ?? 'null' }} }"
+                                            class="border-t-4 {{ $isEven ? 'border-indigo-300 dark:border-indigo-700' : 'border-slate-300 dark:border-slate-600' }}">
+
+                                            @foreach ($pq['options'] as $oIdx => $opt)
+                                                @php $label = ['A','B','C','D','E'][$oIdx] ?? ($oIdx+1); @endphp
+                                                <tr class="cursor-pointer"
+                                                    :class="sel == {{ $opt['id'] }}
+                                                        ? 'bg-indigo-50 dark:bg-indigo-950/40'
+                                                        : '{{ $isEven ? 'hover:bg-slate-50 dark:hover:bg-[#14203A]/50' : 'hover:bg-slate-100/60 dark:hover:bg-[#14203A]/30' }}'"
+                                                    @click="sel = {{ $opt['id'] }}; $wire.saveAnswer({{ $pq['id'] }}, {{ $opt['id'] }})">
+
+                                                    @if ($oIdx === 0)
+                                                        <td rowspan="{{ count($pq['options']) }}"
+                                                            class="text-center font-black text-sm w-12 border-r-2 border-slate-300 dark:border-[#1D2E54] select-none align-middle
+                                                                {{ $isEven ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-900 dark:text-indigo-100' : 'bg-slate-200 dark:bg-[#14203A] text-slate-800 dark:text-white' }}">
+                                                            {{ $globalIdx + 1 }}
+                                                        </td>
+                                                    @endif
+
+                                                    <td class="text-center w-14 border-r-2 border-slate-200 dark:border-[#1D2E54] py-0"
+                                                        @click.stop="sel = {{ $opt['id'] }}; $wire.saveAnswer({{ $pq['id'] }}, {{ $opt['id'] }})">
+                                                        <label class="flex items-center justify-center w-full h-11 cursor-pointer">
+                                                            <input type="radio"
+                                                                id="papi_opt_{{ $opt['id'] }}"
+                                                                name="papi_q_{{ $pq['id'] }}"
+                                                                value="{{ $opt['id'] }}"
+                                                                :checked="sel == {{ $opt['id'] }}"
+                                                                class="w-4 h-4 text-indigo-600 border-2 border-slate-400 focus:ring-indigo-500 cursor-pointer">
+                                                        </label>
+                                                    </td>
+
+                                                    <td class="py-3 px-4 text-slate-800 dark:text-slate-200 font-medium text-xs sm:text-sm leading-snug">
+                                                        <span class="inline-flex items-center gap-2.5">
+                                                            <span class="w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-black shrink-0 transition-colors duration-100"
+                                                                :class="sel == {{ $opt['id'] }}
+                                                                    ? 'bg-indigo-600 text-white shadow-xs'
+                                                                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'">
+                                                                {{ $label }}
+                                                            </span>
+                                                            <span :class="sel == {{ $opt['id'] }} ? 'text-indigo-900 dark:text-indigo-100 font-semibold' : ''">
+                                                                {{ $opt['option_text'] }}
+                                                            </span>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination Footer for PAPI -->
+                        <div class="flex items-center justify-between p-4 border-t border-slate-100 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#070B14]">
+                            <button type="button" wire:click="prevQuestion" {{ $currentPage === 0 ? 'disabled' : '' }}
+                                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1A2A4C] disabled:opacity-40 disabled:cursor-not-allowed transition shadow-2xs">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                                <span>Halaman Sebelumnya</span>
+                            </button>
+
+                            <span class="text-xs font-bold text-slate-600 dark:text-slate-300">
+                                Halaman {{ $currentPage + 1 }} dari {{ $totalPages }}
+                            </span>
+
+                            @if ($currentPage < $totalPages - 1)
+                                <button type="button" wire:click="nextQuestion"
+                                    class="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-xs">
+                                    <span>Halaman Selanjutnya</span>
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </button>
+                            @else
+                                <button type="button" @click="showConfirmModal = true"
+                                    class="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-sm">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    <span>Kirim Jawaban & Selesai</span>
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+                @elseif ($currentQuestion)
                     <div id="soal-area" class="bg-white dark:bg-[#0D1527] rounded-3xl border border-slate-200/80 dark:border-[#1D2E54] shadow-sm p-6 sm:p-8 space-y-6">
                         <!-- Question Header -->
                         <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-[#1D2E54]">
@@ -197,6 +372,8 @@
                                         Pilihan Ganda
                                     @elseif ($currentQuestion['question_type'] === 'disc')
                                         Pernyataan DISC
+                                    @elseif ($currentQuestion['question_type'] === 'papi_kostick')
+                                        PAPI Kostick
                                     @else
                                         Uraian / Essay
                                     @endif
@@ -275,6 +452,39 @@
                                         </span>
                                     </label>
                                 @endforeach
+                            </div>
+                        @endif
+
+                        <!-- OPSI PAPI KOSTICK (PILIHAN DUA PERNYATAAN A / B) -->
+                        @if ($currentQuestion['question_type'] === 'papi_kostick')
+                            @php
+                                $selectedOpt = $answers[$currentQuestion['id']] ?? null;
+                                $letters = ['A', 'B'];
+                            @endphp
+                            <div class="space-y-4 pt-2"
+                                 wire:key="papi-box-{{ $currentQuestion['id'] }}"
+                                 x-data="{ selected: {{ $selectedOpt ?? 'null' }} }">
+                                <p class="text-xs text-slate-500 dark:text-[#93A5C9] font-medium italic">
+                                    Pilihlah salah satu dari dua pernyataan di bawah ini yang paling menggambarkan diri Anda atau paling sesuai dengan diri Anda:
+                                </p>
+                                <div class="grid grid-cols-1 gap-3.5">
+                                    @foreach ($currentQuestion['options'] as $idx => $opt)
+                                        <label @click="selected = {{ $opt['id'] }}; $wire.saveAnswer({{ $currentQuestion['id'] }}, {{ $opt['id'] }})"
+                                            class="flex items-start gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200"
+                                            :class="selected == {{ $opt['id'] }}
+                                                ? 'bg-blue-50/90 dark:bg-blue-950/40 border-blue-600 dark:border-[#93F514] ring-2 ring-blue-500/20 dark:ring-[#93F514]/20 text-slate-900 dark:text-white shadow-sm'
+                                                : 'bg-white dark:bg-[#14203A]/40 border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-slate-200 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-slate-50/80 dark:hover:bg-[#14203A]'">
+                                            <input type="radio" name="opt_papi_{{ $currentQuestion['id'] }}" value="{{ $opt['id'] }}" :checked="selected == {{ $opt['id'] }}" class="sr-only">
+                                            <span class="w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm shrink-0 transition-colors"
+                                                  :class="selected == {{ $opt['id'] }} ? 'bg-blue-600 dark:bg-[#93F514] text-white dark:text-black shadow' : 'bg-slate-100 dark:bg-[#0D1527] text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-[#1D2E54]'">
+                                                {{ $letters[$idx] ?? ($idx == 0 ? 'A' : 'B') }}
+                                            </span>
+                                            <span class="text-sm sm:text-base flex-1 leading-relaxed pt-1 select-none">
+                                                {{ $opt['option_text'] }}
+                                            </span>
+                                        </label>
+                                    @endforeach
+                                </div>
                             </div>
                         @endif
 
@@ -584,14 +794,16 @@
                                     } elseif ($hasMost || $hasLeast) {
                                         $status = 'partial';
                                     }
-                                } elseif ($q['question_type'] === 'multiple_choice') {
+                                } elseif ($q['question_type'] === 'multiple_choice' || $q['question_type'] === 'papi_kostick') {
                                     $status = (!empty($answers[$q['id']])) ? 'completed' : 'unanswered';
                                 } elseif ($q['question_type'] === 'essay') {
                                     $hasText = !empty($answers[$q['id']]) && trim($answers[$q['id']]) !== '';
                                     $hasAttachment = !empty($essayAttachments[$q['id']]);
                                     $status = ($hasText || $hasAttachment) ? 'completed' : 'unanswered';
                                 }
-                                $isCurrent = ($currentQuestionIndex === $idx);
+                                $isPapiPage = ($q['question_type'] === 'papi_kostick');
+                                $isOnCurrentPage = ($idx >= $pageStart && $idx < $pageStart + $questionsPerPage);
+                                $isCurrent = $isPapiPage ? $isOnCurrentPage : ($currentQuestionIndex === $idx);
                             @endphp
                             <button type="button" wire:click="selectQuestion({{ $idx }})"
                                 class="h-8 rounded-lg text-xs font-medium flex items-center justify-center transition border {{ $isCurrent ? 'ring-2 ring-blue-500 dark:ring-[#93F514] ring-offset-1 border-blue-500 dark:border-[#93F514]' : '' }} {{ $status === 'completed' ? 'bg-emerald-600 text-white border-emerald-600 dark:bg-[#93F514] dark:text-black dark:border-[#93F514]' : ($status === 'partial' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700 font-semibold' : 'bg-slate-50 dark:bg-[#14203A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#1D2E54] hover:bg-slate-100 dark:hover:bg-[#1A2A4C]') }}"
@@ -617,6 +829,12 @@
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0"></span>
                             <span>Belum Dijawab</span>
                         </div>
+                        @if (collect($questions)->contains('question_type', 'papi_kostick'))
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full border-2 border-blue-500 dark:border-[#93F514] shrink-0"></span>
+                                <span>Halaman Saat Ini</span>
+                            </div>
+                        @endif
                     </div>
 
                     @if ($completedCount < $totalQuestions)
@@ -788,71 +1006,36 @@
                         Terima kasih telah menyelesaikan inventori kepribadian DISC. Seluruh jawaban Anda telah tersimpan dengan aman dan akan dievaluasi langsung oleh Tim HR / Tim Rekruter.
                     </p>
                 </div>
+            @elseif ($papiResult || str_contains(strtolower($test->category?->name ?? ''), 'papi'))
+                <!-- Khusus Tes PAPI Kostick: Tampilkan notifikasi tersimpan -->
+                <div class="p-6 rounded-2xl bg-slate-50 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-center space-y-2">
+                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-[#93F514] mb-1">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Jawaban PAPI Kostick Tersimpan</h3>
+                    <p class="text-xs text-slate-600 dark:text-[#93A5C9] max-w-md mx-auto leading-relaxed">
+                        Terima kasih telah menyelesaikan Tes Kepribadian PAPI Kostick (90 Butir Soal). Seluruh jawaban Anda telah tersimpan dan profil kepribadian Anda telah terhitung oleh sistem untuk dievaluasi oleh Tim HR.
+                    </p>
+                </div>
             @else
-                <!-- Score Summary Card untuk Tes Non-DISC (Pilihan Ganda & Essay) -->
-                <div class="p-5 rounded-2xl bg-slate-50 dark:bg-[#14203A] border border-slate-100 dark:border-[#1D2E54] space-y-3">
-                    <div class="flex items-center justify-between text-xs text-slate-600 dark:text-[#93A5C9]">
-                        <span>Status Pengerjaan:</span>
-                        @if ($isWaitingReview)
-                            <span class="font-bold px-3 py-1 rounded-full text-[11px] bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                                Menunggu Review Essay
-                            </span>
-                        @elseif ($attempt && $attempt->status === 'passed')
-                            <span class="font-bold px-3 py-1 rounded-full text-[11px] bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-[#93F514] border border-emerald-200 dark:border-emerald-800">
-                                Lulus (Passed)
-                            </span>
-                        @elseif ($attempt && $attempt->status === 'failed')
-                            <span class="font-bold px-3 py-1 rounded-full text-[11px] bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                                Belum Lolos KKM
-                            </span>
-                        @else
-                            <span class="font-bold px-3 py-1 rounded-full text-[11px] bg-slate-200 text-slate-700 dark:bg-[#0D1527] dark:text-[#93A5C9] border border-slate-300 dark:border-[#1D2E54]">
-                                Selesai (Completed)
-                            </span>
-                        @endif
+                <!-- Tes Non-DISC/PAPI: Sembunyikan skor dari pelamar, hanya tampilkan notifikasi tersimpan -->
+                <div class="p-6 rounded-2xl bg-slate-50 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-center space-y-2">
+                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-[#93F514] mb-1">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
                     </div>
-
-                    @if ($hasMultipleChoice)
-                        <div class="flex items-center justify-between text-xs text-slate-600 dark:text-[#93A5C9]">
-                            <span>Skor Pilihan Ganda:</span>
-                            <span class="font-extrabold text-blue-600 dark:text-[#93F514] text-sm">
-                                {{ number_format($attempt->objective_score ?? 0, 1) }} Poin
-                            </span>
-                        </div>
-                    @endif
-
-                    @if ($hasEssayQuestions)
-                        <div class="flex items-center justify-between text-xs text-slate-600 dark:text-[#93A5C9]">
-                            <span>Skor Essay / Uraian:</span>
-                            @if ($attempt && $attempt->essay_score !== null)
-                                <span class="font-extrabold text-amber-600 dark:text-amber-400 text-sm">
-                                    {{ number_format($attempt->essay_score, 1) }} Poin
-                                </span>
-                            @else
-                                <span class="text-xs font-semibold text-amber-600 dark:text-amber-400 italic">
-                                    Sedang Dinilai Tim HR
-                                </span>
-                            @endif
-                        </div>
-                    @endif
-
-                    <div class="pt-2 border-t border-slate-200 dark:border-[#1D2E54] flex items-center justify-between">
-                        <span class="font-bold text-xs text-slate-900 dark:text-white">Total Skor Akhir:</span>
-                        @if ($isWaitingReview)
-                            <span class="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800">
-                                Menunggu Penilaian Essay
-                            </span>
-                        @else
-                            <span class="text-xl font-black text-slate-900 dark:text-white">
-                                {{ number_format($attempt->total_score ?? 0, 1) }}
-                            </span>
-                        @endif
-                    </div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Jawaban Anda Telah Tersimpan</h3>
+                    <p class="text-xs text-slate-600 dark:text-[#93A5C9] max-w-md mx-auto leading-relaxed">
+                        Terima kasih telah menyelesaikan ujian ini. Seluruh jawaban Anda telah tersimpan dengan aman dan akan dievaluasi oleh Tim HR / Tim Rekruter. Hasil seleksi akan diinformasikan melalui notifikasi status lamaran Anda.
+                    </p>
                 </div>
             @endif
 
             <p class="text-xs text-slate-400 dark:text-[#93A5C9] leading-relaxed pt-4">
-                Anda dapat memantau perkembangan nilai dan tahapan seleksi selanjutnya pada menu <strong>Riwayat Lamaran</strong>.
+                Anda dapat memantau perkembangan tahapan seleksi selanjutnya pada menu <strong>Riwayat Lamaran</strong>.
             </p>
 
             {{-- Banner: Test Berikutnya Tersedia (Sequential Auto-Unlock) --}}

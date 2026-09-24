@@ -145,5 +145,9 @@ class DatabaseSeeder extends Seeder
         // 6. Seed DISC Master Data & Questions
         $this->call(DiscMasterSeeder::class);
         // $this->call(DiscQuestionSeeder::class);
+
+        // 7. Seed PAPI Kostick Master Data & Questions
+        $this->call(PapiKostickMasterSeeder::class);
+        $this->call(PapiKostickQuestionSeeder::class);
     }
 }

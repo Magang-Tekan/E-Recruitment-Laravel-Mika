@@ -73,7 +73,7 @@ class TestTable extends Component
 
         $allQuestions = QuestionBank::with(['category', 'options'])
             ->orderBy('category_id', 'asc')
-            ->orderBy('id', 'desc')
+            ->orderBy('id', 'asc')
             ->get();
 
         $tests = Test::with(['jobs.company', 'jobs.department', 'job.company', 'category', 'questions'])

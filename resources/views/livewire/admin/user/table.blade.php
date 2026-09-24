@@ -203,7 +203,7 @@
                                     @if ($photoUrl)
                                         <img src="{{ $photoUrl }}" alt="{{ $user->name }}" class="w-9 h-9 rounded-full object-cover ring-1 ring-gray-200 dark:ring-slate-700 shrink-0">
                                     @else
-                                        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0 uppercase">
+                                        <div class="w-9 h-9 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs uppercase">
                                             {{ strtoupper(substr($user->name, 0, 2)) }}
                                         </div>
                                     @endif

@@ -7,6 +7,51 @@
     createCompanyId: '{{ old('company_id', '') }}',
     createDepartmentId: '{{ old('department_id', '') }}',
     createPositionId: '{{ old('position_id', '') }}',
+    createQuill: null,
+    editQuill: null,
+    createQuillFailed: false,
+    editQuillFailed: false,
+    ensureQuill(onSuccess, onError) {
+        if (typeof window.Quill !== 'undefined') {
+            onSuccess(window.Quill);
+            return;
+        }
+        let existingScript = document.getElementById('quill-dynamic-script');
+        if (existingScript) {
+            let attempts = 0;
+            let interval = setInterval(() => {
+                attempts++;
+                if (typeof window.Quill !== 'undefined') {
+                    clearInterval(interval);
+                    onSuccess(window.Quill);
+                } else if (attempts > 25) {
+                    clearInterval(interval);
+                    if (onError) onError();
+                }
+            }, 100);
+            return;
+        }
+        let script = document.createElement('script');
+        script.id = 'quill-dynamic-script';
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js';
+        script.async = true;
+        script.onload = () => {
+            if (typeof window.Quill !== 'undefined') {
+                onSuccess(window.Quill);
+            } else if (onError) {
+                onError();
+            }
+        };
+        script.onerror = () => {
+            if (onError) onError();
+        };
+        document.head.appendChild(script);
+        setTimeout(() => {
+            if (typeof window.Quill === 'undefined' && onError) {
+                onError();
+            }
+        }, 3000);
+    },
     goToCreateStep2() {
         let company = document.getElementById('company_id');
         let dept = document.getElementById('department_id');
@@ -89,8 +134,6 @@
             this.editData.position_id = '';
         }
     },
-    createQuill: null,
-    editQuill: null,
     editData: {
         id: '{{ old('id', '') }}',
         company_id: '{{ old('company_id', '') }}',
@@ -126,76 +169,111 @@
         }
     },
     initQuillCreate() {
-        if (this.createQuill) return;
         this.$nextTick(() => {
             let container = document.getElementById('create_quill_editor');
-            if (!container) return;
-            this.createQuill = new Quill(container, {
-                theme: 'snow',
-                placeholder: 'Tuliskan deskripsi pekerjaan, tanggung jawab, dan rincian persyaratan kualifikasi di sini...',
-                modules: {
-                    toolbar: [
-                        [{ 'header': [2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        ['clean']
-                    ]
-                }
-            });
+            let initialContent = document.getElementById('create_final_description')?.value || '';
+            let fallbackTextarea = document.getElementById('create_fallback_textarea');
 
-            this.createQuill.on('text-change', () => {
-                let html = this.createQuill.root.innerHTML;
-                let isEmpty = this.createQuill.getText().trim().length === 0;
-                let input = document.getElementById('create_final_description');
-                if (input) input.value = isEmpty ? '' : html;
+            this.ensureQuill((QuillClass) => {
+                this.createQuillFailed = false;
+                if (!container) return;
+
+                if (!container.querySelector('.ql-editor') || !this.createQuill) {
+                    container.innerHTML = '';
+                    this.createQuill = new QuillClass(container, {
+                        theme: 'snow',
+                        placeholder: 'Tuliskan deskripsi pekerjaan, tanggung jawab, dan rincian persyaratan kualifikasi di sini...',
+                        modules: {
+                            toolbar: [
+                                [{ 'header': [2, 3, false] }],
+                                ['bold', 'italic', 'underline', 'strike'],
+                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                ['clean']
+                            ]
+                        }
+                    });
+
+                    this.createQuill.on('text-change', () => {
+                        let html = this.createQuill.root.innerHTML;
+                        let isEmpty = this.createQuill.getText().trim().length === 0;
+                        let finalVal = isEmpty ? '' : html;
+                        let input = document.getElementById('create_final_description');
+                        if (input) input.value = finalVal;
+                        if (fallbackTextarea) fallbackTextarea.value = finalVal;
+                    });
+                }
+
+                if (initialContent) {
+                    this.createQuill.root.innerHTML = initialContent;
+                }
+            }, () => {
+                this.createQuillFailed = true;
+                if (fallbackTextarea && initialContent && !fallbackTextarea.value) {
+                    fallbackTextarea.value = initialContent;
+                }
             });
         });
     },
     initQuillEdit(content) {
         this.$nextTick(() => {
             let container = document.getElementById('edit_quill_editor');
-            if (!container) return;
-            if (!this.editQuill) {
-                this.editQuill = new Quill(container, {
-                    theme: 'snow',
-                    placeholder: 'Tuliskan deskripsi pekerjaan dan persyaratan di sini...',
-                    modules: {
-                        toolbar: [
-                            [{ 'header': [2, 3, false] }],
-                            ['bold', 'italic', 'underline', 'strike'],
-                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                            ['clean']
-                        ]
-                    }
-                });
+            let fallbackTextarea = document.getElementById('edit_fallback_textarea');
+            let initialContent = content !== undefined ? content : (this.editData.description || '');
 
-                this.editQuill.on('text-change', () => {
-                    let html = this.editQuill.root.innerHTML;
-                    let isEmpty = this.editQuill.getText().trim().length === 0;
-                    this.editData.description = isEmpty ? '' : html;
-                    let input = document.getElementById('edit_final_description');
-                    if (input) input.value = isEmpty ? '' : html;
-                });
-            }
-            
-            // Set existing content (support both HTML & legacy markdown/plain text)
-            if (content) {
-                if (content.includes('<p>') || content.includes('<ul>') || content.includes('<ol>') || content.includes('<h3>')) {
-                    this.editQuill.root.innerHTML = content;
-                } else {
-                    let formatted = content
-                        .replace(/### Persyaratan:\s*/g, '<h3>Persyaratan</h3>')
-                        .replace(/### Deskripsi Pekerjaan:\s*/g, '<h3>Deskripsi Pekerjaan</h3>')
-                        .replace(/\n/g, '<br>');
-                    this.editQuill.root.innerHTML = formatted;
+            this.ensureQuill((QuillClass) => {
+                this.editQuillFailed = false;
+                if (!container) return;
+
+                if (!container.querySelector('.ql-editor') || !this.editQuill) {
+                    container.innerHTML = '';
+                    this.editQuill = new QuillClass(container, {
+                        theme: 'snow',
+                        placeholder: 'Tuliskan deskripsi pekerjaan dan persyaratan di sini...',
+                        modules: {
+                            toolbar: [
+                                [{ 'header': [2, 3, false] }],
+                                ['bold', 'italic', 'underline', 'strike'],
+                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                ['clean']
+                            ]
+                        }
+                    });
+
+                    this.editQuill.on('text-change', () => {
+                        let html = this.editQuill.root.innerHTML;
+                        let isEmpty = this.editQuill.getText().trim().length === 0;
+                        let finalVal = isEmpty ? '' : html;
+                        this.editData.description = finalVal;
+                        let input = document.getElementById('edit_final_description');
+                        if (input) input.value = finalVal;
+                        if (fallbackTextarea) fallbackTextarea.value = finalVal;
+                    });
                 }
-            } else {
-                this.editQuill.root.innerHTML = '';
-            }
+
+                if (initialContent) {
+                    if (initialContent.includes('<p>') || initialContent.includes('<ul>') || initialContent.includes('<ol>') || initialContent.includes('<h3>')) {
+                        this.editQuill.root.innerHTML = initialContent;
+                    } else {
+                        let formatted = initialContent
+                            .replace(/### Persyaratan:\s*/g, '<h3>Persyaratan</h3>')
+                            .replace(/### Deskripsi Pekerjaan:\s*/g, '<h3>Deskripsi Pekerjaan</h3>')
+                            .replace(/\n/g, '<br>');
+                        this.editQuill.root.innerHTML = formatted;
+                    }
+                } else {
+                    this.editQuill.root.innerHTML = '';
+                }
+            }, () => {
+                this.editQuillFailed = true;
+                if (fallbackTextarea && initialContent) {
+                    fallbackTextarea.value = initialContent;
+                }
+            });
         });
     },
     openCreateModal() {
         this.createStep = 1;
+        this.createQuillFailed = false;
         this.createCompanyId = '';
         this.createDepartmentId = '';
         this.createPositionId = '';
@@ -203,17 +281,21 @@
         if (titleInput) {
             titleInput.value = '';
         }
+        let input = document.getElementById('create_final_description');
+        if (input) input.value = '';
+        let fallback = document.getElementById('create_fallback_textarea');
+        if (fallback) fallback.value = '';
         this.showCreateModal = true;
         this.$nextTick(() => {
             if (this.createQuill) {
                 this.createQuill.root.innerHTML = '';
             }
-            let input = document.getElementById('create_final_description');
-            if (input) input.value = '';
+            this.initQuillCreate();
         });
     },
     openEditModal(job) {
         this.editStep = 1;
+        this.editQuillFailed = false;
         this.editData = {
             id: job.id,
             company_id: job.company_id ? String(job.company_id) : '',
@@ -230,6 +312,9 @@
             status: job.status || 'Open'
         };
         this.showEditModal = true;
+        this.$nextTick(() => {
+            this.initQuillEdit(this.editData.description || '');
+        });
     },
     openDeleteModal(job) {
         this.deleteData = {
@@ -237,12 +322,19 @@
             title: job.title
         };
         this.showDeleteModal = true;
+    },
+    init() {
+        if (this.createStep === 2) {
+            this.$nextTick(() => this.initQuillCreate());
+        }
+        if (this.editStep === 2) {
+            this.$nextTick(() => this.initQuillEdit(this.editData.description || ''));
+        }
     }
 }">
 
-    <!-- Quill.js Stylesheet & Script (Loaded securely via CDN) -->
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <!-- Quill.js Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
 
     <style>
         /* Quill Snow Editor Base (Light Mode) */
@@ -797,7 +889,26 @@
                         </button>
                     </div>
 
-                    <form action="{{ route('admin.job.store') }}" method="POST" id="createJobForm" @keydown.enter="if (createStep === 1 && $event.target.tagName !== 'TEXTAREA') { $event.preventDefault(); goToCreateStep2(); }" @submit="if(createQuill) { let html = createQuill.root.innerHTML; let isEmpty = createQuill.getText().trim().length === 0; document.getElementById('create_final_description').value = isEmpty ? '' : html; }" class="space-y-4">
+                    <form action="{{ route('admin.job.store') }}" method="POST" id="createJobForm" 
+                          @keydown.enter="if (createStep === 1 && $event.target.tagName !== 'TEXTAREA') { $event.preventDefault(); goToCreateStep2(); }" 
+                          @submit="
+                              let descVal = '';
+                              if (!createQuillFailed && createQuill) { 
+                                  let html = createQuill.root.innerHTML; 
+                                  let isEmpty = createQuill.getText().trim().length === 0; 
+                                  descVal = isEmpty ? '' : html;
+                              } else {
+                                  let fb = document.getElementById('create_fallback_textarea');
+                                  descVal = fb ? fb.value.trim() : '';
+                              }
+                              if (!descVal) {
+                                  $event.preventDefault();
+                                  alert('Deskripsi & Persyaratan Pekerjaan wajib diisi.');
+                                  return false;
+                              }
+                              document.getElementById('create_final_description').value = descVal;
+                          " 
+                          class="space-y-4">
                         @csrf
 
                         <!-- PAGE 1: Informasi Lowongan -->
@@ -950,21 +1061,38 @@
                         <!-- PAGE 2: Deskripsi & Persyaratan -->
                         <div x-show="createStep === 2" class="space-y-4" style="display: none;">
                             <!-- Quill Rich Text Visual Editor for Description & Requirements -->
-                            <input type="hidden" name="description" id="create_final_description">
+                            <input type="hidden" name="description" id="create_final_description" value="{{ old('description', '') }}">
 
                             <div class="space-y-1.5 pt-1">
                                 <div class="flex items-center justify-between">
                                     <label class="block text-xs font-bold text-gray-800 dark:text-slate-200">
-                                        Deskripsi & Persyaratan Pekerjaan
+                                        Deskripsi & Persyaratan Pekerjaan <span class="text-rose-500">*</span>
                                     </label>
-                                    <span class="text-[11px] text-gray-400 dark:text-slate-400">
+                                    <span class="text-[11px] text-gray-400 dark:text-slate-400" x-show="!createQuillFailed">
                                         Gunakan toolbar untuk format Heading, Bullet List (•), Numbering, atau Bold
+                                    </span>
+                                    <span class="text-[11px] text-amber-500 dark:text-amber-400 font-medium" x-show="createQuillFailed" x-cloak>
+                                        Mode Teks Aktif
                                     </span>
                                 </div>
                                 
-                                <div class="rounded-xl overflow-hidden border border-gray-200 dark:border-slate-700 quill-dark-wrapper">
-                                    <div id="create_quill_editor"></div>
+                                <!-- Quill Rich Text Editor -->
+                                <div x-show="!createQuillFailed" class="rounded-xl overflow-hidden border border-gray-200 dark:border-slate-700 quill-dark-wrapper min-h-[220px] bg-white dark:bg-slate-900">
+                                    <div id="create_quill_editor" class="min-h-[180px]"></div>
                                 </div>
+
+                                <!-- Fallback Textarea (Active if Quill CDN unavailable) -->
+                                <div x-show="createQuillFailed" x-cloak>
+                                    <textarea id="create_fallback_textarea" 
+                                              rows="8"
+                                              class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition leading-relaxed font-sans resize-y"
+                                              placeholder="Tuliskan deskripsi pekerjaan, tanggung jawab, dan rincian persyaratan kualifikasi di sini..."
+                                              @input="document.getElementById('create_final_description').value = $event.target.value">{{ old('description', '') }}</textarea>
+                                </div>
+
+                                @error('description')
+                                    <p class="text-[11px] text-rose-500 mt-1 font-medium">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
 
@@ -1062,7 +1190,22 @@
                         </button>
                     </div>
 
-                    <form :action="'/admin/jobs/' + editData.id" method="POST" id="editJobForm" @keydown.enter="if (editStep === 1 && $event.target.tagName !== 'TEXTAREA') { $event.preventDefault(); goToEditStep2(); }" @submit="if(editQuill) { let html = editQuill.root.innerHTML; let isEmpty = editQuill.getText().trim().length === 0; editData.description = isEmpty ? '' : html; document.getElementById('edit_final_description').value = isEmpty ? '' : html; }" class="space-y-4">
+                    <form :action="'/admin/jobs/' + editData.id" method="POST" id="editJobForm" 
+                          @keydown.enter="if (editStep === 1 && $event.target.tagName !== 'TEXTAREA') { $event.preventDefault(); goToEditStep2(); }" 
+                          @submit="
+                              let descVal = '';
+                              if (!editQuillFailed && editQuill) { 
+                                  let html = editQuill.root.innerHTML; 
+                                  let isEmpty = editQuill.getText().trim().length === 0; 
+                                  descVal = isEmpty ? '' : html;
+                              } else {
+                                  let fb = document.getElementById('edit_fallback_textarea');
+                                  descVal = fb ? fb.value.trim() : (editData.description || '');
+                              }
+                              editData.description = descVal;
+                              document.getElementById('edit_final_description').value = descVal;
+                          " 
+                          class="space-y-4">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="is_edit" value="1">
@@ -1223,13 +1366,27 @@
                                     <label class="block text-xs font-bold text-gray-800 dark:text-slate-200">
                                         Deskripsi & Persyaratan Pekerjaan
                                     </label>
-                                    <span class="text-[11px] text-gray-400 dark:text-slate-400">
+                                    <span class="text-[11px] text-gray-400 dark:text-slate-400" x-show="!editQuillFailed">
                                         Gunakan toolbar untuk format Heading, Bullet List (•), Numbering, atau Bold
+                                    </span>
+                                    <span class="text-[11px] text-amber-500 dark:text-amber-400 font-medium" x-show="editQuillFailed" x-cloak>
+                                        Mode Teks Aktif
                                     </span>
                                 </div>
                                 
-                                <div class="rounded-xl overflow-hidden border border-gray-200 dark:border-slate-700 quill-dark-wrapper">
-                                    <div id="edit_quill_editor"></div>
+                                <!-- Quill Rich Text Editor -->
+                                <div x-show="!editQuillFailed" class="rounded-xl overflow-hidden border border-gray-200 dark:border-slate-700 quill-dark-wrapper min-h-[220px] bg-white dark:bg-slate-900">
+                                    <div id="edit_quill_editor" class="min-h-[180px]"></div>
+                                </div>
+
+                                <!-- Fallback Textarea (Active if Quill CDN unavailable) -->
+                                <div x-show="editQuillFailed" x-cloak>
+                                    <textarea id="edit_fallback_textarea" 
+                                              rows="8"
+                                              x-model="editData.description"
+                                              class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition leading-relaxed font-sans resize-y"
+                                              placeholder="Tuliskan deskripsi pekerjaan dan rincian persyaratan kualifikasi di sini..."
+                                              @input="document.getElementById('edit_final_description').value = $event.target.value; editData.description = $event.target.value"></textarea>
                                 </div>
                             </div>
                         </div>
