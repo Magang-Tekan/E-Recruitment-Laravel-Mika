@@ -9,7 +9,9 @@ use App\Models\TestAttempt;
 use App\Models\TestAnswer;
 use App\Models\QuestionBank;
 use App\Models\DiscTestResult;
+use App\Models\PapiTestResult;
 use App\Services\DiscCalculatorService;
+use App\Services\PapiKostickCalculatorService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -30,6 +32,10 @@ class EmployeeOnlineTest extends Component
 
     public $questions = [];
     public $currentQuestionIndex = 0;
+
+    // Paginasi multi-soal: tampilkan beberapa soal sekaligus
+    public $currentPage = 0;       // Indeks halaman saat ini (0-based)
+    public $questionsPerPage = 5;  // Jumlah soal per halaman
 
     // Jawaban user:
     // Pilihan ganda: [ question_id => option_id ]
@@ -242,8 +248,22 @@ class EmployeeOnlineTest extends Component
             }
 
             $linkedQuestions = $query->get();
+        }
+
+        $isPapi = ($this->test->category && str_contains(strtolower($this->test->category->name), 'papi'))
+            || str_contains(strtolower($this->test->title), 'papi')
+            || $linkedQuestions->contains('question_type', 'papi_kostick');
+
+        if ($isPapi) {
+            $linkedQuestions = $linkedQuestions->sortBy(function ($q) {
+                return $q->metadata['number'] ?? $q->id;
+            })->values();
         } elseif ($this->test->is_random) {
             $linkedQuestions = $linkedQuestions->shuffle();
+        } else {
+            $linkedQuestions = $linkedQuestions->sortBy(function ($q) {
+                return $q->pivot?->order_number ?? ($q->metadata['number'] ?? $q->id);
+            })->values();
         }
 
         $this->questions = $linkedQuestions->map(function ($q) {
@@ -293,20 +313,25 @@ class EmployeeOnlineTest extends Component
     {
         if (isset($this->questions[$index])) {
             $this->currentQuestionIndex = $index;
+            // Pastikan halaman mengikuti soal yang dipilih
+            $this->currentPage = (int) floor($index / $this->questionsPerPage);
         }
     }
 
     public function nextQuestion()
     {
-        if ($this->currentQuestionIndex < count($this->questions) - 1) {
-            $this->currentQuestionIndex++;
+        $totalPages = (int) ceil(count($this->questions) / $this->questionsPerPage);
+        if ($this->currentPage < $totalPages - 1) {
+            $this->currentPage++;
+            $this->currentQuestionIndex = $this->currentPage * $this->questionsPerPage;
         }
     }
 
     public function prevQuestion()
     {
-        if ($this->currentQuestionIndex > 0) {
-            $this->currentQuestionIndex--;
+        if ($this->currentPage > 0) {
+            $this->currentPage--;
+            $this->currentQuestionIndex = $this->currentPage * $this->questionsPerPage;
         }
     }
 
@@ -345,7 +370,7 @@ class EmployeeOnlineTest extends Component
                     'option_id' => $optionId,
                 ]
             );
-        } elseif ($question['question_type'] === 'multiple_choice') {
+        } elseif ($question['question_type'] === 'multiple_choice' || $question['question_type'] === 'papi_kostick') {
             $this->answers[$questionId] = $optionId;
 
             $isCorrect = false;
@@ -503,13 +528,13 @@ class EmployeeOnlineTest extends Component
                         'status' => 'partial',
                     ];
                 }
-            } elseif ($qType === 'multiple_choice') {
+            } elseif ($qType === 'multiple_choice' || $qType === 'papi_kostick') {
                 $hasAnswer = isset($this->answers[$qId]) && $this->answers[$qId] !== null && $this->answers[$qId] !== '';
                 if (!$hasAnswer) {
                     $unanswered[] = [
                         'index' => $index,
                         'number' => $qNum,
-                        'reason' => 'Pilihan jawaban belum dipilih',
+                        'reason' => 'Pernyataan belum dipilih',
                         'status' => 'empty',
                     ];
                 }
@@ -581,6 +606,7 @@ class EmployeeOnlineTest extends Component
 
         $hasEssay = collect($this->questions)->contains('question_type', 'essay');
         $hasDisc = collect($this->questions)->contains('question_type', 'disc');
+        $hasPapi = collect($this->questions)->contains('question_type', 'papi_kostick');
         $hasMultipleChoice = collect($this->questions)->contains('question_type', 'multiple_choice');
 
         if ($hasDisc) {
@@ -592,9 +618,18 @@ class EmployeeOnlineTest extends Component
             }
         }
 
+        if ($hasPapi) {
+            try {
+                $papiService = app(PapiKostickCalculatorService::class);
+                $papiService->calculate($attempt);
+            } catch (\Exception $e) {
+                // ignore
+            }
+        }
+
         $passingScore = (float) $this->test->passing_score;
 
-        if ($hasDisc && !$hasEssay && !$hasMultipleChoice) {
+        if (($hasDisc || $hasPapi) && !$hasEssay && !$hasMultipleChoice) {
             $status = 'completed';
             $totalScore = 100;
         } elseif ($hasEssay) {
@@ -616,7 +651,7 @@ class EmployeeOnlineTest extends Component
             'status' => $status,
         ]);
 
-        $this->attempt = TestAttempt::with(['discTestResult.discProfile'])->find($attempt->id) ?? $attempt;
+        $this->attempt = TestAttempt::with(['discTestResult.discProfile', 'papiTestResult'])->find($attempt->id) ?? $attempt;
         $this->testState = 'completed';
     }
 
@@ -628,8 +663,10 @@ class EmployeeOnlineTest extends Component
     public function render()
     {
         $discResult = null;
+        $papiResult = null;
         if ($this->attemptId) {
             $discResult = DiscTestResult::with('discProfile')->where('test_attempt_id', $this->attemptId)->first();
+            $papiResult = PapiTestResult::where('test_attempt_id', $this->attemptId)->first();
         }
 
         $unansweredQuestions = ($this->testState === 'taking') ? $this->getUnansweredQuestions() : [];
@@ -638,12 +675,24 @@ class EmployeeOnlineTest extends Component
         $completedCount = max(0, $totalQuestions - $unansweredCount);
         $progressPercent = $totalQuestions > 0 ? round(($completedCount / $totalQuestions) * 100) : 0;
 
+        $questionsPerPage = $this->questionsPerPage;
+        $currentPage      = $this->currentPage;
+        $totalPages       = max(1, (int) ceil($totalQuestions / $questionsPerPage));
+        $pageStart        = $currentPage * $questionsPerPage;
+        $pageQuestions    = array_slice($this->questions, $pageStart, $questionsPerPage);
+
         return view('livewire.employee.employee-online-test', [
             'test'                 => $this->test,
             'questions'            => $this->questions,
+            'pageQuestions'        => $pageQuestions,      // Soal di halaman saat ini
+            'pageStart'            => $pageStart,          // Indeks global soal pertama di halaman ini
+            'currentPage'          => $currentPage,
+            'totalPages'           => $totalPages,
+            'questionsPerPage'     => $questionsPerPage,
             'currentQuestion'      => $this->questions[$this->currentQuestionIndex] ?? null,
             'attempt'              => $this->attempt,
             'discResult'           => $discResult,
+            'papiResult'           => $papiResult,
             'unansweredQuestions'  => $unansweredQuestions,
             'completedCount'       => $completedCount,
             'totalQuestions'       => $totalQuestions,

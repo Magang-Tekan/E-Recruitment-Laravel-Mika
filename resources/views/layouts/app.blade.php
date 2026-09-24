@@ -17,6 +17,9 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Quill.js Rich Text Editor Assets -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
     <!-- Tailwind CSS CDN Fallback -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>

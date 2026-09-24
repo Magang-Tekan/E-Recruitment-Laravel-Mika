@@ -10,7 +10,9 @@ use App\Models\TestAttempt;
 use App\Models\TestAnswer;
 use App\Models\QuestionBank;
 use App\Models\DiscTestResult;
+use App\Models\PapiTestResult;
 use App\Services\DiscCalculatorService;
+use App\Services\PapiKostickCalculatorService;
 use App\Services\TestSequenceService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -51,6 +53,16 @@ class ApplicantOnlineTest extends Component
     public $essayFiles = [];
 
     public $timeRemainingSeconds = 0;
+
+    // Biodata Peserta untuk Snapshot Hasil Evaluasi
+    public $participantName = '';
+    public $participantAge = '';
+    public $participantGender = 'male';
+    public $testDate = '';
+
+    // Paginasi multi-soal: tampilkan beberapa soal sekaligus (khususnya PAPI Kostick)
+    public $currentPage = 0;       // Indeks halaman saat ini (0-based)
+    public $questionsPerPage = 5;  // Jumlah soal per halaman
 
     public function mount($applicationId, $testId = null)
     {
@@ -94,6 +106,17 @@ class ApplicantOnlineTest extends Component
             return redirect()->route('profile', ['tab' => 'riwayat']);
         }
 
+        // Inisialisasi data profil pelamar untuk snapshot biodata (otomatis dari data pribadi)
+        $applicantProfile = $user->applicantProfile;
+        $this->participantName = $applicantProfile?->full_name ?: ($user->name ?: 'Pelamar');
+        $rawGender = strtolower($applicantProfile?->gender ?? '');
+        $this->participantGender = (str_contains($rawGender, 'perempuan') || str_contains($rawGender, 'wanita') || $rawGender === 'female') ? 'female' : 'male';
+        $this->testDate = now()->toDateString();
+        $this->participantAge = $applicantProfile?->birth_date ? Carbon::parse($applicantProfile->birth_date)->age : 25;
+        if (!$this->participantAge || $this->participantAge < 10) {
+            $this->participantAge = 25;
+        }
+
         // Cek apakah pelamar memiliki riwayat pengerjaan sebelumnya
         $existingAttempt = TestAttempt::where('job_application_id', $this->application->id)
             ->where('test_id', $this->test->id)
@@ -122,6 +145,19 @@ class ApplicantOnlineTest extends Component
             $this->attempt = $existingAttempt;
             $this->attemptId = $existingAttempt->id;
 
+            if ($existingAttempt->participant_name) {
+                $this->participantName = $existingAttempt->participant_name;
+            }
+            if ($existingAttempt->participant_age) {
+                $this->participantAge = $existingAttempt->participant_age;
+            }
+            if ($existingAttempt->participant_gender) {
+                $this->participantGender = $existingAttempt->participant_gender;
+            }
+            if ($existingAttempt->test_date) {
+                $this->testDate = Carbon::parse($existingAttempt->test_date)->toDateString();
+            }
+
             if (in_array($existingAttempt->status, ['completed', 'passed', 'failed'])) {
                 $this->testState = 'completed';
             } elseif ($existingAttempt->status === 'in_progress') {
@@ -145,7 +181,29 @@ class ApplicantOnlineTest extends Component
     public function startTest()
     {
         $user = Auth::user();
-        if (!$user || !$user->applicantProfile) return;
+        if (!$user) return;
+        $applicantProfile = $user->applicantProfile;
+
+        // Ambil otomatis dari data pribadi / profil pelamar tanpa membebani pelamar dengan validasi manual
+        if (empty($this->participantName)) {
+            $this->participantName = $applicantProfile?->full_name ?: ($user->name ?: 'Pelamar');
+        }
+
+        if (empty($this->participantGender)) {
+            $rawGender = strtolower($applicantProfile?->gender ?? '');
+            $this->participantGender = (str_contains($rawGender, 'perempuan') || str_contains($rawGender, 'wanita') || $rawGender === 'female') ? 'female' : 'male';
+        }
+
+        if (empty($this->participantAge)) {
+            $this->participantAge = $applicantProfile?->birth_date ? Carbon::parse($applicantProfile->birth_date)->age : 25;
+        }
+        if (!$this->participantAge || $this->participantAge < 10) {
+            $this->participantAge = 25;
+        }
+
+        if (empty($this->testDate)) {
+            $this->testDate = now()->toDateString();
+        }
 
         try {
             DB::beginTransaction();
@@ -168,6 +226,13 @@ class ApplicantOnlineTest extends Component
                 }
 
                 if ($existingAttempt->status === 'in_progress') {
+                    $existingAttempt->update([
+                        'participant_name'   => $this->participantName,
+                        'participant_age'    => (int) $this->participantAge,
+                        'participant_gender' => $this->participantGender,
+                        'test_date'          => $this->testDate,
+                    ]);
+
                     $durationSec = ($this->test->duration_minutes ?: 60) * 60;
                     $elapsedSec = Carbon::parse($existingAttempt->started_at)->diffInSeconds(now());
                     $remaining = $durationSec - $elapsedSec;
@@ -202,10 +267,16 @@ class ApplicantOnlineTest extends Component
             }
 
             $attempt = TestAttempt::create([
+                'user_id'            => $user->id,
+                'attempt_type'       => 'applicant',
+                'participant_name'   => $this->participantName,
+                'participant_age'    => (int) $this->participantAge,
+                'participant_gender' => $this->participantGender,
+                'test_date'          => $this->testDate,
                 'job_application_id' => $this->application->id,
-                'test_id' => $this->test->id,
-                'started_at' => now(),
-                'status' => 'in_progress',
+                'test_id'            => $this->test->id,
+                'started_at'         => now(),
+                'status'             => 'in_progress',
             ]);
 
             $this->attempt = $attempt;
@@ -240,8 +311,22 @@ class ApplicantOnlineTest extends Component
             }
 
             $linkedQuestions = $query->get();
+        }
+
+        $isPapi = ($this->test->category && str_contains(strtolower($this->test->category->name), 'papi'))
+            || str_contains(strtolower($this->test->title), 'papi')
+            || $linkedQuestions->contains('question_type', 'papi_kostick');
+
+        if ($isPapi) {
+            $linkedQuestions = $linkedQuestions->sortBy(function ($q) {
+                return $q->metadata['number'] ?? $q->id;
+            })->values();
         } elseif ($this->test->is_random) {
             $linkedQuestions = $linkedQuestions->shuffle();
+        } else {
+            $linkedQuestions = $linkedQuestions->sortBy(function ($q) {
+                return $q->pivot?->order_number ?? ($q->metadata['number'] ?? $q->id);
+            })->values();
         }
 
         $this->questions = $linkedQuestions->toArray();
@@ -275,19 +360,27 @@ class ApplicantOnlineTest extends Component
     {
         if (isset($this->questions[$index])) {
             $this->currentQuestionIndex = $index;
+            $this->currentPage = (int) floor($index / $this->questionsPerPage);
         }
     }
 
     public function nextQuestion()
     {
-        if ($this->currentQuestionIndex < count($this->questions) - 1) {
+        $totalPages = (int) ceil(count($this->questions) / $this->questionsPerPage);
+        if ($this->currentPage < $totalPages - 1) {
+            $this->currentPage++;
+            $this->currentQuestionIndex = $this->currentPage * $this->questionsPerPage;
+        } elseif ($this->currentQuestionIndex < count($this->questions) - 1) {
             $this->currentQuestionIndex++;
         }
     }
 
     public function prevQuestion()
     {
-        if ($this->currentQuestionIndex > 0) {
+        if ($this->currentPage > 0) {
+            $this->currentPage--;
+            $this->currentQuestionIndex = $this->currentPage * $this->questionsPerPage;
+        } elseif ($this->currentQuestionIndex > 0) {
             $this->currentQuestionIndex--;
         }
     }
@@ -331,7 +424,7 @@ class ApplicantOnlineTest extends Component
                     'option_id' => $optionId,
                 ]
             );
-        } elseif ($question['question_type'] === 'multiple_choice') {
+        } elseif ($question['question_type'] === 'multiple_choice' || $question['question_type'] === 'papi_kostick') {
             $this->answers[$questionId] = $optionId;
 
             // Check correct
@@ -508,13 +601,13 @@ class ApplicantOnlineTest extends Component
                         'status' => 'partial',
                     ];
                 }
-            } elseif ($qType === 'multiple_choice') {
+            } elseif ($qType === 'multiple_choice' || $qType === 'papi_kostick') {
                 $hasAnswer = isset($this->answers[$qId]) && $this->answers[$qId] !== null && $this->answers[$qId] !== '';
                 if (!$hasAnswer) {
                     $unanswered[] = [
                         'index' => $index,
                         'number' => $qNum,
-                        'reason' => 'Pilihan jawaban belum dipilih',
+                        'reason' => 'Pernyataan belum dipilih',
                         'status' => 'empty',
                     ];
                 }
@@ -588,6 +681,7 @@ class ApplicantOnlineTest extends Component
 
         $hasEssay = collect($this->questions)->contains('question_type', 'essay');
         $hasDisc = collect($this->questions)->contains('question_type', 'disc');
+        $hasPapi = collect($this->questions)->contains('question_type', 'papi_kostick');
         $hasMultipleChoice = collect($this->questions)->contains('question_type', 'multiple_choice');
 
         if ($hasDisc) {
@@ -599,10 +693,19 @@ class ApplicantOnlineTest extends Component
             }
         }
 
+        if ($hasPapi) {
+            try {
+                $papiService = app(PapiKostickCalculatorService::class);
+                $papiService->calculate($attempt);
+            } catch (\Exception $e) {
+                // ignore or log
+            }
+        }
+
         $passingScore = (float) $this->test->passing_score;
 
-        if ($hasDisc && !$hasEssay && !$hasMultipleChoice) {
-            // Tes Kepribadian DISC murni tidak memiliki benar/salah ataupun KKM
+        if (($hasDisc || $hasPapi) && !$hasEssay && !$hasMultipleChoice) {
+            // Tes Kepribadian DISC / PAPI Kostick murni tidak memiliki benar/salah ataupun KKM
             $status = 'completed';
             $totalScore = 100; // Profiling complete
         } elseif ($hasEssay) {
@@ -644,7 +747,7 @@ class ApplicantOnlineTest extends Component
             }
         }
 
-        $this->attempt = TestAttempt::with(['discTestResult.discProfile'])->find($attempt->id) ?? $attempt;
+        $this->attempt = TestAttempt::with(['discTestResult.discProfile', 'papiTestResult'])->find($attempt->id) ?? $attempt;
         $this->testState = 'completed';
     }
 
@@ -656,8 +759,10 @@ class ApplicantOnlineTest extends Component
     public function render()
     {
         $discResult = null;
+        $papiResult = null;
         if ($this->attemptId) {
             $discResult = DiscTestResult::with('discProfile')->where('test_attempt_id', $this->attemptId)->first();
+            $papiResult = PapiTestResult::where('test_attempt_id', $this->attemptId)->first();
         }
 
         $unansweredQuestions = ($this->testState === 'taking') ? $this->getUnansweredQuestions() : [];
@@ -665,6 +770,12 @@ class ApplicantOnlineTest extends Component
         $unansweredCount = count($unansweredQuestions);
         $completedCount = max(0, $totalQuestions - $unansweredCount);
         $progressPercent = $totalQuestions > 0 ? round(($completedCount / $totalQuestions) * 100) : 0;
+
+        $questionsPerPage = $this->questionsPerPage;
+        $currentPage      = $this->currentPage;
+        $totalPages       = max(1, (int) ceil($totalQuestions / $questionsPerPage));
+        $pageStart        = $currentPage * $questionsPerPage;
+        $pageQuestions    = array_slice($this->questions, $pageStart, $questionsPerPage);
 
         // Sequential test: hitung progress semua test dalam lowongan & test berikutnya
         $testProgress = [];
@@ -685,9 +796,15 @@ class ApplicantOnlineTest extends Component
             'application'          => $this->application,
             'test'                 => $this->test,
             'questions'            => $this->questions,
+            'pageQuestions'        => $pageQuestions,      // Soal di halaman saat ini
+            'pageStart'            => $pageStart,          // Indeks global soal pertama di halaman ini
+            'currentPage'          => $currentPage,
+            'totalPages'           => $totalPages,
+            'questionsPerPage'     => $questionsPerPage,
             'currentQuestion'      => $this->questions[$this->currentQuestionIndex] ?? null,
             'attempt'              => $this->attempt,
             'discResult'           => $discResult,
+            'papiResult'           => $papiResult,
             'unansweredQuestions'  => $unansweredQuestions,
             'completedCount'       => $completedCount,
             'totalQuestions'       => $totalQuestions,

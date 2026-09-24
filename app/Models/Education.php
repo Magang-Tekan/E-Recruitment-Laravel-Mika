@@ -13,7 +13,9 @@ class Education extends Model
     protected $fillable = [
         'profile_id',
         'degree_id',
+        'degree',
         'major_id',
+        'major',
         'school_name',
         'study_program',
         'start_year',

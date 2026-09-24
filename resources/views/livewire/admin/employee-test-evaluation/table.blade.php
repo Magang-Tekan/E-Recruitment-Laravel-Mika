@@ -5,8 +5,9 @@
     activePdfUrl: null,
     activePdfName: null,
 
-    openGradeModal(attempt, isDisc = false) {
+    openGradeModal(attempt, isDisc = false, isPapi = false) {
         attempt.is_disc = isDisc;
+        attempt.is_papi = isPapi;
         this.selectedAttempt = attempt;
         this.showGradeModal = true;
         this.showPdfViewer = false;
@@ -75,6 +76,57 @@
         this.showPdfViewer = false;
         this.activePdfUrl = null;
         this.activePdfName = null;
+    },
+
+    getPapiSheetRows() {
+        if (!this.selectedAttempt || !this.selectedAttempt.papi_test_result) return [];
+        let raw = this.selectedAttempt.papi_test_result.raw_answers || {};
+        let rows = [];
+        let startCols = [1, 11, 21, 31, 41, 51, 61, 71, 81];
+        for (let r = 0; r < 10; r++) {
+            let cells = [];
+            startCols.forEach(startNum => {
+                let qNum = startNum + r;
+                let ans = raw[qNum] || raw[String(qNum)];
+                let choice = '-';
+                if (ans) {
+                    if (ans.choice) {
+                        choice = String(ans.choice).toLowerCase();
+                    } else if (ans.tag) {
+                        choice = String(ans.tag).toLowerCase();
+                    }
+                }
+                // Cell 1: Nomor Soal (peach background)
+                cells.push({
+                    text: qNum,
+                    isNum: true
+                });
+                // Cell 2: Pilihan Jawaban a/b (white background)
+                cells.push({
+                    text: choice,
+                    isNum: false
+                });
+            });
+            rows.push(cells);
+        }
+        return rows;
+    },
+
+    getPapiScore(code) {
+        if (!this.selectedAttempt || !this.selectedAttempt.papi_test_result) return 0;
+        let scores = this.selectedAttempt.papi_test_result.scores || {};
+        if (scores[code] !== undefined) return scores[code];
+        let interp = this.selectedAttempt.papi_test_result.interpretations || {};
+        return interp[code] ? (interp[code].score || 0) : 0;
+    },
+
+    getPapiInterpretation(code) {
+        if (!this.selectedAttempt || !this.selectedAttempt.papi_test_result) return '-';
+        let interp = this.selectedAttempt.papi_test_result.interpretations || {};
+        if (interp[code]) {
+            return interp[code].interpretation || interp[code].description || '-';
+        }
+        return '-';
     }
 }">
 
@@ -118,13 +170,16 @@
     @endif
 
     <!-- Card 1: Header & Action Section Card -->
-    <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm p-5 sm:p-6 space-y-4">
-        
+    <div
+        class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm p-5 sm:p-6 space-y-4">
+
         <!-- Header Section -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Hasil & Evaluasi Asesmen Karyawan</h3>
-                <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Tinjau riwayat pengerjaan asesmen karyawan, berikan penilaian (grading) soal essay, dan evaluasi hasil tes.</p>
+                <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Hasil & Evaluasi Asesmen
+                    Karyawan</h3>
+                <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Tinjau riwayat pengerjaan asesmen karyawan,
+                    berikan penilaian (grading) soal essay, dan evaluasi hasil tes.</p>
             </div>
         </div>
 
@@ -133,13 +188,13 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
                 <!-- Search Input -->
                 <div class="relative lg:col-span-3">
-                    <input type="text" 
-                           wire:model.live.debounce.300ms="search" 
-                           placeholder="Cari nama karyawan, NIK, asesmen..." 
-                           class="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                    <input type="text" wire:model.live.debounce.300ms="search"
+                        placeholder="Cari nama karyawan, NIK, asesmen..."
+                        class="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
                 </div>
@@ -148,10 +203,12 @@
                 <div class="relative lg:col-span-3">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                     </div>
-                    <select wire:model.live="companyId" class="w-full pl-9 pr-8 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
+                    <select wire:model.live="companyId"
+                        class="w-full pl-9 pr-8 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
                         <option value="">Semua Perusahaan</option>
                         @foreach ($companies as $comp)
                             <option value="{{ $comp->id }}">{{ $comp->name }}</option>
@@ -168,20 +225,25 @@
                 <div class="relative lg:col-span-2">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
                     </div>
-                    <select wire:model.live="departmentId" class="w-full pl-9 pr-8 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
+                    <select wire:model.live="departmentId"
+                        class="w-full pl-9 pr-8 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
                         <option value="">Semua Departemen</option>
                         @foreach ($departments as $dept)
                             <option value="{{ $dept->id }}">
-                                {{ $dept->name }} @if(!$companyId && $dept->company)({{ $dept->company->name }})@endif
+                                {{ $dept->name }} @if (!$companyId && $dept->company)
+                                    ({{ $dept->company->name }})
+                                @endif
                             </option>
                         @endforeach
                     </select>
                     <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 9l-7 7-7-7" />
                         </svg>
                     </div>
                 </div>
@@ -190,10 +252,12 @@
                 <div class="relative lg:col-span-2">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                     </div>
-                    <select wire:model.live="testId" class="w-full pl-9 pr-8 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
+                    <select wire:model.live="testId"
+                        class="w-full pl-9 pr-8 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
                         <option value="">Semua Asesmen</option>
                         @foreach ($tests as $t)
                             <option value="{{ $t->id }}">{{ $t->title }}</option>
@@ -201,7 +265,8 @@
                     </select>
                     <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 9l-7 7-7-7" />
                         </svg>
                     </div>
                 </div>
@@ -210,10 +275,12 @@
                 <div class="relative lg:col-span-2">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
-                    <select wire:model.live="status" class="w-full pl-9 pr-8 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
+                    <select wire:model.live="status"
+                        class="w-full pl-9 pr-8 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
                         <option value="">Semua Status</option>
                         <option value="needs_grading">Perlu Penilaian Essay</option>
                         <option value="passed">Lolos Standar</option>
@@ -223,7 +290,8 @@
                     </select>
                     <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 9l-7 7-7-7" />
                         </svg>
                     </div>
                 </div>
@@ -233,27 +301,34 @@
             <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
                 <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <span class="text-[11px] font-bold text-gray-400 uppercase mr-1">Tipe:</span>
-                    <button type="button" wire:click="$set('employeeType', '')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $employeeType === '' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                    <button type="button" wire:click="$set('employeeType', '')"
+                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $employeeType === '' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
                         Semua
                     </button>
-                    <button type="button" wire:click="$set('employeeType', 'permanent')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $employeeType === 'permanent' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40' }}">
+                    <button type="button" wire:click="$set('employeeType', 'permanent')"
+                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $employeeType === 'permanent' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40' }}">
                         Karyawan Tetap
                     </button>
-                    <button type="button" wire:click="$set('employeeType', 'contract')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $employeeType === 'contract' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/40' }}">
+                    <button type="button" wire:click="$set('employeeType', 'contract')"
+                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $employeeType === 'contract' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/40' }}">
                         Kontrak
                     </button>
-                    <button type="button" wire:click="$set('employeeType', 'internship')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $employeeType === 'internship' ? 'bg-amber-500 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40' }}">
+                    <button type="button" wire:click="$set('employeeType', 'internship')"
+                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $employeeType === 'internship' ? 'bg-amber-500 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40' }}">
                         Magang
                     </button>
-                    <button type="button" wire:click="$set('employeeType', 'probation')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $employeeType === 'probation' ? 'bg-purple-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/40' }}">
+                    <button type="button" wire:click="$set('employeeType', 'probation')"
+                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $employeeType === 'probation' ? 'bg-purple-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/40' }}">
                         Probation
                     </button>
                 </div>
 
                 @if ($search || $companyId || $departmentId || $employeeType || $testId || $status || $sortField !== 'id')
-                    <button type="button" wire:click="resetFilters" class="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-1 cursor-pointer">
+                    <button type="button" wire:click="resetFilters"
+                        class="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-1 cursor-pointer">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
                         </svg>
                         <span>Reset Filter</span>
                     </button>
@@ -263,14 +338,21 @@
     </div>
 
     <!-- Card 2: Data Table Section Card -->
-    <div class="relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+    <div
+        class="relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
 
         <!-- Livewire Loading Overlay -->
-        <div wire:loading wire:target="search, companyId, departmentId, employeeType, testId, status, sortBy, previousPage, nextPage, gotoPage, resetFilters" class="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-10 transition">
-            <div class="flex items-center gap-2.5 px-4 py-2.5 bg-slate-900/90 dark:bg-slate-800/90 text-white rounded-xl shadow-xl text-xs font-semibold">
+        <div wire:loading
+            wire:target="search, companyId, departmentId, employeeType, testId, status, sortBy, previousPage, nextPage, gotoPage, resetFilters"
+            class="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-10 transition">
+            <div
+                class="flex items-center gap-2.5 px-4 py-2.5 bg-slate-900/90 dark:bg-slate-800/90 text-white rounded-xl shadow-xl text-xs font-semibold">
                 <svg class="animate-spin w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                        stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
                 </svg>
                 <span>Memuat data...</span>
             </div>
@@ -279,9 +361,11 @@
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold text-[11px]">
+                    <tr
+                        class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold text-[11px]">
                         <th class="py-4 px-6 w-12 text-center">No</th>
-                        <th class="py-4 px-6 cursor-pointer select-none hover:text-indigo-600 transition" wire:click="sortBy('employee')">
+                        <th class="py-4 px-6 cursor-pointer select-none hover:text-indigo-600 transition"
+                            wire:click="sortBy('employee')">
                             <div class="flex items-center gap-1">
                                 <span>Karyawan</span>
                                 @if ($sortField === 'employee')
@@ -292,7 +376,8 @@
                         <th class="py-4 px-6 text-center">Tipe Pegawai</th>
                         <th class="py-4 px-6">Departemen / Posisi</th>
                         <th class="py-4 px-6">Paket Asesmen</th>
-                        <th class="py-4 px-6 text-center cursor-pointer select-none hover:text-indigo-600 transition" wire:click="sortBy('started_at')">
+                        <th class="py-4 px-6 text-center cursor-pointer select-none hover:text-indigo-600 transition"
+                            wire:click="sortBy('started_at')">
                             <div class="flex items-center justify-center gap-1">
                                 <span>Waktu Pengerjaan</span>
                                 @if ($sortField === 'started_at')
@@ -300,7 +385,8 @@
                                 @endif
                             </div>
                         </th>
-                        <th class="py-4 px-6 text-center cursor-pointer select-none hover:text-indigo-600 transition" wire:click="sortBy('score')">
+                        <th class="py-4 px-6 text-center cursor-pointer select-none hover:text-indigo-600 transition"
+                            wire:click="sortBy('score')">
                             <div class="flex items-center justify-center gap-1">
                                 <span>Hasil / Nilai</span>
                                 @if ($sortField === 'score')
@@ -312,20 +398,26 @@
                         <th class="py-4 px-6 text-right">Laporan / Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-slate-800/60 text-xs text-gray-700 dark:text-slate-300">
+                <tbody
+                    class="divide-y divide-gray-100 dark:divide-slate-800/60 text-xs text-gray-700 dark:text-slate-300">
                     @forelse ($attempts as $index => $attempt)
                         @php
                             $emp = $attempt->user?->employeeProfile;
                             $discResult = $attempt->discTestResult;
-                            $isDisc = $discResult || (
-                                str_contains(strtolower($attempt->test?->title ?? ''), 'disc') ||
-                                str_contains(strtolower($attempt->test?->title ?? ''), 'personality') ||
-                                str_contains(strtolower($attempt->test?->category?->name ?? ''), 'disc') ||
-                                str_contains(strtolower($attempt->test?->category?->name ?? ''), 'kepribadian')
-                            );
+                            $papiResult = $attempt->papiTestResult;
+                            $isPapi =
+                                $papiResult ||
+                                str_contains(strtolower($attempt->test?->category?->name ?? ''), 'papi') ||
+                                str_contains(strtolower($attempt->test?->title ?? ''), 'papi');
+                            $isDisc = !$isPapi && (
+                                $discResult ||
+                                (str_contains(strtolower($attempt->test?->title ?? ''), 'disc') ||
+                                    str_contains(strtolower($attempt->test?->title ?? ''), 'personality') ||
+                                    str_contains(strtolower($attempt->test?->category?->name ?? ''), 'disc') ||
+                                    str_contains(strtolower($attempt->test?->category?->name ?? ''), 'kepribadian')));
                             $passingScore = (float) ($attempt->test?->passing_score ?? 0);
                             $totalScore = (float) ($attempt->total_score ?? 0);
-                            $isPassed = $attempt->status === 'passed' || (!$isDisc && $totalScore >= $passingScore && $passingScore > 0) || ($passingScore == 0 && $attempt->status === 'passed');
+                            $isPassed = $attempt->status === 'passed' || (!$isDisc && !$isPapi && $totalScore >= $passingScore && $passingScore > 0) || ($passingScore == 0 && $attempt->status === 'passed');
                         @endphp
                         <tr class="hover:bg-gray-50/80 dark:hover:bg-slate-800/40 transition duration-150">
                             <td class="py-4 px-6 text-center font-medium text-gray-400 dark:text-slate-500">
@@ -337,13 +429,18 @@
                                         $empPhoto = $emp?->photo ?? $attempt->user?->avatar;
                                         $empPhotoUrl = null;
                                         if ($empPhoto) {
-                                            $empPhotoUrl = str_starts_with($empPhoto, 'http') ? $empPhoto : asset('storage/' . $empPhoto);
+                                            $empPhotoUrl = str_starts_with($empPhoto, 'http')
+                                                ? $empPhoto
+                                                : asset('storage/' . $empPhoto);
                                         }
                                     @endphp
                                     @if ($empPhotoUrl)
-                                        <img src="{{ $empPhotoUrl }}" alt="{{ $emp?->full_name ?? ($attempt->user?->name ?? 'Karyawan') }}" class="w-9 h-9 rounded-full object-cover ring-2 ring-indigo-500/20 shadow-xs shrink-0">
+                                        <img src="{{ $empPhotoUrl }}"
+                                            alt="{{ $emp?->full_name ?? ($attempt->user?->name ?? 'Karyawan') }}"
+                                            class="w-9 h-9 rounded-full object-cover ring-2 ring-indigo-500/20 shadow-xs shrink-0">
                                     @else
-                                        <div class="w-9 h-9 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center ring-2 ring-indigo-500/20 shrink-0">
+                                        <div
+                                            class="w-9 h-9 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center ring-2 ring-indigo-500/20 shrink-0">
                                             {{ strtoupper(substr($emp?->full_name ?? ($attempt->user?->name ?? 'K'), 0, 2)) }}
                                         </div>
                                     @endif
@@ -351,7 +448,8 @@
                                         <div class="font-bold text-gray-900 dark:text-white text-sm">
                                             {{ $emp?->full_name ?? ($attempt->user?->name ?? 'Karyawan') }}
                                         </div>
-                                        <div class="text-[11px] text-gray-400 dark:text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                                        <div
+                                            class="text-[11px] text-gray-400 dark:text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
                                             <span>NIK: {{ $emp?->nik ?? ($attempt->user?->nik ?? '-') }}</span>
                                             <span>•</span>
                                             <span>{{ $attempt->user?->email ?? '-' }}</span>
@@ -364,19 +462,23 @@
                                     $type = $emp?->employee_type ?? 'permanent';
                                 @endphp
                                 @if ($type === 'internship')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold text-[11px] border border-amber-200 dark:border-amber-800/60">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold text-[11px] border border-amber-200 dark:border-amber-800/60">
                                         Magang
                                     </span>
                                 @elseif ($type === 'contract')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-semibold text-[11px] border border-blue-200 dark:border-blue-800/60">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-semibold text-[11px] border border-blue-200 dark:border-blue-800/60">
                                         Kontrak
                                     </span>
                                 @elseif ($type === 'probation')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-semibold text-[11px] border border-purple-200 dark:border-purple-800/60">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-semibold text-[11px] border border-purple-200 dark:border-purple-800/60">
                                         Probation
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-semibold text-[11px] border border-emerald-200 dark:border-emerald-800/60">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-semibold text-[11px] border border-emerald-200 dark:border-emerald-800/60">
                                         Tetap
                                     </span>
                                 @endif
@@ -419,6 +521,18 @@
                                             {{ $discResult?->discProfile?->pattern_name ?? ($discResult?->primary_trait ?? 'DISC Profil') }}
                                         </span>
                                     </div>
+                                @elseif ($isPapi)
+                                    <div class="inline-flex flex-col items-center">
+                                        <span
+                                            class="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold text-xs border border-amber-200 dark:border-amber-800/60">
+                                            PAPI Kostick
+                                        </span>
+                                        @if ($papiResult)
+                                            <span class="text-[10px] text-gray-400 mt-0.5">
+                                                {{ $papiResult->is_valid ? 'Valid (45/45)' : 'Perlu Cek' }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 @else
                                     <div
                                         class="font-bold text-base {{ $isPassed ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
@@ -434,9 +548,9 @@
                                         class="inline-flex items-center justify-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-semibold text-[11px] border border-sky-200 dark:border-sky-800">
                                         Sedang Mengerjakan
                                     </span>
-                                @elseif ($isDisc)
+                                @elseif ($isDisc || $isPapi)
                                     <span
-                                        class="inline-flex items-center justify-center whitespace-nowrap px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-semibold text-[11px]">
+                                        class="inline-flex items-center justify-center whitespace-nowrap px-2.5 py-1 rounded-full {{ $isPapi ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' : 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300' }} font-semibold text-[11px]">
                                         Selesai
                                     </span>
                                 @elseif ($isPassed)
@@ -459,7 +573,8 @@
                             <td class="py-4 px-6 text-right">
                                 <div class="flex items-center justify-end">
                                     <!-- Tombol Evaluasi / Lihat Riwayat Jawaban -->
-                                    <button @click="openGradeModal({{ \Illuminate\Support\Js::from($attempt) }}, {{ $isDisc ? 'true' : 'false' }})"
+                                    <button
+                                        @click="openGradeModal({{ \Illuminate\Support\Js::from($attempt) }}, {{ $isDisc ? 'true' : 'false' }}, {{ $isPapi ? 'true' : 'false' }})"
                                         class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-semibold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
                                             stroke="currentColor">
@@ -468,7 +583,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
-                                        <span>{{ $isDisc ? 'Riwayat Jawaban & Profil' : 'Riwayat Jawaban & Nilai' }}</span>
+                                        <span>{{ $isPapi ? 'Riwayat & Interpretasi PAPI' : ($isDisc ? 'Riwayat Jawaban & Profil' : 'Riwayat Jawaban & Nilai') }}</span>
                                     </button>
                                 </div>
                             </td>
@@ -492,7 +607,8 @@
         </div>
 
         @if ($attempts->hasPages() || $perPage != 10)
-            <div class="px-6 py-4 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div
+                class="px-6 py-4 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                     <span class="text-xs text-gray-500 dark:text-slate-400">Tampilkan</span>
                     <select wire:model.live="perPage"
@@ -513,17 +629,79 @@
         @endif
     </div>
 
+    @php
+        $papiAspects = [
+            [
+                'name' => 'Arah kerja',
+                'factors' => [
+                    ['code' => 'N', 'name' => 'Penyelesaian secara prestasi'],
+                    ['code' => 'G', 'name' => 'Peranan sebagai pekerja keras'],
+                    ['code' => 'A', 'name' => 'Hasrat untuk berprestasi'],
+                ],
+            ],
+            [
+                'name' => 'Kepemimpinan',
+                'factors' => [
+                    ['code' => 'L', 'name' => 'Peran sebagai pimpinan'],
+                    ['code' => 'P', 'name' => 'Pengendalian orang lain'],
+                    ['code' => 'I', 'name' => 'Mudah dalam mengambil keputusan'],
+                ],
+            ],
+            [
+                'name' => 'Aktivitas',
+                'factors' => [
+                    ['code' => 'T', 'name' => 'Tipe selalu sibuk'],
+                    ['code' => 'V', 'name' => 'Tipe yang bersemangat'],
+                ],
+            ],
+            [
+                'name' => 'Pergaulan',
+                'factors' => [
+                    ['code' => 'X', 'name' => 'Kebutuhan untuk mendapatkan perhatian'],
+                    ['code' => 'S', 'name' => 'Pergaulan luas'],
+                    ['code' => 'B', 'name' => 'Kebutuhan berkelompok'],
+                    ['code' => 'O', 'name' => 'Kebutuhan untuk dekat dan menyayangi'],
+                ],
+            ],
+            [
+                'name' => 'Gaya kerja',
+                'factors' => [
+                    ['code' => 'R', 'name' => 'Tipe teoritikal'],
+                    ['code' => 'D', 'name' => 'Suka pekerjaan yang terperinci'],
+                    ['code' => 'C', 'name' => 'Tipe teratur'],
+                ],
+            ],
+            [
+                'name' => 'Sifat',
+                'factors' => [
+                    ['code' => 'Z', 'name' => 'Hasrat untuk berubah'],
+                    ['code' => 'E', 'name' => 'Pengendalian emosi'],
+                    ['code' => 'K', 'name' => 'Agresi'],
+                ],
+            ],
+            [
+                'name' => 'Ketaatan',
+                'factors' => [
+                    ['code' => 'F', 'name' => 'Dukungan terhadap atasan'],
+                    ['code' => 'W', 'name' => 'Kebutuhan taat pada aturan dan pengarahan'],
+                ],
+            ],
+        ];
+    @endphp
+
     <!-- MODAL EVALUASI & RIWAYAT JAWABAN KARYAWAN -->
-    <div x-show="showGradeModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto custom-scrollbar" style="display: none;">
+    <div x-show="showGradeModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto custom-scrollbar"
+        style="display: none;">
         <div class="min-h-screen px-4 py-6 sm:py-8 flex items-center justify-center">
             <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" @click="showGradeModal = false"></div>
 
-            <div class="relative bg-white dark:bg-slate-800 rounded-3xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-slate-700 z-10 max-h-[90vh] overflow-y-auto custom-scrollbar [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300/80 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400"
+            <div class="relative bg-white dark:bg-slate-800 rounded-3xl max-w-5xl w-full p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-slate-700 z-10 max-h-[90vh] overflow-y-auto custom-scrollbar [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300/80 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400"
                 x-show="selectedAttempt">
                 <div
                     class="flex items-center justify-between pb-4 mb-4 border-b border-gray-100 dark:border-slate-700">
                     <div>
-                        <h3 class="text-lg font-bold text-gray-800 dark:text-slate-100" x-text="selectedAttempt?.is_disc ? 'Riwayat Jawaban & Profil Asesmen Karyawan' : 'Riwayat Jawaban & Evaluasi Asesmen Karyawan'">
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-slate-100"
+                            x-text="selectedAttempt?.is_papi ? 'Riwayat Jawaban & Interpretasi PAPI Kostick' : (selectedAttempt?.is_disc ? 'Riwayat Jawaban & Profil Asesmen Karyawan' : 'Riwayat Jawaban & Evaluasi Asesmen Karyawan')">
                             Riwayat Jawaban & Evaluasi Asesmen Karyawan
                         </h3>
                         <p class="text-xs text-gray-400 mt-0.5">
@@ -887,21 +1065,234 @@
 
                         <!-- Banner jika DISC tapi belum ada profil -->
                         <template x-if="selectedAttempt.is_disc && !selectedAttempt.disc_test_result">
-                            <div class="mb-5 p-4 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/80 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-3">
-                                <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            <div
+                                class="mb-5 p-4 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/80 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-3">
+                                <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                                 <div>
-                                    <p class="font-bold text-amber-900 dark:text-amber-200">Hasil Analisis Profil Belum Terbentuk</p>
+                                    <p class="font-bold text-amber-900 dark:text-amber-200">Hasil Analisis Profil Belum
+                                        Terbentuk</p>
                                     <p class="mt-0.5 text-amber-700 dark:text-amber-300">
-                                        Asesmen ini merupakan Tes Kepribadian (DISC) tanpa penilaian skor/angka. Hasil profil kepribadian belum terbentuk karena butir jawaban soal tidak lengkap atau tidak tersimpan pada sesi asesmen ini.
+                                        Asesmen ini merupakan Tes Kepribadian (DISC) tanpa penilaian skor/angka. Hasil
+                                        profil kepribadian belum terbentuk karena butir jawaban soal tidak lengkap atau
+                                        tidak tersimpan pada sesi asesmen ini.
                                     </p>
                                 </div>
                             </div>
                         </template>
 
-                        <!-- Score Summary Header Cards (Untuk Tes Non-DISC) -->
-                        <template x-if="!selectedAttempt.disc_test_result && !selectedAttempt.is_disc">
+                        <!-- ===== PAPI KOSTICK RESULT BLOCK ===== -->
+                        <template x-if="selectedAttempt.is_papi && selectedAttempt.papi_test_result">
+                            <div class="mb-5 space-y-6">
+
+                                <!-- Header PAPI & Validitas -->
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-200 dark:border-slate-700 gap-3">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white uppercase tracking-wider">
+                                                Hasil PAPI Kostick Karyawan
+                                            </span>
+                                            <template x-if="selectedAttempt.papi_test_result.is_valid">
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold border border-emerald-200 dark:border-emerald-800">
+                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                                    Valid (Total Atas & Bawah = 45)
+                                                </span>
+                                            </template>
+                                            <template x-if="!selectedAttempt.papi_test_result.is_valid">
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300 text-[11px] font-bold border border-rose-200 dark:border-rose-800">
+                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                    Perlu Cek (Atas: <span x-text="selectedAttempt.papi_test_result.role_score"></span>, Bawah: <span x-text="selectedAttempt.papi_test_result.need_score"></span>)
+                                                </span>
+                                            </template>
+                                        </div>
+                                        <h4 class="text-base font-bold text-gray-900 dark:text-white mt-1">
+                                            Lembar Evaluasi Profil Kepribadian PAPI Kostick
+                                        </h4>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <a :href="'{{ url('admin/test-evaluations') }}/' + selectedAttempt.id + '/papi-pdf'"
+                                            target="_blank"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100/80 hover:bg-amber-200 dark:bg-amber-900/60 dark:hover:bg-amber-800 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-700 rounded-xl text-xs font-semibold shadow-2xs transition-all">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            <span>Buka Lembar PDF PAPI</span>
+                                        </a>
+                                        <a :href="'{{ url('admin/test-evaluations') }}/' + selectedAttempt.id + '/papi-pdf?download=1'"
+                                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold shadow-sm transition-all">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                            <span>Unduh PDF</span>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Info Biodata Peserta -->
+                                <template x-if="selectedAttempt.participant_name">
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                                        <div class="p-2.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/60">
+                                            <span class="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-0.5">Nama</span>
+                                            <span class="font-bold text-gray-900 dark:text-white" x-text="selectedAttempt.participant_name || '-'"></span>
+                                        </div>
+                                        <div class="p-2.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/60">
+                                            <span class="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-0.5">Usia</span>
+                                            <span class="font-bold text-gray-900 dark:text-white" x-text="(selectedAttempt.participant_age ? selectedAttempt.participant_age + ' Tahun' : '-')"></span>
+                                        </div>
+                                        <div class="p-2.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/60">
+                                            <span class="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-0.5">Jenis Kelamin</span>
+                                            <span class="font-bold text-gray-900 dark:text-white" x-text="selectedAttempt.participant_gender === 'male' ? 'Laki-laki' : (selectedAttempt.participant_gender === 'female' ? 'Perempuan' : '-')"></span>
+                                        </div>
+                                        <div class="p-2.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/60">
+                                            <span class="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-0.5">Tanggal Tes</span>
+                                            <span class="font-bold text-gray-900 dark:text-white" x-text="selectedAttempt.test_date ? selectedAttempt.test_date.substring(0, 10) : '-'"></span>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- 1. LEMBAR JAWABAN (RIWAYAT JAWABAN SEPERTI GAMBAR 1) -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h5 class="text-xs font-bold text-gray-800 dark:text-slate-100 flex items-center gap-1.5 uppercase tracking-wide">
+                                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                            Riwayat Jawaban (Lembar Jawaban PAPI Kostick)
+                                        </h5>
+                                        <span class="text-[11px] text-gray-400">90 Butir Soal (Pilihan a/b)</span>
+                                    </div>
+                                    <div class="overflow-x-auto rounded-lg border border-gray-400 dark:border-slate-600 shadow-xs inline-block min-w-full">
+                                        <table class="w-full text-xs border-collapse">
+                                            <tbody>
+                                                <template x-for="(row, ri) in getPapiSheetRows()" :key="ri">
+                                                    <tr>
+                                                        <template x-for="(cell, ci) in row" :key="ci">
+                                                            <td :class="cell.isNum ? 'bg-amber-100 dark:bg-amber-950/70 text-gray-900 dark:text-amber-100 font-bold' : 'bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-200 font-semibold'"
+                                                                class="text-center border border-gray-400 dark:border-slate-600 py-1.5 px-2 text-xs w-9 sm:w-10"
+                                                                x-text="cell.text"></td>
+                                                        </template>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- 2. TABEL INTERPRETASI (SEPERTI GAMBAR 2) -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h5 class="text-xs font-bold text-gray-800 dark:text-slate-100 flex items-center gap-1.5 uppercase tracking-wide">
+                                            <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                                            Tabel Interpretasi Hasil PAPI Kostick
+                                        </h5>
+                                        <span class="text-[11px] text-gray-400">20 Faktor Kepribadian</span>
+                                    </div>
+                                    <div class="overflow-x-auto rounded-lg border border-gray-400 dark:border-slate-600 shadow-xs">
+                                        <table class="w-full text-xs border-collapse">
+                                            <thead>
+                                                <tr class="bg-amber-200 dark:bg-amber-900/60 text-gray-900 dark:text-amber-100 font-bold">
+                                                    <th class="py-2 px-3 text-center border border-gray-400 dark:border-slate-600 w-28 uppercase">ASPEK</th>
+                                                    <th class="py-2 px-3 text-center border border-gray-400 dark:border-slate-600 uppercase">FAKTOR</th>
+                                                    <th class="py-2 px-2 text-center border border-gray-400 dark:border-slate-600 w-16 uppercase">FAKTOR</th>
+                                                    <th class="py-2 px-2 text-center border border-gray-400 dark:border-slate-600 w-14 uppercase">NILAI</th>
+                                                    <th class="py-2 px-3 text-center border border-gray-400 dark:border-slate-600 uppercase">INTERPRETASI</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($papiAspects as $aspectGroup)
+                                                    @foreach ($aspectGroup['factors'] as $fIndex => $f)
+                                                        <tr class="hover:bg-gray-50/50 dark:hover:bg-slate-800/40 transition">
+                                                            @if ($fIndex === 0)
+                                                                <td rowspan="{{ count($aspectGroup['factors']) }}"
+                                                                    class="bg-cyan-200 dark:bg-cyan-950/70 text-gray-900 dark:text-cyan-200 font-bold text-center border border-gray-400 dark:border-slate-600 py-2 px-3 text-xs align-middle">
+                                                                    {{ $aspectGroup['name'] }}
+                                                                </td>
+                                                            @endif
+                                                            <td class="bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-200 border border-gray-400 dark:border-slate-600 py-1.5 px-3 text-xs">
+                                                                {{ $f['name'] }}
+                                                            </td>
+                                                            <td class="bg-yellow-200 dark:bg-yellow-500/30 text-gray-900 dark:text-yellow-200 font-bold text-center border border-gray-400 dark:border-slate-600 py-1.5 px-2 text-xs w-16">
+                                                                {{ $f['code'] }}
+                                                            </td>
+                                                            <td class="bg-white dark:bg-slate-900 text-gray-900 dark:text-white font-bold text-center border border-gray-400 dark:border-slate-600 py-1.5 px-2 text-xs w-14"
+                                                                x-text="getPapiScore('{{ $f['code'] }}')">
+                                                            </td>
+                                                            <td class="bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 border border-gray-400 dark:border-slate-600 py-1.5 px-3 text-xs leading-relaxed"
+                                                                x-text="getPapiInterpretation('{{ $f['code'] }}')">
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Total Atas & Total Bawah Box (seperti gambar 2) -->
+                                    <div class="mt-4 flex flex-col gap-1 max-w-sm">
+                                        <table class="border-collapse text-xs">
+                                            <tbody>
+                                                <tr>
+                                                    <td class="bg-amber-200 dark:bg-amber-900/60 text-gray-900 dark:text-amber-100 font-bold py-1.5 px-4 border border-gray-400 dark:border-slate-600 text-right w-36">
+                                                        Total Atas
+                                                    </td>
+                                                    <td class="bg-cyan-100 dark:bg-cyan-950/60 text-gray-900 dark:text-cyan-200 font-extrabold py-1.5 px-3 border border-gray-400 dark:border-slate-600 text-center w-14"
+                                                        x-text="(selectedAttempt.papi_test_result && selectedAttempt.papi_test_result.role_score) !== undefined ? selectedAttempt.papi_test_result.role_score : 0">
+                                                    </td>
+                                                    <td class="py-1.5 px-3 font-bold text-rose-600 dark:text-rose-400 text-xs">
+                                                        (Harus 45)
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="bg-amber-200 dark:bg-amber-900/60 text-gray-900 dark:text-amber-100 font-bold py-1.5 px-4 border border-gray-400 dark:border-slate-600 text-right w-36">
+                                                        Total Bawah
+                                                    </td>
+                                                    <td class="bg-cyan-100 dark:bg-cyan-950/60 text-gray-900 dark:text-cyan-200 font-extrabold py-1.5 px-3 border border-gray-400 dark:border-slate-600 text-center w-14"
+                                                        x-text="(selectedAttempt.papi_test_result && selectedAttempt.papi_test_result.need_score) !== undefined ? selectedAttempt.papi_test_result.need_score : 0">
+                                                    </td>
+                                                    <td class="py-1.5 px-3 font-bold text-rose-600 dark:text-rose-400 text-xs">
+                                                        (Harus 45)
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Tombol Tutup Khusus PAPI -->
+                                <div class="pt-4 border-t border-gray-200 dark:border-slate-700 flex justify-end">
+                                    <button type="button" @click="showGradeModal = false"
+                                        class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition shadow-xs">
+                                        Tutup
+                                    </button>
+                                </div>
+
+                            </div>
+                        </template>
+
+                        <!-- Banner PAPI jika belum ada hasil -->
+                        <template x-if="selectedAttempt.is_papi && !selectedAttempt.papi_test_result">
+                            <div class="mb-5 p-4 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/80 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-3">
+                                <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <div>
+                                    <p class="font-bold text-amber-900 dark:text-amber-200">Hasil PAPI Kostick Belum Terbentuk</p>
+                                    <p class="mt-0.5 text-amber-700 dark:text-amber-300">
+                                        Tes ini merupakan PAPI Kostick, namun hasil interpretasi belum tersedia. Pastikan karyawan telah menyelesaikan seluruh 90 butir soal.
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Score Summary Header Cards (Untuk Tes Non-DISC & Non-PAPI) -->
+                        <template x-if="!selectedAttempt.disc_test_result && !selectedAttempt.is_disc && !selectedAttempt.is_papi">
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
                                 <div
                                     class="p-3.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800">
@@ -938,8 +1329,9 @@
                         </template>
 
                         <!-- FORM / DAFTAR SELURUH BUTIR JAWABAN BERURUTAN (PILIHAN GANDA, ESSAY, & DISC) -->
-                        <form :action="'{{ url('admin/test-evaluations') }}/' + selectedAttempt.id + '/grade'"
-                            method="POST" class="space-y-4">
+                        <template x-if="!selectedAttempt.is_papi">
+                            <form :action="'{{ url('admin/test-evaluations') }}/' + selectedAttempt.id + '/grade'"
+                                method="POST" class="space-y-4">
                             @csrf
                             @method('PUT')
 
@@ -960,7 +1352,7 @@
                                                 .least_answer ?
                                                 'bg-purple-50/40 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800/60' :
                                                 'bg-gray-50/60 dark:bg-slate-700/30 border-gray-200 dark:border-slate-700'
-                                                )">
+                                            )">
 
                                         <!-- Header Butir Soal -->
                                         <div class="flex items-start justify-between gap-2">
@@ -1086,34 +1478,54 @@
                                         <template x-if="item.question_type === 'essay' && item.single_answer">
                                             <div class="space-y-3">
                                                 <!-- Jawaban Teks -->
-                                                <div class="p-3.5 rounded-xl bg-gray-50/70 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-slate-300 font-mono text-[11px] whitespace-pre-line leading-relaxed">
-                                                    <div x-text="item.single_answer.essay_answer || '(Karyawan tidak mengisi jawaban teks)'"></div>
+                                                <div
+                                                    class="p-3.5 rounded-xl bg-gray-50/70 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-slate-300 font-mono text-[11px] whitespace-pre-line leading-relaxed">
+                                                    <div
+                                                        x-text="item.single_answer.essay_answer || '(Karyawan tidak mengisi jawaban teks)'">
+                                                    </div>
                                                 </div>
 
                                                 <!-- Tautan Terdeteksi (Google Drive / Video dll) -->
-                                                <template x-if="item.single_answer.essay_answer && item.single_answer.essay_answer.match(/https?:\/\/[^\s]+/i)">
+                                                <template
+                                                    x-if="item.single_answer.essay_answer && item.single_answer.essay_answer.match(/https?:\/\/[^\s]+/i)">
                                                     <div class="space-y-2 pt-0.5">
-                                                        <template x-for="url in (item.single_answer.essay_answer.match(/https?:\/\/[^\s]+/g) || [])" :key="url">
-                                                            <div class="flex items-center justify-between p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 shadow-2xs transition">
+                                                        <template
+                                                            x-for="url in (item.single_answer.essay_answer.match(/https?:\/\/[^\s]+/g) || [])"
+                                                            :key="url">
+                                                            <div
+                                                                class="flex items-center justify-between p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 shadow-2xs transition">
                                                                 <div class="flex items-center gap-3 min-w-0">
-                                                                    <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                                                    <div
+                                                                        class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                                                        <svg class="w-4 h-4" fill="none"
+                                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path stroke-linecap="round"
+                                                                                stroke-linejoin="round"
+                                                                                stroke-width="2"
+                                                                                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                                                                         </svg>
                                                                     </div>
                                                                     <div class="min-w-0 truncate">
                                                                         <div class="flex items-center gap-2">
-                                                                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                                                                                :class="url.includes('drive.google.com') ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300' : 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300'"
+                                                                            <span
+                                                                                class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                                                                                :class="url.includes('drive.google.com') ?
+                                                                                    'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300' :
+                                                                                    'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300'"
                                                                                 x-text="url.includes('drive.google.com') ? 'Tautan Google Drive' : 'Tautan Terdeteksi'"></span>
                                                                         </div>
-                                                                        <span class="text-[11px] text-gray-500 dark:text-slate-400 font-mono truncate block mt-0.5" x-text="url"></span>
+                                                                        <span
+                                                                            class="text-[11px] text-gray-500 dark:text-slate-400 font-mono truncate block mt-0.5"
+                                                                            x-text="url"></span>
                                                                     </div>
                                                                 </div>
                                                                 <a :href="url" target="_blank"
                                                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm transition shrink-0 ml-3">
-                                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                                    <svg class="w-3.5 h-3.5" fill="none"
+                                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path stroke-linecap="round"
+                                                                            stroke-linejoin="round" stroke-width="2"
+                                                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                                                     </svg>
                                                                     <span>Buka Tautan</span>
                                                                 </a>
@@ -1229,23 +1641,29 @@
 
                             <!-- Footer Form -->
                             <div
-                                class="pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
-                                <span class="text-[11px] text-gray-400">
-                                    *Penilaian essay otomatis menghitung total skor dan memperbarui status kelulusan KKM
-                                    karyawan.
-                                </span>
+                                class="pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center"
+                                :class="(selectedAttempt.is_disc || selectedAttempt.disc_test_result) ? 'justify-end' : 'justify-between'">
+                                <template x-if="!selectedAttempt.is_disc && !selectedAttempt.disc_test_result">
+                                    <span class="text-[11px] text-gray-400">
+                                        *Penilaian essay otomatis menghitung total skor dan memperbarui status kelulusan KKM
+                                        karyawan.
+                                    </span>
+                                </template>
                                 <div class="flex items-center gap-2">
                                     <button type="button" @click="showGradeModal = false"
-                                        class="px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-600 text-xs font-semibold text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition">
+                                        class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition shadow-xs">
                                         Tutup
                                     </button>
-                                    <button type="submit"
-                                        class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition">
-                                        Simpan Nilai Evaluasi
-                                    </button>
+                                    <template x-if="!selectedAttempt.is_disc && !selectedAttempt.disc_test_result">
+                                        <button type="submit"
+                                            class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition">
+                                            Simpan Nilai Evaluasi
+                                        </button>
+                                    </template>
                                 </div>
                             </div>
                         </form>
+                    </template>
                     </div>
                 </template>
             </div>

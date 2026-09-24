@@ -141,6 +141,172 @@ class TestEvaluationController extends Controller
         return $pdf->stream($fileName);
     }
 
+    /**
+     * Preview or download PAPI Kostick test results as a PDF document.
+     */
+    public function downloadPapiPdf(Request $request, string $id)
+    {
+        $attempt = TestAttempt::with([
+            'jobApplication.applicantProfile.user',
+            'jobApplication.applicantProfile.educations',
+            'jobApplication.job.company',
+            'jobApplication.job.department',
+            'user.employeeProfile.department.company',
+            'user.employeeProfile.company',
+            'test.category',
+            'test.department',
+            'papiTestResult',
+        ])->findOrFail($id);
+
+        $user = auth()->user();
+        $isRecruiter = $user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter');
+        $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+
+        if (!$isAdmin && !$isRecruiter) {
+            abort(403, 'Akses ditolak. Laporan evaluasi PAPI Kostick hanya dapat diakses oleh Admin atau Tim HR.');
+        }
+
+        $papiResult = $attempt->papiTestResult;
+
+        if (!$papiResult) {
+            $calculator = app(\App\Services\PapiKostickCalculatorService::class);
+            $papiResult = $calculator->calculate($attempt);
+        }
+
+        if (!$papiResult) {
+            $redirectRoute = $isAdmin ? 'admin.employee_test_evaluation' : ($isRecruiter ? 'recruiter.employee_test_evaluation' : 'profile');
+            return redirect()->route($redirectRoute)
+                ->with('error', 'Laporan PAPI Kostick tidak dapat dibuat: Hasil tes belum tersedia.');
+        }
+
+        $rawAnswers = $papiResult->raw_answers ?? [];
+        $scores = $papiResult->scores ?? [];
+        $interpretations = $papiResult->interpretations ?? [];
+        $roleScore = $papiResult->role_score ?? 0;
+        $needScore = $papiResult->need_score ?? 0;
+        $isValid = $papiResult->is_valid ?? false;
+
+        // Siapkan struktur 10 baris x 18 kolom untuk lembar jawaban (dari nomor 1-10 di kiri ke 81-90 di kanan)
+        $sheetRows = [];
+        $startCols = [1, 11, 21, 31, 41, 51, 61, 71, 81];
+        for ($r = 0; $r < 10; $r++) {
+            $rowCells = [];
+            foreach ($startCols as $startNum) {
+                $qNum = $startNum + $r;
+                $ans = $rawAnswers[$qNum] ?? ($rawAnswers[(string)$qNum] ?? null);
+                $choice = '-';
+                if ($ans) {
+                    if (!empty($ans['choice'])) {
+                        $choice = strtolower($ans['choice']);
+                    } elseif (!empty($ans['tag'])) {
+                        $choice = strtolower($ans['tag']);
+                    }
+                }
+                $rowCells[] = ['text' => $qNum, 'isNum' => true];
+                $rowCells[] = ['text' => $choice, 'isNum' => false];
+            }
+            $sheetRows[] = $rowCells;
+        }
+
+        // Struktur 7 Aspek & 20 Faktor
+        $papiAspects = [
+            [
+                'name' => 'Arah kerja',
+                'factors' => [
+                    ['code' => 'N', 'name' => 'Penyeleseian secara prestasi'],
+                    ['code' => 'G', 'name' => 'Peranan sebagai pekerja keras'],
+                    ['code' => 'A', 'name' => 'Hasrat untuk berprestasi'],
+                ]
+            ],
+            [
+                'name' => 'Kepemimpinan',
+                'factors' => [
+                    ['code' => 'L', 'name' => 'Peran sebagai pimpinan'],
+                    ['code' => 'P', 'name' => 'Pengendalian orang lain'],
+                    ['code' => 'I', 'name' => 'Mudah dalam mengambil keputusan'],
+                ]
+            ],
+            [
+                'name' => 'Aktivitas',
+                'factors' => [
+                    ['code' => 'T', 'name' => 'Tipe selalu sibuk'],
+                    ['code' => 'V', 'name' => 'Tipe yang bersemangat'],
+                ]
+            ],
+            [
+                'name' => 'Pergaulan',
+                'factors' => [
+                    ['code' => 'X', 'name' => 'Kebutuhan untuk mendapatkan perhatian'],
+                    ['code' => 'S', 'name' => 'Pergaulan luas'],
+                    ['code' => 'B', 'name' => 'Kebutuhan berkelompok'],
+                    ['code' => 'O', 'name' => 'Kebutuhan untuk dekat dan menyayangi'],
+                ]
+            ],
+            [
+                'name' => 'Gaya kerja',
+                'factors' => [
+                    ['code' => 'R', 'name' => 'Tipe teoritikal'],
+                    ['code' => 'D', 'name' => 'Suka pekerjaan yang terperinci'],
+                    ['code' => 'C', 'name' => 'Tipe teratur'],
+                ]
+            ],
+            [
+                'name' => 'Sifat',
+                'factors' => [
+                    ['code' => 'Z', 'name' => 'Hasrat untuk berubah'],
+                    ['code' => 'E', 'name' => 'Pengendalian emosi'],
+                    ['code' => 'K', 'name' => 'Agresi'],
+                ]
+            ],
+            [
+                'name' => 'Ketaatan',
+                'factors' => [
+                    ['code' => 'F', 'name' => 'Dukungan terhadap atasan'],
+                    ['code' => 'W', 'name' => 'Kebutuhan taat pada aturan dan pengarahan'],
+                ]
+            ],
+        ];
+
+        $isEmployeeAttempt = ($attempt->attempt_type === 'employee') || empty($attempt->job_application_id);
+        $participantName = $attempt->participant_name 
+            ?: ($isEmployeeAttempt 
+                ? ($attempt->user?->employeeProfile?->full_name ?? ($attempt->user?->name ?? 'Karyawan'))
+                : ($attempt->jobApplication?->applicantProfile?->full_name ?? ($attempt->jobApplication?->applicantProfile?->user?->name ?? 'Kandidat')));
+
+        $cleanName = Str::slug($participantName, '_');
+        $date = now()->format('Ymd');
+        $fileName = "PAPI_Kostick_Report_{$cleanName}_{$date}.pdf";
+
+        $data = compact(
+            'attempt',
+            'papiResult',
+            'participantName',
+            'isEmployeeAttempt',
+            'sheetRows',
+            'papiAspects',
+            'scores',
+            'interpretations',
+            'roleScore',
+            'needScore',
+            'isValid'
+        );
+
+        $pdf = Pdf::loadView('admin.test-evaluation.papi-pdf', $data)
+            ->setPaper('a4', 'portrait')
+            ->setOption([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'defaultFont' => 'sans-serif',
+                'dpi' => 120,
+            ]);
+
+        if ($request->query('download') == '1') {
+            return $pdf->download($fileName);
+        }
+
+        return $pdf->stream($fileName);
+    }
+
     public function updateGrade(Request $request, string $id)
     {
         $attempt = TestAttempt::with([
@@ -209,9 +375,14 @@ class TestEvaluationController extends Controller
             $totalScore = $objectiveScoreSum + $essayScoreSum;
 
             $passingScore = $attempt->test ? (float) $attempt->test->passing_score : 0;
-            $hasDisc = $attempt->discTestResult || ($attempt->test && (str_contains(strtolower($attempt->test->title ?? ''), 'disc') || str_contains(strtolower($attempt->test->title ?? ''), 'personality')));
+            $hasDiscOrPapi = $attempt->discTestResult || $attempt->papiTestResult || ($attempt->test && (
+                str_contains(strtolower($attempt->test->title ?? ''), 'disc') ||
+                str_contains(strtolower($attempt->test->title ?? ''), 'papi') ||
+                str_contains(strtolower($attempt->test->category?->name ?? ''), 'papi') ||
+                str_contains(strtolower($attempt->test->title ?? ''), 'personality')
+            ));
 
-            if ($hasDisc || $passingScore <= 0) {
+            if ($hasDiscOrPapi || $passingScore <= 0) {
                 $status = 'completed';
             } else {
                 $status = ($totalScore >= $passingScore) ? 'passed' : 'failed';

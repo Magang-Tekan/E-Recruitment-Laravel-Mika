@@ -473,7 +473,7 @@
                                     @if ($candPhotoUrl)
                                         <img src="{{ $candPhotoUrl }}" alt="{{ $candName }}" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm shrink-0">
                                     @else
-                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                                        <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
                                             {{ strtoupper(substr($candName, 0, 2)) }}
                                         </div>
                                     @endif
@@ -1137,8 +1137,8 @@
                                 <img :src="editData.applicant_photo" :alt="editData.applicant_name" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shrink-0 shadow-sm">
                             </template>
                             <template x-if="!editData.applicant_photo">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
-                                    <span x-text="editData.applicant_name ? editData.applicant_name.charAt(0).toUpperCase() : 'K'"></span>
+                                <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                                    <span x-text="editData.applicant_name ? editData.applicant_name.substring(0, 2).toUpperCase() : 'K'"></span>
                                 </div>
                             </template>
                             <div class="min-w-0">
@@ -1300,8 +1300,8 @@
                                     <img :src="completeData.applicant_photo" :alt="completeData.applicant_name" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shrink-0 shadow-sm">
                                 </template>
                                 <template x-if="!completeData.applicant_photo">
-                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
-                                        <span x-text="completeData.applicant_name ? completeData.applicant_name.charAt(0).toUpperCase() : 'K'"></span>
+                                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                                        <span x-text="completeData.applicant_name ? completeData.applicant_name.substring(0, 2).toUpperCase() : 'K'"></span>
                                     </div>
                                 </template>
                                 <div class="min-w-0">
@@ -1439,8 +1439,8 @@
                             <img :src="deleteData.applicant_photo" :alt="deleteData.applicant_name" class="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-slate-700 shrink-0 shadow-xs">
                         </template>
                         <template x-if="!deleteData.applicant_photo">
-                            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                                <span x-text="deleteData.applicant_name ? deleteData.applicant_name.charAt(0).toUpperCase() : 'K'"></span>
+                            <div class="w-9 h-9 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                                <span x-text="deleteData.applicant_name ? deleteData.applicant_name.substring(0, 2).toUpperCase() : 'K'"></span>
                             </div>
                         </template>
                         <div class="min-w-0">

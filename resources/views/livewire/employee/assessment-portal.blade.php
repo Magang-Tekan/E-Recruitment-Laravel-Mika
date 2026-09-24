@@ -128,15 +128,18 @@
                             $isCompleted = $attempt && in_array($attempt->status, ['completed', 'passed', 'failed']);
                             $isInProgress = $attempt && $attempt->status === 'in_progress';
                             $isDisc = str_contains(strtolower($test->category?->name ?? ''), 'disc');
+                            $isPapi = str_contains(strtolower($test->category?->name ?? ''), 'papi');
                         @endphp
                         <div
                             class="p-4 sm:p-5 rounded-2xl border transition-all duration-200 flex flex-col justify-between {{ $isCompleted ? 'bg-gray-50/70 dark:bg-[#14203A]/40 border-gray-200 dark:border-[#1D2E54] opacity-90' : 'bg-white dark:bg-[#0D1527] border-gray-200 dark:border-[#1D2E54] hover:shadow-lg hover:shadow-blue-500/5 hover:border-indigo-300 dark:hover:border-[#93F514]/40' }}">
                             <div>
                                 <div class="flex items-start justify-between gap-2 flex-wrap mb-3">
                                     <span
-                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold {{ $isDisc ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60' : 'bg-indigo-100 text-indigo-700 dark:bg-[#14203A] dark:text-[#38BDF8] border border-indigo-200 dark:border-[#253966]' }}">
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold {{ $isDisc ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60' : ($isPapi ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60' : 'bg-indigo-100 text-indigo-700 dark:bg-[#14203A] dark:text-[#38BDF8] border border-indigo-200 dark:border-[#253966]') }}">
                                         @if ($isDisc)
                                             Tes Psikologi (DISC)
+                                        @elseif ($isPapi)
+                                            Tes Kepribadian (PAPI Kostick)
                                         @else
                                             {{ $test->category?->name ?? 'Pilihan Ganda / Essay' }}
                                         @endif
@@ -191,7 +194,7 @@
                                                 class="text-gray-900 dark:text-white font-bold">{{ $test->total_questions ?? $test->questions->count() }}
                                                 Butir</strong></span>
                                     </div>
-                                    @if (!$isDisc)
+                                    @if (!$isDisc && !$isPapi)
                                         <div
                                             class="flex items-center gap-2 text-gray-600 dark:text-[#93A5C9] sm:col-span-2 pt-1 border-t border-gray-200/60 dark:border-[#1D2E54]">
                                             <svg class="w-4 h-4 text-gray-400 dark:text-[#6378A0] shrink-0" fill="none" viewBox="0 0 24 24"
@@ -212,7 +215,7 @@
                             <div class="pt-2">
                                 @if ($isCompleted)
                                     <div class="flex flex-wrap items-center justify-between gap-2">
-                                        @if ($isDisc)
+                                        @if ($isDisc || $isPapi)
                                             <span
                                                 class="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/15 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-[#93F514]/30">
                                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
@@ -298,6 +301,7 @@
                     @foreach ($attempts as $attempt)
                         @php
                             $isDisc = str_contains(strtolower($attempt->test?->category?->name ?? ''), 'disc');
+                            $isPapi = str_contains(strtolower($attempt->test?->category?->name ?? ''), 'papi');
                         @endphp
                         <div
                             class="p-4 rounded-xl bg-gray-50/80 dark:bg-[#14203A] border border-gray-200/80 dark:border-[#1D2E54] space-y-2.5">
@@ -343,7 +347,7 @@
                                     {{ $attempt->finished_at ? $attempt->finished_at->translatedFormat('d M Y, H:i') : ($attempt->started_at ? $attempt->started_at->translatedFormat('d M Y, H:i') : '-') }}
                                 </span>
                                 <div class="text-right font-bold text-gray-900 dark:text-white">
-                                    @if ($isDisc)
+                                    @if ($isDisc || $isPapi)
                                         <span class="text-xs font-semibold text-emerald-600 dark:text-[#93F514]">
                                             Tersimpan
                                         </span>
@@ -387,8 +391,12 @@
                                     <td class="py-3.5 px-3 text-xs text-gray-500 dark:text-[#93A5C9]">
                                         {{ $attempt->finished_at ? $attempt->finished_at->translatedFormat('d M Y, H:i') : ($attempt->started_at ? $attempt->started_at->translatedFormat('d M Y, H:i') : '-') }}
                                     </td>
+                                    @php
+                                        $isDisc = str_contains(strtolower($attempt->test?->category?->name ?? ''), 'disc');
+                                        $isPapi = str_contains(strtolower($attempt->test?->category?->name ?? ''), 'papi');
+                                    @endphp
                                     <td class="py-3.5 px-3 font-bold text-gray-900 dark:text-white">
-                                        @if ($isDisc)
+                                        @if ($isDisc || $isPapi)
                                             <span class="text-xs font-semibold text-emerald-600 dark:text-[#93F514]">
                                                 Tersimpan
                                             </span>

@@ -121,6 +121,7 @@ class EmployeeTestEvaluationTable extends Component
             'answers.option',
             'answers.reviewer',
             'discTestResult.discProfile',
+            'papiTestResult',
         ])
         ->where('attempt_type', 'employee');
 

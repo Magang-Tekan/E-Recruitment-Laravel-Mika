@@ -60,4 +60,9 @@ class TestAttempt extends Model
     {
         return $this->hasOne(DiscTestResult::class, 'test_attempt_id');
     }
+
+    public function papiTestResult(): HasOne
+    {
+        return $this->hasOne(PapiTestResult::class, 'test_attempt_id');
+    }
 }
