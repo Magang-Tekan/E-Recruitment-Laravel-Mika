@@ -224,8 +224,8 @@ class PapiKostickMasterSeeder extends Seeder
         // 3. Data Norma Interpretasi Skor (disesuaikan dengan rentang nilai referensi PAPI Kostick)
         $norms = [
             // N - Kebutuhan Menyelesaikan Tugas Secara Mandiri
-            ['code' => 'N', 'min' => 0, 'max' => 2, 'desc' => 'Menunda atau menghindari pekerjaan', 'interpret' => 'Cenderung ragu-ragu dalam situasi pengambilan keputusan, menunda atau menghindari situasi pengambilan keputusan'],
-            ['code' => 'N', 'min' => 3, 'max' => 4, 'desc' => 'Berhati-hati atau ragu', 'interpret' => 'Berhati-hati dan cenderung ragu-ragu'],
+            ['code' => 'N', 'min' => 0, 'max' => 2, 'desc' => 'Menunda atau menghindari pekerjaan', 'interpret' => 'Menunda atau menghindari pekerjaan'],
+            ['code' => 'N', 'min' => 3, 'max' => 4, 'desc' => 'Berhati-hati atau ragu', 'interpret' => 'Cenderung ragu-ragu dalam situasi pengambilan keputusan, cenderung ragu-ragu, menunda atau menghindari situasi pengambilan keputusan'],
             ['code' => 'N', 'min' => 4, 'max' => 6, 'desc' => 'Cukup bertanggung jawab pada pekerjaan', 'interpret' => 'Cukup bertanggung jawab terhadap pekerjaan'],
             ['code' => 'N', 'min' => 6, 'max' => 9, 'desc' => 'Tekun, tanggung jawab tinggi', 'interpret' => 'Ketekunan, tanggung jawab terhadap tugas tinggi'],
 
