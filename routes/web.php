@@ -85,8 +85,10 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':recruiter'])
         Route::get('test-evaluations/{id}/disc-pdf', [TestEvaluationController::class, 'downloadDiscPdf'])->name('test_evaluation.disc_pdf');
         Route::get('test-evaluations/{id}/papi-pdf', [TestEvaluationController::class, 'downloadPapiPdf'])->name('test_evaluation.papi_pdf');
 
-        // Employee Assessment Results (Recruiter)
-        Route::view('employee-test-evaluations', 'livewire.admin.employee-test-evaluation.index')->name('employee_test_evaluation');
+        // Employee Assessment Results (Khusus Admin - Recruiter dialihkan ke dashboard)
+        Route::get('employee-test-evaluations', function () {
+            return redirect()->route('recruiter.dashboard');
+        })->name('employee_test_evaluation');
 
         // Interview Schedules
         Route::view('interview-schedules', 'livewire.admin.interview-schedule.index')->name('interview_schedule');

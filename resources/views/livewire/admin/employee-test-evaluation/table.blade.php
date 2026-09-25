@@ -358,13 +358,24 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+        <div class="overflow-x-hidden">
+            <table class="w-full text-left border-collapse table-fixed">
+                <colgroup>
+                    <col style="width:40px">
+                    <col style="width:20%">
+                    <col style="width:9%">
+                    <col style="width:13%">
+                    <col style="width:15%">
+                    <col style="width:14%">
+                    <col style="width:10%">
+                    <col style="width:11%">
+                    <col style="width:8%">
+                </colgroup>
                 <thead>
                     <tr
                         class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold text-[11px]">
-                        <th class="py-4 px-6 w-12 text-center">No</th>
-                        <th class="py-4 px-6 cursor-pointer select-none hover:text-indigo-600 transition"
+                        <th class="py-3 px-3 text-center">No</th>
+                        <th class="py-3 px-3 cursor-pointer select-none hover:text-indigo-600 transition"
                             wire:click="sortBy('employee')">
                             <div class="flex items-center gap-1">
                                 <span>Karyawan</span>
@@ -373,29 +384,29 @@
                                 @endif
                             </div>
                         </th>
-                        <th class="py-4 px-6 text-center">Tipe Pegawai</th>
-                        <th class="py-4 px-6">Departemen / Posisi</th>
-                        <th class="py-4 px-6">Paket Asesmen</th>
-                        <th class="py-4 px-6 text-center cursor-pointer select-none hover:text-indigo-600 transition"
+                        <th class="py-3 px-3 text-center">Tipe</th>
+                        <th class="py-3 px-3">Departemen</th>
+                        <th class="py-3 px-3">Paket Asesmen</th>
+                        <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-indigo-600 transition"
                             wire:click="sortBy('started_at')">
                             <div class="flex items-center justify-center gap-1">
-                                <span>Waktu Pengerjaan</span>
+                                <span>Waktu</span>
                                 @if ($sortField === 'started_at')
                                     <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
                             </div>
                         </th>
-                        <th class="py-4 px-6 text-center cursor-pointer select-none hover:text-indigo-600 transition"
+                        <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-indigo-600 transition"
                             wire:click="sortBy('score')">
                             <div class="flex items-center justify-center gap-1">
-                                <span>Hasil / Nilai</span>
+                                <span>Nilai</span>
                                 @if ($sortField === 'score')
                                     <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
                             </div>
                         </th>
-                        <th class="py-4 px-6 text-center">Status</th>
-                        <th class="py-4 px-6 text-right">Laporan / Aksi</th>
+                        <th class="py-3 px-3 text-center">Status</th>
+                        <th class="py-3 px-3 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody
@@ -420,10 +431,10 @@
                             $isPassed = $attempt->status === 'passed' || (!$isDisc && !$isPapi && $totalScore >= $passingScore && $passingScore > 0) || ($passingScore == 0 && $attempt->status === 'passed');
                         @endphp
                         <tr class="hover:bg-gray-50/80 dark:hover:bg-slate-800/40 transition duration-150">
-                            <td class="py-4 px-6 text-center font-medium text-gray-400 dark:text-slate-500">
+                            <td class="py-3 px-3 text-center font-medium text-gray-400 dark:text-slate-500">
                                 {{ $attempts->firstItem() + $index }}
                             </td>
-                            <td class="py-4 px-6">
+                            <td class="py-3 px-3">
                                 <div class="flex items-center gap-3">
                                     @php
                                         $empPhoto = $emp?->photo ?? $attempt->user?->avatar;
@@ -437,27 +448,25 @@
                                     @if ($empPhotoUrl)
                                         <img src="{{ $empPhotoUrl }}"
                                             alt="{{ $emp?->full_name ?? ($attempt->user?->name ?? 'Karyawan') }}"
-                                            class="w-9 h-9 rounded-full object-cover ring-2 ring-indigo-500/20 shadow-xs shrink-0">
+                                            class="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-[#1D2E54] shadow-2xs shrink-0">
                                     @else
-                                        <div
-                                            class="w-9 h-9 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center ring-2 ring-indigo-500/20 shrink-0">
+                                        <div class="w-9 h-9 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
                                             {{ strtoupper(substr($emp?->full_name ?? ($attempt->user?->name ?? 'K'), 0, 2)) }}
                                         </div>
                                     @endif
-                                    <div>
-                                        <div class="font-bold text-gray-900 dark:text-white text-sm">
+                                    <div class="min-w-0">
+                                        <div class="font-bold text-gray-900 dark:text-white text-sm truncate">
                                             {{ $emp?->full_name ?? ($attempt->user?->name ?? 'Karyawan') }}
                                         </div>
-                                        <div
-                                            class="text-[11px] text-gray-400 dark:text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                                        <div class="text-[11px] text-gray-400 dark:text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
                                             <span>NIK: {{ $emp?->nik ?? ($attempt->user?->nik ?? '-') }}</span>
                                             <span>•</span>
-                                            <span>{{ $attempt->user?->email ?? '-' }}</span>
+                                            <span class="truncate">{{ $attempt->user?->email ?? '-' }}</span>
                                         </div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="py-4 px-6 text-center whitespace-nowrap">
+                            <td class="py-3 px-3 text-center whitespace-nowrap">
                                 @php
                                     $type = $emp?->employee_type ?? 'permanent';
                                 @endphp
@@ -483,8 +492,8 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="py-4 px-6">
-                                <div class="font-semibold text-gray-700 dark:text-slate-200">
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-700 dark:text-slate-200 truncate">
                                     {{ $emp?->department?->name ?? 'Semua Departemen' }}
                                 </div>
                                 @php
@@ -496,15 +505,15 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="py-4 px-6">
-                                <div class="font-semibold text-gray-800 dark:text-slate-200">
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-800 dark:text-slate-200 truncate">
                                     {{ $attempt->test?->title ?? '-' }}
                                 </div>
                                 <div class="text-[11px] text-gray-400">
                                     {{ $attempt->test?->category?->name ?? 'Asesmen Internal' }}
                                 </div>
                             </td>
-                            <td class="py-4 px-6 text-center">
+                            <td class="py-3 px-3 text-center">
                                 <div class="font-medium text-gray-700 dark:text-slate-300">
                                     {{ \Carbon\Carbon::parse($attempt->finished_at ?? ($attempt->started_at ?? now()))->translatedFormat('d M Y, H:i') }}
                                 </div>
@@ -513,8 +522,8 @@
                                         {{ round($attempt->duration / 60) }} mnt</div>
                                 @endif
                             </td>
-                            <td class="py-4 px-6 text-center">
-                                @if ($isDisc)
+                            <td class="py-3 px-3 text-center">
+                                @if ($isDisc && $discResult)
                                     <div class="inline-flex flex-col items-center">
                                         <span
                                             class="px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs border border-purple-200 dark:border-purple-800/60">
@@ -542,7 +551,7 @@
                                         {{ $passingScore }}</div>
                                 @endif
                             </td>
-                            <td class="py-4 px-6 text-center">
+                            <td class="py-3 px-3 text-center">
                                 @if ($attempt->status === 'in_progress')
                                     <span
                                         class="inline-flex items-center justify-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-semibold text-[11px] border border-sky-200 dark:border-sky-800">
@@ -570,20 +579,18 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="py-4 px-6 text-right">
+                            <td class="py-3 px-3 text-right">
                                 <div class="flex items-center justify-end">
-                                    <!-- Tombol Evaluasi / Lihat Riwayat Jawaban -->
                                     <button
                                         @click="openGradeModal({{ \Illuminate\Support\Js::from($attempt) }}, {{ $isDisc ? 'true' : 'false' }}, {{ $isPapi ? 'true' : 'false' }})"
-                                        class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-semibold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5">
-                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
+                                        class="p-1.5 rounded-lg text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition"
+                                        title="{{ $isPapi ? 'Riwayat & Interpretasi PAPI' : ($isDisc ? 'Riwayat Jawaban & Profil' : 'Riwayat Jawaban & Nilai') }}">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
-                                        <span>{{ $isPapi ? 'Riwayat & Interpretasi PAPI' : ($isDisc ? 'Riwayat Jawaban & Profil' : 'Riwayat Jawaban & Nilai') }}</span>
                                     </button>
                                 </div>
                             </td>

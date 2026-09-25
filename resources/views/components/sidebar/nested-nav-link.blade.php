@@ -2,11 +2,13 @@
     'title' => '',
     'active' => false,
     'icon' => null,
+    'tooltip' => null,
 ])
 
 <div x-data="{ open: {{ $active ? 'true' : 'false' }} }" class="space-y-1">
     <button @click="open = !open" 
             type="button"
+            title="{{ $tooltip ?? $title }}"
             class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $active ? 'text-emerald-700 dark:text-[#93F514] bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-[#93F514] hover:bg-gray-100 dark:hover:bg-[#0a1f0a]' }} group">
         <div class="flex items-center gap-3 min-w-0">
             @if ($icon)

@@ -234,8 +234,8 @@ class PapiKostickMasterSeeder extends Seeder
             ['code' => 'A', 'min' => 6, 'max' => 9, 'desc' => 'Tujuan jelas, kebutuhan sukses dan ambisi tinggi', 'interpret' => 'Tujuan-tujuan didefinisikan secara jelas, kebutuhan untuk sukses tinggi, ambisi pribadi tinggi'],
 
             // G - Peran Pekerja Keras
-            ['code' => 'G', 'min' => 0, 'max' => 4, 'desc' => 'Bekerja untuk kesenangan saja, bukan hasil optimal', 'interpret' => 'Bekerja hanya untuk mengejar kesenangan saja bukan untuk memberikan suatu hasil yang baik'],
-            ['code' => 'G', 'min' => 5, 'max' => 9, 'desc' => 'Kemauan bekerja keras tinggi', 'interpret' => 'Kemauan bekerja keras tinggi'],
+            ['code' => 'G', 'min' => 3, 'max' => 4, 'desc' => 'Bekerja untuk kesenangan saja, bukan hasil optimal', 'interpret' => 'Bekerja hanya untuk mengejar kesenangan saja bukan untuk memberikan suatu hasil yang baik'],
+            ['code' => 'G', 'min' => 4, 'max' => 7, 'desc' => 'Kemauan bekerja keras tinggi', 'interpret' => 'Kemauan bekerja keras tinggi'],
 
             // L - Peran Pemimpin
             ['code' => 'L', 'min' => 0, 'max' => 4, 'desc' => 'Cenderung tidak secara aktif menggunakan orang lain dalam bekerja', 'interpret' => 'Cenderung tidak suka aktif menggunakan orang lain dalam bekerja'],
@@ -254,12 +254,10 @@ class PapiKostickMasterSeeder extends Seeder
             // T - Peran Sibuk
             ['code' => 'T', 'min' => 0, 'max' => 3, 'desc' => 'Melakukan segala sesuatu menurut kemauannya sendiri', 'interpret' => 'Melakukan segala sesuatu menurut kemauannya sendiri'],
             ['code' => 'T', 'min' => 4, 'max' => 6, 'desc' => 'Tergolong aktif secara internal dan mental', 'interpret' => 'Tergolong aktif secara internal dan mental'],
-            ['code' => 'T', 'min' => 7, 'max' => 9, 'desc' => 'Sangat aktif, ritme kerja tinggi', 'interpret' => 'Sangat aktif secara internal dan mental, memiliki ritme kerja dan urgensi tugas yang tinggi'],
 
             // V - Peran Penuh Semangat
             ['code' => 'V', 'min' => 0, 'max' => 4, 'desc' => 'Cenderung pasif', 'interpret' => 'Keaktifannya tergolong rendah, cenderung pasif (hanya duduk-duduk saja)'],
             ['code' => 'V', 'min' => 5, 'max' => 7, 'desc' => 'Aktif secara fisik, cenderung sportif', 'interpret' => 'Keaktifannya secara fisik tergolong agak baik, cenderung tipe sportif'],
-            ['code' => 'V', 'min' => 8, 'max' => 9, 'desc' => 'Sangat aktif secara fisik, bersemangat tinggi', 'interpret' => 'Tingkat energi fisik sangat besar, antusiasme dan keaktifan fisik tinggi dalam bekerja'],
 
             // X - Kebutuhan Untuk Diperhatikan
             ['code' => 'X', 'min' => 0, 'max' => 1, 'desc' => 'Cenderung pemalu', 'interpret' => 'Cenderung pemalu, suka menyendiri'],
@@ -302,10 +300,10 @@ class PapiKostickMasterSeeder extends Seeder
             ['code' => 'Z', 'min' => 8, 'max' => 9, 'desc' => 'Mudah gelisah, frustasi, karena segala sesuatu tidak berjalan fantastis', 'interpret' => 'Mudah gelisah, mudah frustrasi mungkin karena segala sesuatu bergerak tidak cukup cepat'],
 
             // E - Peran Pengendalian Emosi
-            ['code' => 'E', 'min' => 0, 'max' => 1, 'desc' => 'Terbuka, cepat bereaksi, tidak normative', 'interpret' => 'Terbuka, cepat bereaksi, tidak memikirkan nilai dalam pengendalian diri'],
+            ['code' => 'E', 'min' => 0, 'max' => 1, 'desc' => 'Terbuka, cepat bereaksi, tidak normative', 'interpret' => 'Terbuka , cepat bereaksi , tidak memikirkan nilai dalam pengendalian diri'],
             ['code' => 'E', 'min' => 2, 'max' => 3, 'desc' => 'Terbuka', 'interpret' => 'Terbuka'],
             ['code' => 'E', 'min' => 4, 'max' => 6, 'desc' => 'Punya pendekatan emosional seimbang, mampu mengendalikan', 'interpret' => 'Memiliki pendekatan emosional yang seimbang. Mampu mengendalikan perasaannya'],
-            ['code' => 'E', 'min' => 7, 'max' => 9, 'desc' => 'Sangat normative, kebutuhan pengendalian diri yang berlebihan', 'interpret' => 'Sangat menepatkan nilai-nilai dalam setiap aktivitasnya. Kebutuhan pengendalian diri yang berlebih-lebihan, mungkin digunakan sebagai defence mechanisme'],
+            ['code' => 'E', 'min' => 7, 'max' => 9, 'desc' => 'Sangat normative, kebutuhan pengendalian diri yang berlebihan', 'interpret' => 'Sangat normative , kebutuhan pengendalian diri yang berlebihan'],
 
             // K - Kebutuhan Untuk Agresif
             ['code' => 'K', 'min' => 0, 'max' => 2, 'desc' => 'Menghindari masalah, menolak untuk mengenali situasi sebagai masalah', 'interpret' => 'Selalu menghindari masalah. Cenderung mengabaikan situasi atau cenderung menolak untuk mengenali sesuatu sebagai sebuah masalah'],

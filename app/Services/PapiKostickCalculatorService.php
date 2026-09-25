@@ -76,15 +76,23 @@ class PapiKostickCalculatorService
 
         // 4. Ambil Interpretasi Norma dari Database untuk setiap skor
         $interpretations = [];
-        $allNorms = PapiNorm::all();
+        $allNorms = PapiNorm::all()->groupBy('factor_code');
 
         foreach ($factorCodes as $code) {
             $val = $scores[$code] ?? 0;
-            $matchedNorm = $allNorms->first(function ($norm) use ($code, $val) {
-                return $norm->factor_code === $code
-                    && $val >= $norm->min_score
-                    && $val <= $norm->max_score;
+            $factorNorms = $allNorms->get($code, collect());
+
+            // 1. Cari norma dengan kecocokan rentang persis
+            $matchedNorm = $factorNorms->first(function ($norm) use ($val) {
+                return $val >= $norm->min_score && $val <= $norm->max_score;
             });
+
+            // 2. Fallback jika nilai berada di luar rentang master (nilai > max atau < min)
+            if (!$matchedNorm && $factorNorms->isNotEmpty()) {
+                $matchedNorm = $val > $factorNorms->max('max_score')
+                    ? $factorNorms->sortByDesc('max_score')->first()
+                    : $factorNorms->sortBy('min_score')->first();
+            }
 
             $interpretations[$code] = [
                 'score' => $val,
