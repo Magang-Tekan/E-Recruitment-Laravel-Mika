@@ -1,117 +1,142 @@
-<div class="space-y-6 animate-pulse">
+@php
+    $user = auth()->user();
+    $isRecruiter = $user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter');
+    $cardCount = $isRecruiter ? 4 : 5;
+@endphp
+
+<div class="space-y-6 animate-pulse" aria-hidden="true" role="status">
+    <span class="sr-only">Memuat dashboard...</span>
+
     <!-- Welcome Banner Skeleton -->
-    <div class="p-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-        <div class="w-full space-y-2.5">
-            <div class="h-6 sm:h-7 w-2/3 max-w-md bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
-            <div class="h-3.5 sm:h-4 w-full max-w-lg bg-slate-200/70 dark:bg-slate-700/70 rounded-md"></div>
+    <div
+        class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-blue-600 dark:border-l-[#93F514] p-6 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 transition-colors">
+        
+        <div class="flex items-start sm:items-center gap-4 w-full md:w-auto">
+            <!-- Icon Box Skeleton -->
+            <div
+                class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] shrink-0"></div>
+            
+            <div class="space-y-2 flex-1 min-w-0">
+                <div class="h-6 sm:h-7 w-64 sm:w-80 bg-slate-200 dark:bg-[#1D2E54] rounded-lg"></div>
+                <div class="h-3.5 sm:h-4 w-full max-w-md bg-slate-100 dark:bg-[#14203A] rounded-md"></div>
+            </div>
         </div>
-        <div class="flex items-center gap-2.5 shrink-0 w-full md:w-auto">
-            <div class="h-9 w-32 bg-slate-200 dark:bg-slate-700 rounded-xl"></div>
-            <div class="h-9 w-28 bg-slate-200 dark:bg-slate-700 rounded-xl"></div>
+
+        <!-- Action Buttons Skeleton -->
+        <div class="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
+            <div class="h-10 w-32 bg-slate-200 dark:bg-[#1D2E54] rounded-xl shrink-0"></div>
+            <div class="h-10 w-32 bg-slate-100 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl shrink-0"></div>
         </div>
     </div>
 
-    <!-- Key Metrics Cards Grid (4 Stat Cards) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        @for ($i = 0; $i < 4; $i++)
-            <div class="p-5 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-800 flex items-center gap-4">
+    <!-- Key Metrics Cards Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-2 {{ $isRecruiter ? 'lg:grid-cols-4' : 'lg:grid-cols-5' }} gap-4">
+        @for ($i = 0; $i < $cardCount; $i++)
+            <div
+                class="p-4 sm:p-5 bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] flex items-center gap-3.5">
                 <!-- Icon Box Skeleton -->
-                <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-slate-800 shrink-0"></div>
+                <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-[#14203A] shrink-0"></div>
                 <!-- Content -->
                 <div class="space-y-2 flex-1 min-w-0">
-                    <div class="h-3 w-20 bg-gray-200 dark:bg-slate-800 rounded"></div>
-                    <div class="flex items-baseline gap-2">
-                        <div class="h-6 w-12 bg-gray-200 dark:bg-slate-800 rounded"></div>
-                        <div class="h-3 w-16 bg-gray-100 dark:bg-slate-800/60 rounded"></div>
+                    <div class="h-3 w-16 bg-slate-200 dark:bg-[#1D2E54] rounded"></div>
+                    <div class="flex items-baseline gap-1.5">
+                        <div class="h-6 w-10 bg-slate-200 dark:bg-[#1D2E54] rounded"></div>
+                        <div class="h-3 w-12 bg-slate-100 dark:bg-[#14203A] rounded"></div>
                     </div>
                 </div>
             </div>
         @endfor
     </div>
 
-    <!-- Middle Content Grid: Recent Applications & Sidebar Widgets -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Middle Content Grid: Recent Applications & Active Jobs -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
 
         <!-- Recent Applications Table Skeleton (2 Columns) -->
-        <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-800 p-6 flex flex-col justify-between">
+        <div
+            class="lg:col-span-2 bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] p-5 sm:p-6 flex flex-col justify-between h-full">
             <div>
-                <!-- Table Header Row -->
-                <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-slate-800">
+                <!-- Header -->
+                <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-[#1D2E54]">
                     <div class="space-y-1.5">
-                        <div class="h-4 w-32 bg-gray-200 dark:bg-slate-800 rounded"></div>
-                        <div class="h-3 w-56 max-w-full bg-gray-100 dark:bg-slate-800/60 rounded"></div>
+                        <div class="h-4 w-32 bg-slate-200 dark:bg-[#1D2E54] rounded"></div>
+                        <div class="h-3 w-56 max-w-full bg-slate-100 dark:bg-[#14203A] rounded"></div>
                     </div>
-                    <div class="h-3 w-16 bg-gray-200 dark:bg-slate-800 rounded"></div>
+                    <div class="h-3.5 w-16 bg-slate-200 dark:bg-[#1D2E54] rounded"></div>
                 </div>
 
-                <!-- Table Columns Header -->
-                <div class="grid grid-cols-12 gap-4 py-3 border-b border-gray-100 dark:border-slate-800/60 mt-1 text-xs">
-                    <div class="col-span-4 h-3 w-16 bg-gray-200 dark:bg-slate-800 rounded"></div>
-                    <div class="col-span-3 h-3 w-14 bg-gray-200 dark:bg-slate-800 rounded"></div>
-                    <div class="col-span-3 h-3 w-14 bg-gray-200 dark:bg-slate-800 rounded"></div>
-                    <div class="col-span-2 h-3 w-12 bg-gray-200 dark:bg-slate-800 rounded mx-auto"></div>
-                </div>
-
-                <!-- Table Rows -->
-                <div class="divide-y divide-gray-100 dark:divide-slate-800/50">
-                    @for ($r = 0; $r < 5; $r++)
-                        <div class="grid grid-cols-12 gap-4 py-3.5 items-center">
-                            <!-- Candidate Avatar + Name -->
-                            <div class="col-span-4 flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-800 shrink-0"></div>
-                                <div class="h-3.5 w-24 bg-gray-200 dark:bg-slate-800 rounded"></div>
-                            </div>
-                            <!-- Position -->
-                            <div class="col-span-3">
-                                <div class="h-3.5 w-28 max-w-full bg-gray-100 dark:bg-slate-800/60 rounded"></div>
-                            </div>
-                            <!-- Date -->
-                            <div class="col-span-3">
-                                <div class="h-3 w-20 bg-gray-100 dark:bg-slate-800/60 rounded"></div>
-                            </div>
-                            <!-- Status Pill -->
-                            <div class="col-span-2 flex justify-center">
-                                <div class="h-5 w-16 bg-gray-200 dark:bg-slate-800 rounded-full"></div>
-                            </div>
-                        </div>
-                    @endfor
+                <!-- Table -->
+                <div class="overflow-x-auto mt-2">
+                    <table class="w-full text-left text-sm border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-100 dark:border-[#1D2E54]">
+                                <th class="py-2.5 px-3 w-[40%]"><div class="h-3 w-16 bg-slate-200 dark:bg-[#1D2E54] rounded"></div></th>
+                                <th class="py-2.5 px-3 w-[24%]"><div class="h-3 w-14 bg-slate-200 dark:bg-[#1D2E54] rounded"></div></th>
+                                <th class="py-2.5 px-3 w-[22%]"><div class="h-3 w-14 bg-slate-200 dark:bg-[#1D2E54] rounded"></div></th>
+                                <th class="py-2.5 px-3 text-center w-[14%]"><div class="h-3 w-12 bg-slate-200 dark:bg-[#1D2E54] rounded mx-auto"></div></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-[#1D2E54]/60">
+                            @for ($r = 0; $r < 5; $r++)
+                                <tr>
+                                    <!-- Candidate Avatar + Name -->
+                                    <td class="py-3 px-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-[#1D2E54] shrink-0"></div>
+                                            <div class="space-y-1.5 flex-1 min-w-0">
+                                                <div class="h-3.5 w-28 bg-slate-200 dark:bg-[#1D2E54] rounded"></div>
+                                                <div class="h-2.5 w-36 bg-slate-100 dark:bg-[#14203A] rounded"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <!-- Posisi -->
+                                    <td class="py-3 px-3">
+                                        <div class="h-3.5 w-24 bg-slate-200 dark:bg-[#1D2E54] rounded"></div>
+                                    </td>
+                                    <!-- Tanggal -->
+                                    <td class="py-3 px-3">
+                                        <div class="h-3 w-20 bg-slate-100 dark:bg-[#14203A] rounded"></div>
+                                    </td>
+                                    <!-- Status Pill -->
+                                    <td class="py-3 px-3 text-center">
+                                        <div class="h-5 w-16 bg-slate-100 dark:bg-[#14203A] border border-slate-200/60 dark:border-[#1D2E54] rounded-full mx-auto"></div>
+                                    </td>
+                                </tr>
+                            @endfor
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- Sidebar Widgets Skeleton (1 Column) -->
-        <div class="space-y-6">
-            <!-- Quick Shortcuts Skeleton -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-800 p-6">
-                <div class="h-4 w-28 bg-gray-200 dark:bg-slate-800 rounded mb-4"></div>
-                <div class="grid grid-cols-2 gap-3">
-                    @for ($m = 0; $m < 4; $m++)
-                        <div class="p-3 bg-gray-50 dark:bg-slate-800/50 rounded-xl flex flex-col items-center gap-2 border border-gray-100/80 dark:border-slate-800">
-                            <div class="w-10 h-10 rounded-xl bg-gray-200 dark:bg-slate-700"></div>
-                            <div class="h-3 w-14 bg-gray-200 dark:bg-slate-700 rounded"></div>
+        <!-- Lowongan Terbaru Skeleton (1 Column) -->
+        <div class="h-full flex flex-col">
+            <div
+                class="bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] p-5 sm:p-6 flex flex-col justify-between h-full">
+                <div>
+                    <!-- Header -->
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-[#1D2E54]">
+                        <div class="space-y-1.5">
+                            <div class="h-4 w-32 bg-slate-200 dark:bg-[#1D2E54] rounded"></div>
+                            <div class="h-3 w-36 bg-slate-100 dark:bg-[#14203A] rounded"></div>
                         </div>
-                    @endfor
-                </div>
-            </div>
+                        <div class="h-3.5 w-10 bg-slate-200 dark:bg-[#1D2E54] rounded"></div>
+                    </div>
 
-            <!-- Active Jobs Summary Skeleton -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-800 p-6">
-                <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-slate-800">
-                    <div class="h-4 w-32 bg-gray-200 dark:bg-slate-800 rounded"></div>
-                    <div class="h-3 w-10 bg-gray-200 dark:bg-slate-800 rounded"></div>
-                </div>
-                <div class="mt-3 divide-y divide-gray-100 dark:divide-slate-800/50">
-                    @for ($j = 0; $j < 3; $j++)
-                        <div class="py-3 flex items-center justify-between">
-                            <div class="space-y-1.5 flex-1 mr-3">
-                                <div class="h-3.5 w-32 bg-gray-200 dark:bg-slate-800 rounded"></div>
-                                <div class="h-3 w-24 bg-gray-100 dark:bg-slate-800/60 rounded"></div>
+                    <!-- Items -->
+                    <div class="mt-2 divide-y divide-slate-100 dark:divide-[#1D2E54]/60">
+                        @for ($j = 0; $j < 5; $j++)
+                            <div class="py-3.5 flex items-center justify-between gap-3">
+                                <div class="space-y-1.5 flex-1 min-w-0">
+                                    <div class="h-3.5 w-32 bg-slate-200 dark:bg-[#1D2E54] rounded"></div>
+                                    <div class="h-2.5 w-24 bg-slate-100 dark:bg-[#14203A] rounded"></div>
+                                </div>
+                                <div class="h-6 w-16 bg-slate-100 dark:bg-[#14203A] border border-slate-200/60 dark:border-[#1D2E54] rounded-lg shrink-0"></div>
                             </div>
-                            <div class="h-6 w-16 bg-gray-200 dark:bg-slate-800 rounded-lg shrink-0"></div>
-                        </div>
-                    @endfor
+                        @endfor
+                    </div>
                 </div>
             </div>
         </div>
+
     </div>
 </div>

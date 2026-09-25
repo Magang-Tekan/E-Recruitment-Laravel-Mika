@@ -126,6 +126,7 @@ class Dashboard extends Component
         }
 
         return view('livewire.admin.dashboard', [
+            'isAdmin' => !$isRecruiter,
             'isRecruiter' => $isRecruiter,
             'totalJobs' => $totalJobs,
             'activeJobs' => $activeJobs,

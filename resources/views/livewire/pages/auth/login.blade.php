@@ -345,6 +345,7 @@ new #[Layout('layouts.guest')] class extends Component
                     <div class="pt-2">
                         <button type="submit" 
                                 wire:loading.attr="disabled"
+                                wire:loading.class="!cursor-not-allowed"
                                 class="w-full py-3 px-4 bg-[#93F514] hover:bg-[#82dc0e] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed text-black font-semibold text-sm rounded-xl shadow-lg shadow-[#93F514]/20 hover:shadow-[#93F514]/30 transition flex items-center justify-center gap-2 group cursor-pointer">
                             <span wire:loading.remove wire:target="login" class="inline-flex items-center gap-2">
                                 <span>Masuk</span>

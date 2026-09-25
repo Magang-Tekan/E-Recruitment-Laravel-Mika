@@ -135,27 +135,37 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+        <div class="overflow-x-hidden">
+            <table class="w-full text-left border-collapse table-fixed">
+                <colgroup>
+                    <col style="width:40px">
+                    <col style="width:20%">
+                    <col style="width:9%">
+                    <col style="width:14%">
+                    <col style="width:14%">
+                    <col style="width:19%">
+                    <col style="width:13%">
+                    <col style="width:11%">
+                </colgroup>
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold text-[11px]">
-                        <th class="py-4 px-6 w-12 text-center">No</th>
-                        <th class="py-4 px-6">Identitas Karyawan</th>
-                        <th class="py-4 px-6">Tipe Pegawai</th>
-                        <th class="py-4 px-6">Departemen / Divisi</th>
-                        <th class="py-4 px-6">Jabatan / Posisi</th>
-                        <th class="py-4 px-6">Kontak / Email</th>
-                        <th class="py-4 px-6 text-center">Status Akun</th>
-                        <th class="py-4 px-6 text-right">Aksi</th>
+                        <th class="py-3 px-3 text-center">No</th>
+                        <th class="py-3 px-3">Identitas Karyawan</th>
+                        <th class="py-3 px-3">Tipe</th>
+                        <th class="py-3 px-3">Departemen</th>
+                        <th class="py-3 px-3">Jabatan</th>
+                        <th class="py-3 px-3">Email</th>
+                        <th class="py-3 px-3 text-center">Status</th>
+                        <th class="py-3 px-3 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-slate-800/60 text-xs text-gray-700 dark:text-slate-300">
                     @forelse ($employees as $index => $emp)
                         <tr class="hover:bg-gray-50/80 dark:hover:bg-slate-800/40 transition duration-150">
-                            <td class="py-4 px-6 text-center font-medium text-gray-400 dark:text-slate-500">
+                            <td class="py-3 px-3 text-center font-medium text-gray-400 dark:text-slate-500">
                                 {{ $employees->firstItem() + $index }}
                             </td>
-                            <td class="py-4 px-6">
+                            <td class="py-3 px-3">
                                 <div class="flex items-center gap-3">
                                     @php
                                         $empPhoto = $emp->photo ?? $emp->user?->avatar;
@@ -165,14 +175,14 @@
                                         }
                                     @endphp
                                     @if ($empPhotoUrl)
-                                        <img src="{{ $empPhotoUrl }}" alt="{{ $emp->full_name ?? ($emp->user?->name ?? 'Karyawan') }}" class="w-9 h-9 rounded-full object-cover ring-2 ring-indigo-500/20 shadow-xs shrink-0">
+                                        <img src="{{ $empPhotoUrl }}" alt="{{ $emp->full_name ?? ($emp->user?->name ?? 'Karyawan') }}" class="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-[#1D2E54] shadow-2xs shrink-0">
                                     @else
-                                        <div class="w-9 h-9 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center ring-2 ring-indigo-500/20 shrink-0">
+                                        <div class="w-9 h-9 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
                                             {{ strtoupper(substr($emp->full_name ?? ($emp->user?->name ?? 'K'), 0, 2)) }}
                                         </div>
                                     @endif
-                                    <div>
-                                        <div class="font-bold text-gray-900 dark:text-white text-sm">
+                                    <div class="min-w-0">
+                                        <div class="font-bold text-gray-900 dark:text-white text-sm truncate">
                                             {{ $emp->full_name ?? ($emp->user?->name ?? '-') }}
                                         </div>
                                         <div class="flex items-center gap-1.5 flex-wrap text-[11px] text-gray-400 dark:text-slate-500 mt-0.5">
@@ -190,7 +200,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="py-4 px-6">
+                            <td class="py-3 px-3">
                                 @if ($emp->employee_type === 'internship')
                                     <span class="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold text-[11px] border border-amber-200 dark:border-amber-800/60 inline-flex items-center gap-1">
                                         Magang
@@ -209,7 +219,7 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="py-4 px-6">
+                            <td class="py-3 px-3">
                                 <span class="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-semibold text-[11px] border border-indigo-200 dark:border-indigo-800/60">
                                     {{ $emp->department?->name ?? 'Belum Diatur' }}
                                 </span>
@@ -217,7 +227,7 @@
                                     <div class="text-[10px] text-gray-400 mt-1">{{ $emp->department->company->name }}</div>
                                 @endif
                             </td>
-                            <td class="py-4 px-6">
+                            <td class="py-3 px-3">
                                 @php
                                     $pos = trim($emp->position?->name ?? ($emp->position_title ?? ''));
                                     $isGeneric = empty($pos) || strtolower($pos) === 'magang' || strtolower($pos) === 'intern' || strtolower($pos) === 'staff internal';
@@ -239,13 +249,13 @@
                                     <span class="text-[10px] text-amber-600 dark:text-amber-400 block mt-0.5 font-medium">Posisi Magang</span>
                                 @endif
                             </td>
-                            <td class="py-4 px-6">
-                                <div class="text-gray-700 dark:text-slate-300 font-medium">{{ $emp->user?->email ?? '-' }}</div>
+                            <td class="py-3 px-3">
+                                <div class="text-gray-700 dark:text-slate-300 font-medium truncate">{{ $emp->user?->email ?? '-' }}</div>
                                 @if ($emp->phone_number)
                                     <div class="text-[11px] text-gray-400">{{ $emp->phone_number }}</div>
                                 @endif
                             </td>
-                            <td class="py-4 px-6 text-center">
+                            <td class="py-3 px-3 text-center">
                                 @if ($emp->employee_type === 'internship')
                                     <span class="inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold text-[11px] border border-amber-200/80 dark:border-amber-800/60">
                                         {{-- <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> --}}
@@ -268,16 +278,15 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="py-4 px-6 text-right">
+                            <td class="py-3 px-3 text-right">
                                 <div class="flex items-center justify-end gap-1.5">
                                      @if ($emp->employee_type === 'internship')
                                          <button wire:click="openPromoteModal({{ $emp->id }})" 
-                                                 class="px-2.5 py-1 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60 font-semibold text-[11px] transition-all flex items-center gap-1.5 active:scale-95 shadow-sm" 
+                                                 class="p-1.5 rounded-lg text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition" 
                                                  title="Angkat jadi Karyawan">
-                                             <svg class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                                              </svg>
-                                             <span>Angkat Karyawan</span>
                                          </button>
                                      @endif
 
