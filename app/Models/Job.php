@@ -10,7 +10,7 @@ class Job extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'company_id', 'department_id', 'position_id', 'title', 'description', 
+        'company_id', 'department_id', 'position_id', 'reviewer_id', 'title', 'description', 
         'employment_type', 'location', 'salary_min', 'salary_max', 
         'quota', 'deadline', 'status'
     ];
@@ -130,6 +130,11 @@ class Job extends Model
     public function position()
     {
         return $this->belongsTo(Position::class);
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewer_id');
     }
 
     public function jobApplications()

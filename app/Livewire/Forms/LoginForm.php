@@ -84,7 +84,7 @@ class LoginForm extends Form
             return route('admin.dashboard', absolute: false);
         }
 
-        if ($user->role_id == 2 || $roleName === 'recruiter') {
+        if ($user->role_id == 2 || $roleName === 'recruiter' || (bool) $user->is_recruiter) {
             return route('recruiter.dashboard', absolute: false);
         }
 

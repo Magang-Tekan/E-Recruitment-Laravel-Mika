@@ -178,8 +178,13 @@ new class extends Component
                         </x-dropdown-link>
                     @elseif($isEmployee)
                         <x-dropdown-link :href="route('employee.dashboard')">
-                            {{ __('Portal Asesmen') }}
+                            {{ __('Portal Asesmen Karyawan') }}
                         </x-dropdown-link>
+                        @if((bool) $user?->is_recruiter)
+                            <x-dropdown-link :href="route('recruiter.application')" class="text-emerald-600 dark:text-[#93F514] font-bold">
+                                {{ __('Panel Review Pelamar') }}
+                            </x-dropdown-link>
+                        @endif
                     @endif
 
                     <x-dropdown-link :href="$profileRoute">
@@ -313,8 +318,13 @@ new class extends Component
                     </x-responsive-nav-link>
                 @elseif($isEmployee)
                     <x-responsive-nav-link :href="route('employee.dashboard')" class="rounded-xl">
-                        {{ __('Portal Asesmen') }}
+                        {{ __('Portal Asesmen Karyawan') }}
                     </x-responsive-nav-link>
+                    @if((bool) $user?->is_recruiter)
+                        <x-responsive-nav-link :href="route('recruiter.application')" class="rounded-xl font-bold text-emerald-600 dark:text-[#93F514]">
+                            {{ __('Panel Review Pelamar') }}
+                        </x-responsive-nav-link>
+                    @endif
                 @endif
 
                 <x-responsive-nav-link :href="$profileRoute" class="rounded-xl">

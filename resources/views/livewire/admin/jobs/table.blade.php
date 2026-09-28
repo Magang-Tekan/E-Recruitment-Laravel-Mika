@@ -147,6 +147,7 @@
         salary_max: '{{ old('salary_max', '') }}',
         quota: '{{ old('quota', '1') }}',
         deadline: '{{ old('deadline', '') }}',
+        reviewer_id: '{{ old('reviewer_id', '') }}',
         status: '{{ old('status', 'Open') }}'
     },
     deleteData: {
@@ -309,6 +310,7 @@
             salary_max: job.salary_max || '',
             quota: job.quota !== undefined && job.quota !== null && job.quota !== '' ? Number(job.quota) : 1,
             deadline: job.deadline ? job.deadline.split('T')[0] : '',
+            reviewer_id: job.reviewer_id ? String(job.reviewer_id) : '',
             status: job.status || 'Open'
         };
         this.showEditModal = true;
@@ -333,7 +335,7 @@
     }
 }">
 
-    <!-- Quill.js Stylesheet -->
+        <!-- Quill.js Stylesheet -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
 
     <style>
@@ -721,6 +723,14 @@
                                                 {{ $job->position->name }}
                                             </span>
                                         @endif
+                                        @if ($job->reviewer)
+                                            <div class="mt-1 flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
+                                                <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                </svg>
+                                                <span>Reviewer: {{ $job->reviewer->name }}</span>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </td>
@@ -1056,6 +1066,23 @@
                                     </select>
                                 </div>
                             </div>
+
+                            <!-- Reviewer Selection (Double Approval) -->
+                            <div class="pt-2 border-t border-gray-100 dark:border-slate-800">
+                                <label for="reviewer_id" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                    Reviewer / Penilai Teknis (Karyawan Ditunjuk)
+                                    <span class="text-gray-400 font-normal">(Opsional)</span>
+                                </label>
+                                <select name="reviewer_id" id="reviewer_id" class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                    <option value="">-- Tanpa Reviewer Khusus (Langsung Admin/HR) --</option>
+                                    @foreach ($reviewers as $reviewer)
+                                        <option value="{{ $reviewer->id }}" {{ old('reviewer_id') == $reviewer->id ? 'selected' : '' }}>
+                                            {{ $reviewer->name }} ({{ $reviewer->email }}){{ $reviewer->employeeProfile?->department?->name ? ' - Dept: ' . $reviewer->employeeProfile->department->name : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <p class="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Karyawan yang dipilih akan bertindak sebagai Recruiter penilai berkas awal (Partial Approval) untuk lowongan ini.</p>
+                            </div>
                         </div>
 
                         <!-- PAGE 2: Deskripsi & Persyaratan -->
@@ -1353,6 +1380,23 @@
                                         <option value="Draft">Draft</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <!-- Reviewer Selection (Double Approval) -->
+                            <div class="pt-2 border-t border-gray-100 dark:border-slate-800">
+                                <label for="edit_reviewer_id" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                    Reviewer / Penilai Teknis (Karyawan Ditunjuk)
+                                    <span class="text-gray-400 font-normal">(Opsional)</span>
+                                </label>
+                                <select name="reviewer_id" id="edit_reviewer_id" x-model="editData.reviewer_id" class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                    <option value="">-- Tanpa Reviewer Khusus (Langsung Admin/HR) --</option>
+                                    @foreach ($reviewers as $reviewer)
+                                        <option value="{{ $reviewer->id }}">
+                                            {{ $reviewer->name }} ({{ $reviewer->email }}){{ $reviewer->employeeProfile?->department?->name ? ' - Dept: ' . $reviewer->employeeProfile->department->name : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <p class="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Karyawan yang dipilih akan bertindak sebagai Recruiter penilai berkas awal (Partial Approval) untuk lowongan ini.</p>
                             </div>
                         </div>
 

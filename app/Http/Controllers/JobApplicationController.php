@@ -118,10 +118,11 @@ class JobApplicationController extends Controller
         $application = JobApplication::with(['job.company', 'job.department', 'applicantProfile.user'])->findOrFail($id);
 
         $user = auth()->user();
-        $isRecruiter = $user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter');
-        $redirectRoute = $isRecruiter ? 'recruiter.application' : 'admin.application';
+        $isAdmin = $user && ($user->role_id == 1 || strtolower($user->role?->name ?? '') === 'admin');
+        $isRecruiter = $user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter);
+        $redirectRoute = ($isRecruiter && !$isAdmin) ? 'recruiter.application' : 'admin.application';
 
-        if ($isRecruiter) {
+        if ($isRecruiter && !$isAdmin) {
             $job = $application->job;
             $isActive = $job && $job->status === 'Open' && (! $job->deadline || $job->deadline >= now()->toDateString());
             if (! $isActive) {
@@ -130,44 +131,116 @@ class JobApplicationController extends Controller
             }
         }
 
-        $request->validate([
-            'status' => 'required|string|max:255',
-            'notes' => 'nullable|string',
-        ]);
-
-        $newStatus = $request->input('status', $application->status);
+        $approvalType = $request->input('approval_type'); // 'recruiter_review', 'admin_review', or null (direct status update)
         $notes = $request->input('notes');
 
-        if (empty(trim($notes ?? ''))) {
-            $defaultTemplates = [
-                'Reviewed'    => 'Selamat! Anda lolos seleksi berkas administrasi. Silakan lanjut kerjakan ujian online yang tersedia pada menu Riwayat Lamaran.',
-                'Shortlisted' => 'Selamat! Anda dinyatakan lolos tahap seleksi dan masuk ke dalam daftar kandidat terpilih (Shortlisted). Kami akan segera menginformasikan jadwal wawancara.',
-                'Interview'   => 'Anda diundang untuk mengikuti tahap wawancara. Silakan periksa jadwal dan informasi meeting yang tertera.',
-                'Accepted'    => 'Selamat! Anda dinyatakan DITERIMA untuk bergabung bersama kami. Tim HR akan segera menghubungi Anda terkait proses offering dan onboarding.',
-                'Rejected'    => 'Terima kasih atas partisipasi Anda. Saat ini kualifikasi Anda belum sesuai dengan kriteria yang kami butuhkan. Tetap semangat dan sukses untuk kesempatan berikutnya.',
-                'Submitted'   => 'Lamaran Anda telah kami terima dan sedang dalam proses seleksi berkas oleh tim rekruter.',
-            ];
-            $notes = $defaultTemplates[$newStatus] ?? $application->notes;
+        $defaultTemplates = [
+            'Reviewed'         => 'Selamat! Anda lolos seleksi berkas administrasi. Silakan lanjut kerjakan ujian online yang tersedia pada menu Riwayat Lamaran.',
+            'Partial Approved' => 'Lamaran Anda telah disetujui pada salah satu tahap verifikasi (Partial Approved) dan sedang dalam proses peninjauan akhir.',
+            'Shortlisted'      => 'Selamat! Anda dinyatakan lolos seluruh tahap seleksi berkas (Double Approved) dan masuk ke dalam daftar kandidat terpilih (Shortlisted). Kami akan segera menginformasikan jadwal wawancara.',
+            'Interview'        => 'Anda diundang untuk mengikuti tahap wawancara. Silakan periksa jadwal dan informasi meeting yang tertera.',
+            'Accepted'         => 'Selamat! Anda dinyatakan DITERIMA untuk bergabung bersama kami. Tim HR akan segera menghubungi Anda terkait proses offering dan onboarding.',
+            'Rejected'         => 'Terima kasih atas partisipasi Anda. Saat ini kualifikasi Anda belum sesuai dengan kriteria yang kami butuhkan. Tetap semangat dan sukses untuk kesempatan berikutnya.',
+            'Submitted'        => 'Lamaran Anda telah kami terima dan sedang dalam proses seleksi berkas oleh tim rekruter.',
+        ];
+
+        if ($approvalType === 'recruiter_review') {
+            $request->validate([
+                'decision' => 'required|in:approved,rejected',
+                'notes'    => 'nullable|string',
+            ]);
+
+            $decision = $request->input('decision');
+            $application->recruiter_approval = $decision;
+            $application->recruiter_notes = $notes;
+            $application->recruiter_approved_at = now();
+            $application->recruiter_id = $user->id;
+
+            if ($decision === 'rejected') {
+                $newStatus = 'Rejected';
+                $notes = $notes ?: 'Kualifikasi CV/portofolio belum memenuhi kriteria teknis oleh penilai/recruiter.';
+            } else { // approved
+                if ($application->admin_approval === 'approved') {
+                    $newStatus = 'Reviewed';
+                    $notes = $notes ?: $defaultTemplates['Reviewed'];
+                } else {
+                    $newStatus = 'Partial Approved';
+                    $notes = $notes ?: ($defaultTemplates['Partial Approved'] . ' (Disetujui oleh Tim Reviewer: ' . $user->name . ')');
+                }
+            }
+        } elseif ($approvalType === 'admin_review') {
+            $request->validate([
+                'decision' => 'required|in:approved,rejected',
+                'notes'    => 'nullable|string',
+            ]);
+
+            $decision = $request->input('decision');
+            $application->admin_approval = $decision;
+            $application->admin_notes = $notes;
+            $application->admin_approved_at = now();
+            $application->admin_id = $user->id;
+
+            if ($decision === 'rejected') {
+                $newStatus = 'Rejected';
+                $notes = $notes ?: 'Lamaran ditolak pada tahap seleksi administratif HR/Admin.';
+            } else { // approved
+                if ($application->recruiter_approval === 'approved') {
+                    $newStatus = 'Reviewed';
+                    $notes = $notes ?: $defaultTemplates['Reviewed'];
+                } else {
+                    $newStatus = 'Partial Approved';
+                    $notes = $notes ?: ($defaultTemplates['Partial Approved'] . ' (Disetujui oleh HR/Admin)');
+                }
+            }
+        } else {
+            // Direct status change (Admin standard workflow)
+            $request->validate([
+                'status' => 'required|string|max:255',
+                'notes'  => 'nullable|string',
+            ]);
+
+            $newStatus = $request->input('status', $application->status);
+
+            // Auto-sync approval flags if admin directly sets Reviewed, Shortlisted or Rejected
+            if ($newStatus === 'Reviewed' || $newStatus === 'Shortlisted' || $newStatus === 'Accepted') {
+                $application->admin_approval = 'approved';
+                $application->admin_approved_at = now();
+                $application->admin_id = $user->id;
+            } elseif ($newStatus === 'Rejected') {
+                $application->admin_approval = 'rejected';
+                $application->admin_approved_at = now();
+                $application->admin_id = $user->id;
+            }
+
+            if (empty(trim($notes ?? ''))) {
+                $notes = $defaultTemplates[$newStatus] ?? $application->notes;
+            }
         }
 
-        $application->update([
-            'status' => $newStatus,
-            'notes' => $notes,
-        ]);
+        $application->status = $newStatus;
+        $application->notes = $notes;
+        $application->save();
 
         // Catat perubahan status secara otomatis ke application_status_history
         ApplicationStatusHistory::create([
             'job_applications_id' => $application->id,
             'status'              => $newStatus,
             'notes'               => $notes,
-            'changed_by'          => auth()->id() ?? 1,
+            'changed_by'          => $user->id ?? 1,
             'changed_at'          => now(),
         ]);
 
         // Kirim email notifikasi ke pelamar jika diaktifkan (default: true)
+        // KETENTUAN KHUSUS: Jangan kirim email saat status masih 'Partial Approved' (karena baru 1 pihak yang menyetujui).
+        // Email ke pelamar HANYA dikirim setelah kedua pihak telah setuju (status 'Reviewed' / Lolos Berkas & lanjut tes),
+        // atau saat ditolak/perubahan status final lainnya.
         $shouldSendEmail = $request->has('send_email')
             ? $request->boolean('send_email')
             : true;
+
+        if ($newStatus === 'Partial Approved') {
+            $shouldSendEmail = false;
+        }
 
         $emailSent = false;
         $applicantEmail = $application->applicantProfile?->user?->email;
@@ -190,6 +263,8 @@ class JobApplicationController extends Controller
         $successMsg = 'Status lamaran berhasil diperbarui dan dicatat ke riwayat status.';
         if ($emailSent) {
             $successMsg .= ' Notifikasi email otomatis telah berhasil dikirim ke ' . $applicantEmail . '.';
+        } elseif ($newStatus === 'Partial Approved') {
+            $successMsg .= ' Status saat ini Partial Approved (email belum dikirim ke pelamar sampai kedua pihak selesai menyetujui).';
         }
 
         return redirect()->route($redirectRoute)

@@ -50,7 +50,7 @@ Route::get('dashboard', function () {
         return redirect()->route('admin.dashboard');
     }
 
-    if ($user->role_id == 2 || $roleName === 'recruiter') {
+    if ($user->role_id == 2 || $roleName === 'recruiter' || (bool) $user->is_recruiter) {
         return redirect()->route('recruiter.dashboard');
     }
 

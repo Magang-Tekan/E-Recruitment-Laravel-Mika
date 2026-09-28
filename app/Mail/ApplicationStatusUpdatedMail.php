@@ -36,12 +36,13 @@ class ApplicationStatusUpdatedMail extends Mailable
         $companyName = $this->application->job?->company?->name ?? config('app.name', 'MIKA CAREER');
 
         $statusSubjects = [
-            'Reviewed'    => "Selamat! Anda Lolos Seleksi Berkas & Lanjut Ujian - {$jobTitle}",
-            'Shortlisted' => "Informasi Tahap Seleksi (Shortlisted) - {$jobTitle}",
-            'Interview'   => "Undangan Wawancara Kerja - {$jobTitle}",
-            'Accepted'    => "Selamat! Anda Dinyatakan DITERIMA - {$jobTitle}",
-            'Rejected'    => "Update Hasil Seleksi Lamaran - {$jobTitle}",
-            'Submitted'   => "Konfirmasi Penerimaan Lamaran - {$jobTitle}",
+            'Reviewed'         => "Selamat! Anda Lolos Seleksi Berkas & Lanjut Ujian - {$jobTitle}",
+            'Partial Approved' => "Update Seleksi Tahap Awal (Partial Approved) - {$jobTitle}",
+            'Shortlisted'      => "Informasi Tahap Seleksi (Shortlisted) - {$jobTitle}",
+            'Interview'        => "Undangan Wawancara Kerja - {$jobTitle}",
+            'Accepted'         => "Selamat! Anda Dinyatakan DITERIMA - {$jobTitle}",
+            'Rejected'         => "Update Hasil Seleksi Lamaran - {$jobTitle}",
+            'Submitted'        => "Konfirmasi Penerimaan Lamaran - {$jobTitle}",
         ];
 
         $subject = $statusSubjects[$this->status] ?? "Update Status Lamaran: {$jobTitle} ({$companyName})";

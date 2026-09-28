@@ -256,7 +256,7 @@
                 <div class="relative lg:col-span-3">
                     <input type="text" 
                            wire:model.live.debounce.300ms="search" 
-                           placeholder="Cari nama pelamar / ujian..." 
+                           placeholder="Cari nama pelamar, lowongan..." 
                            class="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -285,15 +285,15 @@
                     </div>
                 </div>
 
-                <!-- Filter Lowongan (Otomatis terfilter sesuai perusahaan) -->
-                <div class="relative lg:col-span-3">
+                <!-- Filter Lowongan -->
+                <div class="relative lg:col-span-2">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                     </div>
                     <select wire:model.live="jobId" class="w-full pl-9 pr-8 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
-                        <option value="">{{ $companyId ? 'Semua Lowongan di Perusahaan Ini' : 'Semua Lowongan' }}</option>
+                        <option value="">Semua Lowongan</option>
                         @foreach ($jobs as $job)
                             <option value="{{ $job->id }}">
                                 {{ $job->title }} @if(!$companyId && $job->company)({{ $job->company->name }})@endif
@@ -307,8 +307,28 @@
                     </div>
                 </div>
 
+                <!-- Filter Paket Ujian -->
+                <div class="relative lg:col-span-2">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                    <select wire:model.live="testId" class="w-full pl-9 pr-8 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
+                        <option value="">Semua Ujian</option>
+                        @foreach ($tests as $t)
+                            <option value="{{ $t->id }}">{{ $t->title }}</option>
+                        @endforeach
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+
                 <!-- Filter Status -->
-                <div class="relative lg:col-span-3">
+                <div class="relative lg:col-span-2">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -317,10 +337,10 @@
                     <select wire:model.live="status" class="w-full pl-9 pr-8 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
                         <option value="">Semua Status</option>
                         <option value="needs_grading">Perlu Koreksi Essay</option>
-                        <option value="passed">Lulus (Passed)</option>
-                        <option value="failed">Gagal / Ditolak</option>
+                        <option value="passed">Lolos Standar</option>
+                        <option value="failed">Di Bawah Standar</option>
                         <option value="disc">Tes Kepribadian (DISC)</option>
-                        <option value="in_progress">Sedang Dikerjakan</option>
+                        <option value="in_progress">Sedang Mengerjakan</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -330,34 +350,42 @@
                 </div>
             </div>
 
-            <!-- Quick Filter Badges & Reset Button -->
+            <!-- Toolbar Bottom Row: Quick Badges & Reset Button -->
             <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
                 <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <span class="text-[11px] font-bold text-gray-400 uppercase mr-1">Status:</span>
-                    <button type="button" wire:click="$set('status', '')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === '' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                    <button type="button" wire:click="$set('status', '')"
+                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === '' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
                         Semua
                     </button>
-                    <button type="button" wire:click="$set('status', 'needs_grading')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'needs_grading' ? 'bg-amber-500 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40' }}">
+                    <button type="button" wire:click="$set('status', 'needs_grading')"
+                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'needs_grading' ? 'bg-amber-500 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40' }}">
                         Perlu Koreksi Essay
                     </button>
-                    <button type="button" wire:click="$set('status', 'passed')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'passed' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40' }}">
-                        Lulus (Passed)
+                    <button type="button" wire:click="$set('status', 'passed')"
+                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'passed' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40' }}">
+                        Lolos Standar
                     </button>
-                    <button type="button" wire:click="$set('status', 'failed')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'failed' ? 'bg-rose-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40' }}">
-                        Gagal
+                    <button type="button" wire:click="$set('status', 'failed')"
+                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'failed' ? 'bg-rose-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40' }}">
+                        Di Bawah Standar
                     </button>
-                    <button type="button" wire:click="$set('status', 'disc')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'disc' ? 'bg-purple-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/40' }}">
+                    <button type="button" wire:click="$set('status', 'disc')"
+                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'disc' ? 'bg-purple-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/40' }}">
                         DISC
                     </button>
-                    <button type="button" wire:click="$set('status', 'in_progress')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'in_progress' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/40' }}">
-                        Sedang Dikerjakan
+                    <button type="button" wire:click="$set('status', 'in_progress')"
+                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'in_progress' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/40' }}">
+                        Sedang Mengerjakan
                     </button>
                 </div>
 
-                @if ($search || $companyId || $jobId || $status || $sortField !== 'id')
-                    <button type="button" wire:click="resetFilters" class="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-1 cursor-pointer">
+                @if ($search || $companyId || $jobId || $testId || $status || $sortField !== 'id')
+                    <button type="button" wire:click="resetFilters"
+                        class="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-1 cursor-pointer">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
                         </svg>
                         <span>Reset Filter</span>
                     </button>
@@ -370,7 +398,7 @@
     <div class="relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
         
         <!-- Livewire Loading Overlay -->
-        <div wire:loading wire:target="search, companyId, jobId, status, sortField, sortDirection, sortBy, previousPage, nextPage, gotoPage, resetFilters" class="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-10 transition">
+        <div wire:loading wire:target="search, companyId, jobId, testId, status, sortField, sortDirection, sortBy, previousPage, nextPage, gotoPage, resetFilters" class="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-10 transition">
             <div class="flex items-center gap-2.5 px-4 py-2.5 bg-slate-900/90 dark:bg-slate-800/90 text-white rounded-xl shadow-xl text-xs font-semibold">
                 <svg class="animate-spin w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -380,81 +408,86 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
+        <div class="overflow-x-hidden">
+            <table class="w-full text-left border-collapse table-fixed">
+                <colgroup>
+                    <col style="width:40px">
+                    <col style="width:22%">
+                    <col style="width:16%">
+                    <col style="width:16%">
+                    <col style="width:14%">
+                    <col style="width:11%">
+                    <col style="width:13%">
+                    <col style="width:8%">
+                </colgroup>
                 <thead>
-                    <tr class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
-                        <th class="px-6 py-4 w-12">No</th>
-                        <th class="px-6 py-4 cursor-pointer hover:text-indigo-600 transition" wire:click="sortBy('applicant')">
+                    <tr class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold text-[11px]">
+                        <th class="py-3 px-3 text-center">No</th>
+                        <th class="py-3 px-3 cursor-pointer select-none hover:text-indigo-600 transition" wire:click="sortBy('applicant')">
                             <div class="flex items-center gap-1">
-                                <span>Pelamar & Lowongan</span>
+                                <span>Pelamar</span>
                                 @if ($sortField === 'applicant')
-                                    <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}" />
-                                    </svg>
+                                    <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
                             </div>
                         </th>
-                        <th class="px-6 py-4">Paket Ujian</th>
-                        <th class="px-6 py-4 cursor-pointer hover:text-indigo-600 transition" wire:click="sortBy('started_at')">
-                            <div class="flex items-center gap-1">
-                                <span>Waktu Pengerjaan</span>
+                        <th class="py-3 px-3">Lowongan</th>
+                        <th class="py-3 px-3">Paket Ujian</th>
+                        <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-indigo-600 transition" wire:click="sortBy('started_at')">
+                            <div class="flex items-center justify-center gap-1">
+                                <span>Waktu</span>
                                 @if ($sortField === 'started_at')
-                                    <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}" />
-                                    </svg>
+                                    <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
                             </div>
                         </th>
-                        <th class="px-6 py-4">Nilai P. Ganda / Essay</th>
-                        <th class="px-6 py-4 cursor-pointer hover:text-indigo-600 transition" wire:click="sortBy('score')">
-                            <div class="flex items-center gap-1">
-                                <span>Total & KKM</span>
+                        <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-indigo-600 transition" wire:click="sortBy('score')">
+                            <div class="flex items-center justify-center gap-1">
+                                <span>Nilai</span>
                                 @if ($sortField === 'score')
-                                    <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}" />
-                                    </svg>
+                                    <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
                             </div>
                         </th>
-                        <th class="px-6 py-4 cursor-pointer hover:text-indigo-600 transition" wire:click="sortBy('status')">
-                            <div class="flex items-center gap-1">
+                        <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-indigo-600 transition" wire:click="sortBy('status')">
+                            <div class="flex items-center justify-center gap-1">
                                 <span>Status</span>
                                 @if ($sortField === 'status')
-                                    <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}" />
-                                    </svg>
+                                    <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
                             </div>
                         </th>
-                        <th class="px-6 py-4 text-right">Aksi</th>
+                        <th class="py-3 px-3 text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-slate-800/60 text-gray-700 dark:text-slate-300">
+                <tbody class="divide-y divide-gray-100 dark:divide-slate-800/60 text-xs text-gray-700 dark:text-slate-300">
                     @forelse ($attempts as $index => $att)
                         @php
-                            $profile = $att->jobApplication->applicantProfile ?? null;
-                            $applicantName = $profile->full_name ?? 'Pelamar';
+                            $profile = $att->jobApplication?->applicantProfile ?? null;
+                            $applicantName = $profile?->full_name ?? 'Pelamar';
                             $hasUnreviewedEssay = $att->answers->contains(function($ans) {
                                 return $ans->question && $ans->question->question_type === 'essay' && is_null($ans->reviewed_by);
                             });
                             $papiResult = $att->papiTestResult;
-                            $isPapi = ($papiResult && (
-                                str_contains(strtolower($att->test?->title ?? ''), 'papi') ||
+                            $discResult = $att->discTestResult;
+                            $isPapi =
+                                $papiResult ||
                                 str_contains(strtolower($att->test?->category?->name ?? ''), 'papi') ||
-                                $att->answers->contains(fn($ans) => $ans->question?->question_type === 'papi_kostick')
-                            )) || ($att->test && (str_contains(strtolower($att->test->title ?? ''), 'papi') || str_contains(strtolower($att->test->category?->name ?? ''), 'papi')));
-                            $isDisc = ($att->discTestResult && (
+                                str_contains(strtolower($att->test?->title ?? ''), 'papi') ||
+                                $att->answers->contains(fn($ans) => $ans->question?->question_type === 'papi_kostick');
+                            $isDisc = !$isPapi && (
+                                $discResult ||
                                 str_contains(strtolower($att->test?->title ?? ''), 'disc') ||
                                 str_contains(strtolower($att->test?->category?->name ?? ''), 'disc') ||
+                                str_contains(strtolower($att->test?->category?->name ?? ''), 'kepribadian') ||
                                 $att->answers->contains(fn($ans) => $ans->question?->question_type === 'disc' || in_array($ans->answer_type, ['most', 'least']))
-                            )) || ($att->test && (str_contains(strtolower($att->test->title ?? ''), 'disc') || str_contains(strtolower($att->test->category?->name ?? ''), 'disc')));
+                            );
                         @endphp
-                        <tr class="hover:bg-gray-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                            <td class="px-6 py-4 font-medium text-gray-500 dark:text-slate-400">
+                        <tr class="hover:bg-gray-50/80 dark:hover:bg-slate-800/40 transition duration-150">
+                            <td class="py-3 px-3 text-center font-medium text-gray-400 dark:text-slate-500">
                                 {{ $attempts->firstItem() + $index }}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="py-3 px-3">
                                 <div class="flex items-center gap-3">
                                     @php
                                         $candPhoto = $profile?->photo ?? $profile?->user?->avatar;
@@ -464,185 +497,149 @@
                                         }
                                     @endphp
                                     @if ($candPhotoUrl)
-                                        <img src="{{ $candPhotoUrl }}" alt="{{ $applicantName }}" class="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-2xs shrink-0">
+                                        <img src="{{ $candPhotoUrl }}" alt="{{ $applicantName }}" class="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-[#1D2E54] shadow-2xs shrink-0">
                                     @else
                                         <div class="w-9 h-9 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
                                             {{ strtoupper(substr($applicantName, 0, 2)) }}
                                         </div>
                                     @endif
                                     <div class="min-w-0">
-                                        <span class="block font-bold text-gray-900 dark:text-white truncate">{{ $applicantName }}</span>
-                                        <span class="text-[11px] text-gray-500 dark:text-slate-400 font-medium truncate block">
-                                            {{ $att->jobApplication->job->title ?? '-' }}
-                                            @if($att->jobApplication?->job?->company)
-                                                <span class="text-gray-400 font-normal">• {{ $att->jobApplication->job->company->name }}</span>
+                                        <div class="font-bold text-gray-900 dark:text-white text-sm truncate">
+                                            {{ $applicantName }}
+                                        </div>
+                                        <div class="text-[11px] text-gray-400 dark:text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                                            @if($profile?->nik)
+                                                <span>NIK: {{ $profile->nik }}</span>
+                                                <span>•</span>
                                             @endif
-                                        </span>
+                                            <span class="truncate">{{ $profile?->user?->email ?? ($att->jobApplication?->applicantProfile?->user?->email ?? '-') }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="space-y-0.5">
-                                    <span class="font-semibold text-gray-800 dark:text-slate-200">{{ $att->test->title ?? '-' }}</span>
-                                    <span class="block text-[11px] text-gray-400 dark:text-slate-500">{{ $att->test->category->name ?? '-' }}</span>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-700 dark:text-slate-200 truncate">
+                                    {{ $att->jobApplication?->job?->title ?? '-' }}
+                                </div>
+                                <div class="text-[11px] text-gray-400 dark:text-slate-500 truncate">
+                                    {{ $att->jobApplication?->job?->company?->name ?? '-' }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="space-y-0.5 text-[11px]">
-                                    <span class="block text-gray-700 dark:text-slate-300 font-medium">
-                                        {{ $att->started_at ? \Carbon\Carbon::parse($att->started_at)->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') . ' WIB' : '-' }}
-                                    </span>
-                                    @if ($att->duration)
-                                        <span class="text-gray-400 dark:text-slate-500">Durasi: {{ round($att->duration / 60) }} menit</span>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-800 dark:text-slate-200 truncate">
+                                    {{ $att->test?->title ?? '-' }}
+                                </div>
+                                <div class="text-[11px] text-gray-400">
+                                    {{ $att->test?->category?->name ?? 'Tes Rekrutmen' }}
+                                </div>
+                            </td>
+                            <td class="py-3 px-3 text-center">
+                                <div class="font-medium text-gray-700 dark:text-slate-300">
+                                    {{ $att->started_at ? \Carbon\Carbon::parse($att->started_at)->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') : '-' }}
+                                </div>
+                                @if ($att->duration)
+                                    <div class="text-[10px] text-gray-400">Durasi: {{ round($att->duration / 60) }} mnt</div>
+                                @endif
+                            </td>
+                            <td class="py-3 px-3 text-center">
+                                @if ($isDisc && $discResult)
+                                    <div class="inline-flex flex-col items-center">
+                                        <span class="px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs border border-purple-200 dark:border-purple-800/60">
+                                            {{ $discResult->discProfile?->pattern_name ?? ($discResult->primary_trait ?? 'DISC Profil') }}
+                                        </span>
+                                    </div>
+                                @elseif ($isPapi)
+                                    <div class="inline-flex flex-col items-center">
+                                        <span class="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold text-xs border border-amber-200 dark:border-amber-800/60">
+                                            PAPI Kostick
+                                        </span>
+                                        @if ($papiResult)
+                                            <span class="text-[10px] text-gray-400 mt-0.5">
+                                                {{ $papiResult->is_valid ? 'Valid (45/45)' : 'Perlu Cek' }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @else
+                                    <div class="font-bold text-base {{ $att->status === 'passed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                                        {{ (float) ($att->total_score ?? 0) }}
+                                    </div>
+                                    <div class="text-[10px] text-gray-400">Standar: {{ (float) ($att->test?->passing_score ?? 0) }}</div>
+                                    @if(($att->objective_score !== null || $att->essay_score !== null) && ($att->objective_score > 0 || $att->essay_score > 0))
+                                        <div class="text-[9px] text-gray-400 mt-0.5">
+                                            <span class="text-indigo-600 dark:text-indigo-400 font-medium">PG: {{ (float) $att->objective_score }}</span>
+                                            <span>•</span>
+                                            <span class="text-amber-600 dark:text-amber-400 font-medium">E: {{ (float) $att->essay_score }}</span>
+                                        </div>
                                     @endif
-                                </div>
+                                @endif
                             </td>
-                            <td class="px-6 py-4">
-                                @if ($isPapi || $isDisc)
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium {{ $isPapi ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800' : 'bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 border-slate-200/60 dark:border-slate-700/60' }} border">
-                                        Self-Inventory
+                            <td class="py-3 px-3 text-center">
+                                @if ($att->status === 'in_progress')
+                                    <span class="inline-flex items-center justify-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-semibold text-[11px] border border-sky-200 dark:border-sky-800">
+                                        Sedang Mengerjakan
+                                    </span>
+                                @elseif ($isDisc || $isPapi)
+                                    <span class="inline-flex items-center justify-center whitespace-nowrap px-2.5 py-1 rounded-full {{ $isPapi ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' : 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300' }} font-semibold text-[11px]">
+                                        Selesai
+                                    </span>
+                                @elseif ($hasUnreviewedEssay)
+                                    <span class="inline-flex items-center justify-center whitespace-nowrap px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-semibold text-[11px]">
+                                        Perlu Koreksi
+                                    </span>
+                                @elseif ($att->status === 'passed')
+                                    <span class="inline-flex items-center justify-center whitespace-nowrap px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-semibold text-[11px]">
+                                        Lolos Standar
+                                    </span>
+                                @elseif ($att->status === 'failed')
+                                    <span class="inline-flex items-center justify-center whitespace-nowrap px-2.5 py-1 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 font-semibold text-[11px]">
+                                        Di Bawah Standar
                                     </span>
                                 @else
-                                    <div class="space-y-0.5 text-[11px]">
-                                        <div class="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-semibold">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                                            <span>PG: {{ number_format($att->objective_score ?? 0, 1) }}</span>
-                                        </div>
-                                        <div class="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-semibold">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                            <span>Essay: {{ number_format($att->essay_score ?? 0, 1) }}</span>
-                                        </div>
+                                    <span class="inline-flex items-center justify-center whitespace-nowrap px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-semibold text-[11px]">
+                                        Sedang Proses
+                                    </span>
+                                @endif
+
+                                @if ($att->jobApplication)
+                                    @php
+                                        $appStatus = $att->jobApplication->status;
+                                        $badgeBg = match(strtolower($appStatus)) {
+                                            'accepted' => 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800',
+                                            'rejected' => 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800',
+                                            'interview' => 'text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800',
+                                            'shortlisted' => 'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800',
+                                            'reviewed' => 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800',
+                                            default => 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800',
+                                        };
+                                    @endphp
+                                    <div class="mt-1">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border {{ $badgeBg }}">
+                                            Lamaran: {{ $appStatus }}
+                                        </span>
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="space-y-0.5">
-                                    @if ($isPapi && $papiResult)
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                            PAPI Kostick
-                                        </span>
-                                        <span class="block text-[11px] {{ $papiResult->is_valid ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-rose-500 font-semibold' }}">
-                                            {{ $papiResult->is_valid ? 'Valid (45/45)' : 'Perlu Cek' }}
-                                        </span>
-                                    @elseif ($isPapi)
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                                            Belum Ada Hasil
-                                        </span>
-                                        <span class="block text-[10px] text-gray-400">PAPI Kostick</span>
-                                    @elseif ($isDisc && $att->discTestResult)
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
-                                            DISC: {{ $att->discTestResult->discProfile->pattern_code ?? 'Profile' }}
-                                        </span>
-                                        <span class="block text-[11px] text-gray-400 dark:text-slate-500">Tes Kepribadian</span>
-                                    @elseif ($isDisc)
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                                            Belum Ada Hasil
-                                        </span>
-                                        <span class="block text-[10px] text-gray-400">Tes Kepribadian</span>
-                                    @else
-                                        <span class="block text-sm font-extrabold text-gray-900 dark:text-white">
-                                            {{ number_format($att->total_score ?? 0, 1) }}
-                                        </span>
-                                        <span class="text-[11px] text-gray-400 dark:text-slate-500">KKM: {{ number_format($att->test->passing_score ?? 0, 0) }}</span>
-                                    @endif
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="space-y-1.5">
-                                    @if ($isPapi && $papiResult)
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                                            <svg class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            PAPI Terbentuk
-                                        </span>
-                                    @elseif ($isPapi)
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                                            Belum Lengkap
-                                        </span>
-                                    @elseif ($isDisc && $att->discTestResult)
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                                            <svg class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            Profil Terbentuk
-                                        </span>
-                                    @elseif ($isDisc)
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                                            Belum Lengkap
-                                        </span>
-                                    @elseif ($hasUnreviewedEssay)
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 animate-pulse">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                            Perlu Koreksi Essay
-                                        </span>
-                                    @elseif ($att->status === 'passed')
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                            <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                            </svg>
-                                            Lulus (Passed)
-                                        </span>
-                                    @elseif ($att->status === 'failed')
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                                            <svg class="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                            Gagal (Failed)
-                                        </span>
-                                    @elseif ($att->status === 'in_progress')
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-ping"></span>
-                                            Sedang Pengerjaan
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                                            Selesai (Completed)
-                                        </span>
-                                    @endif
-
-                                    @if ($att->jobApplication)
-                                        @php
-                                            $appStatus = $att->jobApplication->status;
-                                            $badgeBg = match(strtolower($appStatus)) {
-                                                'accepted' => 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800',
-                                                'rejected' => 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800',
-                                                'interview' => 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800',
-                                                'shortlisted' => 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800',
-                                                'reviewed' => 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800',
-                                                default => 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800',
-                                            };
-                                        @endphp
-                                        <div>
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border {{ $badgeBg }}">
-                                                Lamaran: {{ $appStatus }}
-                                            </span>
-                                        </div>
-                                    @endif
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="py-3 px-3 text-right">
                                 <div class="flex items-center justify-end">
-                                    <button @click="openGradingModal({{ \Illuminate\Support\Js::from($att) }}, {{ $isDisc ? 'true' : 'false' }}, {{ $isPapi ? 'true' : 'false' }})" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5">
-                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <button @click="openGradingModal({{ \Illuminate\Support\Js::from($att) }}, {{ $isDisc ? 'true' : 'false' }}, {{ $isPapi ? 'true' : 'false' }})" 
+                                        class="p-1.5 rounded-lg text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition cursor-pointer"
+                                        title="{{ $isPapi ? 'Riwayat & Interpretasi PAPI' : ($isDisc ? 'Riwayat Jawaban & Profil' : 'Riwayat Jawaban & Nilai') }}">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
-                                        <span>{{ $isPapi ? 'Riwayat & Interpretasi PAPI' : ($isDisc ? 'Riwayat Jawaban & Profil' : 'Riwayat Jawaban & Nilai') }}</span>
                                     </button>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-12 text-center text-gray-400 dark:text-slate-500">
+                            <td colspan="8" class="py-12 text-center text-gray-400 dark:text-slate-500">
                                 <div class="flex flex-col items-center justify-center gap-2">
-                                    <svg class="w-10 h-10 text-gray-300 dark:text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    <svg class="w-8 h-8 text-gray-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                     </svg>
-                                    <span class="text-sm font-medium">Belum ada data pengerjaan tes pelamar</span>
+                                    <span>Belum ada data pengerjaan tes pelamar.</span>
                                 </div>
                             </td>
                         </tr>

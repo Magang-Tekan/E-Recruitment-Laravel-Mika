@@ -556,11 +556,17 @@
     @php
         $user = auth()->user();
         $roleName = strtolower($user?->role?->name ?? '');
+        $hasRecruiterAccess = (bool) ($user?->is_recruiter ?? false);
+        $isRecruiterRoute = request()->is('recruiter*') || request()->routeIs('recruiter.*');
+        $isAdminRoute = request()->is('admin*') || request()->routeIs('admin.*');
+
         $isAdminOrRecruiter =
             auth()->check() &&
-            (in_array($roleName, ['admin', 'superadmin', 'recruiter']) || in_array($user->role_id, [1, 2]));
-        $isAdminSection = request()->is('admin*') || request()->routeIs('admin.*') || request()->is('recruiter*') || request()->routeIs('recruiter.*') || $isAdminOrRecruiter;
-        $isEmployee = auth()->check() && ($user->role_id == 4 || $roleName === 'employee');
+            (in_array($roleName, ['admin', 'superadmin', 'recruiter']) || 
+             in_array($user->role_id, [1, 2]) ||
+             ($hasRecruiterAccess && $isRecruiterRoute));
+        $isAdminSection = $isAdminRoute || $isRecruiterRoute || $isAdminOrRecruiter;
+        $isEmployee = auth()->check() && ($user->role_id == 4 || $roleName === 'employee') && !$isRecruiterRoute;
         $isDeepNavySection = true;
         $isApplicantProfile = auth()->check() && !$isAdminOrRecruiter && !$isEmployee;
         $hasSidebar = $isAdminOrRecruiter || $isApplicantProfile || $isEmployee;

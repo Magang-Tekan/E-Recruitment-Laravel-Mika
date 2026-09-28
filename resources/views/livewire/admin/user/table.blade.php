@@ -181,6 +181,7 @@
                         <th class="px-6 py-4">Pengguna</th>
                         <th class="px-6 py-4">NIK</th>
                         <th class="px-6 py-4">Role</th>
+                        <th class="px-6 py-4 text-center">Hak Recruiter</th>
                         <th class="px-6 py-4">Terdaftar</th>
                         <th class="px-6 py-4 text-right">Aksi</th>
                     </tr>
@@ -267,6 +268,28 @@
                                     </span>
                                 @endif
                             </td>
+                            <td class="px-6 py-4 text-center">
+                                @if(in_array($roleName, ['admin', 'superadmin']))
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                        Penuh (Admin)
+                                    </span>
+                                @elseif($roleName === 'recruiter')
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                        Aktif (Role)
+                                    </span>
+                                @else
+                                    <button type="button" 
+                                        wire:click="toggleRecruiterStatus({{ $user->id }})" 
+                                        wire:loading.attr="disabled"
+                                        title="Klik untuk mengaktifkan / menonaktifkan hak akses penilai rekruter bagi pengguna ini"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-200 cursor-pointer shadow-xs active:scale-95 {{ $user->is_recruiter ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 dark:bg-emerald-900/60 dark:hover:bg-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-500 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-400 border border-gray-200 dark:border-slate-700' }}">
+                                        <span class="w-2 h-2 rounded-full {{ $user->is_recruiter ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400 dark:bg-slate-500' }}"></span>
+                                        <span>{{ $user->is_recruiter ? 'Aktif (Ditunjuk)' : 'Nonaktif' }}</span>
+                                    </button>
+                                @endif
+                            </td>
                             <td class="px-6 py-4">
                                 <div class="text-gray-700 dark:text-slate-300 font-medium">
                                     {{ $user->created_at ? $user->created_at->format('d M Y') : '-' }}
@@ -307,7 +330,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-gray-400 dark:text-slate-500">
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-400 dark:text-slate-500">
                                 <div class="flex flex-col items-center justify-center gap-2">
                                     <svg class="w-10 h-10 text-gray-300 dark:text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />

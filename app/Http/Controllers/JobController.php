@@ -18,6 +18,7 @@ class JobController extends Controller
             'company_id' => 'required|exists:companies,id',
             'department_id' => 'required|exists:departments,id',
             'position_id' => 'nullable|exists:positions,id',
+            'reviewer_id' => 'nullable|exists:users,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'employment_type' => 'required|string|max:255',
@@ -33,6 +34,7 @@ class JobController extends Controller
             'company_id' => $request->company_id,
             'department_id' => $request->department_id,
             'position_id' => $request->position_id ?: null,
+            'reviewer_id' => $request->reviewer_id ?: null,
             'title' => $request->title,
             'description' => !empty($request->description) ? $request->description : '-',
             'employment_type' => $request->employment_type,
@@ -53,7 +55,7 @@ class JobController extends Controller
 
     public function show(string $id)
     {
-        $data = Job::with(['company', 'department'])->findOrFail($id);
+        $data = Job::with(['company', 'department', 'reviewer'])->findOrFail($id);
         return response()->json($data);
     }
 
@@ -65,6 +67,7 @@ class JobController extends Controller
             'company_id' => 'sometimes|required|exists:companies,id',
             'department_id' => 'sometimes|required|exists:departments,id',
             'position_id' => 'sometimes|nullable|exists:positions,id',
+            'reviewer_id' => 'sometimes|nullable|exists:users,id',
             'title' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|nullable|string',
             'employment_type' => 'sometimes|required|string|max:255',
@@ -83,6 +86,7 @@ class JobController extends Controller
             'company_id' => $request->input('company_id', $data->company_id),
             'department_id' => $request->input('department_id', $data->department_id),
             'position_id' => $request->has('position_id') ? ($request->position_id ?: null) : $data->position_id,
+            'reviewer_id' => $request->has('reviewer_id') ? ($request->reviewer_id ?: null) : $data->reviewer_id,
             'title' => $request->input('title', $data->title),
             'description' => !empty($newDesc) ? $newDesc : ($data->description ?? '-'),
             'employment_type' => $request->input('employment_type', $data->employment_type),

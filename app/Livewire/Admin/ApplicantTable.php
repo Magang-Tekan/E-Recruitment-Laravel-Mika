@@ -99,11 +99,16 @@ class ApplicantTable extends Component
     public function render()
     {
         $user = auth()->user();
-        $isRecruiterOnly = $user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter');
+        $isAdmin = $user && ($user->role_id == 1 || strtolower($user->role?->name ?? '') === 'admin');
+        $isRecruiterOnly = $user && !$isAdmin && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter);
+        $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
 
         $applications = JobApplication::with([
             'job.company',
             'job.department',
+            'job.reviewer',
+            'recruiter',
+            'admin',
             'applicantProfile.user',
             'applicantProfile.educations',
             'applicantProfile.workExperiences',
@@ -117,7 +122,12 @@ class ApplicantTable extends Component
             'statusHistories.changedBy',
             'interviewSchedules.user'
         ])
-        ->when($isRecruiterOnly, function ($query) {
+        ->when($isDesignatedRecruiter, function ($query) use ($user) {
+            $query->whereHas('job', function ($jq) use ($user) {
+                $jq->where('reviewer_id', $user->id);
+            });
+        })
+        ->when($isRecruiterOnly && !$isDesignatedRecruiter, function ($query) {
             $query->whereHas('job', function ($jq) {
                 $jq->whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
                   ->where(function($q) {
@@ -188,7 +198,12 @@ class ApplicantTable extends Component
 
         // Calculate quick stats counters
         $baseStatsQuery = JobApplication::query()
-            ->when($isRecruiterOnly, function ($query) {
+            ->when($isDesignatedRecruiter, function ($query) use ($user) {
+                $query->whereHas('job', function ($jq) use ($user) {
+                    $jq->where('reviewer_id', $user->id);
+                });
+            })
+            ->when($isRecruiterOnly && !$isDesignatedRecruiter, function ($query) {
                 $query->whereHas('job', function ($jq) {
                     $jq->whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
                       ->where(function($q) {
@@ -210,13 +225,14 @@ class ApplicantTable extends Component
             ->toArray();
 
         $stats = [
-            'total'       => (clone $baseStatsQuery)->count(),
-            'submitted'   => $statusGroupCounts['Submitted'] ?? 0,
-            'reviewed'    => $statusGroupCounts['Reviewed'] ?? 0,
-            'shortlisted' => $statusGroupCounts['Shortlisted'] ?? 0,
-            'interview'   => $statusGroupCounts['Interview'] ?? 0,
-            'accepted'    => $statusGroupCounts['Accepted'] ?? 0,
-            'rejected'    => $statusGroupCounts['Rejected'] ?? 0,
+            'total'            => (clone $baseStatsQuery)->count(),
+            'submitted'        => $statusGroupCounts['Submitted'] ?? 0,
+            'partial_approved' => $statusGroupCounts['Partial Approved'] ?? 0,
+            'reviewed'         => $statusGroupCounts['Reviewed'] ?? 0,
+            'shortlisted'      => $statusGroupCounts['Shortlisted'] ?? 0,
+            'interview'        => $statusGroupCounts['Interview'] ?? 0,
+            'accepted'         => $statusGroupCounts['Accepted'] ?? 0,
+            'rejected'         => $statusGroupCounts['Rejected'] ?? 0,
         ];
 
         $companies = Company::select('id', 'name')->orderBy('name')->get();
@@ -227,12 +243,17 @@ class ApplicantTable extends Component
         }
         $jobs = $jobsQuery->orderBy('title')->get();
 
+        $assignedJobsCount = ($isDesignatedRecruiter && $user) ? Job::where('reviewer_id', $user->id)->count() : 0;
+
         return view('livewire.admin.applicants.table', [
-            'applications'     => $applications,
-            'isRecruiter'      => $isRecruiterOnly,
-            'search'           => $this->search,
-            'statusFilter'     => $this->statusFilter,
-            'companyFilter'    => $this->companyFilter,
+            'applications'          => $applications,
+            'isRecruiter'           => $isRecruiterOnly,
+            'isAdmin'               => $isAdmin,
+            'isDesignatedRecruiter' => $isDesignatedRecruiter,
+            'assignedJobsCount'     => $assignedJobsCount,
+            'search'                => $this->search,
+            'statusFilter'          => $this->statusFilter,
+            'companyFilter'         => $this->companyFilter,
             'jobFilter'        => $this->jobFilter,
             'companies'        => $companies,
             'jobs'             => $jobs,
