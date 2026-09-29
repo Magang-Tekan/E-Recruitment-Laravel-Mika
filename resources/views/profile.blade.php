@@ -86,6 +86,34 @@
                         </div>
                     </div>
                 @elseif ($isEmployee)
+                    @if(auth()->user()->is_recruiter)
+                        <!-- Recruiter Announcement Banner for Employee -->
+                        <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-emerald-500/5 to-transparent border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+                            <div class="flex items-start gap-3.5">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                        <span>Hak Akses Recruiter / Penilai Aktif</span>
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-[#93F514]/20 dark:text-[#93F514]">Recruiter</span>
+                                    </h4>
+                                    <p class="text-xs text-gray-600 dark:text-slate-400 mt-0.5">
+                                        Anda ditugaskan oleh Admin/HR untuk meninjau kualifikasi berkas pelamar dan memberikan persetujuan (Double Approval).
+                                    </p>
+                                </div>
+                            </div>
+                            <a href="{{ route('recruiter.application') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 transition-all shrink-0">
+                                <span>Buka Panel Review Pelamar</span>
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </a>
+                        </div>
+                    @endif
+
                     <!-- Employee Internal Assessment Portal -->
                     <livewire:employee.employee-assessment-portal />
                 @else

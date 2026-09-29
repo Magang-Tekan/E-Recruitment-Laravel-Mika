@@ -8,6 +8,7 @@ use App\Models\Job;
 use App\Models\Company;
 use App\Models\Department;
 use App\Models\Position;
+use App\Models\User;
 use App\Livewire\Traits\WithTableSkeleton;
 
 class JobTable extends Component
@@ -67,7 +68,12 @@ class JobTable extends Component
 
         $positions = Position::orderBy('name')->get();
 
-        $jobs = Job::with(['company', 'department', 'position'])
+        $reviewers = User::where('is_recruiter', true)
+            ->orWhere('role_id', 2)
+            ->orderBy('name')
+            ->get();
+
+        $jobs = Job::with(['company', 'department', 'position', 'reviewer'])
             ->when($this->search, function ($query) {
                 $search = strtolower(trim($this->search));
                 $query->where(function ($q) use ($search) {
@@ -82,6 +88,9 @@ class JobTable extends Component
                       })
                       ->orWhereHas('position', function ($pq) use ($search) {
                           $pq->whereRaw('LOWER(name) LIKE ?', ['%' . $search . '%']);
+                      })
+                      ->orWhereHas('reviewer', function ($rq) use ($search) {
+                          $rq->whereRaw('LOWER(name) LIKE ?', ['%' . $search . '%']);
                       });
                 });
             })
@@ -103,6 +112,7 @@ class JobTable extends Component
             'departments' => $departments,
             'filterDepartments' => $filterDepartments,
             'positions' => $positions,
+            'reviewers' => $reviewers,
         ]);
     }
 }

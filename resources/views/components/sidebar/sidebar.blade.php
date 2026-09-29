@@ -1,11 +1,13 @@
 @if (auth()->check() &&
         (in_array(strtolower(auth()->user()->role?->name ?? ''), ['admin', 'superadmin', 'recruiter']) ||
-            in_array(auth()->user()->role_id, [1, 2])))
+            in_array(auth()->user()->role_id, [1, 2]) ||
+            (bool) auth()->user()->is_recruiter))
     @php
         $isAdmin =
             auth()->user()->role_id == 1 ||
             strtolower(auth()->user()->role?->name ?? '') === 'admin' ||
             strtolower(auth()->user()->role?->name ?? '') === 'superadmin';
+        $isEmployeeUser = auth()->user()->role_id == 4 || strtolower(auth()->user()->role?->name ?? '') === 'employee';
     @endphp
     <!-- Off-canvas / Mobile backdrop -->
     <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
@@ -195,7 +197,7 @@
                             </x-slot:icon>
 
                             <a href="{{ $isAdmin ? route('admin.candidate') : route('recruiter.candidate') }}"
-                                title="Data profil pelamar/kandidat"
+                                title="Data yang telah buat akun (kandidat)"
                                 class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.candidate') || request()->routeIs('recruiter.candidate') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                 Kandidat
                             </a>
@@ -280,6 +282,19 @@
 
             </nav>
         </div>
+
+        @if ($isEmployeeUser)
+            <!-- Back to Employee Portal Button -->
+            <div class="p-3 border-t border-gray-200 dark:border-[#1D2E54] bg-emerald-50/40 dark:bg-[#14203A]">
+                <a href="{{ route('employee.dashboard') }}"
+                   class="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold text-emerald-700 dark:text-[#93F514] bg-white dark:bg-[#0D1527] hover:bg-emerald-50 dark:hover:bg-[#1A2A4C] rounded-xl transition-all border border-emerald-200 dark:border-[#1D2E54] shadow-xs">
+                    <svg class="w-4 h-4 text-emerald-600 dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    <span>Beralih ke Portal Karyawan</span>
+                </a>
+            </div>
+        @endif
 
     </aside>
 @endif

@@ -21,8 +21,14 @@ class RoleMiddleware
         }
 
         $roleName = $user->role?->name;
+        $allowedRoles = array_map('strtolower', $roles);
 
-        if ($user->role_id == 1 || ($roleName && in_array(strtolower($roleName), array_map('strtolower', $roles), true))) {
+        if ($user->role_id == 1 || ($roleName && in_array(strtolower($roleName), $allowedRoles, true))) {
+            return $next($request);
+        }
+
+        // Izinkan user dengan toggle is_recruiter aktif untuk mengakses rute recruiter
+        if ($user->is_recruiter && in_array('recruiter', $allowedRoles, true)) {
             return $next($request);
         }
 

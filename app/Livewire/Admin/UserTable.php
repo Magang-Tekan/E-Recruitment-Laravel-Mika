@@ -45,6 +45,22 @@ class UserTable extends Component
         $this->resetPage();
     }
 
+    public function toggleRecruiterStatus($userId)
+    {
+        $user = User::findOrFail($userId);
+        
+        // Admin & Recruiter by default already have access
+        if ($user->role_id == 1 || $user->role_id == 2) {
+            return;
+        }
+
+        $user->is_recruiter = !((bool) $user->is_recruiter);
+        $user->save();
+
+        $statusText = $user->is_recruiter ? 'diaktifkan' : 'dinonaktifkan';
+        session()->flash('create', "Hak akses Recruiter untuk {$user->name} berhasil {$statusText}.");
+    }
+
     public function render()
     {
         $roles = Role::orderBy('id', 'asc')->get();

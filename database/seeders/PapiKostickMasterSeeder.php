@@ -336,5 +336,19 @@ class PapiKostickMasterSeeder extends Seeder
                 'description' => $norm['desc'],
             ]);
         }
+
+        // 4. Sinkronisasi & perbarui interpretasi evaluasi PAPI Kostick yang sudah ada sesuai norma terbaru
+        $attempts = \App\Models\TestAttempt::whereHas('papiTestResult')
+            ->orWhereHas('answers.question', function ($q) {
+                $q->where('question_type', 'papi_kostick');
+            })
+            ->get();
+
+        if ($attempts->isNotEmpty()) {
+            $calculator = app(\App\Services\PapiKostickCalculatorService::class);
+            foreach ($attempts as $attempt) {
+                $calculator->calculate($attempt);
+            }
+        }
     }
 }

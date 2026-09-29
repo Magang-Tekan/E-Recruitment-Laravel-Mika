@@ -1,6 +1,7 @@
 @php
-    $isRecruiter = $isRecruiter ?? (auth()->check() && (auth()->user()->role_id == 2 || strtolower(auth()->user()->role?->name ?? '') === 'recruiter'));
-    $formActionPrefix = $isRecruiter ? url('/recruiter/applicants') . '/' : url('/admin/applicants') . '/';
+    $isAdmin = auth()->check() && (auth()->user()->role_id == 1 || strtolower(auth()->user()->role?->name ?? '') === 'admin');
+    $isRecruiter = $isRecruiter ?? (auth()->check() && (auth()->user()->role_id == 2 || strtolower(auth()->user()->role?->name ?? '') === 'recruiter' || (bool) auth()->user()->is_recruiter));
+    $formActionPrefix = ($isRecruiter && !$isAdmin) ? url('/recruiter/applicants') . '/' : url('/admin/applicants') . '/';
 @endphp
 
 <div class="space-y-6" x-data="{ 
@@ -10,7 +11,8 @@
     detailData: {},
     statusTemplates: {
         'Reviewed': 'Selamat! Anda lolos seleksi berkas administrasi. Silakan lanjut kerjakan ujian online yang tersedia pada menu Riwayat Lamaran.',
-        'Shortlisted': 'Selamat! Anda dinyatakan lolos tahap seleksi dan masuk ke dalam daftar kandidat terpilih (Shortlisted). Kami akan segera menginformasikan jadwal wawancara.',
+        'Partial Approved': 'Lamaran Anda telah disetujui pada salah satu tahap verifikasi (Partial Approved) dan sedang dalam proses peninjauan akhir.',
+        'Shortlisted': 'Selamat! Anda dinyatakan lolos seluruh tahap seleksi berkas (Double Approved) dan masuk ke dalam daftar kandidat terpilih (Shortlisted). Kami akan segera menginformasikan jadwal wawancara.',
         'Interview': 'Anda diundang untuk mengikuti tahap wawancara. Silakan periksa jadwal dan informasi meeting yang tertera.',
         'Accepted': 'Selamat! Anda dinyatakan DITERIMA untuk bergabung bersama kami. Tim HR akan segera menghubungi Anda terkait proses offering dan onboarding.',
         'Rejected': 'Terima kasih atas partisipasi Anda. Saat ini kualifikasi Anda belum sesuai dengan kriteria yang kami butuhkan. Tetap semangat dan sukses untuk kesempatan berikutnya.',
@@ -23,6 +25,12 @@
         job_title: '',
         status: '',
         notes: '',
+        recruiter_approval: 'pending',
+        recruiter_notes: '',
+        admin_approval: 'pending',
+        admin_notes: '',
+        approval_mode: '{{ ($isRecruiter && !$isAdmin) ? "recruiter_review" : "admin_review" }}',
+        decision: 'approved',
         send_email: true
     },
     openDetailModal(application) {
@@ -38,6 +46,19 @@
             initialNotes = this.statusTemplates[initialStatus];
         }
 
+        const isRecruiterOnly = {{ ($isRecruiter && !$isAdmin) ? 'true' : 'false' }};
+        let defaultMode = isRecruiterOnly ? 'recruiter_review' : 'admin_review';
+        if (!isRecruiterOnly && (initialStatus === 'Interview' || initialStatus === 'Accepted')) {
+            defaultMode = 'direct';
+        }
+
+        let defaultDecision = 'approved';
+        if (isRecruiterOnly && data.recruiter_approval === 'rejected') {
+            defaultDecision = 'rejected';
+        } else if (!isRecruiterOnly && data.admin_approval === 'rejected') {
+            defaultDecision = 'rejected';
+        }
+
         this.statusData = {
             id: data.id,
             applicant_name: data.applicant_name || (data.applicant_profile ? data.applicant_profile.full_name : 'Pelamar'),
@@ -45,6 +66,12 @@
             job_title: data.job_title || (data.job ? data.job.title : 'Lowongan'),
             status: initialStatus,
             notes: initialNotes,
+            recruiter_approval: data.recruiter_approval || 'pending',
+            recruiter_notes: data.recruiter_notes || '',
+            admin_approval: data.admin_approval || 'pending',
+            admin_notes: data.admin_notes || '',
+            approval_mode: defaultMode,
+            decision: defaultDecision,
             send_email: true
         };
         this.showStatusModal = true;
@@ -139,6 +166,7 @@
                     $tabs = [
                         '' => ['label' => 'Semua', 'count' => $stats['total'] ?? 0],
                         'Submitted' => ['label' => 'Perlu Review', 'count' => $stats['submitted'] ?? 0],
+                        'Partial Approved' => ['label' => 'Partial Approved', 'count' => $stats['partial_approved'] ?? 0],
                         'Reviewed' => ['label' => 'Lolos Berkas', 'count' => $stats['reviewed'] ?? 0],
                         'Shortlisted' => ['label' => 'Shortlisted', 'count' => $stats['shortlisted'] ?? 0],
                         'Interview' => ['label' => 'Wawancara', 'count' => $stats['interview'] ?? 0],
@@ -260,12 +288,13 @@
 
                         <div class="space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar">
                             @foreach([
-                                'Submitted' => 'Submitted (Diajukan)',
-                                'Reviewed' => 'Reviewed (Lolos Berkas)',
-                                'Shortlisted' => 'Shortlisted (Lolos Ujian)',
-                                'Interview' => 'Interview (Wawancara)',
-                                'Accepted' => 'Accepted (Diterima)',
-                                'Rejected' => 'Rejected (Ditolak)'
+                                'Submitted'        => 'Submitted (Diajukan)',
+                                'Partial Approved' => 'Partial Approved (Sebagian)',
+                                'Reviewed'         => 'Reviewed (Lolos Berkas)',
+                                'Shortlisted'      => 'Shortlisted (Lolos Ujian)',
+                                'Interview'        => 'Interview (Wawancara)',
+                                'Accepted'         => 'Accepted (Diterima)',
+                                'Rejected'         => 'Rejected (Ditolak)'
                             ] as $val => $label)
                                 <label class="flex items-center gap-2.5 px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-slate-800/60 rounded-xl cursor-pointer transition text-xs text-gray-700 dark:text-slate-300">
                                     <input type="checkbox" 
@@ -411,6 +440,11 @@
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
                                     Shortlisted
                                 </span>
+                            @elseif ($app->status === 'Partial Approved')
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+                                    {{-- <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span> --}}
+                                    Partial
+                                </span>
                             @elseif ($app->status === 'Reviewed')
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                                     Reviewed
@@ -475,12 +509,16 @@
                         </button>
 
                         <button type="button" @click="openStatusModal({{ \Illuminate\Support\Js::from([
-                            'id' => $app->id,
-                            'applicant_name' => $app->applicantProfile->full_name ?? 'Pelamar',
-                            'applicant_email' => $app->applicantProfile->user->email ?? '',
-                            'job_title' => $app->job->title ?? 'Lowongan',
-                            'status' => $app->status ?? 'Submitted',
-                            'notes' => $app->notes ?? '',
+                            'id'                 => $app->id,
+                            'applicant_name'     => $app->applicantProfile->full_name ?? 'Pelamar',
+                            'applicant_email'    => $app->applicantProfile->user->email ?? '',
+                            'job_title'          => $app->job->title ?? 'Lowongan',
+                            'status'             => $app->status ?? 'Submitted',
+                            'notes'              => $app->notes ?? '',
+                            'recruiter_approval' => $app->recruiter_approval ?? 'pending',
+                            'recruiter_notes'    => $app->recruiter_notes ?? '',
+                            'admin_approval'     => $app->admin_approval ?? 'pending',
+                            'admin_notes'        => $app->admin_notes ?? '',
                         ]) }})" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-white bg-emerald-600 hover:bg-emerald-500 transition shadow-sm text-xs font-semibold cursor-pointer">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -495,8 +533,13 @@
                         <svg class="w-10 h-10 text-gray-300 dark:text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <span class="text-sm font-medium">Belum ada data lamaran kerja</span>
-                        <span class="text-xs">Lamaran yang diajukan oleh pelamar akan muncul di sini.</span>
+                        @if(!empty($isDesignatedRecruiter) && ($assignedJobsCount ?? 0) === 0)
+                            <span class="text-sm font-bold text-gray-800 dark:text-slate-200">Belum Ada Lowongan yang Ditugaskan ke Anda</span>
+                            <span class="text-xs text-gray-500 dark:text-slate-400 max-w-sm">Hak Recruiter Anda sudah aktif. Namun Admin HR belum memilih Anda sebagai Reviewer pada lowongan kerja mana pun. Setelah ditugaskan pada lowongan, pelamar posisi tersebut akan muncul di sini.</span>
+                        @else
+                            <span class="text-sm font-medium">Belum ada data lamaran kerja</span>
+                            <span class="text-xs">Lamaran yang diajukan oleh pelamar akan muncul di sini.</span>
+                        @endif
                     </div>
                 </div>
             @endforelse
@@ -706,6 +749,11 @@
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
                                                 Shortlisted (Lolos Ujian)
                                             </span>
+                                        @elseif ($app->status === 'Partial Approved')
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+                                                {{-- <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span> --}}
+                                                Partial Approved
+                                            </span>
                                         @elseif ($app->status === 'Reviewed')
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                                                 Reviewed (Lolos Berkas)
@@ -715,6 +763,33 @@
                                                 Submitted (Diajukan)
                                             </span>
                                         @endif
+
+                                        <!-- Double Approval Stage Indicators -->
+                                        <div class="flex items-center gap-2 mt-1 text-[10.5px]">
+                                            <span class="inline-flex items-center gap-1 font-medium {{ $app->recruiter_approval === 'approved' ? 'text-emerald-600 dark:text-emerald-400' : ($app->recruiter_approval === 'rejected' ? 'text-rose-500' : 'text-gray-400 dark:text-slate-500') }}" title="Verifikasi Recruiter: {{ ucfirst($app->recruiter_approval) }}{{ $app->recruiter_notes ? ' - ' . $app->recruiter_notes : '' }}">
+                                                <span class="text-[10px]">Recruiter:</span>
+                                                @if($app->recruiter_approval === 'approved')
+                                                    <svg class="w-3.5 h-3.5 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                                @elseif($app->recruiter_approval === 'rejected')
+                                                    <svg class="w-3.5 h-3.5 text-rose-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1.414-1.414L10 10.586l1.414 1.414a1 1 0 001.414-1.414L11.414 9.172l1.414-1.414a1 1 0 00-1.414-1.414L10 7.758 8.586 6.344a1 1 0 00-1.414 1.414l1.414 1.414-1.414 1.414a1 1 0 001.414 1.414z" clip-rule="evenodd" /></svg>
+                                                @else
+                                                    <span class="text-[10px] text-amber-500 font-bold">⏳</span>
+                                                @endif
+                                            </span>
+
+                                            <span class="text-gray-300 dark:text-slate-700">•</span>
+
+                                            <span class="inline-flex items-center gap-1 font-medium {{ $app->admin_approval === 'approved' ? 'text-emerald-600 dark:text-emerald-400' : ($app->admin_approval === 'rejected' ? 'text-rose-500' : 'text-gray-400 dark:text-slate-500') }}" title="Verifikasi HR/Admin: {{ ucfirst($app->admin_approval) }}{{ $app->admin_notes ? ' - ' . $app->admin_notes : '' }}">
+                                                <span class="text-[10px]">HR:</span>
+                                                @if($app->admin_approval === 'approved')
+                                                    <svg class="w-3.5 h-3.5 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                                @elseif($app->admin_approval === 'rejected')
+                                                    <svg class="w-3.5 h-3.5 text-rose-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1.414-1.414L10 10.586l1.414 1.414a1 1 0 001.414-1.414L11.414 9.172l1.414-1.414a1 1 0 00-1.414-1.414L10 7.758 8.586 6.344a1 1 0 00-1.414 1.414l1.414 1.414-1.414 1.414a1 1 0 001.414 1.414z" clip-rule="evenodd" /></svg>
+                                                @else
+                                                    <span class="text-[10px] text-amber-500 font-bold">⏳</span>
+                                                @endif
+                                            </span>
+                                        </div>
 
                                         @if ($app->notes)
                                             <p class="text-[11px] text-gray-400 dark:text-slate-500 italic truncate max-w-xs" title="{{ $app->notes }}">
@@ -751,12 +826,16 @@
 
                                         <!-- Update Status Button -->
                                         <button @click="openStatusModal({{ \Illuminate\Support\Js::from([
-                                            'id' => $app->id,
-                                            'applicant_name' => $app->applicantProfile->full_name ?? 'Pelamar',
-                                            'applicant_email' => $app->applicantProfile->user->email ?? '',
-                                            'job_title' => $app->job->title ?? 'Lowongan',
-                                            'status' => $app->status ?? 'Submitted',
-                                            'notes' => $app->notes ?? '',
+                                            'id'                 => $app->id,
+                                            'applicant_name'     => $app->applicantProfile->full_name ?? 'Pelamar',
+                                            'applicant_email'    => $app->applicantProfile->user->email ?? '',
+                                            'job_title'          => $app->job->title ?? 'Lowongan',
+                                            'status'             => $app->status ?? 'Submitted',
+                                            'notes'              => $app->notes ?? '',
+                                            'recruiter_approval' => $app->recruiter_approval ?? 'pending',
+                                            'recruiter_notes'    => $app->recruiter_notes ?? '',
+                                            'admin_approval'     => $app->admin_approval ?? 'pending',
+                                            'admin_notes'        => $app->admin_notes ?? '',
                                         ]) }})" class="px-2.5 py-1.5 rounded-xl text-emerald-700 dark:text-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 transition-colors border border-emerald-200/80 dark:border-emerald-800/80 flex items-center gap-1 text-[11px] font-semibold cursor-pointer" title="Update Status Lamaran">
                                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -774,8 +853,13 @@
                                     <svg class="w-10 h-10 text-gray-300 dark:text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
-                                    <span class="text-sm font-medium">Belum ada data lamaran kerja</span>
-                                    <span class="text-xs">Lamaran yang diajukan oleh pelamar akan muncul di sini.</span>
+                                    @if(!empty($isDesignatedRecruiter) && ($assignedJobsCount ?? 0) === 0)
+                                        <span class="text-sm font-bold text-gray-800 dark:text-slate-200">Belum Ada Lowongan yang Ditugaskan ke Anda</span>
+                                        <span class="text-xs text-gray-500 dark:text-slate-400 max-w-md">Hak Recruiter Anda sudah aktif. Namun Admin HR belum memilih Anda sebagai Reviewer pada lowongan kerja mana pun. Setelah ditugaskan pada lowongan, pelamar posisi tersebut akan muncul di sini.</span>
+                                    @else
+                                        <span class="text-sm font-medium">Belum ada data lamaran kerja</span>
+                                        <span class="text-xs">Lamaran yang diajukan oleh pelamar akan muncul di sini.</span>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -1238,6 +1322,70 @@
                                 </div>
                             </div>
                         </template>
+
+                        <!-- Double Approval Status Card -->
+                        <div class="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-gray-900 dark:text-white text-xs block flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                    Verifikasi Double Approval
+                                </span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                    :class="{
+                                        'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300': (detailData.status === 'Shortlisted' || detailData.status === 'Accepted' || (detailData.recruiter_approval === 'approved' && detailData.admin_approval === 'approved')),
+                                        'bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200 dark:border-sky-800': (detailData.status === 'Partial Approved' || detailData.recruiter_approval === 'approved' || detailData.admin_approval === 'approved'),
+                                        'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300': (detailData.status === 'Rejected' || detailData.recruiter_approval === 'rejected' || detailData.admin_approval === 'rejected'),
+                                        'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300': (!detailData.recruiter_approval || detailData.recruiter_approval === 'pending') && (!detailData.admin_approval || detailData.admin_approval === 'pending')
+                                    }"
+                                    x-text="(detailData.recruiter_approval === 'approved' && detailData.admin_approval === 'approved') ? 'Double Approved (Lolos Berkas)' : ((detailData.recruiter_approval === 'approved' || detailData.admin_approval === 'approved') ? 'Partial Approved (1/2 Disetujui)' : 'Menunggu Review')">
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <!-- Tahap 1: Recruiter / Penilai Teknis -->
+                                <div class="p-3 rounded-xl border"
+                                     :class="detailData.recruiter_approval === 'approved' ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60' : (detailData.recruiter_approval === 'rejected' ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/60' : 'bg-gray-50/60 dark:bg-slate-800/40 border-gray-200/60 dark:border-slate-700')">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[11px] font-bold text-gray-800 dark:text-slate-200">1. Verifikasi Recruiter</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md"
+                                              :class="detailData.recruiter_approval === 'approved' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300' : (detailData.recruiter_approval === 'rejected' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300')"
+                                              x-text="detailData.recruiter_approval === 'approved' ? 'Disetujui' : (detailData.recruiter_approval === 'rejected' ? 'Ditolak' : 'Pending')">
+                                        </span>
+                                    </div>
+                                    <div class="mt-1 text-[11px] text-gray-500 dark:text-slate-400">
+                                        <template x-if="detailData.recruiter">
+                                            <p class="font-medium text-gray-700 dark:text-slate-300" x-text="'Penilai: ' + detailData.recruiter.name"></p>
+                                        </template>
+                                        <template x-if="detailData.recruiter_notes">
+                                            <p class="italic text-[10.5px] mt-1 bg-white/70 dark:bg-slate-900/50 p-1.5 rounded-lg border border-gray-100 dark:border-slate-800" x-text="'“' + detailData.recruiter_notes + '”'"></p>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <!-- Tahap 2: Admin / HR -->
+                                <div class="p-3 rounded-xl border"
+                                     :class="detailData.admin_approval === 'approved' ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60' : (detailData.admin_approval === 'rejected' ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/60' : 'bg-gray-50/60 dark:bg-slate-800/40 border-gray-200/60 dark:border-slate-700')">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[11px] font-bold text-gray-800 dark:text-slate-200">2. Verifikasi HR / Admin</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md"
+                                              :class="detailData.admin_approval === 'approved' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300' : (detailData.admin_approval === 'rejected' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300')"
+                                              x-text="detailData.admin_approval === 'approved' ? 'Disetujui' : (detailData.admin_approval === 'rejected' ? 'Ditolak' : 'Pending')">
+                                        </span>
+                                    </div>
+                                    <div class="mt-1 text-[11px] text-gray-500 dark:text-slate-400">
+                                        <template x-if="detailData.admin">
+                                            <p class="font-medium text-gray-700 dark:text-slate-300" x-text="'Admin: ' + detailData.admin.name"></p>
+                                        </template>
+                                        <template x-if="detailData.admin_notes">
+                                            <p class="italic text-[10.5px] mt-1 bg-white/70 dark:bg-slate-900/50 p-1.5 rounded-lg border border-gray-100 dark:border-slate-800" x-text="'“' + detailData.admin_notes + '”'"></p>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- Modal Actions -->
@@ -1251,12 +1399,16 @@
                             applicant_email: detailData.applicant_profile && detailData.applicant_profile.user ? detailData.applicant_profile.user.email : '',
                             job_title: detailData.job ? detailData.job.title : 'Lowongan',
                             status: detailData.status || 'Submitted',
-                            notes: detailData.notes || ''
+                            notes: detailData.notes || '',
+                            recruiter_approval: detailData.recruiter_approval || 'pending',
+                            recruiter_notes: detailData.recruiter_notes || '',
+                            admin_approval: detailData.admin_approval || 'pending',
+                            admin_notes: detailData.admin_notes || '',
                         })" class="w-full sm:w-auto px-4 py-2.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-sm transition flex items-center justify-center gap-1.5">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
-                            <span>Update Status Lamaran</span>
+                            <span>Proses / Update Status</span>
                         </button>
                     </div>
                 </div>
@@ -1277,7 +1429,9 @@
                 <div class="p-4 sm:p-6">
                     <div class="flex items-center justify-between pb-3 sm:pb-4 border-b border-gray-100 dark:border-slate-800">
                         <h3 class="text-base font-bold text-gray-900 dark:text-white" id="modal-title-status">
-                            Update Status Lamaran
+                            <span x-show="statusData.approval_mode === 'recruiter_review'">Review Kualifikasi Berkas (Recruiter)</span>
+                            <span x-show="statusData.approval_mode === 'admin_review'">Verifikasi Persetujuan HR / Admin</span>
+                            <span x-show="statusData.approval_mode === 'direct'">Update Status Lamaran</span>
                         </h3>
                         <button @click="showStatusModal = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 p-1">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1290,7 +1444,11 @@
                         @csrf
                         @method('PUT')
 
-                        <div class="p-3 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200/60 dark:border-slate-700 text-xs space-y-1">
+                        <!-- Hidden Approval Type Field -->
+                        <input type="hidden" name="approval_type" :value="statusData.approval_mode === 'direct' ? '' : (statusData.approval_mode === 'recruiter_review' ? 'recruiter_review' : 'admin_review')">
+
+                        <!-- Applicant & Position Summary Box -->
+                        <div class="p-3 rounded-xl bg-gray-50 dark:bg-slate-800/80 border border-gray-200/60 dark:border-slate-700 text-xs space-y-2">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
                                 <span class="text-gray-400 block text-[11px]">Pelamar & Posisi</span>
                                 <template x-if="statusData.applicant_email">
@@ -1302,76 +1460,209 @@
                                     </span>
                                 </template>
                             </div>
-                            <span class="font-bold text-gray-900 dark:text-white block mt-0.5" x-text="statusData.applicant_name"></span>
-                            <span class="text-indigo-600 dark:text-indigo-400 block text-[11px]" x-text="statusData.job_title"></span>
+                            <div>
+                                <span class="font-bold text-gray-900 dark:text-white block" x-text="statusData.applicant_name"></span>
+                                <span class="text-indigo-600 dark:text-indigo-400 block text-[11px]" x-text="statusData.job_title"></span>
+                            </div>
+
+                            <!-- Live Double Approval Status Summary -->
+                            <div class="pt-2 border-t border-gray-200/50 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
+                                <span class="text-gray-400">Status Saat Ini:</span>
+                                <span class="font-bold text-gray-800 dark:text-slate-200" x-text="statusData.status"></span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 text-[10.5px] pt-1">
+                                <div class="p-1.5 rounded-lg border" :class="statusData.recruiter_approval === 'approved' ? 'bg-emerald-50/70 border-emerald-200 text-emerald-800 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-300' : (statusData.recruiter_approval === 'rejected' ? 'bg-rose-50/70 border-rose-200 text-rose-800 dark:bg-rose-950/30 dark:border-rose-800 dark:text-rose-300' : 'bg-white/80 border-gray-200 text-gray-600 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400')">
+                                    <span class="font-semibold block">Recruiter / Penilai:</span>
+                                    <span class="font-bold" x-text="statusData.recruiter_approval === 'approved' ? 'Disetujui' : (statusData.recruiter_approval === 'rejected' ? 'Ditolak' : 'Menunggu')"></span>
+                                </div>
+                                <div class="p-1.5 rounded-lg border" :class="statusData.admin_approval === 'approved' ? 'bg-emerald-50/70 border-emerald-200 text-emerald-800 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-300' : (statusData.admin_approval === 'rejected' ? 'bg-rose-50/70 border-rose-200 text-rose-800 dark:bg-rose-950/30 dark:border-rose-800 dark:text-rose-300' : 'bg-white/80 border-gray-200 text-gray-600 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400')">
+                                    <span class="font-semibold block">HR / Admin:</span>
+                                    <span class="font-bold" x-text="statusData.admin_approval === 'approved' ? 'Disetujui' : (statusData.admin_approval === 'rejected' ? 'Ditolak' : 'Menunggu')"></span>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Status Selection -->
-                        <div>
-                            <label for="status_select" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
-                                Status Lamaran <span class="text-rose-500">*</span>
-                            </label>
-                            <select name="status" id="status_select" x-model="statusData.status" @change="onStatusChange($event.target.value)" required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
-                                <option value="Submitted">Submitted (Diajukan)</option>
-                                <option value="Reviewed">Reviewed (Lolos Berkas / Tahap Tes)</option>
-                                <option value="Shortlisted">Shortlisted (Lolos Ujian / Siap Wawancara)</option>
-                                <option value="Interview">Interview (Wawancara)</option>
-                                <option value="Accepted">Accepted (Diterima)</option>
-                                <option value="Rejected">Rejected (Ditolak)</option>
-                            </select>
-                        </div>
-
-                        <!-- Quick Template Chips -->
-                        <div class="space-y-1.5">
-                            <div class="flex items-center justify-between text-[11px]">
-                                <span class="font-semibold text-gray-600 dark:text-slate-400 flex items-center gap-1">
-                                    <svg class="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        @if($isAdmin)
+                            <!-- Mode Switcher Tabs for Admin -->
+                            <div class="flex items-center p-1 bg-gray-100 dark:bg-slate-800 rounded-xl text-xs font-medium">
+                                <button type="button" 
+                                    @click="statusData.approval_mode = 'admin_review'"
+                                    :class="statusData.approval_mode === 'admin_review' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm font-bold' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'"
+                                    class="flex-1 py-1.5 px-3 rounded-lg transition text-center flex items-center justify-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                     </svg>
-                                    <span>Pilihan Cepat / Template Pesan:</span>
-                                </span>
-                                <button type="button" @click="statusData.notes = ''" class="text-gray-400 hover:text-rose-500 transition text-[10px]">
-                                    Kosongkan
+                                    <span>Verifikasi HR</span>
+                                </button>
+                                <button type="button" 
+                                    @click="statusData.approval_mode = 'direct'"
+                                    :class="statusData.approval_mode === 'direct' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm font-bold' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'"
+                                    class="flex-1 py-1.5 px-3 rounded-lg transition text-center flex items-center justify-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                                    </svg>
+                                    <span>Ubah Status Bebas</span>
                                 </button>
                             </div>
-                            <div class="flex flex-wrap gap-1.5">
-                                <button type="button" @click="applyTemplate('Reviewed')" class="px-2 py-1 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-800/80 rounded-lg text-[10px] font-semibold text-amber-800 dark:text-amber-300 transition flex items-center gap-1">
-                                    <span>Lolos Berkas & Lanjut Tes</span>
+                        @endif
+
+                        <!-- Double Approval Review Decision (For Recruiter or Admin Review Mode) -->
+                        <div x-show="statusData.approval_mode !== 'direct'" class="space-y-3">
+                            <input type="hidden" name="decision" :value="statusData.decision">
+
+                            <!-- Notes from Recruiter if Admin is reviewing -->
+                            <template x-if="statusData.approval_mode === 'admin_review' && statusData.recruiter_notes">
+                                <div class="p-2.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 text-xs">
+                                    <span class="font-semibold text-amber-900 dark:text-amber-300 flex items-center gap-1 text-[11px] mb-0.5">
+                                        <svg class="w-3.5 h-3.5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                        </svg>
+                                        Catatan dari Tim Recruiter:
+                                    </span>
+                                    <p class="italic text-[11px] text-amber-800 dark:text-amber-400" x-text="'“' + statusData.recruiter_notes + '”'"></p>
+                                </div>
+                            </template>
+
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300">
+                                Berikan Keputusan Verifikasi <span class="text-rose-500">*</span>
+                            </label>
+
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <!-- Option Approved -->
+                                <button type="button" 
+                                    @click="statusData.decision = 'approved'"
+                                    :class="statusData.decision === 'approved' ? 'border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 ring-2 ring-emerald-500/20' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-emerald-300'"
+                                    class="p-3 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer">
+                                    <div class="flex items-center justify-between w-full mb-1">
+                                        <span class="font-bold text-xs flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Setujui (Approve)
+                                        </span>
+                                        <span class="w-3.5 h-3.5 rounded-full border flex items-center justify-center" :class="statusData.decision === 'approved' ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 dark:border-slate-600'">
+                                            <span x-show="statusData.decision === 'approved'" class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                        </span>
+                                    </div>
+                                    <p class="text-[10px] text-gray-500 dark:text-slate-400 leading-tight">
+                                        Loloskan kualifikasi kandidat pada tahap ini.
+                                    </p>
                                 </button>
-                                <button type="button" @click="applyTemplate('Shortlisted')" class="px-2 py-1 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800/80 rounded-lg text-[10px] font-semibold text-indigo-700 dark:text-indigo-300 transition flex items-center gap-1">
-                                    <span>Lolos Ujian / Shortlisted</span>
+
+                                <!-- Option Rejected -->
+                                <button type="button" 
+                                    @click="statusData.decision = 'rejected'"
+                                    :class="statusData.decision === 'rejected' ? 'border-rose-500 bg-rose-50/80 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 ring-2 ring-rose-500/20' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-rose-300'"
+                                    class="p-3 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer">
+                                    <div class="flex items-center justify-between w-full mb-1">
+                                        <span class="font-bold text-xs flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                            Tolak (Reject)
+                                        </span>
+                                        <span class="w-3.5 h-3.5 rounded-full border flex items-center justify-center" :class="statusData.decision === 'rejected' ? 'border-rose-500 bg-rose-500' : 'border-gray-300 dark:border-slate-600'">
+                                            <span x-show="statusData.decision === 'rejected'" class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                        </span>
+                                    </div>
+                                    <p class="text-[10px] text-gray-500 dark:text-slate-400 leading-tight">
+                                        Tolak lamaran pelamar ini.
+                                    </p>
                                 </button>
-                                <button type="button" @click="applyTemplate('Interview')" class="px-2 py-1 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800/80 rounded-lg text-[10px] font-semibold text-blue-700 dark:text-blue-300 transition flex items-center gap-1">
-                                    <span>Wawancara</span>
-                                </button>
-                                <button type="button" @click="applyTemplate('Accepted')" class="px-2 py-1 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/80 rounded-lg text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 transition flex items-center gap-1">
-                                    <span>Diterima</span>
-                                </button>
-                                <button type="button" @click="applyTemplate('Rejected')" class="px-2 py-1 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800/80 rounded-lg text-[10px] font-semibold text-rose-700 dark:text-rose-300 transition flex items-center gap-1">
-                                    <span>Ditolak</span>
-                                </button>
+                            </div>
+
+                            <!-- Automatic Transition Helper Text -->
+                            <div class="p-2.5 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 text-[11px] text-indigo-700 dark:text-indigo-300">
+                                <template x-if="statusData.decision === 'approved'">
+                                    <span>
+                                        ℹ️ <strong>Aturan Otomatis:</strong> Jika disetujui dan pihak lainnya juga menyetujui, status otomatis menjadi <strong>Reviewed (Lolos Berkas & Lanjut Tes Online)</strong> dan email notifikasi akan dikirimkan ke pelamar. Jika pihak lainnya belum meninjau, status menjadi <strong>Partial Approved</strong> dan email <u>belum</u> dikirim ke pelamar.
+                                    </span>
+                                </template>
+                                <template x-if="statusData.decision === 'rejected'">
+                                    <span>
+                                        ⚠️ <strong>Aturan Otomatis:</strong> Jika salah satu pihak menolak, status lamaran akan langsung berubah menjadi <strong>Rejected</strong> (Ditolak).
+                                    </span>
+                                </template>
                             </div>
                         </div>
 
-                        <!-- Notes -->
+                        <!-- Direct Status Selection (Only when approval_mode === 'direct') -->
+                        <div x-show="statusData.approval_mode === 'direct'" class="space-y-3">
+                            <div>
+                                <label for="status_select" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                    Status Lamaran <span class="text-rose-500">*</span>
+                                </label>
+                                <select name="status" id="status_select" x-model="statusData.status" @change="onStatusChange($event.target.value)" :disabled="statusData.approval_mode !== 'direct'" class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                    <option value="Submitted">Submitted (Diajukan)</option>
+                                    <option value="Reviewed">Reviewed (Lolos Berkas / Tahap Tes)</option>
+                                    <option value="Partial Approved">Partial Approved (Disetujui 1 Pihak)</option>
+                                    <option value="Shortlisted">Shortlisted (Lolos Ujian / Siap Wawancara)</option>
+                                    <option value="Interview">Interview (Wawancara)</option>
+                                    <option value="Accepted">Accepted (Diterima)</option>
+                                    <option value="Rejected">Rejected (Ditolak)</option>
+                                </select>
+                            </div>
+
+                            <!-- Quick Template Chips -->
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span class="font-semibold text-gray-600 dark:text-slate-400 flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                        <span>Pilihan Cepat / Template Pesan:</span>
+                                    </span>
+                                    <button type="button" @click="statusData.notes = ''" class="text-gray-400 hover:text-rose-500 transition text-[10px]">
+                                        Kosongkan
+                                    </button>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <button type="button" @click="applyTemplate('Reviewed')" class="px-2 py-1 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-800/80 rounded-lg text-[10px] font-semibold text-amber-800 dark:text-amber-300 transition flex items-center gap-1">
+                                        <span>Lolos Berkas & Lanjut Tes</span>
+                                    </button>
+                                    <button type="button" @click="applyTemplate('Partial Approved')" class="px-2 py-1 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/60 border border-sky-200 dark:border-sky-800/80 rounded-lg text-[10px] font-semibold text-sky-700 dark:text-sky-300 transition flex items-center gap-1">
+                                        <span>Partial Approved</span>
+                                    </button>
+                                    <button type="button" @click="applyTemplate('Shortlisted')" class="px-2 py-1 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800/80 rounded-lg text-[10px] font-semibold text-indigo-700 dark:text-indigo-300 transition flex items-center gap-1">
+                                        <span>Shortlisted</span>
+                                    </button>
+                                    <button type="button" @click="applyTemplate('Interview')" class="px-2 py-1 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800/80 rounded-lg text-[10px] font-semibold text-blue-700 dark:text-blue-300 transition flex items-center gap-1">
+                                        <span>Wawancara</span>
+                                    </button>
+                                    <button type="button" @click="applyTemplate('Accepted')" class="px-2 py-1 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/80 rounded-lg text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 transition flex items-center gap-1">
+                                        <span>Diterima</span>
+                                    </button>
+                                    <button type="button" @click="applyTemplate('Rejected')" class="px-2 py-1 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800/80 rounded-lg text-[10px] font-semibold text-rose-700 dark:text-rose-300 transition flex items-center gap-1">
+                                        <span>Ditolak</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes / Justification Textarea -->
                         <div>
                             <div class="flex items-center justify-between mb-1">
                                 <label for="notes_text" class="block text-xs font-semibold text-gray-700 dark:text-slate-300">
-                                    Catatan / Pesan untuk Pelamar
+                                    <span x-show="statusData.approval_mode === 'recruiter_review'">Catatan Review Teknis / Kualifikasi</span>
+                                    <span x-show="statusData.approval_mode === 'admin_review'">Catatan Verifikasi HR</span>
+                                    <span x-show="statusData.approval_mode === 'direct'">Catatan / Pesan untuk Pelamar</span>
                                 </label>
-                                <button type="button" @click="applyTemplate()" class="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-0.5">
-                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                    </svg>
-                                    <span>Terapkan Pesan Status</span>
-                                </button>
+                                <template x-if="statusData.approval_mode === 'direct'">
+                                    <button type="button" @click="applyTemplate()" class="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-0.5">
+                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        <span>Terapkan Template</span>
+                                    </button>
+                                </template>
                             </div>
-                            <textarea name="notes" id="notes_text" rows="3" x-model="statusData.notes" placeholder="Tambahkan catatan untuk proses seleksi pelamar ini..." class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition leading-relaxed"></textarea>
+                            <textarea name="notes" id="notes_text" rows="3" x-model="statusData.notes" :placeholder="statusData.approval_mode !== 'direct' ? 'Tuliskan catatan verifikasi atau alasan keputusan Anda...' : 'Tambahkan catatan untuk proses seleksi pelamar ini...'" class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition leading-relaxed"></textarea>
                             <p class="text-[10.5px] text-gray-400 dark:text-slate-500 mt-1 flex items-center gap-1">
                                 <svg class="w-3 h-3 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                <span>Pesan ini akan langsung dibaca pelamar pada menu <strong>Riwayat Lamaran</strong>.</span>
+                                <span>Pesan ini tercatat dalam riwayat status lamaran.</span>
                             </p>
                         </div>
 
@@ -1388,7 +1679,13 @@
                                         <span>Kirim notifikasi email otomatis ke pelamar</span>
                                     </span>
                                     <p class="text-[11px] text-gray-500 dark:text-slate-400 leading-tight">
-                                        Pelamar akan menerima email resmi berisi pemberitahuan status, instruksi pengerjaan tes/tahap berikutnya, dan tombol langsung ke sistem.
+                                        Pelamar akan menerima email resmi berisi pemberitahuan status dan instruksi tahap berikutnya.
+                                    </p>
+                                    <p class="text-[10.5px] text-amber-600 dark:text-amber-400 pt-1 font-medium flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>Pada status <strong>Partial Approved</strong>, email sengaja ditahan dan baru dikirim setelah <strong>kedua pihak setuju</strong> (status Reviewed).</span>
                                     </p>
                                 </div>
                             </label>
@@ -1404,7 +1701,7 @@
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                <span x-text="isSubmittingStatus ? 'Menyimpan...' : 'Simpan Perubahan Status'"></span>
+                                <span x-text="isSubmittingStatus ? 'Menyimpan...' : (statusData.approval_mode === 'recruiter_review' ? 'Kirim Penilaian Recruiter' : (statusData.approval_mode === 'admin_review' ? 'Kirim Verifikasi HR' : 'Simpan Perubahan Status'))"></span>
                             </button>
                         </div>
                     </form>

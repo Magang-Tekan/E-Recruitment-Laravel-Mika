@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role_id', 'nik', 'google_id', 'avatar'])]
+#[Fillable(['name', 'email', 'password', 'role_id', 'is_recruiter', 'nik', 'google_id', 'avatar'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -27,6 +27,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role_id == 1 || strtolower($this->role?->name ?? '') === 'admin';
+    }
+
+    /**
+     * Check if user can review job applicants.
+     */
+    public function canReview(): bool
+    {
+        return $this->isAdmin() || $this->role_id == 2 || (bool) $this->is_recruiter;
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -36,6 +52,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_recruiter' => 'boolean',
         ];
     }
 
