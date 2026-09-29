@@ -10,9 +10,7 @@
             class="reveal-on-scroll relative rounded-3xl bg-gradient-to-r from-[#051c05] via-[#072907] to-[#031103] border border-[#93F514]/40 p-8 sm:p-12 mb-10 overflow-hidden shadow-2xl shadow-black/80">
             <div class="relative z-10 max-w-2xl">
                 <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#EEEEEE] leading-tight">
-                    Jelajahi <span
-                        class="text-transparent bg-clip-text bg-gradient-to-r from-[#93F514] via-[#75f06a] to-[#5FE6B6]">Lowongan
-                        Pekerjaan</span>
+                    Jelajahi <span class="text-[#93F514]">Lowongan Pekerjaan</span>
                 </h1>
                 <p class="mt-3 text-sm sm:text-base text-gray-300">
                     Temukan posisi yang sesuai dengan keahlian, minat, dan kualifikasi Anda. Lamar sekarang dan ikuti

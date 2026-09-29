@@ -16,7 +16,7 @@
                 Ekosistem Grup Perusahaan
             </div> --}}
             <h2 class="reveal-on-scroll text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#EEEEEE] tracking-tight" data-delay="100">
-                Grup <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#93F514] via-[#75f06a] to-[#5FE6B6]">Perusahaan</span>
+                Grup <span class="text-[#93F514]">Perusahaan</span>
             </h2>
             <p class="reveal-on-scroll mt-3.5 text-sm sm:text-base text-gray-300 max-w-2xl mx-auto leading-relaxed" data-delay="150">
                 Sinergi strategis lintas entitas dalam menghadirkan solusi teknologi cerdas, manufaktur perangkat keras, dan jaringan distribusi terpadu.

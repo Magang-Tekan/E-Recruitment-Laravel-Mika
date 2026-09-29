@@ -25,11 +25,11 @@
 
             <div class="relative max-w-5xl mx-auto text-center z-10 flex flex-col items-center">
 
-                <!-- Main Headline Hero with Neon #93F514 & White Gradients -->
+                <!-- Main Headline Hero with Neon #93F514 -->
                 <h1
                     class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#EEEEEE] leading-tight sm:leading-none max-w-4xl drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
                     Temukan Karir Impian, <br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#93F514] via-[#75f06a] to-[#5FE6B6]">
+                    <span class="text-[#93F514]">
                         Wujudkan Potensi Terbaikmu
                     </span>
                 </h1>

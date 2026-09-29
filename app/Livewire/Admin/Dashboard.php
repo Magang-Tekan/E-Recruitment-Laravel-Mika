@@ -25,7 +25,9 @@ class Dashboard extends Component
     public function render()
     {
         $user = auth()->user();
-        $isRecruiter = $user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter');
+        $isAdmin = $user && ($user->role_id == 1 || strtolower($user->role?->name ?? '') === 'admin');
+        $isRecruiter = $user && !$isAdmin && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter);
+        $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
 
         $totalCandidates = User::where(function ($q) {
             $q->where('role_id', 3)
@@ -41,67 +43,65 @@ class Dashboard extends Component
         ->count();
 
         if ($isRecruiter) {
-            $totalJobs = Job::whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
-                ->where(function($q) {
-                    $q->whereNull('deadline')->orWhere('deadline', '>=', now()->toDateString());
-                })->count();
+            $jobsBaseQuery = Job::query()
+                ->when($isDesignatedRecruiter, function ($q) use ($user) {
+                    $q->where('reviewer_id', $user->id);
+                })
+                ->when(!$isDesignatedRecruiter, function ($q) {
+                    $q->whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
+                      ->where(function($sq) {
+                          $sq->whereNull('deadline')->orWhere('deadline', '>=', now()->toDateString());
+                      });
+                });
+
+            $totalJobs = (clone $jobsBaseQuery)->count();
             $activeJobs = $totalJobs;
 
-            $totalApplicants = JobApplication::whereHas('job', function ($j) {
-                $j->whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
-                  ->where(function($q) {
-                      $q->whereNull('deadline')->orWhere('deadline', '>=', now()->toDateString());
-                  });
-            })->count();
+            $applicationsBaseQuery = JobApplication::whereHas('job', function ($j) use ($isDesignatedRecruiter, $user) {
+                if ($isDesignatedRecruiter) {
+                    $j->where('reviewer_id', $user->id);
+                } else {
+                    $j->whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
+                      ->where(function($sq) {
+                          $sq->whereNull('deadline')->orWhere('deadline', '>=', now()->toDateString());
+                      });
+                }
+            });
 
-            $pendingReview = JobApplication::whereHas('job', function ($j) {
-                $j->whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
-                  ->where(function($q) {
-                      $q->whereNull('deadline')->orWhere('deadline', '>=', now()->toDateString());
-                  });
-            })->whereIn('status', ['applied', 'pending', 'screening', 'submitted'])->count();
+            $totalApplicants = (clone $applicationsBaseQuery)->count();
+
+            $pendingReview = (clone $applicationsBaseQuery)
+                ->whereIn(DB::raw('LOWER(status)'), ['applied', 'pending', 'screening', 'submitted'])
+                ->count();
 
             $totalQuestions = 0;
             $totalTests = 0;
 
             // Recent applications for active jobs only
-            $recentApplications = JobApplication::with(['job', 'applicantProfile.user'])
-                ->whereHas('job', function ($j) {
-                    $j->whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
-                      ->where(function($q) {
-                          $q->whereNull('deadline')->orWhere('deadline', '>=', now()->toDateString());
-                      });
-                })
+            $recentApplications = (clone $applicationsBaseQuery)
+                ->with(['job', 'applicantProfile.user'])
                 ->orderBy('id', 'desc')
                 ->take(5)
                 ->get();
 
             // Active Jobs for recruiter
-            $recentJobs = Job::with(['company', 'department'])
+            $recentJobs = (clone $jobsBaseQuery)
+                ->with(['company', 'department'])
                 ->withCount('jobApplications')
-                ->whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
-                ->where(function($q) {
-                    $q->whereNull('deadline')->orWhere('deadline', '>=', now()->toDateString());
-                })
                 ->orderBy('id', 'desc')
                 ->take(5)
                 ->get();
 
-            $statusCounts = JobApplication::whereHas('job', function ($j) {
-                $j->whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
-                  ->where(function($q) {
-                      $q->whereNull('deadline')->orWhere('deadline', '>=', now()->toDateString());
-                  });
-            })
-            ->select('status', DB::raw('count(*) as total'))
-            ->groupBy('status')
-            ->pluck('total', 'status')
-            ->toArray();
+            $statusCounts = (clone $applicationsBaseQuery)
+                ->select(DB::raw('LOWER(status) as lower_status'), DB::raw('count(*) as total'))
+                ->groupBy(DB::raw('LOWER(status)'))
+                ->pluck('total', 'lower_status')
+                ->toArray();
         } else {
             $totalJobs = Job::count();
             $activeJobs = Job::whereIn(DB::raw('LOWER(status)'), ['open', 'active', 'published'])->count();
             $totalApplicants = JobApplication::count();
-            $pendingReview = JobApplication::whereIn('status', ['applied', 'pending', 'screening', 'submitted'])->count();
+            $pendingReview = JobApplication::whereIn(DB::raw('LOWER(status)'), ['applied', 'pending', 'screening', 'submitted'])->count();
             $totalQuestions = QuestionBank::count();
             $totalTests = Test::count();
 
@@ -119,15 +119,16 @@ class Dashboard extends Component
                 ->get();
 
             // Status breakdown
-            $statusCounts = JobApplication::select('status', DB::raw('count(*) as total'))
-                ->groupBy('status')
-                ->pluck('total', 'status')
+            $statusCounts = JobApplication::select(DB::raw('LOWER(status) as lower_status'), DB::raw('count(*) as total'))
+                ->groupBy(DB::raw('LOWER(status)'))
+                ->pluck('total', 'lower_status')
                 ->toArray();
         }
 
         return view('livewire.admin.dashboard', [
-            'isAdmin' => !$isRecruiter,
+            'isAdmin' => $isAdmin,
             'isRecruiter' => $isRecruiter,
+            'isDesignatedRecruiter' => $isDesignatedRecruiter,
             'totalJobs' => $totalJobs,
             'activeJobs' => $activeJobs,
             'totalApplicants' => $totalApplicants,
