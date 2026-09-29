@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\Url;
 use App\Models\JobApplication;
 use App\Models\Company;
 use App\Models\Job;
@@ -15,7 +16,10 @@ class ApplicantTable extends Component
     use WithPagination, WithTableSkeleton;
 
     public $search = '';
+
+    #[Url(as: 'status', except: '')]
     public $statusFilter = '';
+
     public $jobFilter = '';
     public $companyFilter = '';
     public array $selectedStatuses = [];
@@ -24,6 +28,14 @@ class ApplicantTable extends Component
 
     public $sortField = 'id';
     public $sortDirection = 'desc';
+
+    public function mount()
+    {
+        $status = request()->query('status') ?? request()->query('statusFilter');
+        if (!empty($status)) {
+            $this->statusFilter = $status;
+        }
+    }
 
     public function updatingSearch()
     {
@@ -164,10 +176,10 @@ class ApplicantTable extends Component
             $query->where('job_id', $this->jobFilter);
         })
         ->when(!empty($this->selectedStatuses), function ($query) {
-            $query->whereIn('status', $this->selectedStatuses);
+            $query->whereIn(DB::raw('LOWER(status)'), array_map('strtolower', $this->selectedStatuses));
         })
         ->when($this->statusFilter, function ($query) {
-            $query->where('status', $this->statusFilter);
+            $query->whereRaw('LOWER(status) = ?', [strtolower($this->statusFilter)]);
         })
         ->when($this->sortField === 'position', function ($query) {
             $query->join('jobs', 'job_applications.job_id', '=', 'jobs.id')
@@ -218,21 +230,21 @@ class ApplicantTable extends Component
                 $query->where('job_id', $this->jobFilter);
             });
 
-        $statusGroupCounts = (clone $baseStatsQuery)
-            ->select('status', DB::raw('count(*) as count_val'))
-            ->groupBy('status')
-            ->pluck('count_val', 'status')
+        $rawStatusCounts = (clone $baseStatsQuery)
+            ->select(DB::raw('LOWER(status) as lower_status'), DB::raw('count(*) as count_val'))
+            ->groupBy(DB::raw('LOWER(status)'))
+            ->pluck('count_val', 'lower_status')
             ->toArray();
 
         $stats = [
             'total'            => (clone $baseStatsQuery)->count(),
-            'submitted'        => $statusGroupCounts['Submitted'] ?? 0,
-            'partial_approved' => $statusGroupCounts['Partial Approved'] ?? 0,
-            'reviewed'         => $statusGroupCounts['Reviewed'] ?? 0,
-            'shortlisted'      => $statusGroupCounts['Shortlisted'] ?? 0,
-            'interview'        => $statusGroupCounts['Interview'] ?? 0,
-            'accepted'         => $statusGroupCounts['Accepted'] ?? 0,
-            'rejected'         => $statusGroupCounts['Rejected'] ?? 0,
+            'submitted'        => $rawStatusCounts['submitted'] ?? 0,
+            'partial_approved' => $rawStatusCounts['partial approved'] ?? 0,
+            'reviewed'         => $rawStatusCounts['reviewed'] ?? 0,
+            'shortlisted'      => $rawStatusCounts['shortlisted'] ?? 0,
+            'interview'        => $rawStatusCounts['interview'] ?? 0,
+            'accepted'         => $rawStatusCounts['accepted'] ?? 0,
+            'rejected'         => $rawStatusCounts['rejected'] ?? 0,
         ];
 
         $companies = Company::select('id', 'name')->orderBy('name')->get();

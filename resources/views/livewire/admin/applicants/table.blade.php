@@ -177,9 +177,9 @@
                 @foreach($tabs as $tabKey => $tabData)
                     <button type="button" 
                             wire:click="setStatusFilter('{{ $tabKey }}')"
-                            class="px-2.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 {{ ($statusFilter === $tabKey && empty($selectedStatuses)) ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/20' : 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700/80 border border-gray-200/60 dark:border-slate-700/60' }}">
+                            class="px-2.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 {{ (strtolower($statusFilter) === strtolower($tabKey) && empty($selectedStatuses)) ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/20' : 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700/80 border border-gray-200/60 dark:border-slate-700/60' }}">
                         <span>{{ $tabData['label'] }}</span>
-                        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold {{ ($statusFilter === $tabKey && empty($selectedStatuses)) ? 'bg-white/20 text-white' : 'bg-gray-200/70 dark:bg-slate-700 text-gray-700 dark:text-slate-300' }}">
+                        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold {{ (strtolower($statusFilter) === strtolower($tabKey) && empty($selectedStatuses)) ? 'bg-white/20 text-white' : 'bg-gray-200/70 dark:bg-slate-700 text-gray-700 dark:text-slate-300' }}">
                             {{ $tabData['count'] }}
                         </span>
                     </button>

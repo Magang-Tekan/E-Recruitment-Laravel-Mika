@@ -151,7 +151,7 @@
                         <!-- Main Heading -->
                         <h1 class="reveal-on-scroll text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight text-[#EEEEEE] leading-[1.15]" data-delay="100">
                             Mengenal Lebih Dekat <br>
-                            <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#93F514] via-[#75f06a] to-[#5FE6B6]">
+                            <span class="text-[#93F514]">
                                 {{ $company->name ?? 'PT Mitra Karya Analitika' }}
                             </span>
                         </h1>
@@ -210,7 +210,7 @@
                     </div>
 
                     <h2 class="reveal-on-scroll text-2xl sm:text-4xl font-extrabold text-[#EEEEEE] leading-tight" data-delay="100">
-                        Solusi Presisi untuk <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#93F514] to-[#75f06a]">Laboratorium, HSE, & Lingkungan</span>
+                        Solusi Presisi untuk <span class="text-[#93F514]">Laboratorium, HSE, & Lingkungan</span>
                     </h2>
 
                     <div class="reveal-on-scroll text-sm sm:text-base text-gray-300 leading-relaxed space-y-4" data-delay="150">
@@ -335,7 +335,7 @@
                     Landasan Strategis
                 </div> --}}
                 <h2 class="reveal-on-scroll text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#EEEEEE]" data-delay="100">
-                    Visi & <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#93F514] via-[#75f06a] to-[#5FE6B6]">Misi Kami</span>
+                    Visi & <span class="text-[#93F514]">Misi Kami</span>
                 </h2>
                 <p class="reveal-on-scroll mt-3 text-sm sm:text-base text-gray-300" data-delay="150">
                     Arah tujuan jangka panjang dan komitmen berkesinambungan yang memandu setiap langkah operasional kami.
@@ -468,7 +468,7 @@
                     Budaya Perusahaan
                 </div> --}}
                 <h2 class="reveal-on-scroll text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#EEEEEE]" data-delay="100">
-                    Nilai Perusahaan <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#93F514] via-[#75f06a] to-[#5FE6B6]">(MIKA)</span>
+                    Nilai Perusahaan <span class="text-[#93F514]">(MIKA)</span>
                 </h2>
                 <p class="reveal-on-scroll mt-3 text-sm sm:text-base text-gray-300" data-delay="150">
                     Empat pilar integritas yang menjadi kompas perilaku, etika bisnis, dan budaya kerja seluruh insan PT Mitra Karya Analitika.
@@ -565,7 +565,7 @@
                     Bidang Keahlian
                 </div> --}}
                 <h2 class="reveal-on-scroll text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#EEEEEE]" data-delay="100">
-                    Unit Bisnis & <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#93F514] via-[#75f06a] to-[#5FE6B6]">Fokus Layanan</span>
+                    Unit Bisnis & <span class="text-[#93F514]">Fokus Layanan</span>
                 </h2>
                 <p class="reveal-on-scroll mt-3 text-sm sm:text-base text-gray-300" data-delay="150">
                     Tiga spesialisasi utama yang menjadi keunggulan komparatif kami dalam melayani berbagai sektor industri di Indonesia.
@@ -683,7 +683,7 @@
                     Hubungi & Kunjungi Kami
                 </div> --}}
                 <h2 class="reveal-on-scroll text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#EEEEEE]" data-delay="100">
-                    Informasi <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#93F514] via-[#75f06a] to-[#5FE6B6]">Kontak & Alamat</span>
+                    Informasi <span class="text-[#93F514]">Kontak & Alamat</span>
                 </h2>
                 <p class="reveal-on-scroll mt-3 text-sm sm:text-base text-gray-300" data-delay="150">
                     Kami siap melayani kebutuhan konsultasi, penawaran produk, dan kerjasama bisnis Anda.
@@ -796,14 +796,14 @@
                         Peluang Karir Terbuka
                     </span> --}}
                     <h2 class="text-2xl sm:text-4xl font-extrabold text-[#EEEEEE] leading-tight">
-                        Ingin Menjadi Bagian dari <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#93F514] to-[#75f06a]">Keluarga Besar MIKA?</span>
+                        Ingin Menjadi Bagian dari <span class="text-[#93F514]">Keluarga Besar MIKA?</span>
                     </h2>
                     <p class="mt-4 text-xs sm:text-base text-gray-300 leading-relaxed">
                         Kami senantiasa mencari talenta berintegritas tinggi, profesional, dan bersemangat untuk tumbuh bersama. Temukan posisi yang selaras dengan aspirasi Anda.
                     </p>
 
                     <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <a href="{{ route('jobs.index') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-gradient-to-r from-[#93F514] to-[#7ceb0c] text-black font-extrabold text-sm shadow-md shadow-black/40 hover:scale-105 transition-transform duration-200">
+                        <a href="{{ route('jobs.index') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-sm shadow-md shadow-black/40 hover:scale-105 transition-all duration-200">
                             Lihat Lowongan Kerja Aktif
                         </a>
                         @guest

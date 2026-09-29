@@ -128,8 +128,7 @@
                     class="h-10 w-auto object-contain rounded-lg group-hover:scale-105 transition-transform duration-300">
                 <div>
                     <span class="text-lg sm:text-xl font-black tracking-tight text-[#EEEEEE] flex items-center gap-1">
-                        MIKA <span
-                            class="text-transparent bg-clip-text bg-gradient-to-r from-[#93F514] via-[#46ee40] to-[#5FE6B6]">CAREER</span>
+                        MIKA <span class="text-[#93F514]">CAREER</span>
                     </span>
                 </div>
             </a>
