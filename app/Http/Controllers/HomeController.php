@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Job;
 use App\Models\Company;
+use App\Models\CompanyShowcase;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -62,6 +63,22 @@ class HomeController extends Controller
 
         $companies = Cache::remember('master_companies_all', 86400, fn() => Company::all());
 
+        $showcases = Cache::remember('frontend_company_showcases', 86400, function () {
+            return CompanyShowcase::active()->latest()->get()->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'tag' => $item->tag ?? 'Acara & Kolaborasi',
+                    'title' => $item->title,
+                    'description' => $item->description ?? '',
+                    'img1' => $item->img1_url,
+                    'img2' => $item->img2_url,
+                    'img3' => $item->img3_url,
+                    'badgeTitle' => $item->badge_title ?? 'EVENT',
+                    'badgeSub' => $item->badge_sub ?? '',
+                ];
+            })->values()->toArray();
+        });
+
         return view('frontend.home.index', compact(
             'featuredJobs',
             'totalJobsCount',
@@ -70,6 +87,7 @@ class HomeController extends Controller
             'totalQuotaCount',
             'departments',
             'companies',
+            'showcases',
             'search',
             'location'
         ));

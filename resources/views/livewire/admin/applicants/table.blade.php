@@ -152,7 +152,7 @@
                     <span>Daftar Lamaran Kerja Masuk</span>
                     @if(($stats['submitted'] ?? 0) > 0)
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                            {{-- <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> --}}
                             {{ $stats['submitted'] }} Perlu Diproses
                         </span>
                     @endif

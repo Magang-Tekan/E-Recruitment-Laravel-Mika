@@ -79,7 +79,8 @@
                             Data Master
                         </div>
                         <div class="space-y-1">
-                            <x-sidebar.nested-nav-link title="Perusahaan" tooltip="Menu profil, departemen & posisi" :active="request()->routeIs('admin.company*') ||
+                            <x-sidebar.nested-nav-link title="Perusahaan" tooltip="Menu profil, departemen, posisi & showcase" :active="request()->routeIs('admin.company*') ||
+                                request()->routeIs('admin.showcase*') ||
                                 request()->routeIs('admin.department*') ||
                                 request()->routeIs('admin.position*')">
                                 <x-slot:icon>
@@ -104,6 +105,11 @@
                                     title="Daftar formasi & jabatan"
                                     class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.position*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Posisi
+                                </a>
+                                <a href="{{ route('admin.showcase') }}"
+                                    title="Dokumentasi acara & kegiatan slider beranda"
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.showcase*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    Showcase & Acara
                                 </a>
                             </x-sidebar.nested-nav-link>
 

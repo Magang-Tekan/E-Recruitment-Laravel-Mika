@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\CompanyShowcase;
 use App\Models\Department;
 use App\Models\Job;
 use Illuminate\Http\Request;
@@ -40,12 +41,29 @@ class AboutController extends Controller
             }])->take(6)->get();
         });
 
+        $showcases = Cache::remember('frontend_company_showcases', 86400, function () {
+            return CompanyShowcase::active()->latest()->get()->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'tag' => $item->tag ?? 'Acara & Kolaborasi',
+                    'title' => $item->title,
+                    'description' => $item->description ?? '',
+                    'img1' => $item->img1_url,
+                    'img2' => $item->img2_url,
+                    'img3' => $item->img3_url,
+                    'badgeTitle' => $item->badge_title ?? 'EVENT',
+                    'badgeSub' => $item->badge_sub ?? '',
+                ];
+            })->values()->toArray();
+        });
+
         return view('frontend.about.index', compact(
             'company',
             'groupCompanies',
             'totalJobsCount',
             'departmentsCount',
-            'departments'
+            'departments',
+            'showcases'
         ));
     }
 }
