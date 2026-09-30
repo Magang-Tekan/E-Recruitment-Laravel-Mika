@@ -70,8 +70,8 @@ Pastikan komputer/laptop Anda telah terpasang:
 Buka terminal (PowerShell / Git Bash / Command Prompt), arahkan ke folder web server Anda (misal `c:\laragon\www`), lalu jalankan:
 
 ```bash
-git clone https://github.com/IlhamTaruprasetyo/E-Recruitment-Laravel.git
-cd E-Recruitment-Laravel
+git clone https://github.com/Magang-Tekan/E-Recruitment-Laravel-Mika.git
+cd E-Recruitment-Laravel-Mika
 ```
 
 ---
@@ -137,16 +137,19 @@ Lalu buat file database kosong:
 ---
 
 ### 6. Jalankan Migrasi & Database Seeder
-Jalankan migrasi tabel beserta data awal (roles, default accounts, master data perusahaan, bank data pendidikan, jurusan, dan soal DISC):
+Jalankan migrasi tabel beserta seluruh data awal (roles, akun demo, master organisasi MIKA & AKA, profil perusahaan, master pendidikan, psikotes DISC & PAPI Kostick, serta showcase kegiatan):
 
 ```bash
 php artisan migrate --seed
 ```
 
-*(Opsional) Jika ingin menyertakan seeder pertanyaan DISC lengkap atau data master profil perusahaan:*
+*(Opsional) Jika ingin menjalankan seeder tertentu secara terpisah:*
 ```bash
+# Men-seed ulang posisi & departemen MIKA & AKA:
+php artisan db:seed --class=CompanyDepartmentPositionSeeder
+
+# Men-seed bank soal DISC:
 php artisan db:seed --class=DiscQuestionSeeder
-php artisan db:seed --class=CompanyProfileSeeder
 ```
 
 ---
@@ -240,8 +243,8 @@ newgrp docker
 Arahkan ke folder web server di VPS Anda (misalnya `/var/www`):
 
 ```bash
-git clone https://github.com/IlhamTaruprasetyo/E-Recruitment-Laravel.git
-cd E-Recruitment-Laravel
+git clone https://github.com/Magang-Tekan/E-Recruitment-Laravel-Mika.git
+cd E-Recruitment-Laravel-Mika
 ```
 
 Salin berkas template `.env.docker.example` menjadi `.env.docker`:
