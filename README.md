@@ -18,7 +18,7 @@ Aplikasi web sistem rekrutmen terpadu, seleksi berkas, asesmen psikotes (DISC Te
   - [7. Buat Storage Symlink](#7-buat-storage-symlink)
   - [8. Install Dependensi Frontend & Build Asset](#8-install-dependensi-frontend--build-asset)
   - [9. Menjalankan Aplikasi](#9-menjalankan-aplikasi)
-- [Panduan Setup Menggunakan Docker](#-panduan-setup-menggunakan-docker)
+- [Panduan Setup Menggunakan Docker & Deploy VPS](#-panduan-setup-menggunakan-docker--deploy-vps)
 - [Integrasi Antrean & Notifikasi (Queue & Mail)](#-integrasi-antrean--notifikasi-queue--mail)
 - [REST API Endpoints](#-rest-api-endpoints)
 - [Troubleshooting & Solusi Masalah Umum](#-troubleshooting--solusi-masalah-umum)
@@ -206,88 +206,195 @@ Akses aplikasi di browser favorit Anda melalui:
 
 ---
 
-## 🐳 Panduan Setup Menggunakan Docker
+## 🐳 Panduan Setup Menggunakan Docker & Deploy VPS
 
-Jika Anda ingin menjalankan aplikasi secara terisolasi di dalam container Docker tanpa perlu menginstal PHP, Node.js, Composer, atau database secara manual di sistem lokal:
+Panduan ini mencakup cara menjalankan aplikasi secara terisolasi di lokal maupun **deployment produksi di server VPS** (Ubuntu/Debian) menggunakan Docker & Docker Compose.
 
-### 1. Prasyarat
-Pastikan sistem Anda telah terpasang:
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (untuk Windows / macOS) atau Docker Engine & Docker Compose (untuk Linux).
+Container yang disediakan oleh `docker-compose.yml`:
+- **`app`**: Runtime PHP 8.4-FPM beserta ekstensi lengkap, Composer dependencies, dan kode aplikasi.
+- **`web`**: Nginx web server teroptimasi (port default host: `8080`).
+- **`db`**: Database PostgreSQL 16 (port default host: `5433`).
+- **`queue`**: Background worker otomatis untuk memproses antrean email status seleksi lamaran kandidat.
 
-### 2. Siapkan File Environment Docker
-Salin file template `.env.docker.example` menjadi `.env.docker`:
+---
+
+### 1. Persiapan Server VPS
+Jika Anda menggunakan VPS baru (misal Ubuntu 22.04 / 24.04 LTS), pastikan Docker Engine & Docker Compose plugin sudah terpasang:
+
+```bash
+# Update paket sistem
+sudo apt update && sudo apt upgrade -y
+
+# Install Docker engine & Docker Compose plugin secara resmi
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# Tambahkan user saat ini ke grup docker (agar dapat menjalankan docker tanpa sudo)
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+---
+
+### 2. Clone Repository & Siapkan Environment Docker
+Arahkan ke folder web server di VPS Anda (misalnya `/var/www`):
+
+```bash
+git clone https://github.com/IlhamTaruprasetyo/E-Recruitment-Laravel.git
+cd E-Recruitment-Laravel
+```
+
+Salin berkas template `.env.docker.example` menjadi `.env.docker`:
+
+**Untuk Linux / macOS (VPS):**
+```bash
+cp .env.docker.example .env.docker
+```
 
 **Untuk Windows (PowerShell / CMD):**
 ```powershell
 copy .env.docker.example .env.docker
 ```
 
-**Untuk Git Bash / Linux / macOS:**
+Edit berkas `.env.docker` menggunakan `nano` atau teks editor:
 ```bash
-cp .env.docker.example .env.docker
+nano .env.docker
 ```
 
-> 🔒 **Catatan Keamanan & Konfigurasi:**
-> - Buka file `.env.docker` dan sesuaikan nilainya dengan kebutuhan lokal Anda.
-> - **Jangan pernah memasukkan atau membagikan kredensial rahasia/asli** (seperti password email, Google Client Secret, atau Cloudinary API Key) ke repositori publik.
-> - Tentukan nilai `DB_PASSWORD` Anda sendiri untuk database PostgreSQL di dalam file `.env.docker`.
-> - Konfigurasi mail dan OAuth Google dapat diisi sesuai kebutuhan pengujian masing-masing.
+> 🔒 **Poin Kritis Konfigurasi VPS Produksi:**
+> - Ubah `APP_ENV=production` dan `APP_DEBUG=false`.
+> - Sesuaikan `APP_URL` dengan domain resmi Anda (misal `https://karir.perusahaan.com` atau `http://IP_VPS:8080`).
+> - Ganti `DB_PASSWORD` dengan kata sandi acak yang kuat.
+> - Masukkan konfigurasi SMTP email (Gmail / Mailgun / Brevo) agar notifikasi pembaruan status pelamar dapat terkirim secara otomatis.
 
-### 3. Build & Jalankan Container
-Jalankan Docker Compose dalam mode background (*detached*):
+---
+
+### 3. Generate APP_KEY
+Jalankan perintah berikut untuk meng-generate key enkripsi:
+
+```bash
+docker compose run --rm app php artisan key:generate --show
+```
+Salin string `base64:...` yang muncul di terminal, lalu buka kembali `.env.docker` dan tempelkan pada baris:
+```env
+APP_KEY=base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+---
+
+### 4. Build & Jalankan Container
+Jalankan seluruh service dalam mode background (*detached*):
 
 ```bash
 docker compose up -d --build
 ```
 
-Container yang akan dibuat dan dijalankan:
-- **`app`**: Runtime PHP 8.4-FPM beserta seluruh ekstensi & Composer dependencies.
-- **`web`**: Nginx web server (port bawaan: `8080`).
-- **`db`**: Database PostgreSQL 16 (port bawaan host: `5433`).
-
-### 4. Inisialisasi Aplikasi di Dalam Container
-Jalankan perintah-perintah Artisan berikut melalui container `app`:
-
+Pastikan seluruh container (`app`, `web`, `db`, `queue`) berstatus *running* / *healthy*:
 ```bash
-# 1. Generate Application Key (jika belum terisi di .env.docker)
-docker compose exec app php artisan key:generate
-
-# 2. Jalankan migrasi database beserta data seeder
-docker compose exec app php artisan migrate --seed
-
-# 3. Buat symbolic link untuk storage publik
-docker compose exec app php artisan storage:link
+docker compose ps
 ```
 
-### 5. Akses Aplikasi
-Buka peramban (browser) dan akses aplikasi melalui:
-👉 **[http://localhost:8080](http://localhost:8080)**
+---
 
-*(Port web dapat diubah sesuai preferensi melalui variabel `WEB_PORT` di `.env.docker`)*
+### 5. Inisialisasi Database, Seeder, dan Storage
+Jalankan migrasi tabel, seeder akun master, dan pembuatan storage symlink di container `app`:
 
-### 6. Perintah Operasional Docker yang Berguna
-- **Melihat status container yang sedang berjalan:**
+```bash
+# 1. Jalankan migrasi tabel beserta seluruh data awal (roles, akun demo, master data, DISC & PAPI, serta kegiatan showcase)
+docker compose exec app php artisan migrate --seed
+
+# 2. Buat symbolic link untuk storage upload berkas publik (CV dokumen, foto, dll)
+docker compose exec app php artisan storage:link
+
+# 3. Optimasi performa Laravel untuk mode produksi (cache config, routes, & views)
+docker compose exec app php artisan optimize
+```
+
+---
+
+### 6. Kredensial Akun Default (Demo & Pengujian)
+Setelah proses seeder selesai, Anda dapat langsung login melalui browser menggunakan akun berikut:
+
+| Peran (Role) | Email Akun | Password Default | Hak Akses & Menu |
+| :--- | :--- | :--- | :--- |
+| **Superadmin** | `admin@mail.com` | `admin123` | Master data perusahaan, lowongan, kategori tes, bank soal, showcase acara, dan manajemen pengguna |
+| **Recruiter** | `recruiter@mail.com` | `recruiter123` | Seleksi pelamar, penilaian berkas/esai, penjadwalan interview, download laporan DISC (PDF) |
+| **Applicant (Pelamar)** | `ilham@gmail.com` | `ilham123` | Portal karir, isi data profil/CV, lamar pekerjaan, ujian tes online |
+
+---
+
+### 7. Pengaturan Reverse Proxy Nginx & SSL HTTPS di VPS Host (Direkomendasikan)
+Agar aplikasi dapat diakses publik melalui domain resmi menggunakan port standar 80/443 dan sertifikat SSL gratis (Let's Encrypt):
+
+1. **Install Nginx & Certbot di VPS Host:**
+   ```bash
+   sudo apt install nginx certbot python3-certbot-nginx -y
+   ```
+
+2. **Buat file konfigurasi Nginx:**
+   ```bash
+   sudo nano /etc/nginx/sites-available/erecruitment
+   ```
+   Isi konfigurasi berikut (sesuaikan `domain-anda.com`):
+   ```nginx
+   server {
+       listen 80;
+       server_name domain-anda.com www.domain-anda.com;
+
+       client_max_body_size 50M;
+
+       location / {
+           proxy_pass http://127.0.0.1:8080;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+       }
+   }
+   ```
+
+3. **Aktifkan konfigurasi & terbitkan SSL Certbot:**
+   ```bash
+   sudo ln -s /etc/nginx/sites-available/erecruitment /etc/nginx/sites-enabled/
+   sudo nginx -t && sudo systemctl reload nginx
+   sudo certbot --nginx -d domain-anda.com -d www.domain-anda.com
+   ```
+
+---
+
+### 8. Perintah Operasional & Maintenance di VPS
+- **Melihat status container:**
   ```bash
   docker compose ps
   ```
-- **Melihat log container secara live:**
+- **Melihat live logs:**
   ```bash
   docker compose logs -f app
   docker compose logs -f web
+  docker compose logs -f queue
   ```
-- **Masuk ke terminal/shell container PHP:**
+- **Membersihkan cache setelah update kode:**
   ```bash
-  docker compose exec app sh
+  docker compose exec app php artisan optimize:clear
+  docker compose exec app php artisan optimize
   ```
-- **Menjalankan queue worker di background:**
+- **Backup database PostgreSQL:**
   ```bash
-  docker compose exec -d app php artisan queue:work
+  docker compose exec -t db pg_dump -U postgres rekruitmen_db > backup_$(date +%F).sql
+  ```
+- **Restore database dari backup:**
+  ```bash
+  cat backup_xxx.sql | docker compose exec -T db psql -U postgres -d rekruitmen_db
+  ```
+- **Restart semua service:**
+  ```bash
+  docker compose restart
   ```
 - **Menghentikan container:**
   ```bash
   docker compose down
   ```
-- **Menghentikan container sekaligus menghapus volume database (reset data):**
+- **Menghentikan container sekaligus mereset database:**
   ```bash
   docker compose down -v
   ```

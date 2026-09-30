@@ -149,5 +149,8 @@ class DatabaseSeeder extends Seeder
         // 7. Seed PAPI Kostick Master Data & Questions
         $this->call(PapiKostickMasterSeeder::class);
         $this->call(PapiKostickQuestionSeeder::class);
+
+        // 8. Seed Company Showcase / Kegiatan Perusahaan
+        $this->call(CompanyShowcaseSeeder::class);
     }
 }
