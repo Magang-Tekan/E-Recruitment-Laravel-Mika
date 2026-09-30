@@ -22,7 +22,7 @@ services:
       target: web
     restart: unless-stopped
     ports:
-      - "${WEB_PORT:-8097}:80"
+      - "${WEB_PORT:-8080}:80"
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - app_storage:/var/www/storage/app:ro
@@ -41,7 +41,7 @@ services:
     env_file:
       - .env.docker
     ports:
-      - "${FORWARD_DB_PORT:-5441}:5432"
+      - "${FORWARD_DB_PORT:-5433}:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:

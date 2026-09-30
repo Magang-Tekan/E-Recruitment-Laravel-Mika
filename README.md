@@ -215,8 +215,8 @@ Panduan ini mencakup cara menjalankan aplikasi secara terisolasi di lokal maupun
 
 Container yang disediakan oleh `docker-compose.yml`:
 - **`app`**: Runtime PHP 8.4-FPM beserta ekstensi lengkap, Composer dependencies, dan kode aplikasi.
-- **`web`**: Nginx web server teroptimasi (port default host: `8080`).
-- **`db`**: Database PostgreSQL 16 (port default host: `5433`).
+- **`web`**: Nginx web server teroptimasi (port default host: `8097`).
+- **`db`**: Database PostgreSQL 16 (port default host: `5441`).
 - **`queue`**: Background worker otomatis untuk memproses antrean email status seleksi lamaran kandidat.
 
 ---
@@ -266,7 +266,7 @@ nano .env.docker
 
 > 🔒 **Poin Kritis Konfigurasi VPS Produksi:**
 > - Ubah `APP_ENV=production` dan `APP_DEBUG=false`.
-> - Sesuaikan `APP_URL` dengan domain resmi Anda (misal `https://karir.perusahaan.com` atau `http://IP_VPS:8080`).
+> - Sesuaikan `APP_URL` dengan domain resmi Anda (misal `https://karir.perusahaan.com` atau `http://IP_VPS:8097`).
 > - Ganti `DB_PASSWORD` dengan kata sandi acak yang kuat.
 > - Masukkan konfigurasi SMTP email (Gmail / Mailgun / Brevo) agar notifikasi pembaruan status pelamar dapat terkirim secara otomatis.
 
@@ -315,7 +315,65 @@ docker compose exec app php artisan optimize
 
 ---
 
-### 6. Pengaturan Reverse Proxy Nginx & SSL HTTPS di VPS Host (Direkomendasikan)
+### 6. Import Database dari File SQL ke Container
+Gunakan langkah ini jika Anda sudah memiliki dump database PostgreSQL seperti `initial_db.sql` dan ingin memasukkan seluruh isi file tersebut ke database container `db`. Jalankan perintah dari root project, yaitu folder yang berisi `docker-compose.yml` dan `initial_db.sql`.
+
+> Peringatan: langkah import bersih di bawah akan menghapus semua tabel dan data lama pada schema `public` database `rekruitmen_db`, lalu menggantinya dengan isi dari file SQL. Gunakan hanya jika Anda memang ingin reset database container.
+
+#### Opsi A: Clean database lalu import langsung dari host (direkomendasikan)
+Karena `initial_db.sql` adalah dump dari PostgreSQL 18.3 sementara container memakai PostgreSQL 16, buat dulu salinan yang menghapus baris yang tidak kompatibel:
+
+```bash
+sed '/^SET transaction_timeout = 0;/d;/^\\restrict /d;/^\\unrestrict /d' initial_db.sql > initial_db.pg16.sql
+```
+
+Bersihkan semua object lama di schema `public`:
+
+```bash
+docker compose exec -T db psql -U postgres -d rekruitmen_db -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO postgres; GRANT ALL ON SCHEMA public TO public;"
+```
+
+Import file SQL yang sudah dibersihkan:
+
+```bash
+cat initial_db.pg16.sql | docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d rekruitmen_db
+```
+
+#### Opsi B: Copy file SQL ke container, lalu clean dan import dari dalam container
+Jika Anda ingin menyalin file SQL ke container terlebih dahulu:
+
+```bash
+sed '/^SET transaction_timeout = 0;/d;/^\\restrict /d;/^\\unrestrict /d' initial_db.sql > initial_db.pg16.sql
+docker compose cp initial_db.pg16.sql db:/tmp/initial_db.pg16.sql
+docker compose exec -T db psql -U postgres -d rekruitmen_db -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO postgres; GRANT ALL ON SCHEMA public TO public;"
+docker compose exec db psql -v ON_ERROR_STOP=1 -U postgres -d rekruitmen_db -f /tmp/initial_db.pg16.sql
+```
+
+#### Alternatif: Reset volume database Docker total
+Jika Anda ingin menghapus volume database Docker sepenuhnya, gunakan perintah berikut dengan hati-hati karena seluruh data PostgreSQL pada project Compose ini akan hilang:
+
+```bash
+docker compose down -v
+docker compose up -d db
+sed '/^SET transaction_timeout = 0;/d;/^\\restrict /d;/^\\unrestrict /d' initial_db.sql > initial_db.pg16.sql
+cat initial_db.pg16.sql | docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d rekruitmen_db
+docker compose up -d
+```
+
+Setelah import selesai, jalankan ulang command Laravel yang dibutuhkan:
+
+```bash
+docker compose exec app php artisan storage:link
+docker compose exec app php artisan optimize:clear
+docker compose exec app php artisan optimize
+docker compose restart app queue web
+```
+
+Catatan: jika Anda memakai dump penuh seperti `initial_db.sql`, biasanya **tidak perlu** menjalankan `php artisan migrate --seed` lagi karena struktur tabel dan data sudah ikut di dalam dump.
+
+---
+
+### 7. Pengaturan Reverse Proxy Nginx & SSL HTTPS di VPS Host (Direkomendasikan)
 Agar aplikasi dapat diakses publik melalui domain resmi menggunakan port standar 80/443 dan sertifikat SSL gratis (Let's Encrypt):
 
 1. **Install Nginx & Certbot di VPS Host:**
@@ -336,7 +394,7 @@ Agar aplikasi dapat diakses publik melalui domain resmi menggunakan port standar
        client_max_body_size 50M;
 
        location / {
-           proxy_pass http://127.0.0.1:8080;
+           proxy_pass http://127.0.0.1:8097;
            proxy_set_header Host $host;
            proxy_set_header X-Real-IP $remote_addr;
            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -354,7 +412,7 @@ Agar aplikasi dapat diakses publik melalui domain resmi menggunakan port standar
 
 ---
 
-### 7. Perintah Operasional & Maintenance di VPS
+### 8. Perintah Operasional & Maintenance di VPS
 - **Melihat status container:**
   ```bash
   docker compose ps
