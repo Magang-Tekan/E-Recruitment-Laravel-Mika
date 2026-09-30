@@ -578,37 +578,7 @@
                 currentSlide: 0,
                 companyName: '{{ isset($mainCompany) ? $mainCompany->name : 'Mitra Karya Analitika' }}',
                 companyWebsite: '{{ isset($mainCompany) && $mainCompany->website ? (Str::startsWith($mainCompany->website, ['http://', 'https://']) ? $mainCompany->website : 'https://' . $mainCompany->website) : '' }}',
-                slides: [{
-                        tag: 'Tentang Kami & Karir',
-                        title: 'Ruang untuk Bertumbuh dan Berkembang',
-                        description: 'Kami mendorong setiap individu untuk terus berkembang melalui pelatihan berkelanjutan, pengembangan sumber daya manusia, serta lingkungan kerja modern. Bersama {{ isset($mainCompany) ? $mainCompany->name : 'Mitra Karya Analitika' }}, kembangkan potensi, pengalaman, dan karier Anda secara optimal.',
-                        img1: '{{ asset('storage/asset-compro/aniv1.jpg') }}',
-                        img2: '{{ asset('storage/asset-compro/outbond.jpg') }}',
-                        img3: '{{ asset('storage/asset-compro/aniv.jpg') }}',
-                        badgeTitle: 'CAREER.',
-                        badgeSub: 'Growth & Development'
-                    },
-                    {
-                        tag: 'Acara & Kolaborasi',
-                        title: 'Bimbingan Teknis ASPADIN 2026: Sinergi Kompetensi',
-                        description: 'Menghadirkan sesi Bimbingan Teknis eksklusif di Semarang bagi para mitra industri. Kami berbagi pengetahuan, memamerkan inovasi solusi IoT terbaru, dan memperkuat jaringan untuk pertumbuhan profesional bersama.',
-                        img1: '{{ asset('storage/asset-compro/aspadin1.jpg') }}', // Gambar poster utama acara
-                        img2: '{{ asset('storage/asset-compro/aspadin2.jpg') }}', // Kolase foto aktivitas detail dan interaksi
-                        img3: '{{ asset('storage/asset-compro/aspadin3.jpg') }}', // Kolase foto pameran produk dan pertemuan
-                        badgeTitle: 'EVENT',
-                        badgeSub: 'Technical Guidance'
-                    },
-                    {
-                        tag: 'Acara & Pameran',
-                        title: 'Partisipasi Aktif di Event HISFARIN 2025',
-                        description: 'Memperluas jaringan dan memperkenalkan solusi teknologi analitik terkini dalam Musyawarah Nasional HISFARIN 2025. Kami hadir langsung menyapa para profesional, memamerkan perangkat keras inovatif, dan membangun sinergi kolaboratif untuk mendukung kemajuan industri.',
-                        img1: '{{ asset('storage/asset-compro/hisfarin1.jpg') }}', // Gambar poster Event HISFARIN 2025 (tanggal & lokasi)
-                        img2: '{{ asset('storage/asset-compro/hisfarin2.jpg') }}', // Kolase foto antusiasme pengunjung dan interaksi di booth MIKA
-                        img3: '{{ asset('storage/asset-compro/hisfarin3.jpg') }}', // Dokumentasi display produk, presentasi, dan foto bersama
-                        badgeTitle: 'EVENT',
-                        badgeSub: 'Exhibition & Networking'
-                    }
-                ],
+                slides: {{ !empty($showcases) && count($showcases) > 0 ? Js::from($showcases) : '[]' }},
                 autoplayTimer: null,
                 progressTimer: null,
                 duration: 6000,

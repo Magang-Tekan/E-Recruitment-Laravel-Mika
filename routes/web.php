@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CompanyShowcaseController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\DegreeController;
 use App\Http\Controllers\DepartmentController;
@@ -150,6 +151,12 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':admin'])
             Route::post('companies', [CompanyController::class, 'store'])->name('company.store');
             Route::put('companies/{id}', [CompanyController::class, 'update'])->name('company.update');
             Route::delete('companies/{id}', [CompanyController::class, 'destroy'])->name('company.destroy');
+
+            // Data Master Showcase / Kegiatan Acara
+            Route::view('showcases', 'livewire.admin.showcase.index')->name('showcase');
+            Route::post('showcases', [CompanyShowcaseController::class, 'store'])->name('showcase.store');
+            Route::put('showcases/{id}', [CompanyShowcaseController::class, 'update'])->name('showcase.update');
+            Route::delete('showcases/{id}', [CompanyShowcaseController::class, 'destroy'])->name('showcase.destroy');
 
             // Data Master Department
             Route::view('departments', 'livewire.admin.department.index')->name('department');

@@ -10,32 +10,7 @@
         <section class="relative min-h-[70vh] lg:min-h-[82vh] flex items-center pt-16 pb-20 px-4 sm:px-6 lg:px-8 bg-[#040804] overflow-hidden"
             x-data="{
                 currentSlide: 0,
-                slides: [
-                    {
-                        tag: 'Keluarga & Kebersamaan',
-                        img1: '{{ asset('storage/asset-compro/aniv1.jpg') }}',
-                        img2: '{{ asset('storage/asset-compro/outbond.jpg') }}',
-                        img3: '{{ asset('storage/asset-compro/aniv.jpg') }}',
-                        badgeTitle: 'CAREER',
-                        badgeSub: 'Culture & Growth'
-                    },
-                    {
-                        tag: 'Bimtek & Kompetensi',
-                        img1: '{{ asset('storage/asset-compro/aspadin1.jpg') }}',
-                        img2: '{{ asset('storage/asset-compro/aspadin2.jpg') }}',
-                        img3: '{{ asset('storage/asset-compro/aspadin3.jpg') }}',
-                        badgeTitle: 'EVENT',
-                        badgeSub: 'Technical Guidance'
-                    },
-                    {
-                        tag: 'Pameran & Inovasi',
-                        img1: '{{ asset('storage/asset-compro/hisfarin1.jpg') }}',
-                        img2: '{{ asset('storage/asset-compro/hisfarin2.jpg') }}',
-                        img3: '{{ asset('storage/asset-compro/hisfarin3.jpg') }}',
-                        badgeTitle: 'EXHIBITION',
-                        badgeSub: 'HISFARIN 2025'
-                    }
-                ],
+                slides: {{ !empty($showcases) && count($showcases) > 0 ? Js::from($showcases) : '[]' }},
                 autoplayTimer: null,
                 duration: 4500,
                 init() {
