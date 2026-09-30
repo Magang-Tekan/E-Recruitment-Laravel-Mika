@@ -312,18 +312,7 @@ docker compose exec app php artisan optimize
 
 ---
 
-### 6. Kredensial Akun Default (Demo & Pengujian)
-Setelah proses seeder selesai, Anda dapat langsung login melalui browser menggunakan akun berikut:
-
-| Peran (Role) | Email Akun | Password Default | Hak Akses & Menu |
-| :--- | :--- | :--- | :--- |
-| **Superadmin** | `admin@mail.com` | `admin123` | Master data perusahaan, lowongan, kategori tes, bank soal, showcase acara, dan manajemen pengguna |
-| **Recruiter** | `recruiter@mail.com` | `recruiter123` | Seleksi pelamar, penilaian berkas/esai, penjadwalan interview, download laporan DISC (PDF) |
-| **Applicant (Pelamar)** | `ilham@gmail.com` | `ilham123` | Portal karir, isi data profil/CV, lamar pekerjaan, ujian tes online |
-
----
-
-### 7. Pengaturan Reverse Proxy Nginx & SSL HTTPS di VPS Host (Direkomendasikan)
+### 6. Pengaturan Reverse Proxy Nginx & SSL HTTPS di VPS Host (Direkomendasikan)
 Agar aplikasi dapat diakses publik melalui domain resmi menggunakan port standar 80/443 dan sertifikat SSL gratis (Let's Encrypt):
 
 1. **Install Nginx & Certbot di VPS Host:**
@@ -362,7 +351,7 @@ Agar aplikasi dapat diakses publik melalui domain resmi menggunakan port standar
 
 ---
 
-### 8. Perintah Operasional & Maintenance di VPS
+### 7. Perintah Operasional & Maintenance di VPS
 - **Melihat status container:**
   ```bash
   docker compose ps
