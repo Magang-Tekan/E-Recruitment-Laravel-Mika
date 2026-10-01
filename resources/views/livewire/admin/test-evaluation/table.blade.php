@@ -1,6 +1,8 @@
 @php
-    $isRecruiter = auth()->check() && (auth()->user()->role_id == 2 || strtolower(auth()->user()->role?->name ?? '') === 'recruiter');
-    $gradeActionPrefix = $isRecruiter ? '/recruiter/test-evaluations/' : '/admin/test-evaluations/';
+    $user = auth()->user();
+    $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+    $isRecruiter = request()->is('recruiter*') || request()->routeIs('recruiter.*') || ($user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter));
+    $gradeActionPrefix = (request()->is('recruiter*') || ($isRecruiter && !$isAdmin)) ? '/recruiter/test-evaluations/' : '/admin/test-evaluations/';
 @endphp
 
 <div class="space-y-6" x-data="{ 
@@ -639,7 +641,12 @@
                                     <svg class="w-8 h-8 text-gray-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                     </svg>
-                                    <span>Belum ada data pengerjaan tes pelamar.</span>
+                                    @if(!empty($isDesignatedRecruiter) && ($assignedJobsCount ?? 0) === 0)
+                                        <span class="text-sm font-bold text-gray-800 dark:text-slate-200">Belum Ada Lowongan yang Ditugaskan ke Anda</span>
+                                        <span class="text-xs text-gray-500 dark:text-slate-400 max-w-sm">Anda telah ditunjuk sebagai Recruiter, namun belum dipilih sebagai Reviewer pada lowongan aktif. Hasil evaluasi ujian akan tampil di sini saat pelamar pada lowongan tugas Anda telah mengerjakan tes.</span>
+                                    @else
+                                        <span>Belum ada data pengerjaan tes pelamar.</span>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -777,14 +784,14 @@
                                     <h4 class="text-sm font-bold text-gray-900 dark:text-white mt-1" x-text="gradingData.disc_result.disc_profile ? (gradingData.disc_result.disc_profile.pattern_code + ' - ' + gradingData.disc_result.disc_profile.title) : 'Tipe Kepribadian DISC'"></h4>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <a :href="'{{ $isRecruiter ? '/recruiter/test-evaluations/' : '/admin/test-evaluations/' }}' + gradingData.id + '/disc-pdf'" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100/80 hover:bg-purple-200 dark:bg-purple-900/60 dark:hover:bg-purple-800 text-purple-900 dark:text-purple-200 border border-purple-200 dark:border-purple-700 rounded-xl text-xs font-semibold shadow-2xs transition-all">
+                                    <a :href="'{{ $gradeActionPrefix }}' + gradingData.id + '/disc-pdf'" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100/80 hover:bg-purple-200 dark:bg-purple-900/60 dark:hover:bg-purple-800 text-purple-900 dark:text-purple-200 border border-purple-200 dark:border-purple-700 rounded-xl text-xs font-semibold shadow-2xs transition-all">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                         <span>Preview PDF</span>
                                     </a>
-                                    <a :href="'{{ $isRecruiter ? '/recruiter/test-evaluations/' : '/admin/test-evaluations/' }}' + gradingData.id + '/disc-pdf?download=1'" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold shadow-sm shadow-purple-500/20 transition-all">
+                                    <a :href="'{{ $gradeActionPrefix }}' + gradingData.id + '/disc-pdf?download=1'" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold shadow-sm shadow-purple-500/20 transition-all">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                         </svg>
@@ -1030,7 +1037,7 @@
                                     </h4>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <a :href="'{{ $isRecruiter ? '/recruiter/test-evaluations/' : '/admin/test-evaluations/' }}' + gradingData.id + '/papi-pdf'"
+                                    <a :href="'{{ $gradeActionPrefix }}' + gradingData.id + '/papi-pdf'"
                                         target="_blank"
                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100/80 hover:bg-amber-200 dark:bg-amber-900/60 dark:hover:bg-amber-800 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-700 rounded-xl text-xs font-semibold shadow-2xs transition-all">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1039,7 +1046,7 @@
                                         </svg>
                                         <span>Buka Lembar PDF PAPI</span>
                                     </a>
-                                    <a :href="'{{ $isRecruiter ? '/recruiter/test-evaluations/' : '/admin/test-evaluations/' }}' + gradingData.id + '/papi-pdf?download=1'"
+                                    <a :href="'{{ $gradeActionPrefix }}' + gradingData.id + '/papi-pdf?download=1'"
                                         class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold shadow-sm transition-all">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -1323,7 +1330,7 @@
                                             <div class="space-y-3">
                                                 <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-xs">
                                                     <span class="block text-[11px] font-semibold text-gray-400 uppercase mb-1">Jawaban Teks Pelamar:</span>
-                                                    <p class="font-medium text-gray-800 dark:text-slate-200 whitespace-pre-line" x-text="item.single_answer.essay_answer || '(Pelamar tidak mengisikan jawaban teks)'"></p>
+                                                    <p class="font-medium text-gray-800 dark:text-slate-200 whitespace-pre-line" x-text="item.single_answer.essay_answer ? (item.single_answer.essay_answer.replace(/\[Tautan Lampiran\/Video\]:\s*https?:\/\/[^\s]+/gi, '').trim() || (item.single_answer.essay_answer.match(/https?:\/\/[^\s]+/i) ? '(Tautan terlampir di bawah)' : '(Pelamar tidak mengisikan jawaban teks)')) : '(Pelamar tidak mengisikan jawaban teks)'"></p>
                                                 </div>
 
                                                 <!-- Tautan Terdeteksi (Google Drive / Video dll) -->
@@ -1340,8 +1347,8 @@
                                                                     <div class="min-w-0 truncate">
                                                                         <div class="flex items-center gap-2">
                                                                             <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                                                                                :class="url.includes('drive.google.com') ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300' : 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300'"
-                                                                                x-text="url.includes('drive.google.com') ? 'Tautan Google Drive' : 'Tautan Terdeteksi'"></span>
+                                                                                :class="url.includes('drive.google.com') ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300' : (url.includes('youtube.com') || url.includes('youtu.be') ? 'bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300' : 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300')"
+                                                                                x-text="url.includes('drive.google.com') ? 'Tautan Google Drive' : (url.includes('youtube.com') || url.includes('youtu.be') ? 'Tautan YouTube' : 'Tautan Terdeteksi')"></span>
                                                                         </div>
                                                                         <span class="text-[11px] text-gray-500 dark:text-slate-400 font-mono truncate block mt-0.5" x-text="url"></span>
                                                                     </div>

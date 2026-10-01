@@ -2,11 +2,13 @@
     @php
         $user = auth()->user();
         $roleName = strtolower($user?->role?->name ?? '');
+        $isRecruiterRoute = request()->is('recruiter*') || request()->routeIs('recruiter.*');
         $isAdminOrRecruiter = auth()->check() && (
             in_array($user->role_id, [1, 2]) ||
-            in_array($roleName, ['admin', 'superadmin', 'recruiter'])
+            in_array($roleName, ['admin', 'superadmin', 'recruiter']) ||
+            ((bool) ($user->is_recruiter ?? false) && $isRecruiterRoute)
         );
-        $isEmployee = auth()->check() && ($user->role_id == 4 || $roleName === 'employee');
+        $isEmployee = auth()->check() && ($user->role_id == 4 || $roleName === 'employee') && !$isRecruiterRoute;
         $roleLabel = $user->role?->name ?? ($isAdminOrRecruiter ? 'Admin' : ($isEmployee ? 'Employee' : 'Pelamar'));
         $employeeProfile = $isEmployee ? $user->employeeProfile : null;
         $adminAvatarUrl = null;
@@ -60,7 +62,7 @@
                                 <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-0.5">{{ auth()->user()->email }} &bull; <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-[#93F514]/15 dark:text-[#93F514] border border-emerald-200 dark:border-[#93F514]/30 font-semibold">{{ $roleLabel }}</span></p>
                             </div>
                         </div>
-                        <a href="{{ auth()->user()->role_id == 2 || strtolower(auth()->user()->role?->name ?? '') === 'recruiter' ? route('recruiter.dashboard') : route('admin.dashboard') }}" 
+                        <a href="{{ auth()->user()->isRecruiter() && !auth()->user()->isAdmin() ? route('recruiter.dashboard') : route('admin.dashboard') }}" 
                            class="relative z-10 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-slate-950 dark:shadow-[#93F514]/20 font-bold text-xs transition shrink-0 active:scale-95">
                             Buka Panel Dashboard
                         </a>

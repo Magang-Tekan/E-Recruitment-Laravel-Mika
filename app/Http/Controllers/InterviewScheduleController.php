@@ -16,8 +16,9 @@ class InterviewScheduleController extends Controller
     private function getRedirectRoute(): string
     {
         $user = auth()->user();
-        $isRecruiter = $user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter');
-        return $isRecruiter ? 'recruiter.interview_schedule' : 'admin.interview_schedule';
+        $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+        $isRecruiter = request()->is('recruiter/*') || request()->routeIs('recruiter.*') || ($user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter));
+        return (request()->is('recruiter/*') || ($isRecruiter && !$isAdmin)) ? 'recruiter.interview_schedule' : 'admin.interview_schedule';
     }
 
     /**

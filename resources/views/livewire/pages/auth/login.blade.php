@@ -1,6 +1,8 @@
 <?php
 
 use App\Livewire\Forms\LoginForm;
+use App\Models\Company;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -21,6 +23,20 @@ new #[Layout('layouts.guest')] class extends Component
         Session::regenerate();
 
         $this->redirectIntended(default: $this->form->redirectAfterLogin());
+    }
+
+    public function with(): array
+    {
+        $mainCompany = Cache::remember('frontend_main_company', 86400, function () {
+            return Company::where('name', 'like', '%Mitra Karya Analitika%')
+                ->orWhere('name', 'like', '%MIKA%')
+                ->first() ?? Company::first();
+        });
+
+        return [
+            'mainCompany' => $mainCompany,
+            'logoUrl' => $mainCompany?->logo_url ?: asset('storage/logo/mikaaaa.png'),
+        ];
     }
 }; ?>
 
@@ -79,11 +95,12 @@ new #[Layout('layouts.guest')] class extends Component
 
                 <!-- Top Area: Brand Logo & Tagline -->
                 <div class="relative z-10">
-                    <a href="{{ url('/') }}" class="inline-flex items-center gap-3 group">
+                    <a href="{{ url('/') }}" class="inline-flex items-center gap-3 group" title="MIKA CAREER - {{ $mainCompany->name ?? 'Mitra Karya Analitika' }}">
                         <div class="p-2 rounded-xl bg-black/40 border border-[#93F514]/30 shadow-md group-hover:scale-105 transition-transform duration-200">
-                            <img src="{{ asset('storage/logo/mikaaaa.png') }}" 
-                                 alt="Logo MIKA" 
-                                 class="h-8 w-auto object-contain rounded-lg">
+                            <img src="{{ $logoUrl }}" 
+                                 alt="{{ $mainCompany->name ?? 'Logo MIKA' }}" 
+                                 class="h-8 w-auto object-contain rounded-lg"
+                                 onerror="this.onerror=null; this.src='{{ asset('storage/logo/mikaaaa.png') }}';">
                         </div>
                         <div>
                             <span class="heading-font text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-1">

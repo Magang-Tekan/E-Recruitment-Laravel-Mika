@@ -1,6 +1,8 @@
 @php
-    $isRecruiter = auth()->check() && (auth()->user()->role_id == 2 || strtolower(auth()->user()->role?->name ?? '') === 'recruiter');
-    $routePrefix = $isRecruiter ? '/recruiter/interview-schedules' : '/admin/interview-schedules';
+    $user = auth()->user();
+    $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+    $isRecruiter = request()->is('recruiter*') || request()->routeIs('recruiter.*') || ($user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter));
+    $routePrefix = (request()->is('recruiter*') || ($isRecruiter && !$isAdmin)) ? '/recruiter/interview-schedules' : '/admin/interview-schedules';
 @endphp
 
 <div x-data="{
@@ -680,15 +682,22 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                     </div>
-                                    <h4 class="text-sm font-bold text-gray-900 dark:text-white">Tidak ada jadwal wawancara ditemukan</h4>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                                        Belum ada jadwal yang cocok dengan filter pencarian Anda atau belum ada wawancara yang dijadwalkan.
-                                    </p>
-                                    <div class="pt-2">
-                                        <button type="button" @click="openCreateModal()" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-sm transition">
-                                            Jadwalkan Wawancara Pertama
-                                        </button>
-                                    </div>
+                                    @if(!empty($isDesignatedRecruiter) && ($assignedJobsCount ?? 0) === 0)
+                                        <h4 class="text-sm font-bold text-gray-900 dark:text-white">Belum Ada Lowongan yang Ditugaskan ke Anda</h4>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                                            Anda telah ditunjuk sebagai Recruiter, namun belum dipilih sebagai Reviewer pada lowongan aktif. Jadwal wawancara akan tampil di sini setelah lowongan ditugaskan kepada Anda.
+                                        </p>
+                                    @else
+                                        <h4 class="text-sm font-bold text-gray-900 dark:text-white">Tidak ada jadwal wawancara ditemukan</h4>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                                            Belum ada jadwal yang cocok dengan filter pencarian Anda atau belum ada wawancara yang dijadwalkan.
+                                        </p>
+                                        <div class="pt-2">
+                                            <button type="button" @click="openCreateModal()" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-sm transition">
+                                                Jadwalkan Wawancara Pertama
+                                            </button>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

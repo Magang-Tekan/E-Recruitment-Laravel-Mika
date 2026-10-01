@@ -247,9 +247,18 @@ class ApplicantTable extends Component
             'rejected'         => $rawStatusCounts['rejected'] ?? 0,
         ];
 
-        $companies = Company::select('id', 'name')->orderBy('name')->get();
+        $companiesQuery = Company::select('id', 'name')->orderBy('name');
+        if ($isDesignatedRecruiter && $user) {
+            $companiesQuery->whereHas('jobs', function ($jq) use ($user) {
+                $jq->where('reviewer_id', $user->id);
+            });
+        }
+        $companies = $companiesQuery->get();
 
         $jobsQuery = Job::select('id', 'title', 'company_id');
+        if ($isDesignatedRecruiter && $user) {
+            $jobsQuery->where('reviewer_id', $user->id);
+        }
         if ($this->companyFilter) {
             $jobsQuery->where('company_id', $this->companyFilter);
         }

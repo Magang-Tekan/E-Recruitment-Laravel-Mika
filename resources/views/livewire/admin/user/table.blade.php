@@ -279,15 +279,17 @@
                                         <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                         Aktif (Role)
                                     </span>
-                                @else
+                                @elseif($roleName === 'employee' || $user->role_id == 4)
                                     <button type="button" 
                                         wire:click="toggleRecruiterStatus({{ $user->id }})" 
                                         wire:loading.attr="disabled"
-                                        title="Klik untuk mengaktifkan / menonaktifkan hak akses penilai rekruter bagi pengguna ini"
+                                        title="Klik untuk mengaktifkan / menonaktifkan hak akses penilai rekruter bagi karyawan ini"
                                         class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-200 cursor-pointer shadow-xs active:scale-95 {{ $user->is_recruiter ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 dark:bg-emerald-900/60 dark:hover:bg-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-500 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-400 border border-gray-200 dark:border-slate-700' }}">
                                         <span class="w-2 h-2 rounded-full {{ $user->is_recruiter ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400 dark:bg-slate-500' }}"></span>
                                         <span>{{ $user->is_recruiter ? 'Aktif (Ditunjuk)' : 'Nonaktif' }}</span>
                                     </button>
+                                @else
+                                    <span class="text-xs text-gray-400 dark:text-slate-600 font-medium">-</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4">
