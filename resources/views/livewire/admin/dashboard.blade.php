@@ -3,7 +3,7 @@
         $isAdmin = $isAdmin ?? !$isRecruiter;
         $candidateRoute = $isRecruiter ? route('recruiter.candidate') : route('admin.candidate');
         $applicationRoute = $isRecruiter ? route('recruiter.application') : route('admin.application');
-        $pendingReviewRoute = $isRecruiter ? route('recruiter.application', ['status' => 'Submitted']) : route('admin.application', ['status' => 'Submitted']);
+        $pendingReviewRoute = $isRecruiter ? route('recruiter.application', ['status' => 'need_review']) : route('admin.application', ['status' => 'need_review']);
     @endphp
 
     <!-- Welcome Header Card (Clean Enterprise Blueprint - Authentic & Non-AI) -->
@@ -142,7 +142,7 @@
 
         <!-- Card 4: Perlu Direview -->
         <a href="{{ $pendingReviewRoute }}"
-            title="Filter lamaran baru berstatus Submitted yang perlu direview dan diseleksi ({{ $pendingReview }} berkas menunggu review)"
+            title="Filter berkas lamaran yang perlu direview dan diverifikasi ({{ $pendingReview }} berkas berstatus Submitted & Partial Approved)"
             class="p-4 sm:p-5 bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] hover:border-amber-400 dark:hover:border-amber-500/50 hover:shadow-md transition-all flex items-center gap-3.5 group">
             <div
                 class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 dark:border dark:border-amber-500/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">

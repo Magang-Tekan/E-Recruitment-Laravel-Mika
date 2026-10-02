@@ -71,30 +71,26 @@
 
                 @if(auth()->check() && (bool) auth()->user()->is_recruiter)
                     <!-- Special Section: Hak Akses Recruiter -->
-                    <div class="p-2.5 rounded-2xl bg-emerald-50/70 dark:bg-[#14203A] border border-emerald-200/80 dark:border-[#1D2E54] space-y-2">
+                    <div class="p-2.5 rounded-2xl bg-emerald-50/70 dark:bg-[#14203A] border border-emerald-200/80 dark:border-[#1D2E54] space-y-2"
+                        title="Akun Anda ditunjuk sebagai Recruiter untuk mereview berkas pelamar dan menilai hasil asesmen">
                         <div class="px-1 text-[11px] font-bold tracking-wider text-emerald-700 dark:text-[#93F514] uppercase flex items-center justify-between">
                             <span>Tugas Recruiter</span>
-                            <span class="px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-emerald-600 text-white dark:bg-[#93F514] dark:text-black">Aktif</span>
+                            <span class="px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-600 text-white dark:bg-[#93F514] dark:text-black cursor-default"
+                                title="Status penugasan recruiter aktif">Aktif</span>
                         </div>
-                        <div class="space-y-1">
-                            <a href="{{ route('recruiter.application') }}"
-                                class="flex items-center justify-between w-full px-3 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 dark:bg-[#93F514] dark:text-black dark:hover:bg-[#82dc12] shadow-sm transition-all group">
-                                <div class="flex items-center gap-2.5 min-w-0">
+                        <div>
+                            <a href="{{ route('recruiter.dashboard') }}"
+                                title="Buka Dashboard Panel Recruiter untuk mereview pelamar dan hasil seleksi"
+                                class="flex items-center justify-between w-full px-2.5 py-2 rounded-xl text-[11.5px] font-bold text-white bg-emerald-600 hover:bg-emerald-500 dark:bg-[#93F514] dark:text-black dark:hover:bg-[#82dc12] shadow-sm shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition-all group">
+                                <div class="flex items-center gap-2 min-w-0">
                                     <svg class="w-4 h-4 shrink-0 text-white dark:text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                     </svg>
-                                    <span class="truncate">Review & Approval Pelamar</span>
+                                    <span class="truncate">Dashboard Panel Recruiter</span>
                                 </div>
                                 <svg class="w-3.5 h-3.5 shrink-0 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
                                 </svg>
-                            </a>
-                            <a href="{{ route('recruiter.dashboard') }}"
-                                class="flex items-center gap-2.5 w-full px-3 py-1.5 rounded-lg text-[11px] font-medium text-gray-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-[#93F514] transition-colors">
-                                <svg class="w-3.5 h-3.5 shrink-0 text-gray-400 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                </svg>
-                                <span>Dashboard Panel Recruiter</span>
                             </a>
                         </div>
                     </div>

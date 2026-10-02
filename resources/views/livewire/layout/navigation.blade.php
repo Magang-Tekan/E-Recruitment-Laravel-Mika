@@ -181,8 +181,8 @@ new class extends Component
                             {{ __('Portal Asesmen Karyawan') }}
                         </x-dropdown-link>
                         @if((bool) $user?->is_recruiter)
-                            <x-dropdown-link :href="route('recruiter.application')" class="text-emerald-600 dark:text-[#93F514] font-bold">
-                                {{ __('Panel Review Pelamar') }}
+                            <x-dropdown-link :href="route('recruiter.dashboard')" class="text-emerald-600 dark:text-[#93F514] font-bold">
+                                {{ __('Dashboard Panel Recruiter') }}
                             </x-dropdown-link>
                         @endif
                     @endif
@@ -321,8 +321,8 @@ new class extends Component
                         {{ __('Portal Asesmen Karyawan') }}
                     </x-responsive-nav-link>
                     @if((bool) $user?->is_recruiter)
-                        <x-responsive-nav-link :href="route('recruiter.application')" class="rounded-xl font-bold text-emerald-600 dark:text-[#93F514]">
-                            {{ __('Panel Review Pelamar') }}
+                        <x-responsive-nav-link :href="route('recruiter.dashboard')" class="rounded-xl font-bold text-emerald-600 dark:text-[#93F514]">
+                            {{ __('Dashboard Panel Recruiter') }}
                         </x-responsive-nav-link>
                     @endif
                 @endif

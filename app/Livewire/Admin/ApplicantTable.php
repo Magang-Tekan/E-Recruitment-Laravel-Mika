@@ -179,7 +179,12 @@ class ApplicantTable extends Component
             $query->whereIn(DB::raw('LOWER(status)'), array_map('strtolower', $this->selectedStatuses));
         })
         ->when($this->statusFilter, function ($query) {
-            $query->whereRaw('LOWER(status) = ?', [strtolower($this->statusFilter)]);
+            $val = strtolower($this->statusFilter);
+            if (in_array($val, ['need_review', 'pending_review', 'perlu_review'])) {
+                $query->whereIn(DB::raw('LOWER(status)'), ['applied', 'pending', 'screening', 'submitted', 'partial approved']);
+            } else {
+                $query->whereRaw('LOWER(status) = ?', [$val]);
+            }
         })
         ->when($this->sortField === 'position', function ($query) {
             $query->join('jobs', 'job_applications.job_id', '=', 'jobs.id')

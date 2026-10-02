@@ -71,7 +71,7 @@ class Dashboard extends Component
             $totalApplicants = (clone $applicationsBaseQuery)->count();
 
             $pendingReview = (clone $applicationsBaseQuery)
-                ->whereIn(DB::raw('LOWER(status)'), ['applied', 'pending', 'screening', 'submitted'])
+                ->whereIn(DB::raw('LOWER(status)'), ['applied', 'pending', 'screening', 'submitted', 'partial approved'])
                 ->count();
 
             $totalQuestions = 0;
@@ -101,7 +101,7 @@ class Dashboard extends Component
             $totalJobs = Job::count();
             $activeJobs = Job::whereIn(DB::raw('LOWER(status)'), ['open', 'active', 'published'])->count();
             $totalApplicants = JobApplication::count();
-            $pendingReview = JobApplication::whereIn(DB::raw('LOWER(status)'), ['applied', 'pending', 'screening', 'submitted'])->count();
+            $pendingReview = JobApplication::whereIn(DB::raw('LOWER(status)'), ['applied', 'pending', 'screening', 'submitted', 'partial approved'])->count();
             $totalQuestions = QuestionBank::count();
             $totalTests = Test::count();
 

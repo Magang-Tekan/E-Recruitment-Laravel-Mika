@@ -150,10 +150,13 @@
             <div>
                 <h3 class="text-base font-bold text-gray-900 dark:text-white flex flex-wrap items-center gap-2">
                     <span>Daftar Lamaran Kerja Masuk</span>
-                    @if(($stats['submitted'] ?? 0) > 0)
+                    @php
+                        $pendingTotal = ($stats['submitted'] ?? 0) + ($stats['partial_approved'] ?? 0);
+                    @endphp
+                    @if($pendingTotal > 0)
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                             {{-- <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> --}}
-                            {{ $stats['submitted'] }} Perlu Diproses
+                            {{ $pendingTotal }} Perlu Diproses
                         </span>
                     @endif
                 </h3>
@@ -165,7 +168,8 @@
                 @php
                     $tabs = [
                         '' => ['label' => 'Semua', 'count' => $stats['total'] ?? 0],
-                        'Submitted' => ['label' => 'Perlu Review', 'count' => $stats['submitted'] ?? 0],
+                        'need_review' => ['label' => 'Perlu Review', 'count' => $pendingTotal],
+                        'Submitted' => ['label' => 'Baru Masuk', 'count' => $stats['submitted'] ?? 0],
                         'Partial Approved' => ['label' => 'Partial Approved', 'count' => $stats['partial_approved'] ?? 0],
                         'Reviewed' => ['label' => 'Lolos Berkas', 'count' => $stats['reviewed'] ?? 0],
                         'Shortlisted' => ['label' => 'Shortlisted', 'count' => $stats['shortlisted'] ?? 0],

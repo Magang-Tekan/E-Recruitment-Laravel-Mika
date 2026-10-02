@@ -300,14 +300,14 @@
                             </h1>
                             <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-sm mt-2">
                                 <span class="text-[#93F514] font-semibold flex items-center gap-1.5 company-badge whitespace-nowrap sm:whitespace-normal">
-                                    <svg class="w-4 h-4 text-[#93F514]/80 company-icon shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg class="w-4 h-4 text-[#93F514] company-icon shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                     </svg>
                                     <span>{{ $job->company?->name ?? 'Perusahaan Mitra' }}</span>
                                 </span>
 
-                                <span class="text-gray-300 font-medium flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <span class="text-[#93F514] font-semibold flex items-center gap-1.5 department-badge whitespace-nowrap sm:whitespace-normal">
+                                    <svg class="w-3.5 h-3.5 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                     </svg>
                                     <span>{{ $job->department?->name ?? 'Umum' }}</span>
