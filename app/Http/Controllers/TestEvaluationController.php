@@ -35,18 +35,26 @@ class TestEvaluationController extends Controller
         ])->findOrFail($id);
 
         $user = auth()->user();
-        $isRecruiter = $user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter');
         $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+        $isRecruiter = $request->is('recruiter/*') || $request->routeIs('recruiter.*') || ($user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter));
 
         // Hanya Admin dan Recruiter yang diizinkan melihat / mengunduh laporan DISC
         if (!$isAdmin && !$isRecruiter) {
             abort(403, 'Akses ditolak. Hasil dan laporan analisis DISC hanya dapat diakses oleh Admin atau Tim HR.');
         }
 
+        $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
+        if ($isDesignatedRecruiter) {
+            $jobReviewerId = $attempt->jobApplication?->job?->reviewer_id;
+            if ($jobReviewerId != $user->id) {
+                abort(403, 'Akses ditolak. Anda hanya dapat melihat laporan peserta untuk lowongan yang ditugaskan kepada Anda.');
+            }
+        }
+
         $discResult = $attempt->discTestResult;
 
         if (!$discResult) {
-            $redirectRoute = $isAdmin ? 'admin.test_evaluation' : ($isRecruiter ? 'recruiter.test_evaluation' : 'profile');
+            $redirectRoute = ($request->is('recruiter/*') || ($isRecruiter && !$isAdmin)) ? 'recruiter.test_evaluation' : ($isAdmin ? 'admin.test_evaluation' : 'profile');
 
             return redirect()->route($redirectRoute)
                 ->with('error', 'Laporan DISC tidak dapat dibuat: Hasil tes DISC belum tersedia.');
@@ -159,11 +167,19 @@ class TestEvaluationController extends Controller
         ])->findOrFail($id);
 
         $user = auth()->user();
-        $isRecruiter = $user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter');
         $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+        $isRecruiter = $request->is('recruiter/*') || $request->routeIs('recruiter.*') || ($user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter));
 
         if (!$isAdmin && !$isRecruiter) {
             abort(403, 'Akses ditolak. Laporan evaluasi PAPI Kostick hanya dapat diakses oleh Admin atau Tim HR.');
+        }
+
+        $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
+        if ($isDesignatedRecruiter) {
+            $jobReviewerId = $attempt->jobApplication?->job?->reviewer_id;
+            if ($jobReviewerId != $user->id) {
+                abort(403, 'Akses ditolak. Anda hanya dapat melihat laporan peserta untuk lowongan yang ditugaskan kepada Anda.');
+            }
         }
 
         $papiResult = $attempt->papiTestResult;
@@ -174,7 +190,7 @@ class TestEvaluationController extends Controller
         }
 
         if (!$papiResult) {
-            $redirectRoute = $isAdmin ? 'admin.employee_test_evaluation' : ($isRecruiter ? 'recruiter.employee_test_evaluation' : 'profile');
+            $redirectRoute = ($request->is('recruiter/*') || ($isRecruiter && !$isAdmin)) ? 'recruiter.dashboard' : ($isAdmin ? 'admin.employee_test_evaluation' : 'profile');
             return redirect()->route($redirectRoute)
                 ->with('error', 'Laporan PAPI Kostick tidak dapat dibuat: Hasil tes belum tersedia.');
         }
@@ -329,10 +345,22 @@ class TestEvaluationController extends Controller
 
         $isEmployeeAttempt = ($attempt->attempt_type === 'employee') || empty($attempt->job_application_id);
         $user = auth()->user();
-        $isRecruiter = $user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter');
+        $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+        $isRecruiter = $request->is('recruiter/*') || $request->routeIs('recruiter.*') || ($user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter));
+        $isRecruiterTarget = $request->is('recruiter/*') || $request->routeIs('recruiter.*') || ($isRecruiter && !$isAdmin);
+
         $redirectRoute = $isEmployeeAttempt
-            ? ($isRecruiter ? 'recruiter.employee_test_evaluation' : 'admin.employee_test_evaluation')
-            : ($isRecruiter ? 'recruiter.test_evaluation' : 'admin.test_evaluation');
+            ? ($isRecruiterTarget ? 'recruiter.dashboard' : 'admin.employee_test_evaluation')
+            : ($isRecruiterTarget ? 'recruiter.test_evaluation' : 'admin.test_evaluation');
+
+        $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
+        if ($isDesignatedRecruiter) {
+            $jobReviewerId = $attempt->jobApplication?->job?->reviewer_id;
+            if ($jobReviewerId != $user->id) {
+                return redirect()->route($redirectRoute)
+                    ->with('error', 'Anda hanya memiliki hak untuk menilai ujian pada lowongan yang ditugaskan kepada Anda.');
+            }
+        }
 
         try {
             DB::beginTransaction();

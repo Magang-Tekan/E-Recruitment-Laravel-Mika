@@ -69,7 +69,7 @@ class AppServiceProvider extends ServiceProvider
         Job::observe(JobObserver::class);
 
         // Optimized View Composer with Query Caching
-        View::composer(['frontend.*', 'frontend.components.footer', 'frontend.components.navbar'], function ($view) {
+        View::composer(['frontend.*', 'frontend.components.footer', 'frontend.components.navbar', 'layouts.guest', 'livewire.pages.auth.*'], function ($view) {
             $footerDepartments = Cache::remember('frontend_footer_departments', 86400, function () {
                 return Department::withCount(['jobs' => fn($q) => $q->where('status', 'Open')])
                     ->take(5)

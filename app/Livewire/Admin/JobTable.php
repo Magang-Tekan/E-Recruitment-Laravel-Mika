@@ -68,8 +68,18 @@ class JobTable extends Component
 
         $positions = Position::orderBy('name')->get();
 
-        $reviewers = User::where('is_recruiter', true)
-            ->orWhere('role_id', 2)
+        $reviewers = User::with('employeeProfile.department')
+            ->where(function ($q) {
+                $q->where(function ($eq) {
+                    $eq->where('is_recruiter', true)
+                       ->where(function ($sq) {
+                           $sq->where('role_id', 4)
+                              ->orWhereHas('role', fn($rq) => $rq->whereRaw('LOWER(name) = ?', ['employee']));
+                       });
+                })
+                ->orWhere('role_id', 2)
+                ->orWhereHas('role', fn($rq) => $rq->whereRaw('LOWER(name) = ?', ['recruiter']));
+            })
             ->orderBy('name')
             ->get();
 

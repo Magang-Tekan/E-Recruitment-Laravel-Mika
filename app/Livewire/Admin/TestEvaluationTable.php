@@ -81,9 +81,22 @@ class TestEvaluationTable extends Component
 
     public function render()
     {
-        $companies = Company::orderBy('name', 'asc')->get();
+        $user = auth()->user();
+        $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+        $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
+
+        $companiesQuery = Company::orderBy('name', 'asc');
+        if ($isDesignatedRecruiter && $user) {
+            $companiesQuery->whereHas('jobs', function ($jq) use ($user) {
+                $jq->where('reviewer_id', $user->id);
+            });
+        }
+        $companies = $companiesQuery->get();
 
         $jobsQuery = Job::with('company')->orderBy('title', 'asc');
+        if ($isDesignatedRecruiter && $user) {
+            $jobsQuery->where('reviewer_id', $user->id);
+        }
         if (!empty($this->companyId)) {
             $jobsQuery->where('company_id', $this->companyId);
         }
@@ -104,7 +117,12 @@ class TestEvaluationTable extends Component
             'discTestResult.discProfile',
             'papiTestResult',
         ])
-        ->where('attempt_type', 'applicant');
+        ->where('attempt_type', 'applicant')
+        ->when($isDesignatedRecruiter && $user, function ($q) use ($user) {
+            $q->whereHas('jobApplication.job', function ($jq) use ($user) {
+                $jq->where('reviewer_id', $user->id);
+            });
+        });
 
         // Search Filter
         if (!empty($this->search)) {
@@ -218,17 +236,19 @@ class TestEvaluationTable extends Component
         $attempts = $query->paginate($this->perPage);
 
         return view('livewire.admin.test-evaluation.table', [
-            'attempts'      => $attempts,
-            'companies'     => $companies,
-            'jobs'          => $jobs,
-            'tests'         => $tests,
-            'search'        => $this->search,
-            'companyId'     => $this->companyId,
-            'jobId'         => $this->jobId,
-            'testId'        => $this->testId,
-            'status'        => $this->status,
-            'sortField'     => $this->sortField,
-            'sortDirection' => $this->sortDirection,
+            'attempts'              => $attempts,
+            'companies'             => $companies,
+            'jobs'                  => $jobs,
+            'tests'                 => $tests,
+            'search'                => $this->search,
+            'companyId'             => $this->companyId,
+            'jobId'                 => $this->jobId,
+            'testId'                => $this->testId,
+            'status'                => $this->status,
+            'sortField'             => $this->sortField,
+            'sortDirection'         => $this->sortDirection,
+            'isDesignatedRecruiter' => $isDesignatedRecruiter,
+            'assignedJobsCount'     => ($isDesignatedRecruiter && $user) ? Job::where('reviewer_id', $user->id)->count() : 0,
         ]);
     }
 }

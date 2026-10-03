@@ -404,7 +404,7 @@
                         <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-200 dark:border-gray-700 bg-indigo-900">
                             <div class="flex items-center gap-2.5">
                                 <span class="px-2.5 py-0.5 rounded-lg bg-white/20 text-white font-black text-xs">
-                                    Soal {{ $pageStart + 1 }}–{{ min($pageStart + $questionsPerPage, $totalQuestions) }}
+                                    Soal {{ $questionsPerPage > 1 ? ($pageStart + 1) . '–' . min($pageStart + $questionsPerPage, $totalQuestions) : ($pageStart + 1) }}
                                 </span>
                                 <span class="text-white/70 text-xs font-medium">dari {{ $totalQuestions }} Pernyataan DISC</span>
                             </div>
@@ -509,16 +509,42 @@
                                     $fpExt = strtolower(pathinfo($pq['image_path'], PATHINFO_EXTENSION));
                                     $fpUrl = asset('storage/' . $pq['image_path']);
                                     $fpImg = in_array($fpExt, ['jpg','jpeg','png','gif','webp','svg']);
+                                    $fpPdf = ($fpExt === 'pdf');
                                 @endphp
-                                <div class="p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900 flex items-center justify-between gap-2">
-                                    <span class="text-xs font-semibold text-indigo-800 dark:text-indigo-200">Lampiran Soal</span>
-                                    <a href="{{ $fpUrl }}" target="_blank" download
-                                        class="inline-flex items-center gap-1 px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition">
-                                        Unduh ({{ strtoupper($fpExt) }})
-                                    </a>
-                                </div>
-                                @if ($fpImg)
-                                    <img src="{{ $fpUrl }}" alt="Lampiran" class="max-h-60 mx-auto rounded-xl border border-gray-200 dark:border-gray-700">
+
+                                @if ($fpPdf)
+                                    <div class="p-3.5 rounded-xl bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 flex items-center justify-between gap-3 shadow-2xs">
+                                        <div class="flex items-center gap-2.5 min-w-0">
+                                            <div class="w-9 h-9 rounded-lg bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM9.5 17.5c-.28 0-.5-.22-.5-.5v-4c0-.28.22-.5.5-.5s.5.22.5.5v4c0 .28-.22.5-.5.5zm2-4.5h.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5H12v1c0 .28-.22.5-.5.5s-.5-.22-.5-.5v-4c0-.28.22-.5.5-.5zm.5 2c.28 0 .5-.22.5-.5s-.22-.5-.5-.5H12v1h.5zm2.5-2h1c.83 0 1.5.67 1.5 1.5v1c0 .83-.67 1.5-1.5 1.5h-1c-.28 0-.5-.22-.5-.5v-4c0-.28.22-.5.5-.5zm.5 3h.5c.28 0 .5-.22.5-.5v-1c0-.28-.22-.5-.5-.5H15v2z" />
+                                                </svg>
+                                            </div>
+                                            <div class="truncate">
+                                                <span class="text-xs sm:text-sm font-bold text-rose-900 dark:text-rose-200 block truncate">Dokumen Lampiran Soal (PDF)</span>
+                                                <span class="text-[11px] text-gray-500 dark:text-gray-400 block truncate">Klik untuk membaca materi studi kasus di tab baru</span>
+                                            </div>
+                                        </div>
+                                        <a href="{{ $fpUrl }}" target="_blank"
+                                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-lg shadow-xs transition shrink-0" title="Buka Dokumen di Tab Baru">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                            </svg>
+                                            <span>Buka di Tab Baru</span>
+                                        </a>
+                                    </div>
+                                @elseif ($fpImg)
+                                    <div class="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-2 text-center">
+                                        <img src="{{ $fpUrl }}" alt="Lampiran Soal" class="max-h-72 mx-auto rounded-lg object-contain">
+                                    </div>
+                                @else
+                                    <div class="p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900 flex items-center justify-between gap-2">
+                                        <span class="text-xs font-semibold text-indigo-800 dark:text-indigo-200">Lampiran Soal ({{ strtoupper($fpExt) }})</span>
+                                        <a href="{{ $fpUrl }}" target="_blank"
+                                            class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition">
+                                            Buka Dokumen
+                                        </a>
+                                    </div>
                                 @endif
                             @endif
 
@@ -567,6 +593,243 @@
                     @endforeach
                 @endif
 
+                {{-- UPLOAD FILE LAMPIRAN & FORM KHUSUS LINK (1 FILE & 1 LINK UNTUK SELURUH SOAL URAIAN) --}}
+                @if (collect($pageQuestions)->contains('question_type', 'essay') || collect($questions)->contains('question_type', 'essay'))
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-4 shadow-xs">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2 text-xs font-bold text-gray-800 dark:text-white">
+                                <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                </svg>
+                                <span>Lampiran File & Tautan Jawaban Uraian (Opsional)</span>
+                            </div>
+                            <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/60 px-2.5 py-0.5 rounded-full border border-gray-200 dark:border-gray-700">
+                                1 File & 1 Tautan untuk Seluruh Soal Uraian
+                            </span>
+                        </div>
+
+                        {{-- Peringatan & Panduan Upload File / Video --}}
+                        <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-700/60 space-y-2">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-amber-500/20 dark:bg-amber-400/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 mt-0.5">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1 space-y-1.5 text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+                                    <p class="font-bold text-sm text-amber-900 dark:text-amber-100">Petunjuk File Dokumen & Link Video</p>
+                                    <ul class="list-disc ml-4 space-y-1">
+                                        <li><strong>File Dokumen (Kolom Kiri):</strong> Gunakan jika file Anda berupa PDF, Word, Excel, atau Gambar dengan ukuran <strong>maksimal 10 MB</strong>.</li>
+                                        <li><strong>Tautan Video / Eksternal (Kolom Kanan):</strong> Jika jawaban berupa <strong>Video</strong> atau file besar, unggah ke <strong>Google Drive</strong> atau <strong>YouTube</strong> lalu tempel link-nya di kolom tautan.</li>
+                                    </ul>
+                                    <div class="mt-2 p-2.5 rounded-lg bg-amber-100/80 dark:bg-amber-900/50 border border-amber-300/60 dark:border-amber-700/60 font-medium flex items-start gap-2">
+                                        <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        <span>Pastikan akses link diatur ke <strong class="underline underline-offset-2">"Siapa saja yang memiliki link"</strong> (Google Drive) atau <strong class="underline underline-offset-2">"Unlisted"</strong> (YouTube) agar penilai dapat membukanya.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- DUA KOLOM BERSANDING: UPLOAD FILE & FORM KHUSUS LINK --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                            {{-- KOLOM 1: UPLOAD FILE LAMPIRAN (MAKS 10MB) --}}
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                        </svg>
+                                        <span>1. Unggah File Fisik (Maks. 10 MB)</span>
+                                    </label>
+                                    @if ($essayAttachment)
+                                        <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            File Tersimpan
+                                        </span>
+                                    @endif
+                                </div>
+
+                                @error('essayFile')
+                                    <div class="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>{{ $message }}</span>
+                                    </div>
+                                @enderror
+
+                                @if ($essayAttachment)
+                                    {{-- PREVIEW FILE YANG SUDAH DIUNGGAH --}}
+                                    <div class="flex items-center justify-between p-3.5 rounded-xl bg-indigo-50/70 dark:bg-gray-900/60 border border-indigo-200 dark:border-gray-700 transition">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <div class="w-10 h-10 rounded-xl bg-indigo-600/10 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </div>
+                                            <div class="truncate">
+                                                <a href="{{ $essayAttachment['url'] }}" target="_blank" class="text-xs font-semibold text-indigo-700 dark:text-indigo-400 hover:underline truncate block">
+                                                    {{ $essayAttachment['name'] }}
+                                                </a>
+                                                <span class="text-[11px] text-gray-500 dark:text-gray-400">
+                                                    @if(!empty($essayAttachment['size']))
+                                                        {{ $essayAttachment['size'] >= 1048576 ? round($essayAttachment['size'] / 1048576, 2) . ' MB' : round($essayAttachment['size'] / 1024, 1) . ' KB' }} •
+                                                    @endif
+                                                    File Tersimpan
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2 shrink-0 ml-2">
+                                            <a href="{{ $essayAttachment['url'] }}" target="_blank" class="p-2 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-gray-700 rounded-lg transition" title="Buka / Preview File">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                </svg>
+                                            </a>
+                                            <button type="button" wire:click="removeEssayAttachment" wire:confirm="Apakah Anda yakin ingin menghapus lampiran file ini?" class="p-2 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition" title="Hapus File">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @else
+                                    {{-- INPUT UPLOAD FILE BARU (AUTO SAVE) --}}
+                                    <div>
+                                        <label class="flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/40 hover:border-indigo-400 dark:hover:border-indigo-500 cursor-pointer transition group">
+                                            <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                </svg>
+                                            </div>
+                                            <div class="flex-1 truncate">
+                                                <span class="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                                                    Pilih atau drag file dokumen (Maks. 10 MB)
+                                                </span>
+                                                <span class="block text-[10px] text-gray-400 dark:text-gray-500">File otomatis tersimpan setelah dipilih</span>
+                                            </div>
+                                            <input type="file" wire:model="essayFile" class="sr-only">
+                                        </label>
+                                    </div>
+
+                                    {{-- Livewire Uploading Indicator --}}
+                                    <div wire:loading wire:target="essayFile" class="p-3 rounded-xl bg-indigo-50/70 dark:bg-gray-900/60 border border-indigo-200 dark:border-gray-700 text-xs text-indigo-700 dark:text-indigo-400 flex items-center gap-2.5">
+                                        <svg class="animate-spin w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                        </svg>
+                                        <span class="font-medium">Sedang mengunggah dan menyimpan file lampiran...</span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- KOLOM 2: FORM KHUSUS LINK (GOOGLE DRIVE / YOUTUBE) --}}
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                        </svg>
+                                        <span>2. Tautan Video / File Eksternal (Opsional)</span>
+                                    </label>
+                                    @if ($essayLink)
+                                        <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Tautan Tersimpan
+                                        </span>
+                                    @endif
+                                </div>
+
+                                @error('essayLink')
+                                    <div class="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>{{ $message }}</span>
+                                    </div>
+                                @enderror
+
+                                @if (session()->has('link_message'))
+                                    <div class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>{{ session('link_message') }}</span>
+                                    </div>
+                                @endif
+
+                                @if ($essayLink)
+                                    @php
+                                        $isGdrive = str_contains($essayLink, 'drive.google.com');
+                                        $isYt = str_contains($essayLink, 'youtube.com') || str_contains($essayLink, 'youtu.be');
+                                    @endphp
+                                    <div class="flex items-center justify-between p-3.5 rounded-xl bg-indigo-50/70 dark:bg-gray-900/60 border border-indigo-200 dark:border-gray-700 transition">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <div class="w-10 h-10 rounded-xl {{ $isGdrive ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : ($isYt ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300') }} flex items-center justify-center shrink-0">
+                                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                                </svg>
+                                            </div>
+                                            <div class="truncate">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full {{ $isGdrive ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300' : ($isYt ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-300') }}">
+                                                        {{ $isGdrive ? 'Google Drive' : ($isYt ? 'YouTube' : 'Tautan Eksternal') }}
+                                                    </span>
+                                                </div>
+                                                <a href="{{ $essayLink }}" target="_blank" class="text-xs font-mono text-gray-600 dark:text-gray-300 hover:underline truncate block mt-0.5">
+                                                    {{ $essayLink }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2 shrink-0 ml-2">
+                                            <a href="{{ $essayLink }}" target="_blank" class="p-2 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-gray-700 rounded-lg transition" title="Uji / Buka Tautan">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                </svg>
+                                            </a>
+                                            <button type="button" wire:click="removeEssayLink" wire:confirm="Hapus tautan ini?" class="p-2 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition" title="Hapus Tautan">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="space-y-1.5">
+                                        <div class="flex items-center gap-2">
+                                            <div class="relative flex-1">
+                                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                                    </svg>
+                                                </div>
+                                                <input type="url"
+                                                    wire:model.lazy="essayLink"
+                                                    wire:keydown.enter.prevent="saveEssayLink"
+                                                    placeholder="https://drive.google.com/... atau https://youtu.be/..."
+                                                    class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white dark:bg-gray-900/60 border border-gray-300 dark:border-gray-600 text-xs text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition font-mono">
+                                            </div>
+                                            <button type="button" wire:click="saveEssayLink"
+                                                class="px-3.5 py-2.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-xs transition shrink-0 flex items-center gap-1.5">
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                <span>Simpan Link</span>
+                                            </button>
+                                        </div>
+                                        <span class="block text-[10px] text-gray-400 dark:text-gray-500">Ketik/tempel link lalu tekan Enter atau klik Simpan Link.</span>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- =================== NAVIGASI HALAMAN =================== -->
                 <div class="flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 px-5 py-3 shadow-xs">
                     <button type="button" wire:click="prevQuestion"
@@ -582,7 +845,7 @@
 
                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
                         Halaman <span class="font-bold text-indigo-600 dark:text-indigo-400">{{ $currentPage + 1 }}</span> / {{ $totalPages }}
-                        &nbsp;·&nbsp; Soal {{ $pageStart + 1 }}–{{ min($pageStart + $questionsPerPage, $totalQuestions) }}
+                        &nbsp;·&nbsp; {{ $questionsPerPage > 1 ? 'Soal ' . ($pageStart + 1) . '–' . min($pageStart + $questionsPerPage, $totalQuestions) : 'Soal ' . ($pageStart + 1) }}
                     </span>
 
                     @if ($currentPage < $totalPages - 1)
@@ -644,9 +907,11 @@
                                 } elseif ($q['question_type'] === 'multiple_choice' || $q['question_type'] === 'papi_kostick') {
                                     $status = !empty($answers[$q['id']]) ? 'completed' : 'unanswered';
                                 } elseif ($q['question_type'] === 'essay') {
+                                    $firstEssay = collect($questions)->firstWhere('question_type', 'essay');
+                                    $isFirstEssay = ($firstEssay && $firstEssay['id'] == $q['id']);
                                     $hasText = !empty($answers[$q['id']]) && trim($answers[$q['id']]) !== '';
-                                    $hasAtt  = !empty($essayAttachments[$q['id']]);
-                                    $status = ($hasText || $hasAtt) ? 'completed' : 'unanswered';
+                                    $hasFileOrLink = $isFirstEssay && ($essayAttachment || !empty($essayLink));
+                                    $status = ($hasText || $hasFileOrLink) ? 'completed' : 'unanswered';
                                 }
                                 // Soal aktif = soal yang ada di halaman saat ini
                                 $isOnCurrentPage = ($idx >= $pageStart && $idx < $pageStart + $questionsPerPage);

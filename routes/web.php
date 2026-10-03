@@ -51,12 +51,12 @@ Route::get('dashboard', function () {
         return redirect()->route('admin.dashboard');
     }
 
-    if ($user->role_id == 2 || $roleName === 'recruiter' || (bool) $user->is_recruiter) {
-        return redirect()->route('recruiter.dashboard');
-    }
-
     if ($user->role_id == 4 || $roleName === 'employee') {
         return redirect()->route('employee.dashboard');
+    }
+
+    if ($user->role_id == 2 || $roleName === 'recruiter' || (bool) $user->is_recruiter) {
+        return redirect()->route('recruiter.dashboard');
     }
 
     // Role 3 or applicant/pelamar

@@ -179,7 +179,12 @@ class ApplicantTable extends Component
             $query->whereIn(DB::raw('LOWER(status)'), array_map('strtolower', $this->selectedStatuses));
         })
         ->when($this->statusFilter, function ($query) {
-            $query->whereRaw('LOWER(status) = ?', [strtolower($this->statusFilter)]);
+            $val = strtolower($this->statusFilter);
+            if (in_array($val, ['need_review', 'pending_review', 'perlu_review'])) {
+                $query->whereIn(DB::raw('LOWER(status)'), ['applied', 'pending', 'screening', 'submitted', 'partial approved']);
+            } else {
+                $query->whereRaw('LOWER(status) = ?', [$val]);
+            }
         })
         ->when($this->sortField === 'position', function ($query) {
             $query->join('jobs', 'job_applications.job_id', '=', 'jobs.id')
@@ -247,9 +252,18 @@ class ApplicantTable extends Component
             'rejected'         => $rawStatusCounts['rejected'] ?? 0,
         ];
 
-        $companies = Company::select('id', 'name')->orderBy('name')->get();
+        $companiesQuery = Company::select('id', 'name')->orderBy('name');
+        if ($isDesignatedRecruiter && $user) {
+            $companiesQuery->whereHas('jobs', function ($jq) use ($user) {
+                $jq->where('reviewer_id', $user->id);
+            });
+        }
+        $companies = $companiesQuery->get();
 
         $jobsQuery = Job::select('id', 'title', 'company_id');
+        if ($isDesignatedRecruiter && $user) {
+            $jobsQuery->where('reviewer_id', $user->id);
+        }
         if ($this->companyFilter) {
             $jobsQuery->where('company_id', $this->companyFilter);
         }

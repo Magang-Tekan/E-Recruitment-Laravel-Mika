@@ -694,106 +694,122 @@
             <table class="w-full text-left border-collapse text-xs">
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
-                        <th class="px-6 py-4">Lowongan Pekerjaan</th>
-                        <th class="px-6 py-4">Tipe & Lokasi</th>
-                        <th class="px-6 py-4">Estimasi Gaji & Kuota</th>
-                        <th class="px-6 py-4">Tenggat & Status</th>
-                        <th class="px-6 py-4 text-right">Aksi</th>
+                        <th scope="col" class="px-6 py-4 min-w-[280px]">Lowongan Pekerjaan</th>
+                        <th scope="col" class="px-6 py-4 whitespace-nowrap">Tipe & Lokasi</th>
+                        <th scope="col" class="px-6 py-4 whitespace-nowrap">Estimasi Gaji & Kuota</th>
+                        <th scope="col" class="px-6 py-4 whitespace-nowrap">Tenggat & Status</th>
+                        <th scope="col" class="px-6 py-4 text-right whitespace-nowrap w-24">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-slate-800/60 text-gray-700 dark:text-slate-300">
                     @forelse ($jobs as $job)
                         <tr class="hover:bg-gray-50/80 dark:hover:bg-slate-800/40 transition-colors">
                             <td class="px-6 py-4">
-                                <div>
-                                    <span class="font-bold text-gray-900 dark:text-white text-sm block">{{ $job->title }}</span>
-                                    <div class="flex items-center gap-2 mt-1">
+                                <div class="space-y-1.5">
+                                    <span class="font-bold text-gray-900 dark:text-white text-sm block leading-snug">{{ $job->title }}</span>
+                                    
+                                    <div class="flex flex-wrap items-center gap-2">
                                         @if ($job->company)
-                                            <span class="text-[11px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-900/50">
+                                            <span class="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-900/50 whitespace-nowrap">
+                                                <svg class="w-3 h-3 shrink-0 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                </svg>
                                                 {{ $job->company->name }}
                                             </span>
                                         @endif
                                         @if ($job->department)
-                                            <span class="text-[11px] text-gray-500 dark:text-slate-400">
-                                                - {{ $job->department->name }}
+                                            <span class="text-[11px] text-gray-500 dark:text-slate-400 flex items-center gap-1 whitespace-nowrap">
+                                                <span class="text-gray-300 dark:text-slate-600 font-bold">&bull;</span>
+                                                {{ $job->department->name }}
                                             </span>
                                         @endif
                                         @if ($job->position)
-                                            <span class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-900/50">
+                                            <span class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-900/50 whitespace-nowrap">
                                                 {{ $job->position->name }}
                                             </span>
                                         @endif
-                                        @if ($job->reviewer)
-                                            <div class="mt-1 flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
-                                                <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                </svg>
-                                                <span>Reviewer: {{ $job->reviewer->name }}</span>
-                                            </div>
-                                        @endif
                                     </div>
+
+                                    @if ($job->reviewer)
+                                        <div class="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-slate-400 pt-0.5">
+                                            <svg class="w-3.5 h-3.5 shrink-0 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                            <span class="truncate">Reviewer: <span class="font-medium text-gray-700 dark:text-slate-300">{{ $job->reviewer->name }}</span></span>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="space-y-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="space-y-1.5">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60">
                                         {{ $job->employment_type }}
                                     </span>
-                                    <div class="text-[11px] text-gray-500 dark:text-slate-400 flex items-center gap-1">
-                                        <svg class="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <div class="text-[11px] text-gray-500 dark:text-slate-400 flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-gray-400 dark:text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                         </svg>
-                                        {{ $job->location ?? 'Remote' }}
+                                        <span>{{ $job->location ?? 'Remote' }}</span>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="space-y-0.5">
-                                    <div class="font-semibold text-gray-900 dark:text-slate-200">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="space-y-1.5">
+                                    <div class="font-semibold text-gray-900 dark:text-slate-200 text-xs">
                                         @if ($job->salary_min || $job->salary_max)
-                                            Rp{{ number_format($job->salary_min ?? 0, 0, ',', '.') }} - Rp{{ number_format($job->salary_max ?? 0, 0, ',', '.') }}
+                                            Rp{{ number_format($job->salary_min ?? 0, 0, ',', '.') }} &ndash; Rp{{ number_format($job->salary_max ?? 0, 0, ',', '.') }}
                                         @else
                                             <span class="text-gray-400 italic font-normal">Kompetitif</span>
                                         @endif
                                     </div>
-                                    <div class="text-[11px] text-gray-400">
-                                        Kuota: <span class="font-medium text-gray-700 dark:text-slate-300">{{ $job->quota }} orang</span>
+                                    <div class="text-[11px] text-gray-500 dark:text-slate-400 flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-gray-400 dark:text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                        <span>Kuota: <strong class="font-semibold text-gray-700 dark:text-slate-300">{{ $job->quota }} orang</strong></span>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="space-y-1">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="space-y-1.5">
                                     @if ($job->status === 'Open')
                                         @if ($job->is_expired)
                                             <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800" title="Lowongan Open tetapi tanggal deadline sudah terlewat">
-                                                {{-- <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> --}}
+                                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                                                 Open (Expired)
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                                                {{-- <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> --}}
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                                 Open
                                             </span>
                                         @endif
                                     @elseif ($job->status === 'Closed')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                                             Closed
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                                             Draft
                                         </span>
                                     @endif
-                                    <div class="text-[11px] {{ $job->is_expired ? 'text-rose-500 font-medium' : 'text-gray-400' }}">
-                                        Deadline: {{ $job->deadline ? \Carbon\Carbon::parse($job->deadline)->format('d M Y') : 'Hingga Terpenuhi' }}
+
+                                    <div class="text-[11px] flex items-center gap-1.5 {{ $job->is_expired ? 'text-rose-500 font-medium' : 'text-gray-500 dark:text-slate-400' }}">
+                                        <svg class="w-3.5 h-3.5 {{ $job->is_expired ? 'text-rose-400' : 'text-gray-400 dark:text-slate-500' }} shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <span>Deadline: {{ $job->deadline ? \Carbon\Carbon::parse($job->deadline)->format('d M Y') : 'Hingga Terpenuhi' }}</span>
                                         @if ($job->is_expired)
-                                            <span class="block text-[10px] text-rose-400 font-semibold">(Melewati batas)</span>
+                                            <span class="text-[10px] text-rose-500 font-semibold">(Lewat)</span>
                                         @endif
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-2">
+                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-1.5">
                                     <button @click="openEditModal({{ json_encode($job) }})" class="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors" title="Edit">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

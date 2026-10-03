@@ -9,7 +9,8 @@
     <title>{{ config('app.name', 'MIKA CAREER') }}</title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('images/mikaaaa.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/mika-favicon.png') }}?v=2">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v=2">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

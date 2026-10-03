@@ -6,7 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'MIKA CAREER') }}</title>
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('images/mikaaaa.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/mika-favicon.png') }}?v=2">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v=2">
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />

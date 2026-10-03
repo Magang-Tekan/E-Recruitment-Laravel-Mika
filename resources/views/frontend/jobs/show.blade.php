@@ -48,6 +48,7 @@
     $isAdminOrRecruiter = auth()->check() && (
         auth()->user()->role_id == 1 ||
         auth()->user()->role_id == 2 ||
+        (bool) auth()->user()->is_recruiter ||
         in_array(strtolower(auth()->user()->role?->name ?? ''), [
             'admin',
             'superadmin',
@@ -299,14 +300,14 @@
                             </h1>
                             <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-sm mt-2">
                                 <span class="text-[#93F514] font-semibold flex items-center gap-1.5 company-badge whitespace-nowrap sm:whitespace-normal">
-                                    <svg class="w-4 h-4 text-[#93F514]/80 company-icon shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg class="w-4 h-4 text-[#93F514] company-icon shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                     </svg>
                                     <span>{{ $job->company?->name ?? 'Perusahaan Mitra' }}</span>
                                 </span>
 
-                                <span class="text-gray-300 font-medium flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <span class="text-[#93F514] font-semibold flex items-center gap-1.5 department-badge whitespace-nowrap sm:whitespace-normal">
+                                    <svg class="w-3.5 h-3.5 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                     </svg>
                                     <span>{{ $job->department?->name ?? 'Umum' }}</span>
@@ -334,7 +335,7 @@
                         @else
                             @auth
                                 @if ($isAdminOrRecruiter)
-                                    <a href="{{ auth()->user()->role_id == 2 || strtolower(auth()->user()->role?->name ?? '') === 'recruiter' ? route('recruiter.dashboard') : route('admin.dashboard') }}"
+                                    <a href="{{ auth()->user()->isRecruiter() && !auth()->user()->isAdmin() ? route('recruiter.dashboard') : route('admin.dashboard') }}"
                                         class="admin-dashboard-btn h-11 sm:h-12 px-5 rounded-2xl bg-gray-900 hover:bg-gray-800 border border-gray-700 hover:border-[#93F514]/50 text-white font-bold text-xs sm:text-sm shadow-md inline-flex items-center justify-center gap-2 transition whitespace-nowrap">
                                         <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />

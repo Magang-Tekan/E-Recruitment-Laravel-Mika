@@ -122,6 +122,14 @@ class JobApplicationController extends Controller
         $isRecruiter = $user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter);
         $redirectRoute = ($isRecruiter && !$isAdmin) ? 'recruiter.application' : 'admin.application';
 
+        $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
+        if ($isDesignatedRecruiter) {
+            if ($application->job?->reviewer_id != $user->id) {
+                return redirect()->route($redirectRoute)
+                    ->with('error', 'Anda hanya memiliki hak untuk meninjau lamaran pada lowongan yang ditugaskan kepada Anda.');
+            }
+        }
+
         if ($isRecruiter && !$isAdmin) {
             $job = $application->job;
             $isActive = $job && $job->status === 'Open' && (! $job->deadline || $job->deadline >= now()->toDateString());

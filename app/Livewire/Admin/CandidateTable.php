@@ -26,6 +26,10 @@ class CandidateTable extends Component
 
     public function render()
     {
+        $user = auth()->user();
+        $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+        $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
+
         $candidates = User::with([
             'applicantProfile.educations',
             'applicantProfile.workExperiences',
@@ -48,6 +52,11 @@ class CandidateTable extends Component
         ->whereNotIn('role_id', [1, 2])
         ->whereDoesntHave('role', function ($rq) {
             $rq->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(name)'), ['admin', 'superadmin', 'recruiter']);
+        })
+        ->when($isDesignatedRecruiter && $user, function ($query) use ($user) {
+            $query->whereHas('applicantProfile.jobApplications.job', function ($jq) use ($user) {
+                $jq->where('reviewer_id', $user->id);
+            });
         })
         ->when($this->search, function ($query) {
             $search = strtolower(trim($this->search));
