@@ -138,20 +138,42 @@
         <nav class="hidden md:flex items-center gap-8 text-sm font-semibold">
             <a href="{{ route('home') }}"
                 class="{{ request()->routeIs('home') ? 'text-[#93F514] font-bold' : 'text-gray-300 hover:text-[#93F514]' }} transition-all duration-200 py-1">
-                Beranda
+                {{ __('Home') }}
             </a>
             <a href="{{ route('about') }}"
                 class="{{ request()->routeIs('about') ? 'text-[#93F514] font-bold' : 'text-gray-300 hover:text-[#93F514]' }} transition-all duration-200 py-1">
-                Tentang Kami
+                {{ __('About Us') }}
             </a>
             <a href="{{ route('jobs.index') }}"
                 class="{{ request()->routeIs('jobs.*') ? 'text-[#93F514] font-bold' : 'text-gray-300 hover:text-[#93F514]' }} transition-all duration-200 py-1">
-                Lowongan
+                {{ __('Vacancies') }}
             </a>
         </nav>
 
         <!-- Authentication Actions & Theme Toggle -->
         <div class="hidden md:flex items-center gap-3">
+
+            <!-- Language Switcher Pill (Desktop) -->
+            @php
+                $navCurrentLocale = app()->getLocale();
+                $navCurrentUrl = request()->fullUrl();
+            @endphp
+            <div class="inline-flex items-center p-0.5 rounded-full border border-[#93F514]/40 bg-[#061806]/80 text-[11px] font-bold text-gray-300 shadow-xs select-none">
+                <button type="button" 
+                   data-lang-btn="id"
+                   onclick="window.mikaSwitchLocale('id', '{{ $navCurrentUrl }}')"
+                   title="Indonesia"
+                   class="px-2 py-0.5 rounded-full transition-all duration-150 cursor-pointer {{ $navCurrentLocale === 'id' ? 'bg-[#93F514] text-black shadow-xs font-black cursor-default' : 'text-gray-400 hover:text-white hover:bg-white/5 active:scale-95' }}">
+                    ID
+                </button>
+                <button type="button" 
+                   data-lang-btn="en"
+                   onclick="window.mikaSwitchLocale('en', '{{ $navCurrentUrl }}')"
+                   title="English"
+                   class="px-2 py-0.5 rounded-full transition-all duration-150 cursor-pointer {{ $navCurrentLocale === 'en' ? 'bg-[#93F514] text-black shadow-xs font-black cursor-default' : 'text-gray-400 hover:text-white hover:bg-white/5 active:scale-95' }}">
+                    EN
+                </button>
+            </div>
 
             <!-- Theme Toggle Button -->
             <button type="button" class="theme-toggle-btn relative overflow-hidden" @click="$store.theme.toggle()"
@@ -285,7 +307,7 @@
                                 <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                                 </svg>
-                                <span>Profil Saya</span>
+                                <span>{{ __('My Profile') }}</span>
                             </a>
                         </div>
 
@@ -298,7 +320,7 @@
                                     <svg class="w-4 h-4 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                                     </svg>
-                                    <span>Keluar</span>
+                                    <span>{{ __('Log Out') }}</span>
                                 </button>
                             </form>
                         </div>
@@ -307,13 +329,13 @@
             @else
                 <a href="{{ route('login') }}"
                     class="text-xs sm:text-sm font-semibold text-gray-300 hover:text-[#EEEEEE] px-4 py-2 rounded-full hover:bg-[#EEEEEE]/5 transition">
-                    Masuk
+                    {{ __('Login') }}
                 </a>
 
                 @if (Route::has('register'))
                     <a href="{{ route('register') }}"
                         class="inline-flex items-center justify-center px-5 py-2 text-xs sm:text-sm font-bold text-[#EEEEEE] hover:text-black rounded-full bg-[#061806] hover:bg-[#93F514] border border-[#93F514]/50 shadow-md shadow-black/30 transition-all duration-200">
-                        Daftar
+                        {{ __('Register') }}
                     </a>
                 @endif
             @endauth
@@ -345,18 +367,42 @@
         <div class="flex flex-col space-y-2 font-semibold">
             <a @click="mobileMenuOpen = false" href="{{ route('home') }}"
                 class="px-4 py-2.5 rounded-2xl {{ request()->routeIs('home') ? 'bg-[#93F514]/20 text-[#93F514] font-bold border border-[#93F514]/40' : 'text-gray-300 hover:bg-[#EEEEEE]/5 hover:text-[#93F514]' }}">
-                Beranda
+                {{ __('Home') }}
             </a>
             <a @click="mobileMenuOpen = false" href="{{ route('about') }}"
                 class="px-4 py-2.5 rounded-2xl {{ request()->routeIs('about') ? 'bg-[#93F514]/20 text-[#93F514] font-bold border border-[#93F514]/40' : 'text-gray-300 hover:bg-[#EEEEEE]/5 hover:text-[#93F514]' }}">
-                Tentang Kami
+                {{ __('About Us') }}
             </a>
             <a @click="mobileMenuOpen = false" href="{{ route('jobs.index') }}"
                 class="px-4 py-2.5 rounded-2xl {{ request()->routeIs('jobs.*') ? 'bg-[#93F514]/20 text-[#93F514] font-bold border border-[#93F514]/40' : 'text-gray-300 hover:bg-[#EEEEEE]/5 hover:text-[#93F514]' }}">
-                Lowongan
+                {{ __('Vacancies') }}
             </a>
         </div>
         <div class="pt-3 border-t border-[#93F514]/20 flex flex-col gap-2">
+
+            <!-- Language Switcher (Mobile) -->
+            <div class="w-full flex items-center justify-between px-4 py-2.5 rounded-2xl border border-[#93F514]/30 text-sm font-semibold text-gray-300 bg-black/40">
+                <span class="flex items-center gap-2 text-xs">
+                    <svg class="w-4 h-4 text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                    </svg>
+                    {{ __('Language') }}
+                </span>
+                <div class="inline-flex items-center p-0.5 rounded-full border border-[#93F514]/40 bg-[#061806] text-xs font-bold select-none">
+                    <button type="button" 
+                       data-lang-btn="id"
+                       onclick="window.mikaSwitchLocale('id', '{{ $navCurrentUrl }}')"
+                       class="px-2.5 py-1 rounded-full transition cursor-pointer {{ $navCurrentLocale === 'id' ? 'bg-[#93F514] text-black font-black cursor-default' : 'text-gray-400 hover:text-white active:scale-95' }}">
+                        ID
+                    </button>
+                    <button type="button" 
+                       data-lang-btn="en"
+                       onclick="window.mikaSwitchLocale('en', '{{ $navCurrentUrl }}')"
+                       class="px-2.5 py-1 rounded-full transition cursor-pointer {{ $navCurrentLocale === 'en' ? 'bg-[#93F514] text-black font-black cursor-default' : 'text-gray-400 hover:text-white active:scale-95' }}">
+                        EN
+                    </button>
+                </div>
+            </div>
 
             <!-- Theme Toggle (Mobile) -->
             <button type="button" @click="$store.theme.toggle()" x-data
@@ -435,7 +481,7 @@
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
-                            <span>Profil</span>
+                            <span>{{ __('My Profile') }}</span>
                         </a>
                     </div>
 
@@ -446,22 +492,24 @@
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                             </svg>
-                            <span>Keluar Akun</span>
+                            <span>{{ __('Log Out') }}</span>
                         </button>
                     </form>
                 </div>
             @else
                 <a @click="mobileMenuOpen = false" href="{{ route('login') }}"
                     class="w-full text-center px-4 py-2.5 rounded-2xl bg-[#93F514]/10 border border-[#93F514]/40 text-[#EEEEEE] font-semibold text-sm">
-                    Masuk
+                    {{ __('Login') }}
                 </a>
                 @if (Route::has('register'))
                     <a @click="mobileMenuOpen = false" href="{{ route('register') }}"
                         class="w-full text-center px-4 py-2.5 rounded-2xl bg-[#061806] hover:bg-[#93F514] text-[#EEEEEE] hover:text-black border border-[#93F514]/50 font-bold text-sm shadow-md shadow-black/30 transition">
-                        Daftar Akun Baru
+                        {{ __('Register') }}
                     </a>
                 @endif
             @endauth
         </div>
     </div>
 </header>
+
+

@@ -295,7 +295,7 @@
                                         @endphp
                                         <span
                                             class="inline-flex items-center justify-center px-2 py-0.5 text-[11px] font-semibold rounded-full capitalize border {{ $badgeClass }}">
-                                            {{ $app->status }}
+                                            {{ $app->status_label ?? $app->status }}
                                         </span>
                                     </td>
                                 </tr>

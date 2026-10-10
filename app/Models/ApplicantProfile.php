@@ -14,6 +14,7 @@ class ApplicantProfile extends Model
         'birth_date', 'phone', 'address', 'city', 'province',
         'photo', 'npwp', 'child_sequence', 'total_siblings', 'marital_status',
         'about_me', 'generated_cv_url', 'cv_file_path',
+        'religion', 'postal_code', 'blood_type',
     ];
 
     protected $appends = ['cv_url', 'cv_file_url'];
@@ -144,17 +145,31 @@ class ApplicantProfile extends Model
             && ! empty($statuses['cv'])
             && ! empty($statuses['keluarga'])
             && ! empty($statuses['pendidikan'])
-            && ! empty($statuses['skill'])
-            && ! empty($statuses['pengalaman']);
+            && ! empty($statuses['skill']);
     }
 
     /**
-     * Calculate mandatory profile completion percentage (0 - 100%)
-     * Synchronized with total profile completion percentage to maintain consistency
+     * Calculate mandatory profile completion percentage (0 - 80%)
      */
     public function getMandatoryCompletionPercentageAttribute(): int
     {
-        return $this->completion_percentage;
+        $statuses = $this->section_statuses;
+        $mandatoryWeights = [
+            'pribadi' => 20,
+            'cv' => 20,
+            'keluarga' => 15,
+            'pendidikan' => 15,
+            'skill' => 10,
+        ];
+
+        $total = 0;
+        foreach ($mandatoryWeights as $key => $weight) {
+            if (! empty($statuses[$key])) {
+                $total += $weight;
+            }
+        }
+
+        return $total;
     }
 
     /**
@@ -163,7 +178,7 @@ class ApplicantProfile extends Model
     public function getMandatoryCompletedCountAttribute(): int
     {
         $statuses = $this->section_statuses;
-        $mandatoryKeys = ['pribadi', 'cv', 'keluarga', 'pendidikan', 'skill', 'pengalaman'];
+        $mandatoryKeys = ['pribadi', 'cv', 'keluarga', 'pendidikan', 'skill'];
         
         $completedCount = 0;
         foreach ($mandatoryKeys as $key) {
@@ -187,7 +202,6 @@ class ApplicantProfile extends Model
             'keluarga' => 'Data Keluarga',
             'pendidikan' => 'Pendidikan',
             'skill' => 'Skill / Keahlian',
-            'pengalaman' => 'Pengalaman Kerja',
         ];
 
         $missing = [];
@@ -208,17 +222,17 @@ class ApplicantProfile extends Model
         $statuses = $this->section_statuses;
         $weights = [
             // Data Wajib (80% total)
-            'pribadi' => 15,
-            'cv' => 15,
-            'keluarga' => 13,
-            'pendidikan' => 13,
-            'skill' => 12,
-            'pengalaman' => 12,
+            'pribadi' => 20,
+            'cv' => 20,
+            'keluarga' => 15,
+            'pendidikan' => 15,
+            'skill' => 10,
             // Data Pelengkap (20% total)
-            'organisasi' => 5,
-            'prestasi' => 5,
-            'social_media' => 5,
-            'data_tambahan' => 5,
+            'pengalaman' => 5,
+            'organisasi' => 4,
+            'prestasi' => 4,
+            'social_media' => 3,
+            'data_tambahan' => 4,
         ];
 
         $totalPercentage = 0;

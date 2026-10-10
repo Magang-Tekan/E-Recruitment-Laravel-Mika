@@ -16,10 +16,10 @@
                 Ekosistem Grup Perusahaan
             </div> --}}
             <h2 class="reveal-on-scroll text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#EEEEEE] tracking-tight" data-delay="100">
-                Grup <span class="text-[#93F514]">Perusahaan</span>
+                {{ __('Grup') }} <span class="text-[#93F514]">{{ __('Perusahaan') }}</span>
             </h2>
             <p class="reveal-on-scroll mt-3.5 text-sm sm:text-base text-gray-300 max-w-2xl mx-auto leading-relaxed" data-delay="150">
-                Sinergi strategis lintas entitas dalam menghadirkan solusi teknologi cerdas, manufaktur perangkat keras, dan jaringan distribusi terpadu.
+                {{ __('Sinergi strategis lintas entitas dalam menghadirkan solusi teknologi cerdas, manufaktur perangkat keras, dan jaringan distribusi terpadu.') }}
             </p>
         </div>
 
@@ -56,7 +56,7 @@
                             <!-- Logo / Initial Avatar (Klik ke Detail Perusahaan) -->
                             <a href="{{ route('companies.show', $companyItem->id) }}" 
                                class="shrink-0 transition-transform duration-300 hover:scale-105"
-                               title="Lihat profil {{ $companyItem->name }}">
+                               title="{{ __('Lihat profil') }} {{ $companyItem->name }}">
                                 @if($companyLogoUrl)
                                     <div class="w-14 h-14 rounded-2xl bg-white p-2 flex items-center justify-center border border-[#93F514]/30 shadow-md group-hover:border-[#93F514] group-hover:shadow-md transition-all duration-300">
                                         <img src="{{ $companyLogoUrl }}" alt="{{ $companyItem->name }}" class="w-full h-full object-contain">
@@ -75,7 +75,7 @@
                                 </span>
                             @else
                                 <span class="inline-block px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400 text-[11px] font-semibold group-sinergi-badge">
-                                    Entitas Afiliasi
+                                    {{ __('Entitas Afiliasi') }}
                                 </span>
                             @endif
                         </div>
@@ -93,7 +93,7 @@
 
                         <!-- Deskripsi Singkat -->
                         <p class="text-xs sm:text-sm text-gray-300 leading-relaxed line-clamp-4 relative z-10">
-                            {{ $companyItem->about ?: ($companyItem->tagline ?: 'Entitas bagian dari ekosistem grup yang bersinergi dalam memperkuat keandalan solusi dan keunggulan operasional.') }}
+                            {{ $companyItem->about ? __(trim($companyItem->about)) : ($companyItem->tagline ? __(trim($companyItem->tagline)) : __('Entitas bagian dari ekosistem grup yang bersinergi dalam memperkuat keandalan solusi dan keunggulan operasional.')) }}
                         </p>
                     </div>
 
@@ -112,7 +112,7 @@
                         <div class="flex items-center gap-2 shrink-0">
                             <a href="{{ route('companies.show', $companyItem->id) }}" 
                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#93F514]/10 hover:bg-[#93F514] text-[#93F514] hover:text-black border border-[#93F514]/30 hover:border-[#93F514] font-bold text-xs transition-all duration-200 shadow-sm shrink-0 group/btn group-detail-btn">
-                                <span>Detail</span>
+                                <span>{{ __('Detail') }}</span>
                                 <svg class="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 5l7 7-7 7" />
                                 </svg>
@@ -120,7 +120,7 @@
 
                             @if($companyWebUrl)
                                 <a href="{{ $companyWebUrl }}" target="_blank" rel="noopener noreferrer" 
-                                   title="Kunjungi Website Resmi: {{ $companyItem->name }}"
+                                   title="{{ __('Kunjungi Website Resmi:') }} {{ $companyItem->name }}"
                                    class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 hover:border-[#93F514]/40 transition-all duration-200 shadow-sm shrink-0 group-website-icon-btn">
                                     <svg class="w-3.5 h-3.5 text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

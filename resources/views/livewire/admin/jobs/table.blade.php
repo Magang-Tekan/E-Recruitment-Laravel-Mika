@@ -1136,6 +1136,14 @@
                                 @error('description')
                                     <p class="text-[11px] text-rose-500 mt-1 font-medium">{{ $message }}</p>
                                 @enderror
+
+                                <!-- Auto-Translate Notice -->
+                                <div class="flex items-center gap-2.5 text-blue-700 dark:text-blue-300 text-xs bg-blue-50/70 dark:bg-blue-950/30 p-3 rounded-xl border border-blue-200/70 dark:border-blue-900/50 mt-3">
+                                    <svg class="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                                    </svg>
+                                    <span><strong>Penerjemahan Otomatis Aktif:</strong> Anda cukup menulis dalam Bahasa Indonesia. Sistem akan secara otomatis menerjemahkan judul dan rincian persyaratan ini ke Bahasa Inggris untuk pelamar yang membuka mode EN.</span>
+                                </div>
                             </div>
                         </div>
 
@@ -1447,6 +1455,14 @@
                                               class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition leading-relaxed font-sans resize-y"
                                               placeholder="Tuliskan deskripsi pekerjaan dan rincian persyaratan kualifikasi di sini..."
                                               @input="document.getElementById('edit_final_description').value = $event.target.value; editData.description = $event.target.value"></textarea>
+                                </div>
+
+                                <!-- Auto-Translate Notice -->
+                                <div class="flex items-center gap-2.5 text-blue-700 dark:text-blue-300 text-xs bg-blue-50/70 dark:bg-blue-950/30 p-3 rounded-xl border border-blue-200/70 dark:border-blue-900/50 mt-3">
+                                    <svg class="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                                    </svg>
+                                    <span><strong>Penerjemahan Otomatis Aktif:</strong> Jika Anda memperbarui judul atau deskripsi, sistem akan secara otomatis memperbarui versi Bahasa Inggris saat disimpan.</span>
                                 </div>
                             </div>
                         </div>

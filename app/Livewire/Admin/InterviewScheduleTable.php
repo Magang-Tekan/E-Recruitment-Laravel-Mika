@@ -104,12 +104,18 @@ class InterviewScheduleTable extends Component
         $user = auth()->user();
         $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
         $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
+        $userPosId = $user?->employeeProfile?->position_id;
+
+        $jobScopeCallback = function ($jq) use ($user, $userPosId) {
+            $jq->where('reviewer_id', $user->id);
+            if ($userPosId) {
+                $jq->orWhere('position_id', $userPosId);
+            }
+        };
 
         $baseStatsQuery = InterviewSchedule::query();
         if ($isDesignatedRecruiter && $user) {
-            $baseStatsQuery->whereHas('jobApplication.job', function ($jq) use ($user) {
-                $jq->where('reviewer_id', $user->id);
-            });
+            $baseStatsQuery->whereHas('jobApplication.job', $jobScopeCallback);
         }
 
         // Calculate Stats
@@ -140,13 +146,13 @@ class InterviewScheduleTable extends Component
             'jobApplication.applicantProfile.user',
             'jobApplication.job.company',
             'jobApplication.job.department',
+            'jobApplication.interviewRecruiter',
+            'jobApplication.interviewAdmin',
             'user.employeeProfile', // interviewer profile & photo
         ]);
 
         if ($isDesignatedRecruiter && $user) {
-            $query->whereHas('jobApplication.job', function ($jq) use ($user) {
-                $jq->where('reviewer_id', $user->id);
-            });
+            $query->whereHas('jobApplication.job', $jobScopeCallback);
         }
 
         // Search Filter
@@ -249,14 +255,15 @@ class InterviewScheduleTable extends Component
             $schedules = $query->orderBy($this->sortField, $this->sortDirection)->paginate($this->perPage);
         }
 
-        // Data for Modal Form Selection (Hanya status Interview & Shortlisted)
+        // Data for Modal Form Selection (Hanya status Interview & Shortlisted yang BELUM memiliki jadwal aktif/selesai)
         $activeApplicationsQuery = JobApplication::with(['applicantProfile.user', 'job.company'])
-            ->whereIn(DB::raw('LOWER(status)'), ['interview', 'shortlisted']);
+            ->whereIn(DB::raw('LOWER(status)'), ['interview', 'shortlisted'])
+            ->whereDoesntHave('interviewSchedules', function ($q) {
+                $q->whereNotIn('status', ['Cancelled']);
+            });
 
         if ($isDesignatedRecruiter && $user) {
-            $activeApplicationsQuery->whereHas('job', function ($jq) use ($user) {
-                $jq->where('reviewer_id', $user->id);
-            });
+            $activeApplicationsQuery->whereHas('job', $jobScopeCallback);
         }
 
         $activeApplications = $activeApplicationsQuery
@@ -291,15 +298,13 @@ class InterviewScheduleTable extends Component
 
         $companiesQuery = Company::orderBy('name', 'asc');
         if ($isDesignatedRecruiter && $user) {
-            $companiesQuery->whereHas('jobs', function ($jq) use ($user) {
-                $jq->where('reviewer_id', $user->id);
-            });
+            $companiesQuery->whereHas('jobs', $jobScopeCallback);
         }
         $companies = $companiesQuery->get();
 
         $jobsQuery = Job::with('company')->orderBy('title', 'asc');
         if ($isDesignatedRecruiter && $user) {
-            $jobsQuery->where('reviewer_id', $user->id);
+            $jobsQuery->where($jobScopeCallback);
         }
         if (!empty($this->companyFilter)) {
             $jobsQuery->where('company_id', $this->companyFilter);
@@ -314,7 +319,9 @@ class InterviewScheduleTable extends Component
             'companies'             => $companies,
             'jobs'                  => $jobs,
             'isDesignatedRecruiter' => $isDesignatedRecruiter,
-            'assignedJobsCount'     => ($isDesignatedRecruiter && $user) ? Job::where('reviewer_id', $user->id)->count() : 0,
+            'assignedJobsCount'     => ($isDesignatedRecruiter && $user) ? Job::where($jobScopeCallback)->count() : 0,
+            'isAdmin'               => $isAdmin,
+            'isRecruiter'           => !$isAdmin,
         ]);
     }
 }

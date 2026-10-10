@@ -53,11 +53,11 @@
     <!-- Breadcrumb Navigation -->
     <nav class="flex items-center gap-2 text-xs sm:text-sm text-gray-400 mb-8 overflow-x-auto whitespace-nowrap pb-1">
         <a href="{{ route('home') }}" class="hover:text-[#93F514] transition flex items-center gap-1.5">
-            <span>Beranda</span>
+            <span>{{ __('Beranda') }}</span>
         </a>
         <span class="text-gray-600">/</span>
         <a href="{{ route('about') }}#meet-the-group" class="hover:text-[#93F514] transition">
-            Grup Perusahaan
+            {{ __('Grup Perusahaan') }}
         </a>
         <span class="text-gray-600">/</span>
         <span class="text-[#93F514] font-semibold truncate max-w-xs sm:max-w-md">{{ $company->name }}</span>
@@ -90,7 +90,7 @@
                 <div class="space-y-2.5 min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
                         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] text-[11px] sm:text-xs font-bold uppercase tracking-wider shadow-xs company-ecosystem-badge">
-                            Grup Perusahaan MIKA
+                            {{ __('Grup Perusahaan MIKA') }}
                         </span>
 
                         @if($company->tagline)
@@ -120,7 +120,7 @@
                                 <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
-                                <span>{{ $activeJobs->count() }} Posisi Lowongan Aktif</span>
+                                <span>{{ $activeJobs->count() }} {{ __('Posisi Lowongan Aktif') }}</span>
                             </div>
                         @endif
                     </div>
@@ -135,7 +135,7 @@
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        <span>Lihat Lowongan ({{ $activeJobs->count() }})</span>
+                        <span>{{ __('Lihat Lowongan') }} ({{ $activeJobs->count() }})</span>
                     </a>
                 @endif
 
@@ -145,7 +145,7 @@
                         <svg class="w-4 h-4 text-[#93F514] transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                         </svg>
-                        <span>Website Resmi</span>
+                        <span>{{ __('Website Resmi') }}</span>
                         <svg class="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                         </svg>
@@ -175,14 +175,14 @@
                         </div>
                         <div>
                             <h2 class="text-lg sm:text-xl font-extrabold text-[#EEEEEE]">
-                                Tentang Perusahaan
+                                {{ __('Tentang Perusahaan') }}
                             </h2>
-                            <p class="text-xs text-gray-400">Profil dan fokus operasional bisnis</p>
+                            <p class="text-xs text-gray-400">{{ __('Profil dan fokus operasional bisnis') }}</p>
                         </div>
                     </div>
 
                     <div class="text-sm sm:text-base text-gray-300 leading-relaxed text-justify whitespace-pre-line mt-0.5 company-about-text">
-                        {{ $company->about }}
+                        {{ __(trim($company->about)) }}
                     </div>
                 </div>
             @endif
@@ -199,9 +199,9 @@
                         </div>
                         <div>
                             <h2 class="text-lg sm:text-xl font-extrabold text-[#EEEEEE]">
-                                Visi & Misi Perusahaan
+                                {{ __('Visi & Misi Perusahaan') }}
                             </h2>
-                            <p class="text-xs text-gray-400">Arah strategis dan komitmen masa depan</p>
+                            <p class="text-xs text-gray-400">{{ __('Arah strategis dan komitmen masa depan') }}</p>
                         </div>
                     </div>
 
@@ -210,10 +210,10 @@
                         @if(!empty($company->vision))
                             <div class="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-[#061806] to-[#030903] border border-[#93F514]/30 shadow-md company-vision-box">
                                 <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#93F514] mb-2.5">
-                                    Visi Utama
+                                    {{ __('Visi Utama') }}
                                 </div>
                                 <p class="text-sm sm:text-base text-gray-200 font-medium leading-relaxed italic">
-                                    "{{ $company->vision }}"
+                                    "{{ __(trim($company->vision)) }}"
                                 </p>
                             </div>
                         @endif
@@ -222,7 +222,7 @@
                         @if(!empty($company->missions) && is_array($company->missions) && count($company->missions) > 0)
                             <div class="space-y-3">
                                 <span class="text-xs font-bold uppercase tracking-wider text-gray-400 block mb-1">
-                                    Misi Perusahaan
+                                    {{ __('Misi Perusahaan') }}
                                 </span>
                                 <div class="grid grid-cols-1 gap-3">
                                     @foreach($company->missions as $idx => $misi)
@@ -232,7 +232,7 @@
                                                     {{ $idx + 1 }}
                                                 </div>
                                                 <p class="text-xs sm:text-sm text-gray-300 leading-relaxed flex-1">
-                                                    {{ $misi }}
+                                                    {{ __(trim($misi)) }}
                                                 </p>
                                             </div>
                                         @endif
@@ -256,9 +256,9 @@
                         </div>
                         <div>
                             <h2 class="text-lg sm:text-xl font-extrabold text-[#EEEEEE]">
-                                Nilai Budaya Perusahaan
+                                {{ __('Nilai Budaya Perusahaan') }}
                             </h2>
-                            <p class="text-xs text-gray-400">Prinsip kerja yang memandu integritas dan profesionalisme tim</p>
+                            <p class="text-xs text-gray-400">{{ __('Prinsip kerja yang memandu integritas dan profesionalisme tim') }}</p>
                         </div>
                     </div>
 
@@ -281,7 +281,7 @@
                                             @endif
                                             <div>
                                                 <h3 class="text-sm sm:text-base font-extrabold text-[#EEEEEE]">
-                                                    {{ $valTitle }}
+                                                    {{ __(trim($valTitle)) }}
                                                 </h3>
                                                 @if($valSub)
                                                     <span class="text-[11px] text-[#93F514]/80 font-medium block">
@@ -292,7 +292,7 @@
                                         </div>
                                         @if($valDesc)
                                             <p class="text-xs sm:text-sm text-gray-300 leading-relaxed mt-2">
-                                                {{ $valDesc }}
+                                                {{ __(trim($valDesc)) }}
                                             </p>
                                         @endif
                                     </div>
@@ -315,15 +315,15 @@
                         </div>
                         <div>
                             <h2 class="text-lg sm:text-xl font-extrabold text-[#EEEEEE]">
-                                Lowongan Kerja di {{ $company->name }}
+                                {{ __('Lowongan Kerja di') }} {{ $company->name }}
                             </h2>
-                            <p class="text-xs text-gray-400">Peluang karir aktif yang siap menerima lamaran Anda</p>
+                            <p class="text-xs text-gray-400">{{ __('Peluang karir aktif yang siap menerima lamaran Anda') }}</p>
                         </div>
                     </div>
 
                     @if($activeJobs->count() > 0)
                         <span class="inline-flex items-center px-3 py-1 rounded-full bg-[#93F514]/15 border border-[#93F514]/30 text-[#93F514] text-xs font-bold w-fit">
-                            {{ $activeJobs->count() }} Lowongan Dibuka
+                            {{ $activeJobs->count() }} {{ __('Lowongan Dibuka') }}
                         </span>
                     @endif
                 </div>
@@ -333,24 +333,24 @@
                     <div class="space-y-4">
                         @foreach($activeJobs as $jobItem)
                             @php
-                                $deadlineFormat = $jobItem->deadline ? \Carbon\Carbon::parse($jobItem->deadline)->format('d M Y') : 'Hingga Terpenuhi';
+                                $deadlineFormat = $jobItem->deadline ? \Carbon\Carbon::parse($jobItem->deadline)->translatedFormat('d M Y') : __('Hingga Terpenuhi');
                             @endphp
                             <div class="p-5 sm:p-6 rounded-2xl bg-[#030803] border border-[#93F514]/20 hover:border-[#93F514] transition-all duration-300 hover:shadow-lg hover:shadow-[#93F514]/15 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group company-job-item">
                                 <div class="space-y-2 flex-1 min-w-0">
                                     <div class="flex flex-wrap items-center gap-2">
                                         <span class="px-2.5 py-0.5 rounded-md bg-[#93F514]/15 text-[#93F514] text-[11px] font-bold border border-[#93F514]/30">
-                                            {{ $jobItem->employment_type }}
+                                            {{ __($jobItem->employment_type) }}
                                         </span>
                                         @if($jobItem->department)
                                             <span class="px-2.5 py-0.5 rounded-md bg-white/5 text-gray-300 text-[11px] font-medium border border-white/10">
-                                                {{ $jobItem->department->name }}
+                                                {{ __($jobItem->department->name) }}
                                             </span>
                                         @endif
                                     </div>
 
                                     <h3 class="text-base sm:text-lg font-bold text-[#EEEEEE] group-hover:text-[#93F514] transition-colors truncate">
                                         <a href="{{ route('jobs.show', $jobItem->id) }}">
-                                            {{ $jobItem->title }}
+                                            {{ __($jobItem->title) }}
                                         </a>
                                     </h3>
 
@@ -360,17 +360,17 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
-                                            {{ $jobItem->location ?? 'Indonesia' }}
+                                            {{ __($jobItem->location ?? 'Indonesia') }}
                                         </span>
                                         <span>•</span>
-                                        <span>Batas: {{ $deadlineFormat }}</span>
+                                        <span>{{ __('Batas') }}: {{ $deadlineFormat }}</span>
                                     </div>
                                 </div>
 
                                 <div class="flex items-center gap-2.5 shrink-0">
                                     <a href="{{ route('jobs.show', $jobItem->id) }}"
                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#93F514]/10 hover:bg-[#93F514] text-[#93F514] hover:text-black border border-[#93F514]/40 hover:border-[#93F514] font-bold text-xs transition-all duration-200">
-                                        <span>Detail & Lamar</span>
+                                        <span>{{ __('Detail & Lamar') }}</span>
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 5l7 7-7 7" />
                                         </svg>
@@ -388,15 +388,15 @@
                             </svg>
                         </div>
                         <h4 class="text-base font-bold text-[#EEEEEE]">
-                            Belum Ada Posisi Dibuka Saat Ini
+                            {{ __('Belum Ada Posisi Dibuka Saat Ini') }}
                         </h4>
                         <p class="text-xs sm:text-sm text-gray-400 max-w-md mx-auto leading-relaxed">
-                            Saat ini belum ada lowongan kerja aktif khusus di <strong class="text-gray-200">{{ $company->name }}</strong>. Anda tetap dapat menjelajahi lowongan yang tersedia di grup perusahaan lainnya.
+                            {{ __('Saat ini belum ada lowongan kerja aktif khusus di') }} <strong class="text-gray-200">{{ $company->name }}</strong>. {{ __('Anda tetap dapat menjelajahi lowongan yang tersedia di grup perusahaan lainnya.') }}
                         </p>
                         <div class="pt-2">
                             <a href="{{ route('jobs.index') }}"
                                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#93F514]/10 hover:bg-[#93F514] text-[#93F514] hover:text-black border border-[#93F514]/30 font-bold text-xs transition">
-                                <span>Lihat Semua Lowongan Karir</span>
+                                <span>{{ __('Lihat Semua Lowongan Karir') }}</span>
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                 </svg>
@@ -419,7 +419,7 @@
                         <svg class="w-4 h-4 text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
-                        <span>Informasi Kontak & Kantor</span>
+                        <span>{{ __('Informasi Kontak & Kantor') }}</span>
                     </h3>
 
                     <div class="space-y-4 text-xs sm:text-sm">
@@ -433,11 +433,11 @@
                                     </svg>
                                 </div>
                                 <div class="flex-1 leading-relaxed">
-                                    <span class="text-gray-400 block text-[11px]">Alamat Kantor</span>
+                                    <span class="text-gray-400 block text-[11px]">{{ __('Alamat Kantor') }}</span>
                                     <span>{{ $company->address }}</span>
                                     @if($company->city || $company->province || $company->postal_code)
                                         <span class="block text-gray-400 mt-0.5">
-                                            {{ implode(', ', array_filter([$company->city, $company->province, $company->postal_code ? 'Kode Pos ' . $company->postal_code : null])) }}
+                                            {{ implode(', ', array_filter([$company->city, $company->province, $company->postal_code ? __('Kode Pos') . ' ' . $company->postal_code : null])) }}
                                         </span>
                                     @endif
                                 </div>
@@ -451,7 +451,7 @@
                                     </svg>
                                 </div>
                                 <div class="flex-1">
-                                    <span class="text-gray-400 block text-[11px]">Lokasi</span>
+                                    <span class="text-gray-400 block text-[11px]">{{ __('Lokasi') }}</span>
                                     <span>{{ implode(', ', array_filter([$company->city, $company->province])) }}</span>
                                 </div>
                             </div>
@@ -466,7 +466,7 @@
                                     </svg>
                                 </div>
                                 <div class="flex-1">
-                                    <span class="text-gray-400 block text-[11px]">Kontak / WhatsApp</span>
+                                    <span class="text-gray-400 block text-[11px]">{{ __('Kontak / WhatsApp') }}</span>
                                     <a href="{{ $company->whatsapp_url ?? 'tel:' . $company->phone }}" target="_blank" rel="noopener noreferrer"
                                        class="font-semibold text-[#EEEEEE] hover:text-[#93F514] transition">
                                         {{ $company->phone }}
@@ -484,7 +484,7 @@
                                     </svg>
                                 </div>
                                 <div class="flex-1 truncate">
-                                    <span class="text-gray-400 block text-[11px]">Email Resmi</span>
+                                    <span class="text-gray-400 block text-[11px]">{{ __('Email Resmi') }}</span>
                                     <a href="mailto:{{ $company->email }}" class="font-semibold text-[#EEEEEE] hover:text-[#93F514] transition truncate block">
                                         {{ $company->email }}
                                     </a>
@@ -501,7 +501,7 @@
                                     </svg>
                                 </div>
                                 <div class="flex-1 truncate">
-                                    <span class="text-gray-400 block text-[11px]">Situs Web</span>
+                                    <span class="text-gray-400 block text-[11px]">{{ __('Situs Web') }}</span>
                                     <a href="{{ $companyWebUrl }}" target="_blank" rel="noopener noreferrer"
                                        class="font-semibold text-[#93F514] hover:underline truncate block">
                                         {{ $displayWebsite }}
@@ -521,7 +521,7 @@
                         <svg class="w-4 h-4 text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        <span>Grup perusahaan Lainnya</span>
+                        <span>{{ __('Grup Perusahaan Lainnya') }}</span>
                     </h3>
 
                     <div class="space-y-3">
@@ -547,7 +547,7 @@
                                         {{ $oComp->name }}
                                     </h4>
                                     <span class="text-[11px] text-gray-400 block truncate">
-                                        {{ $oComp->tagline ?: ($oComp->city ?? 'Ekosistem Grup') }}
+                                        {{ $oComp->tagline ?: ($oComp->city ?? __('Ekosistem Grup')) }}
                                     </span>
                                 </div>
 
@@ -561,7 +561,7 @@
                     <div class="pt-2">
                         <a href="{{ route('about') }}#meet-the-group"
                            class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-[#93F514]/10 border border-white/10 hover:border-[#93F514]/30 text-xs font-semibold text-gray-300 hover:text-[#93F514] transition flex items-center justify-center gap-1.5">
-                            <span>Lihat Semua Anggota Grup</span>
+                            <span>{{ __('Lihat Semua Anggota Grup') }}</span>
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                             </svg>

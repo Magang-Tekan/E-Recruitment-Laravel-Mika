@@ -13,6 +13,8 @@ class CandidateTable extends Component
 
     public $search = '';
     public $perPage = 10;
+    public $selectedCandidateId = null;
+    public $showDetailModal = false;
 
     public function updatingSearch()
     {
@@ -24,10 +26,25 @@ class CandidateTable extends Component
         $this->resetPage();
     }
 
+    public function openDetailModal($candidateId)
+    {
+        $this->selectedCandidateId = $candidateId;
+        $this->showDetailModal = true;
+    }
+
+    public function closeDetailModal()
+    {
+        $this->showDetailModal = false;
+        $this->selectedCandidateId = null;
+    }
+
     public function render()
     {
         $user = auth()->user();
         $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+        $isRecruiter = !$isAdmin && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter);
+        $userDeptId = $user?->employeeProfile?->department_id;
+        $userPosId  = $user?->employeeProfile?->position_id;
         $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
 
         $candidates = User::with([
@@ -40,7 +57,10 @@ class CandidateTable extends Component
             'applicantProfile.skills',
             'applicantProfile.socialMedias',
             'applicantProfile.languages',
-            'applicantProfile.jobApplications.job.company'
+            'applicantProfile.family',
+            'applicantProfile.jobPreference',
+            'applicantProfile.jobApplications.job.company',
+            'applicantProfile.jobApplications.job.department'
         ])
         ->where(function ($q) {
             $q->where('role_id', 3)
@@ -53,9 +73,18 @@ class CandidateTable extends Component
         ->whereDoesntHave('role', function ($rq) {
             $rq->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(name)'), ['admin', 'superadmin', 'recruiter']);
         })
-        ->when($isDesignatedRecruiter && $user, function ($query) use ($user) {
-            $query->whereHas('applicantProfile.jobApplications.job', function ($jq) use ($user) {
-                $jq->where('reviewer_id', $user->id);
+        ->when($isRecruiter && $user, function ($query) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
+            $query->whereHas('applicantProfile.jobApplications.job', function ($jq) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
+                if ($isDesignatedRecruiter) {
+                    $jq->where(function ($sq) use ($user, $userPosId) {
+                        $sq->where('reviewer_id', $user->id);
+                        if ($userPosId) {
+                            $sq->orWhere('position_id', $userPosId);
+                        }
+                    });
+                } elseif ($userDeptId) {
+                    $jq->where('department_id', $userDeptId);
+                }
             });
         })
         ->when($this->search, function ($query) {
@@ -76,7 +105,9 @@ class CandidateTable extends Component
         ->paginate($this->perPage);
 
         return view('livewire.admin.candidates.table', [
-            'candidates' => $candidates
+            'candidates' => $candidates,
+            'isAdmin' => $isAdmin,
+            'isRecruiter' => $isRecruiter
         ]);
     }
 }

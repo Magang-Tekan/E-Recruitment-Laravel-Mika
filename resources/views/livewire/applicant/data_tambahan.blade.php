@@ -196,7 +196,7 @@
     <div class="space-y-4 pt-2">
         <div class="border-b border-slate-200 dark:border-[#1D2E54] pb-3 flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Kemampuan Bahasa</h3>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Kemampuan Berbahasa</h3>
                 <p class="text-xs text-slate-500 dark:text-[#93A5C9]">Bahasa asing atau daerah yang dikuasai (beserta skor/sertifikat jika ada)</p>
             </div>
         </div>

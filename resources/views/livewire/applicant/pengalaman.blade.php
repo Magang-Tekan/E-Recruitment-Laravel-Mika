@@ -7,7 +7,7 @@
         </div>
         <div class="relative z-10">
             <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Riwayat Pengalaman Kerja</h2>
-            <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 font-medium">* Tambahkan riwayat pengalaman kerja profesional Anda.</p>
+            <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 font-medium">* Tambahkan riwayat pengalaman kerja profesional Anda (opsional / jika ada).</p>
         </div>
     </div>
 

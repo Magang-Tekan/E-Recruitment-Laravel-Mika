@@ -44,10 +44,24 @@ class TestEvaluationController extends Controller
         }
 
         $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
-        if ($isDesignatedRecruiter) {
-            $jobReviewerId = $attempt->jobApplication?->job?->reviewer_id;
-            if ($jobReviewerId != $user->id) {
-                abort(403, 'Akses ditolak. Anda hanya dapat melihat laporan peserta untuk lowongan yang ditugaskan kepada Anda.');
+        if (!$isAdmin && $isRecruiter) {
+            $jobReviewerId  = $attempt->jobApplication?->job?->reviewer_id;
+            $employeeDeptId = $user?->employeeProfile?->department_id;
+            $employeePosId  = $user?->employeeProfile?->position_id;
+            $jobDeptId      = $attempt->jobApplication?->job?->department_id ?? $attempt->test?->department_id;
+            $jobPosId       = $attempt->jobApplication?->job?->position_id;
+
+            if ($isDesignatedRecruiter) {
+                $hasAccess = ($jobReviewerId && $jobReviewerId == $user->id)
+                    || ($employeePosId && $jobPosId && $jobPosId == $employeePosId);
+            } else {
+                $hasAccess = ($jobReviewerId && $jobReviewerId == $user->id)
+                    || ($employeeDeptId && $jobDeptId && $jobDeptId == $employeeDeptId)
+                    || ($user->role_id == 2 && !$employeeDeptId);
+            }
+
+            if (!$hasAccess) {
+                abort(403, 'Akses ditolak. Anda hanya dapat melihat laporan peserta untuk posisi Anda atau lowongan yang ditugaskan kepada Anda.');
             }
         }
 
@@ -175,10 +189,24 @@ class TestEvaluationController extends Controller
         }
 
         $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
-        if ($isDesignatedRecruiter) {
-            $jobReviewerId = $attempt->jobApplication?->job?->reviewer_id;
-            if ($jobReviewerId != $user->id) {
-                abort(403, 'Akses ditolak. Anda hanya dapat melihat laporan peserta untuk lowongan yang ditugaskan kepada Anda.');
+        if (!$isAdmin && $isRecruiter) {
+            $jobReviewerId  = $attempt->jobApplication?->job?->reviewer_id;
+            $employeeDeptId = $user?->employeeProfile?->department_id;
+            $employeePosId  = $user?->employeeProfile?->position_id;
+            $jobDeptId      = $attempt->jobApplication?->job?->department_id ?? $attempt->test?->department_id;
+            $jobPosId       = $attempt->jobApplication?->job?->position_id;
+
+            if ($isDesignatedRecruiter) {
+                $hasAccess = ($jobReviewerId && $jobReviewerId == $user->id)
+                    || ($employeePosId && $jobPosId && $jobPosId == $employeePosId);
+            } else {
+                $hasAccess = ($jobReviewerId && $jobReviewerId == $user->id)
+                    || ($employeeDeptId && $jobDeptId && $jobDeptId == $employeeDeptId)
+                    || ($user->role_id == 2 && !$employeeDeptId);
+            }
+
+            if (!$hasAccess) {
+                abort(403, 'Akses ditolak. Anda hanya dapat melihat laporan peserta untuk posisi Anda atau lowongan yang ditugaskan kepada Anda.');
             }
         }
 
@@ -338,6 +366,7 @@ class TestEvaluationController extends Controller
             'essay_scores.*' => 'nullable|numeric|min:0',
             'scores' => 'nullable|array',
             'scores.*' => 'nullable|numeric|min:0',
+            'test_decision' => 'nullable|string|in:approved,rejected,override_shortlisted',
             'application_status' => 'nullable|string|in:Submitted,Reviewed,Shortlisted,Interview,Accepted,Rejected',
             'application_notes' => 'nullable|string|max:1000',
             'send_email' => 'nullable',
@@ -354,11 +383,25 @@ class TestEvaluationController extends Controller
             : ($isRecruiterTarget ? 'recruiter.test_evaluation' : 'admin.test_evaluation');
 
         $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
-        if ($isDesignatedRecruiter) {
-            $jobReviewerId = $attempt->jobApplication?->job?->reviewer_id;
-            if ($jobReviewerId != $user->id) {
+        if (!$isAdmin && $isRecruiter) {
+            $jobReviewerId  = $attempt->jobApplication?->job?->reviewer_id;
+            $employeeDeptId = $user?->employeeProfile?->department_id;
+            $employeePosId  = $user?->employeeProfile?->position_id;
+            $jobDeptId      = $attempt->jobApplication?->job?->department_id ?? $attempt->test?->department_id;
+            $jobPosId       = $attempt->jobApplication?->job?->position_id;
+
+            if ($isDesignatedRecruiter) {
+                $hasAccess = ($jobReviewerId && $jobReviewerId == $user->id)
+                    || ($employeePosId && $jobPosId && $jobPosId == $employeePosId);
+            } else {
+                $hasAccess = ($jobReviewerId && $jobReviewerId == $user->id)
+                    || ($employeeDeptId && $jobDeptId && $jobDeptId == $employeeDeptId)
+                    || ($user->role_id == 2 && !$employeeDeptId);
+            }
+
+            if (!$hasAccess) {
                 return redirect()->route($redirectRoute)
-                    ->with('error', 'Anda hanya memiliki hak untuk menilai ujian pada lowongan yang ditugaskan kepada Anda.');
+                    ->with('error', 'Anda hanya memiliki hak untuk menilai ujian yang sesuai dengan posisi Anda atau lowongan yang ditugaskan kepada Anda.');
             }
         }
 
@@ -425,86 +468,213 @@ class TestEvaluationController extends Controller
 
             $emailSent = false;
             $applicantEmail = null;
+            $updatedStatus = null;
+            $finalNotes = null;
 
-            // Update status lamaran (khusus pelamar): prioritaskan pilihan manual HR jika dipilih, jika tidak dan lulus KKM otomatis Shortlisted
+            // ========================================================
+            // DOUBLE APPROVAL TAHAP 2: EVALUASI UJIAN ONLINE
+            // ========================================================
             if ($attempt->jobApplication) {
                 $app = $attempt->jobApplication;
-                $newStatus = $request->input('application_status');
                 $customNotes = $request->input('application_notes');
-                $updatedStatus = null;
-                $notes = null;
+                $testDecision = $request->input('test_decision');
+                $newStatus = $request->input('application_status');
+                $historyNotes = null;
 
-                if (!empty($newStatus)) {
-                    $updatedStatus = $newStatus;
-                    $notes = !empty($customNotes) 
-                        ? $customNotes 
-                        : 'Status lamaran diperbarui oleh HR melalui evaluasi ujian (Total Nilai: ' . number_format($totalScore, 1) . ').';
+                if (!$isAdmin) {
+                    // ====================================================
+                    // 1. RECRUITER (Pewawancara / Penilai Teknis - GATE 1)
+                    // ====================================================
+                    // Otomatis mencatat persetujuan Recruiter saat esai dinilai dan mencapai KKM:
+                    if ($status === 'passed' || ($hasDiscOrPapi && $passingScore <= 0)) {
+                        $app->test_recruiter_approval = 'approved';
+                        $app->test_recruiter_approved_at = now();
+                        $app->test_recruiter_id = $reviewerId;
+                        $app->test_recruiter_notes = !empty($customNotes)
+                            ? $customNotes
+                            : 'Nilai ujian teknis mencapai KKM (' . number_format($totalScore, 1) . ' / KKM: ' . number_format($passingScore, 0) . '). Rekomendasi lolos tahap teknis.';
 
-                    $app->update([
-                        'status' => $updatedStatus,
-                        'notes'  => $notes,
-                    ]);
+                        // Cek apakah HR sudah menyetujui sebelumnya (Double Approval Terpenuhi)
+                        if ($app->test_admin_approval === 'approved') {
+                            $updatedStatus = 'Shortlisted';
+                            $finalNotes = 'Double Approved: Hasil tes disetujui oleh Recruiter Teknis & HR/Admin. Siap untuk dijadwalkan wawancara.';
+                            $historyNotes = '[Double Approved: Lolos Ujian Online]. Kedua pihak (Recruiter & HR) telah menyetujui hasil ujian kandidat.';
+                            $app->status = $updatedStatus;
+                            $app->notes = $finalNotes;
+                        } else {
+                            $historyNotes = '[Persetujuan 1: Recruiter Teknis Disetujui] oleh ' . ($user->name ?? 'Recruiter') . ' (Total Nilai: ' . number_format($totalScore, 1) . '). Menunggu persetujuan psikotes & kuota dari HR/Admin.';
+                        }
+                    } else {
+                        // Di bawah KKM
+                        $app->test_recruiter_approval = 'rejected';
+                        $app->test_recruiter_approved_at = now();
+                        $app->test_recruiter_id = $reviewerId;
+                        $app->test_recruiter_notes = !empty($customNotes)
+                            ? $customNotes
+                            : 'Nilai ujian teknis di bawah KKM (' . number_format($totalScore, 1) . ' / KKM: ' . number_format($passingScore, 0) . '). Rekomendasi tidak lolos teknis.';
+
+                        $historyNotes = '[Evaluasi Teknis Recruiter: Di Bawah KKM] (Total Nilai: ' . number_format($totalScore, 1) . ' / KKM: ' . number_format($passingScore, 0) . '). Rekomendasi tidak lolos tahap teknis.';
+                    }
+
+                    $app->save();
 
                     \App\Models\ApplicationStatusHistory::create([
                         'job_applications_id' => $app->id,
-                        'status'              => $updatedStatus,
-                        'notes'               => $notes,
+                        'status'              => $app->status,
+                        'notes'               => $historyNotes,
                         'changed_by'          => $reviewerId ?? 1,
                         'changed_at'          => now(),
                     ]);
-                } elseif ($status === 'passed' && in_array(strtolower($app->status), ['submitted', 'reviewed', 'pending'])) {
-                    // Fallback otomatis jika lulus KKM
-                    $updatedStatus = 'Shortlisted';
-                    $notes = !empty($customNotes)
-                        ? $customNotes
-                        : 'Lolos Ujian Seleksi Online (Nilai: ' . number_format($totalScore, 1) . ' / KKM: ' . number_format($passingScore, 0) . '). Siap untuk dijadwalkan wawancara.';
+                } else {
+                    // ====================================================
+                    // 2. HR / ADMIN (Verifikasi Psikotes & Keputusan - GATE 2)
+                    // ====================================================
+                    if ($testDecision === 'override_shortlisted') {
+                        // Admin Override / Hak Veto
+                        $app->test_admin_approval = 'approved';
+                        $app->test_admin_notes = $customNotes ?: 'Disetujui melalui Admin Override (Hak Veto HR).';
+                        $app->test_admin_approved_at = now();
+                        $app->test_admin_id = $reviewerId;
 
-                    $app->update([
-                        'status' => $updatedStatus,
-                        'notes'  => $notes,
-                    ]);
+                        $app->test_recruiter_approval = 'approved';
+                        $app->test_recruiter_notes = $app->test_recruiter_notes ?: '[Bypassed by Admin Override]';
+                        $app->test_recruiter_approved_at = $app->test_recruiter_approved_at ?: now();
 
-                    \App\Models\ApplicationStatusHistory::create([
-                        'job_applications_id' => $app->id,
-                        'status'              => $updatedStatus,
-                        'notes'               => $notes,
-                        'changed_by'          => $reviewerId ?? 1,
-                        'changed_at'          => now(),
-                    ]);
-                }
+                        $updatedStatus = 'Shortlisted';
+                        $finalNotes = $customNotes ?: 'Selamat! Anda dinyatakan lolos tahap evaluasi ujian (Admin Override) dan masuk daftar kandidat terpilih (Shortlisted). Kami akan segera menginformasikan jadwal wawancara.';
+                        $historyNotes = '[Admin Override: Lolos Ujian & Siap Wawancara (Hak Veto HR)]. ' . ($customNotes ? 'Catatan: ' . $customNotes : '');
+                    } elseif ($testDecision === 'approved') {
+                        // Persetujuan HR Normal
+                        $app->test_admin_approval = 'approved';
+                        $app->test_admin_notes = $customNotes ?: 'Persetujuan HR: Hasil psikotes (DISC & PAPI) serta evaluasi ujian disetujui.';
+                        $app->test_admin_approved_at = now();
+                        $app->test_admin_id = $reviewerId;
 
-                // Kirim email notifikasi ke pelamar jika status berubah dan opsi aktif
-                $shouldSendEmail = $request->has('send_email')
-                    ? $request->boolean('send_email')
-                    : true;
+                        // Otomatis luluskan Recruiter jika tes ini tidak memiliki esai dan status lulus otomatis
+                        $hasUnreviewedEssay = $attempt->answers->contains(function ($ans) {
+                            return $ans->question && $ans->question->question_type === 'essay' && is_null($ans->reviewed_by);
+                        });
 
-                $applicantEmail = $app->applicantProfile?->user?->email;
+                        if ($app->test_recruiter_approval === 'approved' || ($status === 'passed' && !$hasUnreviewedEssay)) {
+                            if ($app->test_recruiter_approval !== 'approved' && $status === 'passed') {
+                                $app->test_recruiter_approval = 'approved';
+                                $app->test_recruiter_approved_at = now();
+                                $app->test_recruiter_id = $reviewerId;
+                                $app->test_recruiter_notes = 'Lolos nilai passing score otomatis.';
+                            }
 
-                if ($updatedStatus && $shouldSendEmail && $applicantEmail) {
-                    try {
-                        Mail::to($applicantEmail)->send(
-                            new ApplicationStatusUpdatedMail($app, $updatedStatus, $notes)
-                        );
-                        $emailSent = true;
-                    } catch (\Throwable $e) {
-                        Log::error('Gagal mengirim email evaluasi pelamar: ' . $e->getMessage(), [
-                            'attempt_id'     => $attempt->id,
-                            'application_id' => $app->id,
-                            'recipient'      => $applicantEmail,
-                            'status'         => $updatedStatus,
+                            $updatedStatus = 'Shortlisted';
+                            $finalNotes = $customNotes ?: 'Selamat! Anda dinyatakan lolos tahap evaluasi ujian (Double Approved) dan masuk ke dalam daftar kandidat terpilih (Shortlisted). Kami akan segera menginformasikan jadwal wawancara.';
+                            $historyNotes = '[Double Approved: Lolos Ujian Online]. Kedua pihak (Recruiter Teknis & HR) telah menyetujui hasil ujian kandidat. Siap dijadwalkan wawancara.';
+                        } else {
+                            $finalNotes = $customNotes ?: 'Hasil psikotes disetujui oleh HR. Menunggu konfirmasi koreksi teknis Recruiter.';
+                            $historyNotes = '[Persetujuan 2: HR Disetujui]. Verifikasi hasil psikotes & kepribadian disetujui. Menunggu konfirmasi nilai/koreksi teknis Recruiter.';
+                        }
+                    } elseif ($testDecision === 'rejected') {
+                        // Penolakan oleh HR
+                        $app->test_admin_approval = 'rejected';
+                        $app->test_admin_notes = $customNotes ?: 'Hasil evaluasi ujian belum memenuhi kriteria kualifikasi lowongan.';
+                        $app->test_admin_approved_at = now();
+                        $app->test_admin_id = $reviewerId;
+
+                        $updatedStatus = 'Rejected';
+                        $finalNotes = $customNotes ?: 'Terima kasih atas partisipasi Anda. Saat ini hasil evaluasi ujian belum sesuai dengan kriteria yang kami butuhkan.';
+                        $historyNotes = '[Tidak Lolos Ujian Online (Ditolak / Rejected)]. Catatan HR: ' . ($customNotes ?: 'Belum memenuhi kriteria.');
+                    } elseif (!empty($newStatus)) {
+                        // Pembaruan Status Manual oleh Admin
+                        $updatedStatus = $newStatus;
+                        $finalNotes = !empty($customNotes)
+                            ? $customNotes
+                            : 'Status lamaran diperbarui oleh HR melalui evaluasi ujian (Total Nilai: ' . number_format($totalScore, 1) . ').';
+
+                        if ($newStatus === 'Shortlisted') {
+                            $app->test_admin_approval = 'approved';
+                            $app->test_admin_notes = $customNotes ?: 'Disetujui HR melalui evaluasi ujian.';
+                            $app->test_admin_approved_at = now();
+                            $app->test_admin_id = $reviewerId;
+                        } elseif ($newStatus === 'Rejected') {
+                            $app->test_admin_approval = 'rejected';
+                            $app->test_admin_approved_at = now();
+                            $app->test_admin_id = $reviewerId;
+                        }
+
+                        $historyNotes = '[Status Diperbarui oleh HR: ' . $updatedStatus . ']. ' . $finalNotes;
+                    } elseif ($status === 'passed' && in_array(strtolower($app->status), ['submitted', 'reviewed', 'pending'])) {
+                        // Fallback jika lolos KKM & belum ada keputusan spesifik
+                        $app->test_admin_approval = 'approved';
+                        $app->test_admin_approved_at = now();
+                        $app->test_admin_id = $reviewerId;
+
+                        if ($app->test_recruiter_approval === 'approved') {
+                            $updatedStatus = 'Shortlisted';
+                            $finalNotes = 'Lolos Ujian Seleksi Online (Double Approved). Siap untuk dijadwalkan wawancara.';
+                            $historyNotes = '[Double Approved: Lolos Ujian Online]. Nilai teknis & evaluasi HR disetujui.';
+                        } else {
+                            $historyNotes = '[Evaluasi Ujian HR: Nilai Lolos KKM]. Menunggu konfirmasi recruiter.';
+                        }
+                    }
+
+                    if ($updatedStatus) {
+                        $app->status = $updatedStatus;
+                    }
+                    if ($finalNotes) {
+                        $app->notes = $finalNotes;
+                    }
+                    $app->save();
+
+                    if ($historyNotes) {
+                        \App\Models\ApplicationStatusHistory::create([
+                            'job_applications_id' => $app->id,
+                            'status'              => $app->status,
+                            'notes'               => $historyNotes,
+                            'changed_by'          => $reviewerId ?? 1,
+                            'changed_at'          => now(),
                         ]);
+                    }
+
+                    // Kirim notifikasi email jika diminta
+                    $shouldSendEmail = $request->has('send_email')
+                        ? $request->boolean('send_email')
+                        : true;
+
+                    $applicantEmail = $app->applicantProfile?->user?->email;
+
+                    if ($updatedStatus && $shouldSendEmail && $applicantEmail) {
+                        try {
+                            Mail::to($applicantEmail)->send(
+                                new ApplicationStatusUpdatedMail($app, $updatedStatus, $finalNotes)
+                            );
+                            $emailSent = true;
+                        } catch (\Throwable $e) {
+                            Log::error('Gagal mengirim email evaluasi pelamar: ' . $e->getMessage(), [
+                                'attempt_id'     => $attempt->id,
+                                'application_id' => $app->id,
+                                'recipient'      => $applicantEmail,
+                                'status'         => $updatedStatus,
+                            ]);
+                        }
                     }
                 }
             }
 
             DB::commit();
 
-            $successMsg = $isEmployeeAttempt
-                ? 'Penilaian essay karyawan berhasil disimpan dan total skor telah diperbarui.'
-                : 'Penilaian essay pelamar berhasil disimpan dan total skor telah diperbarui.';
+            if (!$isAdmin) {
+                $successMsg = ($status === 'passed')
+                    ? 'Koreksi esai berhasil disimpan (Total Nilai: ' . number_format($totalScore, 1) . ' ≥ KKM). Persetujuan Teknis Recruiter telah tercatat. Status kini menunggu verifikasi psikotes & kuota oleh HR/Admin.'
+                    : 'Koreksi esai berhasil disimpan (Total Nilai: ' . number_format($totalScore, 1) . ' di bawah KKM). Catatan rekomendasi telah disimpan untuk peninjauan HR/Admin.';
+            } else {
+                $successMsg = $isEmployeeAttempt
+                    ? 'Penilaian essay karyawan berhasil disimpan dan total skor telah diperbarui.'
+                    : 'Penilaian essay pelamar berhasil disimpan dan total skor telah diperbarui.';
 
-            if ($emailSent && !empty($applicantEmail)) {
-                $successMsg .= ' Notifikasi email status telah berhasil dikirim ke ' . $applicantEmail . '.';
+                if ($updatedStatus === 'Shortlisted') {
+                    $successMsg = 'Evaluasi ujian berhasil disimpan! Pelamar resmi dinyatakan Lolos Ujian & Siap Wawancara (Shortlisted).';
+                }
+
+                if ($emailSent && !empty($applicantEmail)) {
+                    $successMsg .= ' Notifikasi email status telah berhasil dikirim ke ' . $applicantEmail . '.';
+                }
             }
 
             return redirect()->route($redirectRoute)

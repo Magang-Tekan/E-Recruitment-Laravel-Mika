@@ -101,14 +101,25 @@ class CompanyDepartmentPositionSeeder extends Seeder
 
         DB::transaction(function () use ($organizations) {
             foreach ($organizations as $companyName => $companyData) {
-                // 1. Dapatkan atau Buat Perusahaan (Company)
-                $company = Company::firstOrCreate(
-                    ['name' => $companyName],
-                    [
+                // 1. Dapatkan atau Buat Perusahaan (Company) secara cerdas (mencegah duplikasi dengan/tanpa 'PT ')
+                $cleanName = trim(str_ireplace('PT ', '', $companyName));
+                $company = Company::where('name', $companyName)
+                    ->orWhere('name', 'like', "%{$cleanName}%")
+                    ->first();
+
+                if (!$company) {
+                    $company = Company::create([
+                        'name' => $companyName,
                         'city' => $companyData['city'] ?? 'Semarang',
                         'province' => $companyData['province'] ?? 'Jawa Tengah',
-                    ]
-                );
+                    ]);
+                } else {
+                    $company->update([
+                        'name' => $companyName,
+                        'city' => $companyData['city'] ?? $company->city,
+                        'province' => $companyData['province'] ?? $company->province,
+                    ]);
+                }
 
                 foreach ($companyData['departments'] as $deptName => $positions) {
                     // 2. Dapatkan atau Buat Departemen (Department)

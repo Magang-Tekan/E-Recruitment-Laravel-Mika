@@ -5,6 +5,7 @@ use App\Models\Company;
 use App\Models\Department;
 use App\Models\Position;
 use App\Models\EmployeeProfile;
+use App\Models\Setting;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -101,7 +102,6 @@ new #[Layout('layouts.guest')] class extends Component {
         ];
 
         if ($this->account_type === 'employee') {
-            $expectedPasskey = env('EMPLOYEE_REGISTRATION_PASSKEY', 'MIKA2026');
             $rules['employee_type'] = ['required', 'in:permanent,contract,internship'];
             $rules['company_id'] = ['required', 'exists:companies,id'];
             $rules['department_id'] = ['required', 'exists:departments,id'];
@@ -110,9 +110,14 @@ new #[Layout('layouts.guest')] class extends Component {
             $rules['company_passkey'] = [
                 'required',
                 'string',
-                function ($attribute, $value, $fail) use ($expectedPasskey) {
-                    if (trim($value) !== trim($expectedPasskey)) {
-                        $fail('Kode token perusahaan tidak valid. Silakan hubungi tim HR.');
+                function ($attribute, $value, $fail) {
+                    $company = !empty($this->company_id) ? Company::find($this->company_id) : null;
+                    $globalPasskey = Setting::get('employee_registration_passkey', env('EMPLOYEE_REGISTRATION_PASSKEY', 'MIKA2026'));
+                    $expectedPasskey = !empty($company?->registration_passkey) ? $company->registration_passkey : $globalPasskey;
+
+                    if (trim((string) $value) !== trim((string) $expectedPasskey)) {
+                        $companySuffix = $company?->name ? " untuk {$company->name}" : "";
+                        $fail("Kode token perusahaan tidak valid{$companySuffix}. Silakan hubungi tim HR.");
                     }
                 },
             ];

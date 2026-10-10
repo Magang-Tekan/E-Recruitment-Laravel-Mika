@@ -36,6 +36,37 @@ class TestAttempt extends Model
         'test_date' => 'date',
     ];
 
+    protected $appends = [
+        'score',
+        'is_psychometric',
+    ];
+
+    public function getScoreAttribute(): ?float
+    {
+        if ($this->total_score !== null) {
+            return (float) $this->total_score;
+        }
+
+        if ($this->objective_score !== null) {
+            return (float) $this->objective_score;
+        }
+
+        return null;
+    }
+
+    public function getIsPsychometricAttribute(): bool
+    {
+        $title = strtolower($this->test?->title ?? '');
+        $catName = strtolower($this->test?->category?->name ?? '');
+
+        return str_contains($title, 'disc')
+            || str_contains($title, 'papi')
+            || str_contains($catName, 'disc')
+            || str_contains($catName, 'papi')
+            || (bool) $this->discTestResult
+            || (bool) $this->papiTestResult;
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');

@@ -2104,6 +2104,9 @@
 
     <!-- Session Heartbeat (Sliding Refresh saat aktif bekerja) -->
     <x-session-heartbeat />
+
+    <!-- Locale Switcher Loader (4-Dot Wave Loader identik halaman login) -->
+    <x-locale-loader />
 </body>
 
 </html>

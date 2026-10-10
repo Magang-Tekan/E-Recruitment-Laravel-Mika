@@ -195,12 +195,51 @@
                     @error('birth_date') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
+                <!-- Agama -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Agama</label>
+                    <select wire:model="religion"
+                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                        <option value="" class="dark:bg-[#14203A] dark:text-white">-- Pilih Agama --</option>
+                        <option value="Islam" class="dark:bg-[#14203A] dark:text-white">Islam</option>
+                        <option value="Kristen Protestan" class="dark:bg-[#14203A] dark:text-white">Kristen Protestan</option>
+                        <option value="Katolik" class="dark:bg-[#14203A] dark:text-white">Katolik</option>
+                        <option value="Hindu" class="dark:bg-[#14203A] dark:text-white">Hindu</option>
+                        <option value="Buddha" class="dark:bg-[#14203A] dark:text-white">Buddha</option>
+                        <option value="Konghucu" class="dark:bg-[#14203A] dark:text-white">Konghucu</option>
+                        <option value="Lainnya" class="dark:bg-[#14203A] dark:text-white">Lainnya</option>
+                    </select>
+                    @error('religion') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
+                <!-- Golongan Darah -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Golongan Darah</label>
+                    <select wire:model="blood_type"
+                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                        <option value="" class="dark:bg-[#14203A] dark:text-white">-- Pilih Golongan Darah --</option>
+                        <option value="A" class="dark:bg-[#14203A] dark:text-white">A</option>
+                        <option value="B" class="dark:bg-[#14203A] dark:text-white">B</option>
+                        <option value="AB" class="dark:bg-[#14203A] dark:text-white">AB</option>
+                        <option value="O" class="dark:bg-[#14203A] dark:text-white">O</option>
+                    </select>
+                    @error('blood_type') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
                 <!-- NPWP -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">NPWP</label>
                     <input type="text" wire:model="npwp" placeholder="Nomor NPWP (jika ada)"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                     @error('npwp') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
+                <!-- Kode Pos -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Kode Pos</label>
+                    <input type="text" wire:model="postal_code" placeholder="Contoh: 12345" maxlength="10"
+                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                    @error('postal_code') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Autocomplete Wilayah Domisili (Kota/Kabupaten & Provinsi) -->

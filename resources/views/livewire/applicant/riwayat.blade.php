@@ -187,27 +187,27 @@
             </button>
             <button type="button" wire:click="$set('statusFilter', 'Submitted')"
                 class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 {{ $statusFilter === 'Submitted' ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] hover:bg-slate-200 dark:hover:bg-[#1A2A4C]' }}">
-                Terkirim (Submitted)
+                Diajukan
             </button>
             <button type="button" wire:click="$set('statusFilter', 'Reviewed')"
                 class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 {{ $statusFilter === 'Reviewed' ? 'bg-amber-600 text-white shadow-sm shadow-amber-500/20' : 'bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] hover:bg-slate-200 dark:hover:bg-[#1A2A4C]' }}">
-                Lolos Berkas / Tahap Tes (Reviewed)
+                Lolos Berkas
             </button>
             <button type="button" wire:click="$set('statusFilter', 'Shortlisted')"
                 class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 {{ $statusFilter === 'Shortlisted' ? 'bg-purple-600 text-white shadow-sm shadow-purple-500/20' : 'bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] hover:bg-slate-200 dark:hover:bg-[#1A2A4C]' }}">
-                Lolos Ujian / Siap Wawancara (Shortlisted)
+                Lolos Ujian
             </button>
             <button type="button" wire:click="$set('statusFilter', 'Interview')"
                 class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 {{ $statusFilter === 'Interview' ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] hover:bg-slate-200 dark:hover:bg-[#1A2A4C]' }}">
-                Wawancara (Interview)
+                Wawancara
             </button>
             <button type="button" wire:click="$set('statusFilter', 'Accepted')"
                 class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 {{ $statusFilter === 'Accepted' ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-500/20' : 'bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] hover:bg-slate-200 dark:hover:bg-[#1A2A4C]' }}">
-                Diterima (Accepted)
+                Diterima
             </button>
             <button type="button" wire:click="$set('statusFilter', 'Rejected')"
                 class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 {{ $statusFilter === 'Rejected' ? 'bg-rose-600 text-white shadow-sm shadow-rose-500/20' : 'bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] hover:bg-slate-200 dark:hover:bg-[#1A2A4C]' }}">
-                Ditolak (Rejected)
+                Ditolak
             </button>
         </div>
     </div>
@@ -228,13 +228,13 @@
                 };
                 
                 $statusLabel = match($status) {
-                    'Accepted', 'accepted' => 'Diterima (Accepted)',
-                    'Rejected', 'rejected' => 'Tidak Lolos (Rejected)',
-                    'Interview', 'interview' => 'Tahap Wawancara (Interview)',
-                    'Shortlisted', 'shortlisted' => 'Lolos Ujian / Siap Wawancara (Shortlisted)',
-                    'Partial Approved', 'partial approved' => 'Dalam Peninjauan (Partial Approved)',
-                    'Reviewed', 'reviewed' => 'Lolos Berkas / Tahap Ujian (Reviewed)',
-                    default => 'Lamaran Diajukan (Submitted)',
+                    'Accepted', 'accepted' => 'Diterima',
+                    'Rejected', 'rejected' => 'Ditolak',
+                    'Interview', 'interview' => 'Wawancara',
+                    'Shortlisted', 'shortlisted' => 'Lolos Ujian',
+                    'Partial Approved', 'partial approved' => 'Partial Approved',
+                    'Reviewed', 'reviewed' => 'Lolos Berkas',
+                    default => 'Diajukan',
                 };
 
                 // Determine step stage index
@@ -644,7 +644,7 @@
                             <div class="p-3 bg-slate-50 dark:bg-[#14203A] rounded-xl border border-slate-100 dark:border-[#1D2E54]">
                                 <span class="block text-[10px] font-bold text-slate-400 dark:text-[#93A5C9] uppercase">Status Terkini</span>
                                 <span class="block text-xs font-bold text-blue-600 dark:text-[#93F514] mt-0.5">
-                                    {{ $selectedApplication->status }}
+                                    {{ $selectedApplication->status_label ?? $selectedApplication->status }}
                                 </span>
                             </div>
                             <div class="p-3 bg-slate-50 dark:bg-[#14203A] rounded-xl border border-slate-100 dark:border-[#1D2E54]">
@@ -678,7 +678,7 @@
                                                 <div class="w-64 p-3.5 bg-slate-50 dark:bg-[#14203A] rounded-2xl border border-slate-100 dark:border-[#1D2E54] space-y-1.5 shadow-2xs relative">
                                                     <div class="flex items-center justify-between">
                                                         <span class="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-blue-50 dark:bg-[#0D1527] text-blue-700 dark:text-[#93F514] border border-blue-200 dark:border-[#1D2E54]">
-                                                            {{ $hist->status }}
+                                                            {{ $hist->status_label ?? $hist->status }}
                                                         </span>
                                                         <span class="text-[10px] text-slate-400 dark:text-[#93A5C9] font-mono">
                                                             {{ \Carbon\Carbon::parse($hist->changed_at)->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
@@ -775,7 +775,15 @@
                                 <div class="space-y-2">
                                     @foreach ($selectedApplication->testAttempts as $attempt)
                                         @php
-                                            $isAttemptDisc = str_contains(strtolower($attempt->test?->category?->name ?? ''), 'disc');
+                                            $catName = strtolower($attempt->test?->category?->name ?? '');
+                                            $testTitle = strtolower($attempt->test?->title ?? '');
+                                            $isPsychometric = (bool) ($attempt->is_psychometric ?? false)
+                                                || str_contains($catName, 'disc')
+                                                || str_contains($catName, 'papi')
+                                                || str_contains($testTitle, 'disc')
+                                                || str_contains($testTitle, 'papi')
+                                                || (bool) ($attempt->discTestResult ?? false)
+                                                || (bool) ($attempt->papiTestResult ?? false);
                                         @endphp
                                         <div class="p-3.5 bg-slate-50 dark:bg-[#14203A] rounded-xl border border-slate-100 dark:border-[#1D2E54] flex items-center justify-between">
                                             <div>
@@ -787,9 +795,9 @@
                                                 </span>
                                             </div>
                                             <div class="text-right">
-                                                @if ($isAttemptDisc)
+                                                @if ($isPsychometric)
                                                     <span class="text-xs font-bold text-emerald-600 dark:text-[#93F514]">
-                                                        Tersimpan
+                                                        Selesai
                                                     </span>
                                                 @else
                                                     <span class="text-xs font-extrabold text-blue-600 dark:text-[#93F514]">

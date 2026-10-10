@@ -349,7 +349,7 @@
                                 <div class="text-right font-bold text-gray-900 dark:text-white">
                                     @if ($isDisc || $isPapi)
                                         <span class="text-xs font-semibold text-emerald-600 dark:text-[#93F514]">
-                                            Tersimpan
+                                            Selesai
                                         </span>
                                     @else
                                         Skor: {{ $attempt->total_score ?? ($attempt->objective_score ?? '-') }}
@@ -398,7 +398,7 @@
                                     <td class="py-3.5 px-3 font-bold text-gray-900 dark:text-white">
                                         @if ($isDisc || $isPapi)
                                             <span class="text-xs font-semibold text-emerald-600 dark:text-[#93F514]">
-                                                Tersimpan
+                                                Selesai
                                             </span>
                                         @else
                                             {{ $attempt->total_score ?? ($attempt->objective_score ?? '-') }}

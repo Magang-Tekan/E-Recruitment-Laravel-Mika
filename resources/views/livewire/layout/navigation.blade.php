@@ -79,6 +79,28 @@ new class extends Component
         <!-- Settings Dropdown -->
         <div class="hidden sm:flex sm:items-center sm:ms-6 gap-2">
 
+            <!-- Language Switcher Pill (Desktop) -->
+            @php
+                $navAppLocale = app()->getLocale();
+                $navAppUrl = request()->fullUrl();
+            @endphp
+            <div class="inline-flex items-center p-0.5 rounded-full border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-[11px] font-bold shadow-xs select-none">
+                <button type="button" 
+                   data-lang-btn="id"
+                   onclick="window.mikaSwitchLocale('id', '{{ $navAppUrl }}')"
+                   title="Bahasa Indonesia"
+                   class="px-2 py-0.5 rounded-full transition-all duration-150 cursor-pointer {{ $navAppLocale === 'id' ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black font-extrabold shadow-2xs cursor-default' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-95' }}">
+                    ID
+                </button>
+                <button type="button" 
+                   data-lang-btn="en"
+                   onclick="window.mikaSwitchLocale('en', '{{ $navAppUrl }}')"
+                   title="English"
+                   class="px-2 py-0.5 rounded-full transition-all duration-150 cursor-pointer {{ $navAppLocale === 'en' ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black font-extrabold shadow-2xs cursor-default' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-95' }}">
+                    EN
+                </button>
+            </div>
+
             <!-- Dark/Light Mode Toggle Button (Desktop) -->
             <button
                 type="button"
@@ -202,6 +224,22 @@ new class extends Component
         </div>
 
         <div class="-me-2 flex items-center sm:hidden gap-2">
+
+            <!-- Language Switcher Pill (Mobile) -->
+            <div class="inline-flex items-center p-0.5 rounded-full border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-[10px] font-bold shadow-xs select-none">
+                <button type="button" 
+                   data-lang-btn="id"
+                   onclick="window.mikaSwitchLocale('id', '{{ $navAppUrl }}')"
+                   class="px-1.5 py-0.5 rounded-full transition cursor-pointer {{ $navAppLocale === 'id' ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black font-extrabold cursor-default' : 'text-slate-500 dark:text-slate-400 active:scale-95' }}">
+                    ID
+                </button>
+                <button type="button" 
+                   data-lang-btn="en"
+                   onclick="window.mikaSwitchLocale('en', '{{ $navAppUrl }}')"
+                   class="px-1.5 py-0.5 rounded-full transition cursor-pointer {{ $navAppLocale === 'en' ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black font-extrabold cursor-default' : 'text-slate-500 dark:text-slate-400 active:scale-95' }}">
+                    EN
+                </button>
+            </div>
 
             <!-- Dark/Light Mode Toggle Button (Mobile) -->
             <button
@@ -343,3 +381,4 @@ new class extends Component
         </div>
     </div>
 </nav>
+

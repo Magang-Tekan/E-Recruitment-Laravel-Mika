@@ -111,9 +111,33 @@ class ApplicantTable extends Component
     public function render()
     {
         $user = auth()->user();
-        $isAdmin = $user && ($user->role_id == 1 || strtolower($user->role?->name ?? '') === 'admin');
+        $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
         $isRecruiterOnly = $user && !$isAdmin && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter);
+        $userDeptId = $user?->employeeProfile?->department_id;
+        $userPosId  = $user?->employeeProfile?->position_id;
         $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
+
+        // Filter lowongan:
+        // - Karyawan ditunjuk recruiter: HANYA lowongan sesuai posisi atau yang ditugaskan sebagai reviewer
+        // - HR recruiter dengan departemen: lowongan departemennya
+        // - HR recruiter umum: lowongan aktif
+        $jobScopeCallback = function ($query) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter, $isRecruiterOnly) {
+            if ($isDesignatedRecruiter && $user) {
+                $query->where(function ($sq) use ($user, $userPosId) {
+                    $sq->where('reviewer_id', $user->id);
+                    if ($userPosId) {
+                        $sq->orWhere('position_id', $userPosId);
+                    }
+                });
+            } elseif ($userDeptId) {
+                $query->where('department_id', $userDeptId);
+            } elseif ($isRecruiterOnly) {
+                $query->whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
+                      ->where(function ($q) {
+                          $q->whereNull('deadline')->orWhere('deadline', '>=', now()->toDateString());
+                      });
+            }
+        };
 
         $applications = JobApplication::with([
             'job.company',
@@ -121,6 +145,13 @@ class ApplicantTable extends Component
             'job.reviewer',
             'recruiter',
             'admin',
+            'testRecruiter',
+            'testAdmin',
+            'interviewRecruiter',
+            'interviewAdmin',
+            'testAttempts.test.category',
+            'testAttempts.discTestResult',
+            'testAttempts.papiTestResult',
             'applicantProfile.user',
             'applicantProfile.educations',
             'applicantProfile.workExperiences',
@@ -131,27 +162,37 @@ class ApplicantTable extends Component
             'applicantProfile.skills',
             'applicantProfile.socialMedias',
             'applicantProfile.languages',
+            'applicantProfile.family',
+            'applicantProfile.jobPreference',
             'statusHistories.changedBy',
             'interviewSchedules.user'
         ])
-        ->when($isDesignatedRecruiter, function ($query) use ($user) {
-            $query->whereHas('job', function ($jq) use ($user) {
-                $jq->where('reviewer_id', $user->id);
-            });
-        })
-        ->when($isRecruiterOnly && !$isDesignatedRecruiter, function ($query) {
-            $query->whereHas('job', function ($jq) {
-                $jq->whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
-                  ->where(function($q) {
-                      $q->whereNull('deadline')->orWhere('deadline', '>=', now()->toDateString());
-                  });
-            });
+        ->when($isRecruiterOnly, function ($query) use ($jobScopeCallback) {
+            $query->whereHas('job', $jobScopeCallback);
         })
         ->when($this->search, function ($query) {
             $search = strtolower(trim($this->search));
-            $query->where(function ($q) use ($search) {
-                $q->whereRaw('LOWER(status) LIKE ?', ['%' . $search . '%'])
-                  ->orWhereHas('applicantProfile', function ($apq) use ($search) {
+            $indoStatusMap = [
+                'diajukan'     => 'submitted',
+                'lolos berkas' => 'reviewed',
+                'lolos ujian'  => 'shortlisted',
+                'wawancara'    => 'interview',
+                'diterima'     => 'accepted',
+                'ditolak'      => 'rejected',
+            ];
+            $matchedStatuses = [];
+            foreach ($indoStatusMap as $indo => $eng) {
+                if (str_contains($indo, $search) || str_contains($search, $indo)) {
+                    $matchedStatuses[] = $eng;
+                }
+            }
+
+            $query->where(function ($q) use ($search, $matchedStatuses) {
+                $q->whereRaw('LOWER(status) LIKE ?', ['%' . $search . '%']);
+                if (!empty($matchedStatuses)) {
+                    $q->orWhereIn(DB::raw('LOWER(status)'), $matchedStatuses);
+                }
+                $q->orWhereHas('applicantProfile', function ($apq) use ($search) {
                       $apq->whereRaw('LOWER(full_name) LIKE ?', ['%' . $search . '%'])
                           ->orWhereRaw('LOWER(city) LIKE ?', ['%' . $search . '%'])
                           ->orWhereRaw('LOWER(nik) LIKE ?', ['%' . $search . '%'])
@@ -180,6 +221,19 @@ class ApplicantTable extends Component
         })
         ->when($this->statusFilter, function ($query) {
             $val = strtolower($this->statusFilter);
+            $indoParamMap = [
+                'diajukan'     => 'submitted',
+                'lolos_berkas' => 'reviewed',
+                'lolos berkas' => 'reviewed',
+                'lolos_ujian'  => 'shortlisted',
+                'lolos ujian'  => 'shortlisted',
+                'wawancara'    => 'interview',
+                'diterima'     => 'accepted',
+                'ditolak'      => 'rejected',
+            ];
+            if (isset($indoParamMap[$val])) {
+                $val = $indoParamMap[$val];
+            }
             if (in_array($val, ['need_review', 'pending_review', 'perlu_review'])) {
                 $query->whereIn(DB::raw('LOWER(status)'), ['applied', 'pending', 'screening', 'submitted', 'partial approved']);
             } else {
@@ -215,18 +269,8 @@ class ApplicantTable extends Component
 
         // Calculate quick stats counters
         $baseStatsQuery = JobApplication::query()
-            ->when($isDesignatedRecruiter, function ($query) use ($user) {
-                $query->whereHas('job', function ($jq) use ($user) {
-                    $jq->where('reviewer_id', $user->id);
-                });
-            })
-            ->when($isRecruiterOnly && !$isDesignatedRecruiter, function ($query) {
-                $query->whereHas('job', function ($jq) {
-                    $jq->whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
-                      ->where(function($q) {
-                          $q->whereNull('deadline')->orWhere('deadline', '>=', now()->toDateString());
-                      });
-                });
+            ->when($isRecruiterOnly, function ($query) use ($jobScopeCallback) {
+                $query->whereHas('job', $jobScopeCallback);
             })
             ->when($this->companyFilter, function ($query) {
                 $query->whereHas('job', fn($q) => $q->where('company_id', $this->companyFilter));
@@ -253,23 +297,23 @@ class ApplicantTable extends Component
         ];
 
         $companiesQuery = Company::select('id', 'name')->orderBy('name');
-        if ($isDesignatedRecruiter && $user) {
-            $companiesQuery->whereHas('jobs', function ($jq) use ($user) {
-                $jq->where('reviewer_id', $user->id);
-            });
+        if ($isRecruiterOnly) {
+            $companiesQuery->whereHas('jobs', $jobScopeCallback);
         }
         $companies = $companiesQuery->get();
 
         $jobsQuery = Job::select('id', 'title', 'company_id');
-        if ($isDesignatedRecruiter && $user) {
-            $jobsQuery->where('reviewer_id', $user->id);
+        if ($isRecruiterOnly) {
+            $jobsQuery->where($jobScopeCallback);
         }
         if ($this->companyFilter) {
             $jobsQuery->where('company_id', $this->companyFilter);
         }
         $jobs = $jobsQuery->orderBy('title')->get();
 
-        $assignedJobsCount = ($isDesignatedRecruiter && $user) ? Job::where('reviewer_id', $user->id)->count() : 0;
+        $assignedJobsCount = ($isDesignatedRecruiter && $user)
+            ? Job::where($jobScopeCallback)->count()
+            : 0;
 
         return view('livewire.admin.applicants.table', [
             'applications'          => $applications,

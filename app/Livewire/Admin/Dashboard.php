@@ -43,9 +43,15 @@ class Dashboard extends Component
         ->count();
 
         if ($isRecruiter) {
+            $userPosId = $user?->employeeProfile?->position_id;
             $jobsBaseQuery = Job::query()
-                ->when($isDesignatedRecruiter, function ($q) use ($user) {
-                    $q->where('reviewer_id', $user->id);
+                ->when($isDesignatedRecruiter, function ($q) use ($user, $userPosId) {
+                    $q->where(function ($sq) use ($user, $userPosId) {
+                        $sq->where('reviewer_id', $user->id);
+                        if ($userPosId) {
+                            $sq->orWhere('position_id', $userPosId);
+                        }
+                    });
                 })
                 ->when(!$isDesignatedRecruiter, function ($q) {
                     $q->whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
@@ -57,9 +63,14 @@ class Dashboard extends Component
             $totalJobs = (clone $jobsBaseQuery)->count();
             $activeJobs = $totalJobs;
 
-            $applicationsBaseQuery = JobApplication::whereHas('job', function ($j) use ($isDesignatedRecruiter, $user) {
+            $applicationsBaseQuery = JobApplication::whereHas('job', function ($j) use ($isDesignatedRecruiter, $user, $userPosId) {
                 if ($isDesignatedRecruiter) {
-                    $j->where('reviewer_id', $user->id);
+                    $j->where(function ($sq) use ($user, $userPosId) {
+                        $sq->where('reviewer_id', $user->id);
+                        if ($userPosId) {
+                            $sq->orWhere('position_id', $userPosId);
+                        }
+                    });
                 } else {
                     $j->whereIn(DB::raw('LOWER(status)'), ['open', 'published', 'active', 'draft'])
                       ->where(function($sq) {

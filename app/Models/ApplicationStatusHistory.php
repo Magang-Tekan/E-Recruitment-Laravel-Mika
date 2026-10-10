@@ -14,6 +14,22 @@ class ApplicationStatusHistory extends Model
         'changed_at' => 'datetime',
     ];
 
+    protected $appends = ['status_label'];
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match (strtolower(trim($this->status ?? ''))) {
+            'submitted', 'applied', 'pending' => 'Diajukan',
+            'reviewed'                        => 'Lolos Berkas',
+            'shortlisted'                     => 'Lolos Ujian',
+            'interview'                       => 'Wawancara',
+            'accepted', 'hired'               => 'Diterima',
+            'rejected'                        => 'Ditolak',
+            'partial approved'                => 'Partial Approved',
+            default                           => $this->status ?? 'Diajukan',
+        };
+    }
+
     public function jobApplication()
     {
         return $this->belongsTo(JobApplication::class, 'job_applications_id');
