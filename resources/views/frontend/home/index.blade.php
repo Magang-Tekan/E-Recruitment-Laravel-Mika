@@ -1,6 +1,6 @@
 @extends('frontend.layouts.app')
 
-@section('title', 'Beranda | Mika Career')
+@section('title', __('Beranda') . ' | Mika Career')
 
 @section('content')
     <div class="relative overflow-hidden -mt-[88px] sm:-mt-[96px]">
@@ -567,7 +567,7 @@
                     <div class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
                         data-delay="300">
                         <div class="text-2xl sm:text-3xl font-black text-[#EEEEEE]">{{ $departmentsCount ?? 0 }}+</div>
-                        <div class="text-xs text-[#93F514] font-semibold mt-1">{{ __('Bidang / Departemen') }}</div>
+                        <div class="text-xs text-[#93F514] font-semibold mt-1">{{ __('Departemen') }}</div>
                     </div>
                     <div class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
                         data-delay="400">

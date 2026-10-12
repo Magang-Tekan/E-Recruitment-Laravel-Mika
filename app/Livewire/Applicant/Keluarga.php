@@ -69,6 +69,13 @@ class Keluarga extends Component
             'mother_last_education' => 'nullable|string|max:255',
             'mother_occupation' => 'nullable|string|max:255',
             'mother_company' => 'nullable|string|max:255',
+        ], [
+            'child_sequence.numeric' => __('Urutan anak harus berupa angka.'),
+            'child_sequence.min' => __('Urutan anak minimal 1.'),
+            'total_siblings.numeric' => __('Jumlah saudara harus berupa angka.'),
+            'total_siblings.min' => __('Jumlah saudara minimal 1.'),
+            'father_birth_year.digits' => __('Tahun lahir ayah harus 4 digit angka.'),
+            'mother_birth_year.digits' => __('Tahun lahir ibu harus 4 digit angka.'),
         ]);
 
         $user = Auth::user();
@@ -105,7 +112,7 @@ class Keluarga extends Component
         );
 
         $this->dispatch('profile-updated');
-        session()->flash('message', 'Data keluarga berhasil disimpan!');
+        session()->flash('message', __('Data keluarga berhasil disimpan!'));
     }
 
     public function render()
@@ -113,15 +120,15 @@ class Keluarga extends Component
         $currentYear = (int) date('Y');
         $years = range($currentYear, $currentYear - 90);
 
-        $educationOptions = [
+        $educationOptions = array_map(fn($item) => __($item), [
             'SD', 'SMP', 'SMA/SMK', 'D1', 'D2', 'D3', 'D4/S1', 'S2', 'S3', 'Tidak Sekolah'
-        ];
+        ]);
 
-        $occupationOptions = [
+        $occupationOptions = array_map(fn($item) => __($item), [
             'PNS / ASN', 'Pegawai Swasta', 'Wiraswasta / Pengusaha', 'TNI / Polri',
             'BUMN', 'Buruh / Pekerja Harian', 'Petani / Peternak', 'Nelayan',
             'Pensiunan', 'Ibu Rumah Tangga', 'Tidak Bekerja / Lainnya'
-        ];
+        ]);
 
         return view('livewire.applicant.keluarga', [
             'years' => $years,

@@ -76,13 +76,13 @@ class Pengalaman extends Component
     protected function messages()
     {
         return [
-            'company_name.required' => 'Nama perusahaan / instansi wajib diisi.',
-            'position.required' => 'Posisi / jabatan wajib diisi.',
-            'employment_type.required' => 'Jenis pekerjaan wajib dipilih.',
-            'start_date.required' => 'Tanggal mulai wajib diisi.',
-            'start_date.date' => 'Format tanggal mulai tidak valid.',
-            'end_date.date' => 'Format tanggal selesai tidak valid.',
-            'end_date.after_or_equal' => 'Tanggal selesai harus setelah atau sama dengan tanggal mulai.',
+            'company_name.required' => __('Nama perusahaan / instansi wajib diisi.'),
+            'position.required' => __('Posisi / jabatan wajib diisi.'),
+            'employment_type.required' => __('Jenis pekerjaan wajib dipilih.'),
+            'start_date.required' => __('Tanggal mulai wajib diisi.'),
+            'start_date.date' => __('Format tanggal mulai tidak valid.'),
+            'end_date.date' => __('Format tanggal selesai tidak valid.'),
+            'end_date.after_or_equal' => __('Tanggal selesai harus setelah atau sama dengan tanggal mulai.'),
         ];
     }
 
@@ -149,11 +149,11 @@ class Pengalaman extends Component
         if ($this->isEdit && $this->work_experience_id) {
             $exp = WorkExperience::where('profile_id', $profile->id)->where('id', $this->work_experience_id)->firstOrFail();
             $exp->update($validatedData);
-            session()->flash('message', 'Pengalaman kerja berhasil diperbarui.');
+            session()->flash('message', __('Pengalaman kerja berhasil diperbarui.'));
         } else {
             $validatedData['profile_id'] = $profile->id;
             WorkExperience::create($validatedData);
-            session()->flash('message', 'Pengalaman kerja berhasil ditambahkan.');
+            session()->flash('message', __('Pengalaman kerja berhasil ditambahkan.'));
         }
 
         $this->closeModal();
@@ -189,7 +189,7 @@ class Pengalaman extends Component
         );
 
         $this->dispatch('profile-updated');
-        session()->flash('preference_message', 'Minat kerja berhasil diperbarui!');
+        session()->flash('preference_message', __('Minat kerja berhasil diperbarui!'));
     }
 
     public function confirmDelete($id)
@@ -211,7 +211,7 @@ class Pengalaman extends Component
             $profile = ApplicantProfile::where('user_id', $user->id)->first();
             if ($profile) {
                 WorkExperience::where('profile_id', $profile->id)->where('id', $this->deleteId)->delete();
-                session()->flash('message', 'Pengalaman kerja berhasil dihapus.');
+                session()->flash('message', __('Pengalaman kerja berhasil dihapus.'));
             }
         }
 

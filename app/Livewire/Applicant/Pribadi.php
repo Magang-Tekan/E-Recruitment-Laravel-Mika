@@ -107,8 +107,8 @@ class Pribadi extends Component
     protected function messages()
     {
         return [
-            'nik.digits' => 'NIK harus terdiri dari 16 digit angka.',
-            'blood_type.in' => 'Pilihan golongan darah tidak valid.',
+            'nik.digits' => __('NIK harus terdiri dari 16 digit angka.'),
+            'blood_type.in' => __('Pilihan golongan darah tidak valid.'),
         ];
     }
 
@@ -117,14 +117,14 @@ class Pribadi extends Component
         $this->validate([
             'cv_file' => 'required|file|max:10240',
         ], [
-            'cv_file.required' => 'Silakan pilih file CV.',
-            'cv_file.file' => 'File CV tidak valid.',
-            'cv_file.max' => 'Ukuran file CV maksimal 10MB.',
+            'cv_file.required' => __('Silakan pilih file CV.'),
+            'cv_file.file' => __('File CV tidak valid.'),
+            'cv_file.max' => __('Ukuran file CV maksimal 10MB.'),
         ]);
 
         $extension = strtolower($this->cv_file->getClientOriginalExtension());
         if (! in_array($extension, ['pdf', 'doc', 'docx'])) {
-            $this->addError('cv_file', 'Format file CV harus berupa PDF, DOC, atau DOCX.');
+            $this->addError('cv_file', __('Format file CV harus berupa PDF, DOC, atau DOCX.'));
             $this->cv_file = null;
             return;
         }
@@ -143,7 +143,7 @@ class Pribadi extends Component
         $this->current_cv_url = asset('storage/' . $cvPath) . '?v=' . time();
         $this->cv_file = null;
 
-        session()->flash('message', 'File CV berhasil diunggah.');
+        session()->flash('message', __('File CV berhasil diunggah.'));
         $this->dispatch('profile-updated', name: $this->full_name);
     }
 
@@ -218,7 +218,7 @@ class Pribadi extends Component
             $user->update($userUpdates);
         }
 
-        session()->flash('message', 'Data pribadi berhasil diperbarui.');
+        session()->flash('message', __('Data pribadi berhasil diperbarui.'));
         $this->dispatch('profile-updated', name: $this->full_name, photo: $this->current_photo_url);
     }
 
@@ -233,7 +233,7 @@ class Pribadi extends Component
             $profile->update(['cv_file_path' => null]);
             $this->current_cv_path = null;
             $this->current_cv_url = null;
-            session()->flash('message', 'File CV berhasil dihapus.');
+            session()->flash('message', __('File CV berhasil dihapus.'));
         }
     }
 

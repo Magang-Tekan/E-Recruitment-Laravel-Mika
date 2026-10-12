@@ -197,11 +197,11 @@ class ApplicantProfile extends Model
     {
         $statuses = $this->section_statuses;
         $labels = [
-            'pribadi' => 'Data Pribadi',
-            'cv' => 'Unggah Dokumen CV',
-            'keluarga' => 'Data Keluarga',
-            'pendidikan' => 'Pendidikan',
-            'skill' => 'Skill / Keahlian',
+            'pribadi' => __('Data Pribadi'),
+            'cv' => __('Unggah Dokumen CV'),
+            'keluarga' => __('Data Keluarga'),
+            'pendidikan' => __('Pendidikan'),
+            'skill' => __('Skill / Keahlian'),
         ];
 
         $missing = [];

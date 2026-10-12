@@ -150,12 +150,12 @@ class Prestasi extends Component
             'org_end_year' => $this->org_is_active ? 'nullable' : 'nullable|integer|digits:4|gte:org_start_year|max:' . ($currentYear + 10),
             'org_description' => 'nullable|string|max:2000',
         ], [
-            'org_name.required' => 'Nama organisasi wajib diisi.',
-            'org_position.required' => 'Jabatan / posisi wajib diisi.',
-            'org_start_month.required' => 'Bulan mulai wajib dipilih.',
-            'org_start_year.required' => 'Tahun mulai wajib diisi.',
-            'org_start_year.digits' => 'Tahun mulai harus 4 digit angka.',
-            'org_end_year.gte' => 'Tahun selesai harus lebih besar atau sama dengan tahun mulai.',
+            'org_name.required' => __('Nama organisasi wajib diisi.'),
+            'org_position.required' => __('Jabatan / posisi wajib diisi.'),
+            'org_start_month.required' => __('Bulan mulai wajib dipilih.'),
+            'org_start_year.required' => __('Tahun mulai wajib diisi.'),
+            'org_start_year.digits' => __('Tahun mulai harus 4 digit angka.'),
+            'org_end_year.gte' => __('Tahun selesai harus lebih besar atau sama dengan tahun mulai.'),
         ]);
 
         $user = Auth::user();
@@ -175,11 +175,11 @@ class Prestasi extends Component
         if ($this->isEditOrganization && $this->organization_id) {
             $org = Organization::where('profile_id', $profile->id)->where('id', $this->organization_id)->firstOrFail();
             $org->update($data);
-            session()->flash('message', 'Riwayat organisasi berhasil diperbarui.');
+            session()->flash('message', __('Riwayat organisasi berhasil diperbarui.'));
         } else {
             $data['profile_id'] = $profile->id;
             Organization::create($data);
-            session()->flash('message', 'Riwayat organisasi berhasil ditambahkan.');
+            session()->flash('message', __('Riwayat organisasi berhasil ditambahkan.'));
         }
 
         $this->closeOrganizationModal();
@@ -192,7 +192,7 @@ class Prestasi extends Component
         $profile = ApplicantProfile::where('user_id', $user->id)->first();
         if ($profile) {
             Organization::where('profile_id', $profile->id)->where('id', $id)->delete();
-            session()->flash('message', 'Riwayat organisasi berhasil dihapus.');
+            session()->flash('message', __('Riwayat organisasi berhasil dihapus.'));
         }
 
         $this->cancelDelete();
@@ -260,13 +260,13 @@ class Prestasi extends Component
             'achievement_description' => 'nullable|string|max:2000',
             'achievement_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ], [
-            'achievement_name.required' => 'Nama prestasi / penghargaan wajib diisi.',
-            'achievement_scale.required' => 'Tingkat / skala prestasi wajib dipilih.',
-            'achievement_month.required' => 'Bulan perolehan wajib dipilih.',
-            'achievement_year.required' => 'Tahun perolehan wajib diisi.',
-            'achievement_year.digits' => 'Tahun harus 4 digit angka.',
-            'achievement_certificate.mimes' => 'Format sertifikat harus PDF, JPG, JPEG, atau PNG.',
-            'achievement_certificate.max' => 'Ukuran sertifikat tidak boleh melebihi 2MB.',
+            'achievement_name.required' => __('Nama prestasi / penghargaan wajib diisi.'),
+            'achievement_scale.required' => __('Tingkat / skala prestasi wajib dipilih.'),
+            'achievement_month.required' => __('Bulan perolehan wajib dipilih.'),
+            'achievement_year.required' => __('Tahun perolehan wajib diisi.'),
+            'achievement_year.digits' => __('Tahun harus 4 digit angka.'),
+            'achievement_certificate.mimes' => __('Format sertifikat harus PDF, JPG, JPEG, atau PNG.'),
+            'achievement_certificate.max' => __('Ukuran sertifikat tidak boleh melebihi 2MB.'),
         ]);
 
         $user = Auth::user();
@@ -290,7 +290,7 @@ class Prestasi extends Component
                 'description' => $this->achievement_description,
                 'certificate_path' => $certPath,
             ]);
-            session()->flash('message', 'Prestasi berhasil diperbarui.');
+            session()->flash('message', __('Prestasi berhasil diperbarui.'));
         } else {
             Achievement::create([
                 'profile_id' => $profile->id,
@@ -301,7 +301,7 @@ class Prestasi extends Component
                 'description' => $this->achievement_description,
                 'certificate_path' => $certPath,
             ]);
-            session()->flash('message', 'Prestasi berhasil ditambahkan.');
+            session()->flash('message', __('Prestasi berhasil ditambahkan.'));
         }
 
         $this->closeAchievementModal();
@@ -319,7 +319,7 @@ class Prestasi extends Component
                     Storage::disk('public')->delete($ach->certificate_path);
                 }
                 $ach->delete();
-                session()->flash('message', 'Prestasi berhasil dihapus.');
+                session()->flash('message', __('Prestasi berhasil dihapus.'));
             }
         }
 

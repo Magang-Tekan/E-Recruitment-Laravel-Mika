@@ -158,19 +158,19 @@
                 $navCurrentLocale = app()->getLocale();
                 $navCurrentUrl = request()->fullUrl();
             @endphp
-            <div class="inline-flex items-center p-0.5 rounded-full border border-[#93F514]/40 bg-[#061806]/80 text-[11px] font-bold text-gray-300 shadow-xs select-none">
+            <div class="nav-lang-pill inline-flex items-center p-0.5 rounded-full border border-slate-200/90 dark:border-[#93F514]/40 bg-slate-100/90 dark:bg-[#061806]/80 text-[11px] font-bold text-slate-600 dark:text-gray-300 shadow-xs select-none transition-all duration-200">
                 <button type="button" 
                    data-lang-btn="id"
                    onclick="window.mikaSwitchLocale('id', '{{ $navCurrentUrl }}')"
                    title="Indonesia"
-                   class="px-2 py-0.5 rounded-full transition-all duration-150 cursor-pointer {{ $navCurrentLocale === 'id' ? 'bg-[#93F514] text-black shadow-xs font-black cursor-default' : 'text-gray-400 hover:text-white hover:bg-white/5 active:scale-95' }}">
+                   class="nav-lang-btn px-2 py-0.5 rounded-full transition-all duration-150 cursor-pointer {{ $navCurrentLocale === 'id' ? 'nav-lang-btn-active bg-[#3C7800] dark:bg-[#93F514] text-white dark:text-black shadow-xs font-black cursor-default' : 'text-slate-500 dark:text-gray-400 hover:text-[#3C7800] dark:hover:text-white hover:bg-[#3C7800]/10 dark:hover:bg-white/5 active:scale-95' }}">
                     ID
                 </button>
                 <button type="button" 
                    data-lang-btn="en"
                    onclick="window.mikaSwitchLocale('en', '{{ $navCurrentUrl }}')"
                    title="English"
-                   class="px-2 py-0.5 rounded-full transition-all duration-150 cursor-pointer {{ $navCurrentLocale === 'en' ? 'bg-[#93F514] text-black shadow-xs font-black cursor-default' : 'text-gray-400 hover:text-white hover:bg-white/5 active:scale-95' }}">
+                   class="nav-lang-btn px-2 py-0.5 rounded-full transition-all duration-150 cursor-pointer {{ $navCurrentLocale === 'en' ? 'nav-lang-btn-active bg-[#3C7800] dark:bg-[#93F514] text-white dark:text-black shadow-xs font-black cursor-default' : 'text-slate-500 dark:text-gray-400 hover:text-[#3C7800] dark:hover:text-white hover:bg-[#3C7800]/10 dark:hover:bg-white/5 active:scale-95' }}">
                     EN
                 </button>
             </div>
@@ -381,24 +381,24 @@
         <div class="pt-3 border-t border-[#93F514]/20 flex flex-col gap-2">
 
             <!-- Language Switcher (Mobile) -->
-            <div class="w-full flex items-center justify-between px-4 py-2.5 rounded-2xl border border-[#93F514]/30 text-sm font-semibold text-gray-300 bg-black/40">
-                <span class="flex items-center gap-2 text-xs">
-                    <svg class="w-4 h-4 text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="nav-lang-mobile-row w-full flex items-center justify-between px-4 py-2.5 rounded-2xl border border-slate-200/90 dark:border-[#93F514]/30 text-sm font-semibold text-slate-700 dark:text-gray-300 bg-slate-50/90 dark:bg-black/40 transition-colors duration-200">
+                <span class="nav-lang-mobile-label flex items-center gap-2 text-xs">
+                    <svg class="w-4 h-4 text-[#3C7800] dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
                     </svg>
                     {{ __('Language') }}
                 </span>
-                <div class="inline-flex items-center p-0.5 rounded-full border border-[#93F514]/40 bg-[#061806] text-xs font-bold select-none">
+                <div class="nav-lang-pill inline-flex items-center p-0.5 rounded-full border border-slate-200/90 dark:border-[#93F514]/40 bg-white dark:bg-[#061806] text-xs font-bold select-none transition-all duration-200">
                     <button type="button" 
                        data-lang-btn="id"
                        onclick="window.mikaSwitchLocale('id', '{{ $navCurrentUrl }}')"
-                       class="px-2.5 py-1 rounded-full transition cursor-pointer {{ $navCurrentLocale === 'id' ? 'bg-[#93F514] text-black font-black cursor-default' : 'text-gray-400 hover:text-white active:scale-95' }}">
+                       class="nav-lang-btn px-2.5 py-1 rounded-full transition cursor-pointer {{ $navCurrentLocale === 'id' ? 'nav-lang-btn-active bg-[#3C7800] dark:bg-[#93F514] text-white dark:text-black font-black cursor-default' : 'text-slate-500 dark:text-gray-400 hover:text-[#3C7800] dark:hover:text-white active:scale-95' }}">
                         ID
                     </button>
                     <button type="button" 
                        data-lang-btn="en"
                        onclick="window.mikaSwitchLocale('en', '{{ $navCurrentUrl }}')"
-                       class="px-2.5 py-1 rounded-full transition cursor-pointer {{ $navCurrentLocale === 'en' ? 'bg-[#93F514] text-black font-black cursor-default' : 'text-gray-400 hover:text-white active:scale-95' }}">
+                       class="nav-lang-btn px-2.5 py-1 rounded-full transition cursor-pointer {{ $navCurrentLocale === 'en' ? 'nav-lang-btn-active bg-[#3C7800] dark:bg-[#93F514] text-white dark:text-black font-black cursor-default' : 'text-slate-500 dark:text-gray-400 hover:text-[#3C7800] dark:hover:text-white active:scale-95' }}">
                         EN
                     </button>
                 </div>

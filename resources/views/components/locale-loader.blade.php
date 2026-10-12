@@ -101,14 +101,27 @@
             document.cookie = 'locale=' + encodeURIComponent(newLocale) + ';path=/;max-age=31536000;SameSite=Lax';
 
             // 3. Optimistic visual switch pada tombol pill bahasa
+            const isDarkTheme = document.documentElement.classList.contains('dark') || !document.documentElement.classList.contains('light-mode');
             document.querySelectorAll('[data-lang-btn]').forEach(function(el) {
                 const btnLocale = el.getAttribute('data-lang-btn');
                 if (btnLocale === newLocale) {
-                    el.classList.add('bg-[#93F514]', 'text-black', 'font-black');
-                    el.classList.remove('text-gray-400', 'text-slate-500', 'text-slate-400');
+                    el.classList.add('nav-lang-btn-active', 'font-black');
+                    if (isDarkTheme) {
+                        el.classList.add('bg-[#93F514]', 'text-black');
+                        el.classList.remove('text-gray-400', 'text-slate-500', 'text-slate-400', 'bg-[#3C7800]', 'bg-emerald-600', 'text-white');
+                    } else {
+                        el.classList.add('bg-[#3C7800]', 'text-white');
+                        el.classList.remove('text-gray-400', 'text-slate-500', 'text-slate-400', 'bg-[#93F514]', 'text-black');
+                    }
                 } else {
-                    el.classList.remove('bg-[#93F514]', 'text-black', 'font-black');
-                    el.classList.add('text-gray-400');
+                    el.classList.remove('nav-lang-btn-active', 'bg-[#93F514]', 'text-black', 'bg-[#3C7800]', 'bg-emerald-600', 'text-white', 'font-black');
+                    if (isDarkTheme) {
+                        el.classList.add('text-gray-400');
+                        el.classList.remove('text-slate-500');
+                    } else {
+                        el.classList.add('text-slate-500');
+                        el.classList.remove('text-gray-400');
+                    }
                 }
             });
 

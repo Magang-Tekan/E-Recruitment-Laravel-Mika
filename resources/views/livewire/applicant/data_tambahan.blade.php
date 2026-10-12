@@ -9,10 +9,10 @@
         <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
                 <div class="flex items-center gap-2.5">
-                    <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Data Tambahan</h2>
-                    <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] border border-slate-200 dark:border-[#1D2E54]">Opsional</span>
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ __('Data Tambahan') }}</h2>
+                    <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] border border-slate-200 dark:border-[#1D2E54]">{{ __('Opsional') }}</span>
                 </div>
-                <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 font-medium">* Kelola keahlian, sertifikasi profesional, pelatihan, dan kemampuan bahasa Anda.</p>
+                <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 font-medium">{{ __('* Kelola keahlian, sertifikasi profesional, pelatihan, dan kemampuan bahasa Anda.') }}</p>
             </div>
         </div>
     </div>
@@ -42,8 +42,8 @@
     <div class="space-y-4 pt-2">
         <div class="border-b border-slate-200 dark:border-[#1D2E54] pb-3 flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Sertifikasi Profesional</h3>
-                <p class="text-xs text-slate-500 dark:text-[#93A5C9]">Lisensi, lisensi keahlian, atau sertifikat kompetensi resmi</p>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ __('Sertifikasi Profesional') }}</h3>
+                <p class="text-xs text-slate-500 dark:text-[#93A5C9]">{{ __('Lisensi, lisensi keahlian, atau sertifikat kompetensi resmi') }}</p>
             </div>
         </div>
 
@@ -61,20 +61,20 @@
                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                                     </svg>
-                                    <span>Lihat File</span>
+                                    <span>{{ __('Lihat File') }}</span>
                                 </a>
                             </div>
                         @endif
                     </div>
 
                     <div class="flex items-center gap-1 shrink-0">
-                        <button wire:click="edit('certification', {{ $cert->id }})" title="Edit Sertifikasi"
+                        <button wire:click="edit('certification', {{ $cert->id }})" title="{{ __('Edit Sertifikasi') }}"
                             class="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-[#93F514] rounded-lg hover:bg-slate-100 dark:hover:bg-[#14203A] transition">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                         </button>
-                        <button wire:click="confirmDelete('certification', {{ $cert->id }})" title="Hapus Sertifikasi"
+                        <button wire:click="confirmDelete('certification', {{ $cert->id }})" title="{{ __('Hapus Sertifikasi') }}"
                             class="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -87,13 +87,13 @@
                     <svg class="w-9 h-9 text-slate-300 dark:text-[#1D2E54]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.816c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6A2.25 2.25 0 0 0 4.727 20.25h14.546a2.25 2.25 0 0 0 2.224-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
                     </svg>
-                    <p class="text-xs font-medium text-slate-500 dark:text-[#93A5C9]">Belum ada sertifikasi ditambahkan</p>
+                    <p class="text-xs font-medium text-slate-500 dark:text-[#93A5C9]">{{ __('Belum ada sertifikasi ditambahkan') }}</p>
                     <button wire:click="openModal('certification')"
-                        class="inline-flex items-center gap-1.5 px-4 py-2 border border-emerald-600 dark:border-[#93F514] text-emerald-700 dark:text-[#93F514] hover:bg-emerald-50 dark:hover:bg-[#93F514]/10 text-xs font-bold rounded-xl transition">
+                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
-                        <span>Tambah Sertifikasi</span>
+                        <span>{{ __('Tambah Sertifikasi') }}</span>
                     </button>
                 </div>
             @endforelse
@@ -102,11 +102,11 @@
         @if ($certifications->isNotEmpty())
             <div class="pt-1 flex justify-start">
                 <button wire:click="openModal('certification')"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 border border-emerald-600/40 dark:border-[#93F514]/40 text-emerald-700 dark:text-[#93F514] hover:bg-emerald-50 dark:hover:bg-[#93F514]/10 text-xs font-bold rounded-xl transition">
+                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>Tambah Sertifikasi</span>
+                    <span>{{ __('Tambah Sertifikasi') }}</span>
                 </button>
             </div>
         @endif
@@ -119,8 +119,8 @@
     <div class="space-y-4 pt-2">
         <div class="border-b border-slate-200 dark:border-[#1D2E54] pb-3 flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Pelatihan & Kursus</h3>
-                <p class="text-xs text-slate-500 dark:text-[#93A5C9]">Workshop, bootcamp, atau pelatihan yang pernah diikuti</p>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ __('Pelatihan & Kursus') }}</h3>
+                <p class="text-xs text-slate-500 dark:text-[#93A5C9]">{{ __('Workshop, bootcamp, atau pelatihan yang pernah diikuti') }}</p>
             </div>
         </div>
 
@@ -138,20 +138,20 @@
                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                                     </svg>
-                                    <span>Lihat File</span>
+                                    <span>{{ __('Lihat File') }}</span>
                                 </a>
                             </div>
                         @endif
                     </div>
 
                     <div class="flex items-center gap-1 shrink-0">
-                        <button wire:click="edit('training', {{ $training->id }})" title="Edit Pelatihan"
+                        <button wire:click="edit('training', {{ $training->id }})" title="{{ __('Edit Pelatihan') }}"
                             class="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-[#93F514] rounded-lg hover:bg-slate-100 dark:hover:bg-[#14203A] transition">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                         </button>
-                        <button wire:click="confirmDelete('training', {{ $training->id }})" title="Hapus Pelatihan"
+                        <button wire:click="confirmDelete('training', {{ $training->id }})" title="{{ __('Hapus Pelatihan') }}"
                             class="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -164,13 +164,13 @@
                     <svg class="w-9 h-9 text-slate-300 dark:text-[#1D2E54]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.816c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6A2.25 2.25 0 0 0 4.727 20.25h14.546a2.25 2.25 0 0 0 2.224-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
                     </svg>
-                    <p class="text-xs font-medium text-slate-500 dark:text-[#93A5C9]">Belum ada pelatihan ditambahkan</p>
+                    <p class="text-xs font-medium text-slate-500 dark:text-[#93A5C9]">{{ __('Belum ada pelatihan ditambahkan') }}</p>
                     <button wire:click="openModal('training')"
-                        class="inline-flex items-center gap-1.5 px-4 py-2 border border-emerald-600 dark:border-[#93F514] text-emerald-700 dark:text-[#93F514] hover:bg-emerald-50 dark:hover:bg-[#93F514]/10 text-xs font-bold rounded-xl transition">
+                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
-                        <span>Tambah Pelatihan</span>
+                        <span>{{ __('Tambah Pelatihan') }}</span>
                     </button>
                 </div>
             @endforelse
@@ -179,11 +179,11 @@
         @if ($trainings->isNotEmpty())
             <div class="pt-1 flex justify-start">
                 <button wire:click="openModal('training')"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 border border-emerald-600/40 dark:border-[#93F514]/40 text-emerald-700 dark:text-[#93F514] hover:bg-emerald-50 dark:hover:bg-[#93F514]/10 text-xs font-bold rounded-xl transition">
+                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>Tambah Pelatihan</span>
+                    <span>{{ __('Tambah Pelatihan') }}</span>
                 </button>
             </div>
         @endif
@@ -196,8 +196,8 @@
     <div class="space-y-4 pt-2">
         <div class="border-b border-slate-200 dark:border-[#1D2E54] pb-3 flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Kemampuan Berbahasa</h3>
-                <p class="text-xs text-slate-500 dark:text-[#93A5C9]">Bahasa asing atau daerah yang dikuasai (beserta skor/sertifikat jika ada)</p>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ __('Kemampuan Berbahasa') }}</h3>
+                <p class="text-xs text-slate-500 dark:text-[#93A5C9]">{{ __('Bahasa asing atau daerah yang dikuasai (beserta skor/sertifikat jika ada)') }}</p>
             </div>
         </div>
 
@@ -215,20 +215,20 @@
                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                                     </svg>
-                                    <span>Lihat File</span>
+                                    <span>{{ __('Lihat File') }}</span>
                                 </a>
                             </div>
                         @endif
                     </div>
 
                     <div class="flex items-center gap-1 shrink-0">
-                        <button wire:click="edit('language', {{ $lang->id }})" title="Edit Bahasa"
+                        <button wire:click="edit('language', {{ $lang->id }})" title="{{ __('Edit Bahasa') }}"
                             class="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-[#93F514] rounded-lg hover:bg-slate-100 dark:hover:bg-[#14203A] transition">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                         </button>
-                        <button wire:click="confirmDelete('language', {{ $lang->id }})" title="Hapus Bahasa"
+                        <button wire:click="confirmDelete('language', {{ $lang->id }})" title="{{ __('Hapus Bahasa') }}"
                             class="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -241,13 +241,13 @@
                     <svg class="w-9 h-9 text-slate-300 dark:text-[#1D2E54]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.816c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6A2.25 2.25 0 0 0 4.727 20.25h14.546a2.25 2.25 0 0 0 2.224-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
                     </svg>
-                    <p class="text-xs font-medium text-slate-500 dark:text-[#93A5C9]">Belum ada kemampuan bahasa ditambahkan</p>
+                    <p class="text-xs font-medium text-slate-500 dark:text-[#93A5C9]">{{ __('Belum ada kemampuan bahasa ditambahkan') }}</p>
                     <button wire:click="openModal('language')"
-                        class="inline-flex items-center gap-1.5 px-4 py-2 border border-emerald-600 dark:border-[#93F514] text-emerald-700 dark:text-[#93F514] hover:bg-emerald-50 dark:hover:bg-[#93F514]/10 text-xs font-bold rounded-xl transition">
+                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
-                        <span>Tambah Bahasa</span>
+                        <span>{{ __('Tambah Bahasa') }}</span>
                     </button>
                 </div>
             @endforelse
@@ -256,11 +256,11 @@
         @if ($languages->isNotEmpty())
             <div class="pt-1 flex justify-start">
                 <button wire:click="openModal('language')"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 border border-emerald-600/40 dark:border-[#93F514]/40 text-emerald-700 dark:text-[#93F514] hover:bg-emerald-50 dark:hover:bg-[#93F514]/10 text-xs font-bold rounded-xl transition">
+                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>Tambah Bahasa</span>
+                    <span>{{ __('Tambah Bahasa') }}</span>
                 </button>
             </div>
         @endif
@@ -279,7 +279,7 @@
                 <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white dark:bg-[#0D1527] rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-200 dark:border-[#1D2E54]">
                     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200/80 dark:border-[#1D2E54]">
                         <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <span>{{ $isEdit ? 'Edit ' . $this->getTypeLabel($modalType) : 'Tambah ' . $this->getTypeLabel($modalType) }}</span>
+                            <span>{{ $isEdit ? __('Edit :type', ['type' => __($this->getTypeLabel($modalType))]) : __('Tambah :type', ['type' => __($this->getTypeLabel($modalType))]) }}</span>
                         </h3>
                         <button wire:click="closeModal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -291,10 +291,10 @@
                     <form wire:submit.prevent="save" class="p-6 space-y-4">
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 dark:text-[#93A5C9] uppercase tracking-wider mb-2">
-                                Nama {{ $this->getTypeLabel($modalType) }} <span class="text-red-500">*</span>
+                                {{ __('Nama :type', ['type' => __($this->getTypeLabel($modalType))]) }} <span class="text-red-500">*</span>
                             </label>
                             <input type="text" wire:model="name"
-                                placeholder="{{ $modalType === 'certification' ? 'Contoh: AWS Certified Solutions Architect / BNSP' : ($modalType === 'training' ? 'Contoh: Digital Marketing Bootcamp 2023' : ($modalType === 'language' ? 'Contoh: Bahasa Inggris (TOEFL 550) / Bahasa Jepang (N3)' : 'Contoh: Laravel / Leadership')) }}"
+                                placeholder="{{ $modalType === 'certification' ? __('Contoh: AWS Certified Solutions Architect / BNSP') : ($modalType === 'training' ? __('Contoh: Digital Marketing Bootcamp 2023') : ($modalType === 'language' ? __('Contoh: Bahasa Inggris (TOEFL 550) / Bahasa Jepang (N3)') : __('Contoh: Laravel / Leadership'))) }}"
                                 class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] transition">
                             @error('name')
                                 <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
@@ -303,7 +303,7 @@
 
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 dark:text-[#93A5C9] uppercase tracking-wider mb-2">
-                                Upload Sertifikat / Bukti (Opsional, PDF / Gambar max 2MB)
+                                {{ __('Upload Sertifikat / Bukti (Opsional, PDF / Gambar max 2MB)') }}
                             </label>
                             <input type="file" wire:model="certificate" accept=".pdf,.jpg,.jpeg,.png"
                                 class="w-full text-xs text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 dark:file:bg-[#14203A] dark:file:text-slate-300 hover:file:bg-slate-200 dark:hover:file:bg-[#1A2A4C] transition">
@@ -313,7 +313,7 @@
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                <span>Mengunggah file...</span>
+                                <span>{{ __('Mengunggah file...') }}</span>
                             </div>
 
                             @error('certificate')
@@ -333,7 +333,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
-                                        <span>Lihat File</span>
+                                        <span>{{ __('Lihat File') }}</span>
                                     </a>
                                 </div>
                             @endif
@@ -342,13 +342,13 @@
                         <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200/80 dark:border-[#1D2E54]">
                             <button type="button" wire:click="closeModal"
                                 class="px-5 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-[#14203A] dark:hover:bg-[#1A2A4C] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl transition">
-                                Batal
+                                {{ __('Batal') }}
                             </button>
                             <button type="submit" wire:loading.attr="disabled" wire:target="save, certificate"
                                 class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 text-xs font-bold rounded-xl transition flex items-center gap-2">
-                                <span wire:loading.remove wire:target="save, certificate">{{ $isEdit ? 'Simpan Perubahan' : 'Tambah ' . $this->getTypeLabel($modalType) }}</span>
-                                <span wire:loading wire:target="save">Menyimpan...</span>
-                                <span wire:loading wire:target="certificate">Mengunggah File...</span>
+                                <span wire:loading.remove wire:target="save, certificate">{{ $isEdit ? __('Simpan Perubahan') : __('Tambah :type', ['type' => __($this->getTypeLabel($modalType))]) }}</span>
+                                <span wire:loading wire:target="save">{{ __('Menyimpan...') }}</span>
+                                <span wire:loading wire:target="certificate">{{ __('Mengunggah File...') }}</span>
                             </button>
                         </div>
                     </form>
@@ -372,20 +372,20 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-base font-bold text-slate-900 dark:text-white">Konfirmasi Hapus Data</h3>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ __('Konfirmasi Hapus Data') }}</h3>
                             <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-0.5">
-                                Apakah Anda yakin ingin menghapus data {{ strtolower($this->getTypeLabel($deleteType)) }} ini? Tindakan ini tidak dapat dibatalkan.
+                                {{ __('Apakah Anda yakin ingin menghapus data :type ini? Tindakan ini tidak dapat dibatalkan.', ['type' => strtolower(__($this->getTypeLabel($deleteType)))]) }}
                             </p>
                         </div>
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200/80 dark:border-[#1D2E54]">
                         <button type="button" wire:click="cancelDelete" class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-[#14203A] dark:hover:bg-[#1A2A4C] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl transition">
-                            Batal
+                            {{ __('Batal') }}
                         </button>
                         <button type="button" wire:click="delete" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-md shadow-rose-500/20 transition flex items-center gap-1.5">
-                            <span wire:loading.remove wire:target="delete">Ya, Hapus</span>
-                            <span wire:loading wire:target="delete">Menghapus...</span>
+                            <span wire:loading.remove wire:target="delete">{{ __('Ya, Hapus') }}</span>
+                            <span wire:loading wire:target="delete">{{ __('Menghapus...') }}</span>
                         </button>
                     </div>
                 </div>

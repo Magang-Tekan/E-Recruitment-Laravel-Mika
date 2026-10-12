@@ -5,8 +5,8 @@
             style="background-image: radial-gradient(#93F514 1px, transparent 1px); background-size: 20px 20px;">
         </div>
         <div class="relative z-10">
-            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Data Keluarga</h2>
-            <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 font-medium">* Isilah data susunan dan latar belakang keluarga Anda dengan sebenarnya.</p>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ __('Data Keluarga') }}</h2>
+            <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 font-medium">{{ __('* Isilah data susunan dan latar belakang keluarga Anda dengan sebenarnya.') }}</p>
         </div>
     </div>
 
@@ -36,17 +36,17 @@
             <div class="pb-6 border-b border-slate-200/80 dark:border-[#1D2E54]">
                 <div class="flex flex-wrap items-center gap-3">
                     <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                        Anak ke <span class="text-red-500">*</span>
+                        {{ __('Anak ke') }} <span class="text-red-500">*</span>
                     </label>
                     <input type="number" min="1" wire:model="child_sequence" placeholder="0"
                         class="w-20 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm text-center focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                     
-                    <span class="text-sm font-medium text-slate-600 dark:text-slate-400">dari</span>
+                    <span class="text-sm font-medium text-slate-600 dark:text-slate-400">{{ __('dari') }}</span>
 
                     <input type="number" min="1" wire:model="total_siblings" placeholder="0"
                         class="w-20 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm text-center focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
 
-                    <span class="text-sm font-medium text-slate-600 dark:text-slate-400">bersaudara</span>
+                    <span class="text-sm font-medium text-slate-600 dark:text-slate-400">{{ __('bersaudara') }}</span>
                 </div>
                 <div class="flex gap-4 mt-1">
                     @error('child_sequence') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
@@ -110,15 +110,15 @@
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
-                        Data Ayah
+                        {{ __('Data Ayah') }}
                     </h3>
 
                     <!-- Nama Ayah -->
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                            Nama Ayah <span class="text-red-500">*</span>
+                            {{ __('Nama Ayah') }} <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" wire:model="father_name" placeholder="Masukkan Nama Lengkap"
+                        <input type="text" wire:model="father_name" placeholder="{{ __('Masukkan Nama Lengkap') }}"
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                         @error('father_name') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
@@ -126,14 +126,14 @@
                     <!-- Tahun Lahir Ayah (Autocomplete Searchable Input) -->
                     <div class="relative">
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                            Tahun Lahir Ayah <span class="text-red-500">*</span>
+                            {{ __('Tahun Lahir Ayah') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <input type="text" 
                                 x-model="$wire.father_birth_year"
                                 @focus="openFatherYear = true; fatherYearQuery = ''"
                                 @input="openFatherYear = true; fatherYearQuery = $event.target.value"
-                                placeholder="Pilih / Ketik Tahun Lahir"
+                                placeholder="{{ __('Pilih / Ketik Tahun Lahir') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -160,14 +160,14 @@
                     <!-- Pendidikan Terakhir Ayah (Autocomplete Searchable Input) -->
                     <div class="relative">
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                            Pendidikan Terakhir Ayah <span class="text-red-500">*</span>
+                            {{ __('Pendidikan Terakhir Ayah') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <input type="text" 
                                 x-model="$wire.father_last_education"
                                 @focus="openFatherEdu = true; fatherEduQuery = ''"
                                 @input="openFatherEdu = true; fatherEduQuery = $event.target.value"
-                                placeholder="Pilih / Ketik Pendidikan"
+                                placeholder="{{ __('Pilih / Ketik Pendidikan') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -194,14 +194,14 @@
                     <!-- Pekerjaan Ayah (Autocomplete Searchable Input) -->
                     <div class="relative">
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                            Pekerjaan Ayah <span class="text-red-500">*</span>
+                            {{ __('Pekerjaan Ayah') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <input type="text" 
                                 x-model="$wire.father_occupation"
                                 @focus="openFatherOcc = true; fatherOccQuery = ''"
                                 @input="openFatherOcc = true; fatherOccQuery = $event.target.value"
-                                placeholder="Pilih / Ketik Pekerjaan"
+                                placeholder="{{ __('Pilih / Ketik Pekerjaan') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -228,9 +228,9 @@
                     <!-- Perusahaan / Institusi Ayah -->
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                            Perusahaan / Institusi <span class="text-red-500">*</span>
+                            {{ __('Perusahaan / Institusi') }} <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" wire:model="father_company" placeholder="Masukkan nama perusahaan/institusi"
+                        <input type="text" wire:model="father_company" placeholder="{{ __('Masukkan nama perusahaan/institusi') }}"
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                         @error('father_company') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
@@ -242,15 +242,15 @@
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
-                        Data Ibu
+                        {{ __('Data Ibu') }}
                     </h3>
 
                     <!-- Nama Ibu -->
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                            Nama Ibu <span class="text-red-500">*</span>
+                            {{ __('Nama Ibu') }} <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" wire:model="mother_name" placeholder="Masukkan Nama Lengkap"
+                        <input type="text" wire:model="mother_name" placeholder="{{ __('Masukkan Nama Lengkap') }}"
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                         @error('mother_name') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
@@ -258,14 +258,14 @@
                     <!-- Tahun Lahir Ibu (Autocomplete Searchable Input) -->
                     <div class="relative">
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                            Tahun Lahir Ibu <span class="text-red-500">*</span>
+                            {{ __('Tahun Lahir Ibu') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <input type="text" 
                                 x-model="$wire.mother_birth_year"
                                 @focus="openMotherYear = true; motherYearQuery = ''"
                                 @input="openMotherYear = true; motherYearQuery = $event.target.value"
-                                placeholder="Pilih / Ketik Tahun Lahir"
+                                placeholder="{{ __('Pilih / Ketik Tahun Lahir') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -292,14 +292,14 @@
                     <!-- Pendidikan Terakhir Ibu (Autocomplete Searchable Input) -->
                     <div class="relative">
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                            Pendidikan Terakhir Ibu <span class="text-red-500">*</span>
+                            {{ __('Pendidikan Terakhir Ibu') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <input type="text" 
                                 x-model="$wire.mother_last_education"
                                 @focus="openMotherEdu = true; motherEduQuery = ''"
                                 @input="openMotherEdu = true; motherEduQuery = $event.target.value"
-                                placeholder="Pilih / Ketik Pendidikan"
+                                placeholder="{{ __('Pilih / Ketik Pendidikan') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -326,14 +326,14 @@
                     <!-- Pekerjaan Ibu (Autocomplete Searchable Input) -->
                     <div class="relative">
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                            Pekerjaan Ibu <span class="text-red-500">*</span>
+                            {{ __('Pekerjaan Ibu') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <input type="text" 
                                 x-model="$wire.mother_occupation"
                                 @focus="openMotherOcc = true; motherOccQuery = ''"
                                 @input="openMotherOcc = true; motherOccQuery = $event.target.value"
-                                placeholder="Pilih / Ketik Pekerjaan"
+                                placeholder="{{ __('Pilih / Ketik Pekerjaan') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -360,9 +360,9 @@
                     <!-- Perusahaan / Institusi Ibu -->
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                            Perusahaan / Institusi <span class="text-red-500">*</span>
+                            {{ __('Perusahaan / Institusi') }} <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" wire:model="mother_company" placeholder="Masukkan nama perusahaan/institusi"
+                        <input type="text" wire:model="mother_company" placeholder="{{ __('Masukkan nama perusahaan/institusi') }}"
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                         @error('mother_company') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
@@ -373,25 +373,25 @@
             <!-- Section 3: Status Pernikahan Anda -->
             <div>
                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
-                    Status Pernikahan Anda <span class="text-red-500">*</span>
+                    {{ __('Status Pernikahan Anda') }} <span class="text-red-500">*</span>
                 </label>
                 <div class="flex flex-wrap items-center gap-6">
                     <label class="inline-flex items-center gap-2 cursor-pointer">
                         <input type="radio" wire:model="marital_status" value="lajang"
                             class="w-4 h-4 text-emerald-600 border-slate-300 dark:border-[#1D2E54] focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
-                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Lajang</span>
+                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Lajang') }}</span>
                     </label>
 
                     <label class="inline-flex items-center gap-2 cursor-pointer">
                         <input type="radio" wire:model="marital_status" value="menikah"
                             class="w-4 h-4 text-emerald-600 border-slate-300 dark:border-[#1D2E54] focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
-                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Menikah</span>
+                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Menikah') }}</span>
                     </label>
 
                     <label class="inline-flex items-center gap-2 cursor-pointer">
                         <input type="radio" wire:model="marital_status" value="bercerai"
                             class="w-4 h-4 text-emerald-600 border-slate-300 dark:border-[#1D2E54] focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
-                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Bercerai</span>
+                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Bercerai') }}</span>
                     </label>
                 </div>
                 @error('marital_status') <span class="text-xs text-red-500 mt-2 block">{{ $message }}</span> @enderror
@@ -401,13 +401,13 @@
             <div class="flex justify-end pt-4 border-t border-slate-200/80 dark:border-[#1D2E54]">
                 <button type="submit" wire:loading.attr="disabled"
                     class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-sm font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition duration-150 ease-in-out flex items-center gap-2 active:scale-95">
-                    <span wire:loading.remove wire:target="save">Simpan Perubahan</span>
+                    <span wire:loading.remove wire:target="save">{{ __('Simpan Perubahan') }}</span>
                     <span wire:loading wire:target="save" class="flex items-center gap-2">
                         <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Menyimpan...
+                        {{ __('Menyimpan...') }}
                     </span>
                 </button>
             </div>

@@ -97,14 +97,14 @@ class Pendidikan extends Component
     {
         $isSchool = $this->isSchoolDegree();
         return [
-            'school_name.required' => 'Nama sekolah / perguruan tinggi wajib diisi.',
-            'custom_major.required' => 'Nama jurusan wajib diisi jika memilih lainnya.',
-            'start_year.required' => 'Tahun mulai wajib diisi.',
-            'start_year.digits' => 'Tahun mulai harus 4 digit angka.',
-            'end_year.gte' => 'Tahun selesai harus lebih besar atau sama dengan tahun mulai.',
+            'school_name.required' => __('Nama sekolah / perguruan tinggi wajib diisi.'),
+            'custom_major.required' => __('Nama jurusan wajib diisi jika memilih lainnya.'),
+            'start_year.required' => __('Tahun mulai wajib diisi.'),
+            'start_year.digits' => __('Tahun mulai harus 4 digit angka.'),
+            'end_year.gte' => __('Tahun selesai harus lebih besar atau sama dengan tahun mulai.'),
             'gpa.between' => $isSchool 
-                ? 'Nilai Rata-rata harus di antara 0 sampai 100.' 
-                : 'IPK harus di antara 0.00 sampai 4.00.',
+                ? __('Nilai Rata-rata harus di antara 0 sampai 100.') 
+                : __('IPK harus di antara 0.00 sampai 4.00.'),
         ];
     }
 
@@ -236,11 +236,11 @@ class Pendidikan extends Component
         if ($this->isEdit && $this->education_id) {
             $education = Education::where('profile_id', $profile->id)->where('id', $this->education_id)->firstOrFail();
             $education->update($validatedData);
-            session()->flash('message', 'Riwayat pendidikan berhasil diperbarui.');
+            session()->flash('message', __('Riwayat pendidikan berhasil diperbarui.'));
         } else {
             $validatedData['profile_id'] = $profile->id;
             Education::create($validatedData);
-            session()->flash('message', 'Riwayat pendidikan berhasil ditambahkan.');
+            session()->flash('message', __('Riwayat pendidikan berhasil ditambahkan.'));
         }
 
         $this->closeModal();
@@ -266,7 +266,7 @@ class Pendidikan extends Component
             $profile = ApplicantProfile::where('user_id', $user->id)->first();
             if ($profile) {
                 Education::where('profile_id', $profile->id)->where('id', $this->deleteId)->delete();
-                session()->flash('message', 'Riwayat pendidikan berhasil dihapus.');
+                session()->flash('message', __('Riwayat pendidikan berhasil dihapus.'));
             }
         }
 
@@ -344,14 +344,14 @@ class Pendidikan extends Component
                 'name' => $this->skill_name,
                 'certificate_path' => $certPath,
             ]);
-            session()->flash('message', 'Skill / Keahlian berhasil diperbarui.');
+            session()->flash('message', __('Skill / Keahlian berhasil diperbarui.'));
         } else {
             Skill::create([
                 'profile_id' => $profile->id,
                 'name' => $this->skill_name,
                 'certificate_path' => $certPath,
             ]);
-            session()->flash('message', 'Skill / Keahlian berhasil ditambahkan.');
+            session()->flash('message', __('Skill / Keahlian berhasil ditambahkan.'));
         }
 
         $this->closeSkillModal();
@@ -382,7 +382,7 @@ class Pendidikan extends Component
                         Storage::disk('public')->delete($skill->certificate_path);
                     }
                     $skill->delete();
-                    session()->flash('message', 'Skill / Keahlian berhasil dihapus.');
+                    session()->flash('message', __('Skill / Keahlian berhasil dihapus.'));
                 }
             }
         }

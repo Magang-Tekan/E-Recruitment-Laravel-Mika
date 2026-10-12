@@ -7,8 +7,8 @@
         </div>
         <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-                <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Riwayat Lamaran Kerja</h2>
-                <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 font-medium">* Pantau status progress seleksi, riwayat perubahan tahapan, dan jadwal wawancara dari lowongan yang telah Anda lamar.</p>
+                <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ __('Riwayat Lamaran Kerja') }}</h2>
+                <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 font-medium">{{ __('* Pantau status progress seleksi, riwayat perubahan tahapan, dan jadwal wawancara dari lowongan yang telah Anda lamar.') }}</p>
             </div>
             <div>
                 <a href="{{ url('/') }}"
@@ -16,7 +16,7 @@
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <span>Cari Lowongan Lain</span>
+                    <span>{{ __('Cari Lowongan Lain') }}</span>
                 </a>
             </div>
         </div>
@@ -32,7 +32,7 @@
                     $dateObj = \Carbon\Carbon::parse($interview->interview_date);
                     $isToday = $dateObj->isToday();
                     $isTomorrow = $dateObj->isTomorrow();
-                    $diffText = $isToday ? 'Hari Ini' : ($isTomorrow ? 'Besok' : $dateObj->translatedFormat('d M Y'));
+                    $diffText = $isToday ? __('Hari Ini') : ($isTomorrow ? __('Besok') : $dateObj->translatedFormat('d M Y'));
                     $isOnline = !empty($interview->meeting_link) || str_contains(strtolower($interview->location ?? ''), 'online');
                 @endphp
                 <div class="rounded-2xl bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-blue-600 dark:border-l-[#93F514] p-5 sm:p-6 shadow-md transition">
@@ -48,18 +48,18 @@
                             <div class="space-y-1.5">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold {{ $isToday ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30' : 'bg-slate-100 dark:bg-[#14203A] text-slate-700 dark:text-[#93A5C9] border border-slate-200 dark:border-[#1D2E54]' }}">
-                                        Jadwal Wawancara {{ $diffText }}
+                                        {{ __('Jadwal Wawancara') }} {{ $diffText }}
                                     </span>
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] border border-slate-200 dark:border-[#1D2E54]">
-                                        Status: {{ $interview->status }}
+                                        {{ __('Status:') }} {{ $interview->status }}
                                     </span>
                                 </div>
 
                                 <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight">
-                                    Wawancara: {{ $job->title ?? 'Posisi Pekerjaan' }}
+                                    {{ __('Wawancara:') }} {{ $job->title ?? __('Posisi Pekerjaan') }}
                                 </h3>
                                 <p class="text-xs text-slate-500 dark:text-[#93A5C9]">
-                                    {{ $company->name ?? 'Perusahaan' }} • Pewawancara: <strong class="text-slate-800 dark:text-white">{{ $interview->user->name ?? 'Tim HR / Rekruter' }}</strong>
+                                    {{ $company->name ?? __('Perusahaan') }} • {{ __('Pewawancara:') }} <strong class="text-slate-800 dark:text-white">{{ $interview->user->name ?? __('Tim HR / Rekruter') }}</strong>
                                 </p>
 
                                 <div class="flex flex-wrap items-center gap-2 pt-1.5 text-xs">
@@ -77,7 +77,7 @@
                                             <svg class="w-4 h-4 text-emerald-600 dark:text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                             </svg>
-                                            <span class="truncate">Online Video Meeting</span>
+                                            <span class="truncate">{{ __('Online Video Meeting') }}</span>
                                         @else
                                             <svg class="w-4 h-4 text-blue-600 dark:text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -97,7 +97,7 @@
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                     </svg>
-                                    <span>Buka Link Meeting</span>
+                                    <span>{{ __('Buka Link Meeting') }}</span>
                                 </a>
                             @endif
 
@@ -106,7 +106,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
-                                <span>Lihat Rincian</span>
+                                <span>{{ __('Lihat Rincian') }}</span>
                             </button>
                         </div>
                     </div>
@@ -121,7 +121,7 @@
         <div wire:click="$set('statusFilter', 'all')"
             class="cursor-pointer p-4 rounded-2xl border transition-all duration-200 {{ $statusFilter === 'all' ? 'bg-blue-50/70 dark:bg-[#14203A] border-blue-300 dark:border-blue-700 shadow-sm ring-2 ring-blue-500/20' : 'bg-white dark:bg-[#0D1527] border-slate-200/80 dark:border-[#1D2E54] hover:border-slate-300 dark:hover:border-slate-600 shadow-xs' }}">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-slate-500 dark:text-[#93A5C9] uppercase tracking-wider">Total Lamaran</span>
+                <span class="text-xs font-bold text-slate-500 dark:text-[#93A5C9] uppercase tracking-wider">{{ __('Total Lamaran') }}</span>
                 <span class="p-2 rounded-xl bg-blue-50 dark:bg-[#14203A] text-blue-600 dark:text-blue-400 border border-transparent dark:border-[#1D2E54]">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -129,14 +129,14 @@
                 </span>
             </div>
             <p class="text-2xl font-extrabold text-slate-900 dark:text-white mt-2">{{ $stats['total'] }}</p>
-            <span class="text-[11px] text-slate-400 dark:text-[#93A5C9]">Semua berkas terkirim</span>
+            <span class="text-[11px] text-slate-400 dark:text-[#93A5C9]">{{ __('Semua berkas terkirim') }}</span>
         </div>
 
         <!-- Dalam Proses -->
         <div wire:click="$set('statusFilter', 'process')"
             class="cursor-pointer p-4 rounded-2xl border transition-all duration-200 {{ $statusFilter === 'process' ? 'bg-amber-50/70 dark:bg-[#14203A] border-amber-300 dark:border-amber-700 shadow-sm ring-2 ring-amber-500/20' : 'bg-white dark:bg-[#0D1527] border-slate-200/80 dark:border-[#1D2E54] hover:border-amber-200 dark:hover:border-slate-600 shadow-xs' }}">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Dalam Proses</span>
+                <span class="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">{{ __('Dalam Proses') }}</span>
                 <span class="p-2 rounded-xl bg-amber-50 dark:bg-[#14203A] text-amber-600 dark:text-amber-400 border border-transparent dark:border-[#1D2E54]">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -144,14 +144,14 @@
                 </span>
             </div>
             <p class="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-2">{{ $stats['process'] }}</p>
-            <span class="text-[11px] text-slate-400 dark:text-[#93A5C9]">Sedang ditinjau / seleksi</span>
+            <span class="text-[11px] text-slate-400 dark:text-[#93A5C9]">{{ __('Sedang ditinjau / seleksi') }}</span>
         </div>
 
         <!-- Diterima -->
         <div wire:click="$set('statusFilter', 'Accepted')"
             class="cursor-pointer p-4 rounded-2xl border transition-all duration-200 {{ $statusFilter === 'Accepted' ? 'bg-emerald-50/70 dark:bg-[#14203A] border-emerald-300 dark:border-emerald-700 shadow-sm ring-2 ring-emerald-500/20' : 'bg-white dark:bg-[#0D1527] border-slate-200/80 dark:border-[#1D2E54] hover:border-emerald-200 dark:hover:border-slate-600 shadow-xs' }}">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-emerald-600 dark:text-[#93F514] uppercase tracking-wider">Diterima</span>
+                <span class="text-xs font-bold text-emerald-600 dark:text-[#93F514] uppercase tracking-wider">{{ __('Diterima') }}</span>
                 <span class="p-2 rounded-xl bg-emerald-50 dark:bg-[#14203A] text-emerald-600 dark:text-[#93F514] border border-transparent dark:border-[#1D2E54]">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -159,14 +159,14 @@
                 </span>
             </div>
             <p class="text-2xl font-extrabold text-emerald-600 dark:text-[#93F514] mt-2">{{ $stats['accepted'] }}</p>
-            <span class="text-[11px] text-slate-400 dark:text-[#93A5C9]">Lolos tahap akhir</span>
+            <span class="text-[11px] text-slate-400 dark:text-[#93A5C9]">{{ __('Lolos tahap akhir') }}</span>
         </div>
 
         <!-- Tidak Lolos -->
         <div wire:click="$set('statusFilter', 'Rejected')"
             class="cursor-pointer p-4 rounded-2xl border transition-all duration-200 {{ $statusFilter === 'Rejected' ? 'bg-rose-50/70 dark:bg-[#14203A] border-rose-300 dark:border-rose-700 shadow-sm ring-2 ring-rose-500/20' : 'bg-white dark:bg-[#0D1527] border-slate-200/80 dark:border-[#1D2E54] hover:border-rose-200 dark:hover:border-slate-600 shadow-xs' }}">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Tidak Lolos</span>
+                <span class="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">{{ __('Tidak Lolos') }}</span>
                 <span class="p-2 rounded-xl bg-rose-50 dark:bg-[#14203A] text-rose-600 dark:text-rose-400 border border-transparent dark:border-[#1D2E54]">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -174,7 +174,7 @@
                 </span>
             </div>
             <p class="text-2xl font-extrabold text-rose-600 dark:text-rose-400 mt-2">{{ $stats['rejected'] }}</p>
-            <span class="text-[11px] text-slate-400 dark:text-[#93A5C9]">Belum berhasil</span>
+            <span class="text-[11px] text-slate-400 dark:text-[#93A5C9]">{{ __('Belum berhasil') }}</span>
         </div>
     </div>
 
@@ -183,31 +183,31 @@
         <div class="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar scroll-smooth">
             <button type="button" wire:click="$set('statusFilter', 'all')"
                 class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 {{ $statusFilter === 'all' ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] hover:bg-slate-200 dark:hover:bg-[#1A2A4C]' }}">
-                Semua Status
+                {{ __('Semua Status') }}
             </button>
             <button type="button" wire:click="$set('statusFilter', 'Submitted')"
                 class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 {{ $statusFilter === 'Submitted' ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] hover:bg-slate-200 dark:hover:bg-[#1A2A4C]' }}">
-                Diajukan
+                {{ __('Diajukan') }}
             </button>
             <button type="button" wire:click="$set('statusFilter', 'Reviewed')"
                 class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 {{ $statusFilter === 'Reviewed' ? 'bg-amber-600 text-white shadow-sm shadow-amber-500/20' : 'bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] hover:bg-slate-200 dark:hover:bg-[#1A2A4C]' }}">
-                Lolos Berkas
+                {{ __('Lolos Berkas') }}
             </button>
             <button type="button" wire:click="$set('statusFilter', 'Shortlisted')"
                 class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 {{ $statusFilter === 'Shortlisted' ? 'bg-purple-600 text-white shadow-sm shadow-purple-500/20' : 'bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] hover:bg-slate-200 dark:hover:bg-[#1A2A4C]' }}">
-                Lolos Ujian
+                {{ __('Lolos Ujian') }}
             </button>
             <button type="button" wire:click="$set('statusFilter', 'Interview')"
                 class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 {{ $statusFilter === 'Interview' ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] hover:bg-slate-200 dark:hover:bg-[#1A2A4C]' }}">
-                Wawancara
+                {{ __('Wawancara') }}
             </button>
             <button type="button" wire:click="$set('statusFilter', 'Accepted')"
                 class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 {{ $statusFilter === 'Accepted' ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-500/20' : 'bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] hover:bg-slate-200 dark:hover:bg-[#1A2A4C]' }}">
-                Diterima
+                {{ __('Diterima') }}
             </button>
             <button type="button" wire:click="$set('statusFilter', 'Rejected')"
                 class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 {{ $statusFilter === 'Rejected' ? 'bg-rose-600 text-white shadow-sm shadow-rose-500/20' : 'bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] hover:bg-slate-200 dark:hover:bg-[#1A2A4C]' }}">
-                Ditolak
+                {{ __('Ditolak') }}
             </button>
         </div>
     </div>
@@ -228,13 +228,13 @@
                 };
                 
                 $statusLabel = match($status) {
-                    'Accepted', 'accepted' => 'Diterima',
-                    'Rejected', 'rejected' => 'Ditolak',
-                    'Interview', 'interview' => 'Wawancara',
-                    'Shortlisted', 'shortlisted' => 'Lolos Ujian',
-                    'Partial Approved', 'partial approved' => 'Partial Approved',
-                    'Reviewed', 'reviewed' => 'Lolos Berkas',
-                    default => 'Diajukan',
+                    'Accepted', 'accepted' => __('Diterima'),
+                    'Rejected', 'rejected' => __('Ditolak'),
+                    'Interview', 'interview' => __('Wawancara'),
+                    'Shortlisted', 'shortlisted' => __('Lolos Ujian'),
+                    'Partial Approved', 'partial approved' => __('Partial Approved'),
+                    'Reviewed', 'reviewed' => __('Lolos Berkas'),
+                    default => __('Diajukan'),
                 };
 
                 // Determine step stage index
@@ -270,7 +270,7 @@
                         <div>
                             <div class="flex flex-wrap items-center gap-2">
                                 <h3 class="text-base font-bold text-slate-900 dark:text-white leading-tight">
-                                    {{ $app->job->title ?? 'Lowongan Pekerjaan' }}
+                                    {{ $app->job->title ?? __('Lowongan Pekerjaan') }}
                                 </h3>
                                 @if ($app->job && $app->job->employment_type)
                                     <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] border border-slate-200/80 dark:border-[#1D2E54]">
@@ -281,7 +281,7 @@
 
                             <div class="flex flex-wrap items-center gap-y-1 gap-x-2 text-xs text-slate-500 dark:text-[#93A5C9] mt-1">
                                 <span class="font-semibold text-blue-600 dark:text-[#93F514]">
-                                    {{ $app->job->company->name ?? 'Perusahaan' }}
+                                    {{ $app->job->company->name ?? __('Perusahaan') }}
                                 </span>
                                 @if ($app->job && $app->job->department)
                                     <span>•</span>
@@ -316,7 +316,7 @@
                             <span>{{ $statusLabel }}</span>
                         </span>
                         <span class="text-[11px] text-slate-400 dark:text-[#93A5C9]">
-                            Dilamar: {{ \Carbon\Carbon::parse($app->applied_at)->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
+                            {{ __('Dilamar:') }} {{ \Carbon\Carbon::parse($app->applied_at)->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
                         </span>
                     </div>
                 </div>
@@ -343,7 +343,7 @@
                                 ✓
                             </div>
                             <span class="text-[11px] font-bold mt-1.5 whitespace-nowrap {{ $stepStage >= 1 ? 'text-emerald-600 dark:text-[#93F514]' : 'text-slate-400 dark:text-[#93A5C9]' }}">
-                                Terkirim
+                                {{ __('Terkirim') }}
                             </span>
                         </div>
 
@@ -353,7 +353,7 @@
                                 {{ $stepStage > 2 ? '✓' : '2' }}
                             </div>
                             <span class="text-[11px] font-bold mt-1.5 whitespace-nowrap {{ $stepStage >= 2 ? 'text-emerald-600 dark:text-[#93F514]' : 'text-slate-400 dark:text-[#93A5C9]' }}">
-                                Seleksi Berkas
+                                {{ __('Seleksi Berkas') }}
                             </span>
                         </div>
 
@@ -363,7 +363,7 @@
                                 {{ $stepStage > 3 ? '✓' : '3' }}
                             </div>
                             <span class="text-[11px] font-bold mt-1.5 whitespace-nowrap {{ $stepStage >= 3 ? 'text-emerald-600 dark:text-[#93F514]' : 'text-slate-400 dark:text-[#93A5C9]' }}">
-                                Tes Online
+                                {{ __('Tes Online') }}
                             </span>
                         </div>
 
@@ -376,7 +376,7 @@
                                 {{ $stepStage > 4 ? '✓' : '4' }}
                             </div>
                             <span class="text-[11px] font-bold mt-1.5 whitespace-nowrap {{ $stepStage >= 4 ? 'text-emerald-600 dark:text-[#93F514]' : 'text-slate-400 dark:text-[#93A5C9]' }}">
-                                Wawancara
+                                {{ __('Wawancara') }}
                             </span>
                         </div>
 
@@ -386,7 +386,7 @@
                                 {{ $stepStage >= 5 ? (strtolower($status) === 'accepted' ? '✓' : '✕') : '5' }}
                             </div>
                             <span class="text-[11px] font-bold mt-1.5 whitespace-nowrap {{ $stepStage >= 5 ? (strtolower($status) === 'accepted' ? 'text-emerald-600 dark:text-[#93F514]' : 'text-rose-600 dark:text-rose-400') : 'text-slate-400 dark:text-[#93A5C9]' }}">
-                                {{ strtolower($status) === 'accepted' ? 'Diterima' : (strtolower($status) === 'rejected' ? 'Ditolak' : 'Hasil Akhir') }}
+                                {{ strtolower($status) === 'accepted' ? __('Diterima') : (strtolower($status) === 'rejected' ? __('Ditolak') : __('Hasil Akhir')) }}
                             </span>
                         </div>
                     </div>
@@ -411,17 +411,17 @@
                             <div class="space-y-0.5">
                                 <div class="flex items-center gap-2">
                                     <span class="text-xs font-semibold text-slate-900 dark:text-white">
-                                        Jadwal Wawancara ({{ $appActiveInterview->status }})
+                                        {{ __('Jadwal Wawancara') }} ({{ $appActiveInterview->status }})
                                     </span>
                                     <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold {{ $isOnlineInt ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-[#93F514] border border-emerald-200 dark:border-emerald-800' : 'bg-blue-50 dark:bg-[#1D2E54] text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800' }}">
-                                        {{ $isOnlineInt ? 'Online Video' : 'Tatap Muka' }}
+                                        {{ $isOnlineInt ? __('Online Video') : __('Tatap Muka') }}
                                     </span>
                                 </div>
                                 <p class="text-xs font-medium text-slate-700 dark:text-slate-300">
                                     {{ $intDate->translatedFormat('l, d F Y • H:i') }} WIB
                                 </p>
                                 <p class="text-[11px] text-slate-500 dark:text-[#93A5C9]">
-                                    {{ $isOnlineInt ? 'Tautan meeting telah tersedia' : 'Lokasi: ' . $appActiveInterview->location }}
+                                    {{ $isOnlineInt ? __('Tautan meeting telah tersedia') : __('Lokasi:') . ' ' . $appActiveInterview->location }}
                                 </p>
                             </div>
                         </div>
@@ -431,7 +431,7 @@
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                 </svg>
-                                <span>Buka Link Meeting</span>
+                                <span>{{ __('Buka Link Meeting') }}</span>
                             </a>
                         @endif
                     </div>
@@ -442,7 +442,7 @@
                     <div class="min-w-0 flex-1">
                         @if ($app->notes)
                             <p class="text-xs text-slate-600 dark:text-slate-300 truncate">
-                                <strong class="text-slate-800 dark:text-white">Catatan:</strong> {{ $app->notes }}
+                                <strong class="text-slate-800 dark:text-white">{{ __('Catatan:') }}</strong> {{ $app->notes }}
                             </p>
                         @elseif ($app->interviewSchedules && $app->interviewSchedules->isNotEmpty())
                             @php $latestInterview = $app->interviewSchedules->last(); @endphp
@@ -450,11 +450,11 @@
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                <span>Jadwal Wawancara: {{ \Carbon\Carbon::parse($latestInterview->interview_date)->translatedFormat('d M Y, H:i') }}</span>
+                                <span>{{ __('Jadwal Wawancara:') }} {{ \Carbon\Carbon::parse($latestInterview->interview_date)->translatedFormat('d M Y, H:i') }}</span>
                             </p>
                         @else
                             <p class="text-xs text-slate-400 dark:text-[#93A5C9]">
-                                Belum ada catatan tambahan dari tim rekruter.
+                                {{ __('Belum ada catatan tambahan dari tim rekruter.') }}
                             </p>
                         @endif
                     </div>
@@ -473,7 +473,7 @@
                         @if ($appTestProgress && count($appTestProgress) > 1)
                             @if (!in_array(strtolower($status), ['rejected']))
                                 <div class="w-full mt-1">
-                                    <p class="text-[10px] font-bold uppercase text-slate-400 dark:text-[#93A5C9] mb-2 tracking-wider">Tahapan Tes Online</p>
+                                    <p class="text-[10px] font-bold uppercase text-slate-400 dark:text-[#93A5C9] mb-2 tracking-wider">{{ __('Tahapan Tes Online') }}</p>
                                     <div class="flex items-center gap-1.5 flex-wrap">
                                         @foreach ($appTestProgress as $idx => $step)
                                             @php
@@ -489,7 +489,7 @@
                                             {{-- Step item --}}
                                             @if ($step['status'] === 'completed')
                                                 <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $step['test']->id]) }}"
-                                                    title="{{ $testLabel }} — Selesai"
+                                                    title="{{ $testLabel }} — {{ __('Selesai') }}"
                                                     class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-[#93F514] text-[10px] font-bold whitespace-nowrap transition hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shrink-0">
                                                     <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
@@ -498,7 +498,7 @@
                                                 </a>
                                             @elseif ($step['status'] === 'in_progress')
                                                 <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $step['test']->id]) }}"
-                                                    title="{{ $testLabel }} — Sedang dikerjakan"
+                                                    title="{{ $testLabel }} — {{ __('Sedang dikerjakan') }}"
                                                     class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-600 dark:bg-blue-700 border border-blue-700 dark:border-blue-600 text-white text-[10px] font-bold whitespace-nowrap transition hover:bg-blue-700 shrink-0 animate-pulse">
                                                     <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -507,7 +507,7 @@
                                                 </a>
                                             @elseif ($step['status'] === 'unlocked' && $canTakeTest)
                                                 <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $step['test']->id]) }}"
-                                                    title="{{ $testLabel }} — Kerjakan sekarang"
+                                                    title="{{ $testLabel }} — {{ __('Kerjakan sekarang') }}"
                                                     class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-600 dark:bg-[#93F514] border border-emerald-700 dark:border-[#93F514] text-white dark:text-black text-[10px] font-bold whitespace-nowrap transition hover:bg-emerald-500 dark:hover:bg-[#82dc12] shrink-0">
                                                     <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -516,7 +516,7 @@
                                                     <span class="max-w-[80px] truncate">{{ $testLabel }}</span>
                                                 </a>
                                             @elseif ($step['status'] === 'unlocked' && !$canTakeTest)
-                                                <div title="{{ $testLabel }} — Menunggu seleksi berkas"
+                                                <div title="{{ $testLabel }} — {{ __('Menunggu seleksi berkas') }}"
                                                     class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-600 dark:text-amber-300 text-[10px] font-bold whitespace-nowrap shrink-0">
                                                     <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -525,7 +525,7 @@
                                                 </div>
                                             @else
                                                 {{-- Locked --}}
-                                                <div title="{{ $testLabel }} — Selesaikan tes sebelumnya terlebih dahulu"
+                                                <div title="{{ $testLabel }} — {{ __('Selesaikan tes sebelumnya terlebih dahulu') }}"
                                                     class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-400 dark:text-[#93A5C9] text-[10px] font-bold whitespace-nowrap shrink-0 cursor-not-allowed opacity-70">
                                                     <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -547,7 +547,7 @@
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span>{{ $isTestDisc ? 'Lihat Status Tes' : 'Lihat Hasil Tes' }}</span>
+                                    <span>{{ $isTestDisc ? __('Lihat Status Tes') : __('Lihat Hasil Tes') }}</span>
                                 </a>
                             @elseif ($canTakeTest || ($latestSingleAttempt && $latestSingleAttempt->status === 'in_progress'))
                                 <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $singleTest->id]) }}"
@@ -555,14 +555,14 @@
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
-                                    <span>{{ $latestSingleAttempt ? 'Lanjutkan Ujian' : 'Mulai Ujian Online' }}</span>
+                                    <span>{{ $latestSingleAttempt ? __('Lanjutkan Ujian') : __('Mulai Ujian Online') }}</span>
                                 </a>
                             @else
-                                <div class="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 text-xs font-medium rounded-xl" title="Ujian online akan terbuka setelah berkas lamaran Anda selesai diverifikasi & disetujui tim HR.">
+                                <div class="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 text-xs font-medium rounded-xl" title="{{ __('Ujian online akan terbuka setelah berkas lamaran Anda selesai diverifikasi & disetujui tim HR.') }}">
                                     <svg class="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                     </svg>
-                                    <span>Ujian: Menunggu Seleksi Berkas</span>
+                                    <span>{{ __('Ujian: Menunggu Seleksi Berkas') }}</span>
                                 </div>
                             @endif
                         @endif
@@ -574,7 +574,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
-                            <span>Lihat Detail</span>
+                            <span>{{ __('Lihat Detail') }}</span>
                         </button>
                     </div>
                 </div>
@@ -586,14 +586,14 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.816c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6A2.25 2.25 0 0 0 4.727 20.25h14.546a2.25 2.25 0 0 0 2.224-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
                 </svg>
                 <p class="text-sm font-medium text-slate-500 dark:text-[#93A5C9]">
-                    {{ !empty($search) || $statusFilter !== 'all' ? 'Tidak ada lamaran yang sesuai dengan filter pencarian.' : 'Belum ada data untuk ditampilkan' }}
+                    {{ !empty($search) || $statusFilter !== 'all' ? __('Tidak ada lamaran yang sesuai dengan filter pencarian.') : __('Belum ada data untuk ditampilkan') }}
                 </p>
                 <a href="{{ url('/') }}"
                     class="inline-flex items-center gap-2 px-5 py-2.5 border-2 border-emerald-600 dark:border-[#93F514] text-emerald-700 dark:text-[#93F514] hover:bg-emerald-50 dark:hover:bg-[#93F514]/10 text-sm font-bold rounded-2xl transition shadow-2xs">
                     <svg class="w-5 h-5 text-emerald-600 dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <span>Jelajahi Lowongan Kerja</span>
+                    <span>{{ __('Jelajahi Lowongan Kerja') }}</span>
                 </a>
             </div>
         @endforelse
@@ -623,7 +623,7 @@
                             @endif
                             <div>
                                 <h3 class="text-base font-bold text-slate-900 dark:text-white">
-                                    {{ $selectedApplication->job->title ?? 'Detail Lamaran' }}
+                                    {{ $selectedApplication->job->title ?? __('Detail Lamaran') }}
                                 </h3>
                                 <p class="text-xs text-slate-500 dark:text-[#93A5C9]">
                                     {{ $selectedApplication->job->company->name ?? '-' }} • {{ $selectedApplication->job->department->name ?? '-' }}
@@ -642,21 +642,21 @@
                         <!-- Summary Info Grid -->
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             <div class="p-3 bg-slate-50 dark:bg-[#14203A] rounded-xl border border-slate-100 dark:border-[#1D2E54]">
-                                <span class="block text-[10px] font-bold text-slate-400 dark:text-[#93A5C9] uppercase">Status Terkini</span>
+                                <span class="block text-[10px] font-bold text-slate-400 dark:text-[#93A5C9] uppercase">{{ __('Status Terkini') }}</span>
                                 <span class="block text-xs font-bold text-blue-600 dark:text-[#93F514] mt-0.5">
                                     {{ $selectedApplication->status_label ?? $selectedApplication->status }}
                                 </span>
                             </div>
                             <div class="p-3 bg-slate-50 dark:bg-[#14203A] rounded-xl border border-slate-100 dark:border-[#1D2E54]">
-                                <span class="block text-[10px] font-bold text-slate-400 dark:text-[#93A5C9] uppercase">Tanggal Melamar</span>
+                                <span class="block text-[10px] font-bold text-slate-400 dark:text-[#93A5C9] uppercase">{{ __('Tanggal Melamar') }}</span>
                                 <span class="block text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
                                     {{ \Carbon\Carbon::parse($selectedApplication->applied_at)->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
                                 </span>
                             </div>
                             <div class="p-3 bg-slate-50 dark:bg-[#14203A] rounded-xl border border-slate-100 dark:border-[#1D2E54] col-span-2 sm:col-span-1">
-                                <span class="block text-[10px] font-bold text-slate-400 dark:text-[#93A5C9] uppercase">Lokasi Penempatan</span>
+                                <span class="block text-[10px] font-bold text-slate-400 dark:text-[#93A5C9] uppercase">{{ __('Lokasi Penempatan') }}</span>
                                 <span class="block text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
-                                    {{ $selectedApplication->job->location ?? 'Tidak ditentukan' }}
+                                    {{ $selectedApplication->job->location ?? __('Tidak ditentukan') }}
                                 </span>
                             </div>
                         </div>
@@ -667,7 +667,7 @@
                                 <svg class="w-4 h-4 text-blue-600 dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                <span>Riwayat Perubahan Status Seleksi</span>
+                                <span>{{ __('Riwayat Perubahan Status Seleksi') }}</span>
                             </h4>
 
                             @if ($selectedApplication->statusHistories && $selectedApplication->statusHistories->isNotEmpty())
@@ -690,7 +690,7 @@
                                                         </p>
                                                     @else
                                                         <p class="text-[11px] text-slate-400 dark:text-[#93A5C9] italic">
-                                                            Status diperbarui.
+                                                            {{ __('Status diperbarui.') }}
                                                         </p>
                                                     @endif
                                                 </div>
@@ -708,7 +708,7 @@
                                 </div>
                             @else
                                 <div class="p-3.5 bg-slate-50 dark:bg-[#14203A] rounded-xl text-xs text-slate-400 dark:text-[#93A5C9] text-center border border-slate-100 dark:border-[#1D2E54]">
-                                    Belum ada log riwayat perubahan status tercatat.
+                                    {{ __('Belum ada log riwayat perubahan status tercatat.') }}
                                 </div>
                             @endif
                         </div>
@@ -720,7 +720,7 @@
                                     <svg class="w-4 h-4 text-emerald-600 dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    <span>Jadwal & Agenda Wawancara</span>
+                                    <span>{{ __('Jadwal & Agenda Wawancara') }}</span>
                                 </h4>
                                 <div class="space-y-3">
                                     @foreach ($selectedApplication->interviewSchedules as $interview)
@@ -741,10 +741,10 @@
                                                 </span>
                                             </div>
                                             <div class="text-xs text-slate-700 dark:text-slate-300 space-y-1">
-                                                <p><strong>Metode & Lokasi:</strong> {{ $isModalOnline ? 'Online Video Meeting' : $interview->location }}</p>
-                                                <p><strong>Pewawancara:</strong> {{ $interview->user->name ?? 'Tim HR / Rekruter' }}</p>
+                                                <p><strong>{{ __('Metode & Lokasi:') }}</strong> {{ $isModalOnline ? __('Online Video Meeting') : $interview->location }}</p>
+                                                <p><strong>{{ __('Pewawancara:') }}</strong> {{ $interview->user->name ?? __('Tim HR / Rekruter') }}</p>
                                                 @if ($interview->notes)
-                                                    <p class="text-slate-600 dark:text-slate-400"><strong>Catatan:</strong> {{ $interview->notes }}</p>
+                                                    <p class="text-slate-600 dark:text-slate-400"><strong>{{ __('Catatan:') }}</strong> {{ $interview->notes }}</p>
                                                 @endif
                                                 @if ($interview->meeting_link)
                                                     <div class="pt-1.5">
@@ -752,7 +752,7 @@
                                                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                                             </svg>
-                                                            <span>Buka Tautan Video Meeting</span>
+                                                            <span>{{ __('Buka Tautan Video Meeting') }}</span>
                                                         </a>
                                                     </div>
                                                 @endif
@@ -770,7 +770,7 @@
                                     <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                     </svg>
-                                    <span>Tes Rekrutmen Online</span>
+                                    <span>{{ __('Tes Rekrutmen Online') }}</span>
                                 </h4>
                                 <div class="space-y-2">
                                     @foreach ($selectedApplication->testAttempts as $attempt)
@@ -788,20 +788,20 @@
                                         <div class="p-3.5 bg-slate-50 dark:bg-[#14203A] rounded-xl border border-slate-100 dark:border-[#1D2E54] flex items-center justify-between">
                                             <div>
                                                 <h5 class="text-xs font-bold text-slate-900 dark:text-white">
-                                                    {{ $attempt->test->title ?? 'Ujian Tes Online' }}
+                                                    {{ $attempt->test->title ?? __('Ujian Tes Online') }}
                                                 </h5>
                                                 <span class="text-[10px] text-slate-400 dark:text-[#93A5C9]">
-                                                    Status: {{ ucfirst($attempt->status) }}
+                                                    {{ __('Status:') }} {{ ucfirst($attempt->status) }}
                                                 </span>
                                             </div>
                                             <div class="text-right">
                                                 @if ($isPsychometric)
                                                     <span class="text-xs font-bold text-emerald-600 dark:text-[#93F514]">
-                                                        Selesai
+                                                        {{ __('Selesai') }}
                                                     </span>
                                                 @else
                                                     <span class="text-xs font-extrabold text-blue-600 dark:text-[#93F514]">
-                                                        Skor: {{ $attempt->total_score ?? ($attempt->objective_score ?? '-') }}
+                                                        {{ __('Skor:') }} {{ $attempt->total_score ?? ($attempt->objective_score ?? '-') }}
                                                     </span>
                                                 @endif
                                             </div>
@@ -816,7 +816,7 @@
                     <div class="px-6 py-4 bg-slate-50 dark:bg-[#14203A]/50 border-t border-slate-200/80 dark:border-[#1D2E54] flex justify-end">
                         <button type="button" wire:click="closeDetail"
                             class="px-5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-[#1D2E54] hover:bg-slate-100 dark:hover:bg-[#14203A] rounded-xl transition">
-                            Tutup
+                            {{ __('Tutup') }}
                         </button>
                     </div>
                 </div>

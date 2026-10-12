@@ -64,7 +64,7 @@
                         </div>
                         <a href="{{ auth()->user()->isRecruiter() && !auth()->user()->isAdmin() ? route('recruiter.dashboard') : route('admin.dashboard') }}" 
                            class="relative z-10 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-slate-950 dark:shadow-[#93F514]/20 font-bold text-xs transition shrink-0 active:scale-95">
-                            Buka Panel Dashboard
+                            {{ __('Buka Panel Dashboard') }}
                         </a>
                     </div>
 
@@ -73,8 +73,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <div>
-                            <span class="font-bold block mb-0.5">Informasi Akun Internal</span>
-                            Akun Anda terdaftar sebagai <strong>{{ $roleLabel }}</strong> untuk manajemen rekrutmen. Pengisian biodata pelamar & pelamaran lowongan dinonaktifkan untuk akun ini. Anda dapat memperbarui profil dan kata sandi di bawah ini.
+                            <span class="font-bold block mb-0.5">{{ __('Informasi Akun Internal') }}</span>
+                            {!! __('Akun Anda terdaftar sebagai <strong>:role</strong> untuk manajemen rekrutmen. Pengisian biodata pelamar & pelamaran lowongan dinonaktifkan untuk akun ini. Anda dapat memperbarui profil dan kata sandi di bawah ini.', ['role' => $roleLabel]) !!}
                         </div>
                     </div>
 
@@ -99,16 +99,16 @@
                                 </div>
                                 <div>
                                     <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                        <span>Hak Akses Recruiter / Penilai Aktif</span>
+                                        <span>{{ __('Hak Akses Recruiter / Penilai Aktif') }}</span>
                                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-[#93F514]/20 dark:text-[#93F514]">Recruiter</span>
                                     </h4>
                                     <p class="text-xs text-gray-600 dark:text-slate-400 mt-0.5">
-                                        Anda ditugaskan oleh Admin/HR untuk meninjau kualifikasi berkas pelamar dan memberikan persetujuan (Double Approval).
+                                        {{ __('Anda ditugaskan oleh Admin/HR untuk meninjau kualifikasi berkas pelamar dan memberikan persetujuan (Double Approval).') }}
                                     </p>
                                 </div>
                             </div>
                             <a href="{{ route('recruiter.dashboard') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 transition-all shrink-0">
-                                <span>Buka Dashboard Panel Recruiter</span>
+                                <span>{{ __('Buka Dashboard Panel Recruiter') }}</span>
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                 </svg>

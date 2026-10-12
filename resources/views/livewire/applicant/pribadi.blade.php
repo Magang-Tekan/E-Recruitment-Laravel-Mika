@@ -79,8 +79,8 @@
             style="background-image: radial-gradient(#93F514 1px, transparent 1px); background-size: 20px 20px;">
         </div>
         <div class="relative z-10">
-            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Data Pribadi</h2>
-            <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 font-medium">* Isilah data dibawah dengan sebenarnya Anda.</p>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ __('Data Pribadi') }}</h2>
+            <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 font-medium">{{ __('* Isilah data dibawah dengan sebenarnya Anda.') }}</p>
         </div>
     </div>
 
@@ -123,19 +123,19 @@
                 </div>
 
                 <div class="flex-1 text-center sm:text-left space-y-2">
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">Foto Profil / Pas Foto <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">{{ __('Foto Profil / Pas Foto') }} <span class="text-red-500">*</span></label>
                     
                     <div class="flex flex-wrap items-center gap-3 justify-center sm:justify-start">
                         <label class="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-[#14203A] dark:hover:bg-[#1A2A4C] text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl cursor-pointer transition border border-slate-200/80 dark:border-[#1D2E54] flex items-center gap-2">
                             <svg class="w-4 h-4 text-emerald-600 dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <span>Pilih & Atur Foto</span>
+                            <span>{{ __('Pilih & Atur Foto') }}</span>
                             <input type="file" @change="onFileSelect" accept="image/*" class="hidden">
                         </label>
                     </div>
 
-                    <p class="text-[11px] text-slate-400 dark:text-slate-500">* Anda dapat menggeser, memperbesar, dan memotong posisi foto sebelum disimpan.</p>
+                    <p class="text-[11px] text-slate-400 dark:text-slate-500">{{ __('* Anda dapat menggeser, memperbesar, dan memotong posisi foto sebelum disimpan.') }}</p>
                     @error('photo') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                 </div>
             </div>
@@ -145,51 +145,51 @@
 
                 <!-- NIK -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">NIK (Nomor Induk Kependudukan) <span class="text-red-500">*</span></label>
-                    <input type="text" wire:model="nik" placeholder="Masukkan 16 digit NIK"
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('NIK (Nomor Induk Kependudukan)') }} <span class="text-red-500">*</span></label>
+                    <input type="text" wire:model="nik" placeholder="{{ __('Masukkan 16 digit NIK') }}"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                     @error('nik') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Nama Lengkap -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Nama Lengkap <span class="text-red-500">*</span></label>
-                    <input type="text" wire:model="full_name" placeholder="Nama lengkap sesuai KTP"
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Nama Lengkap') }} <span class="text-red-500">*</span></label>
+                    <input type="text" wire:model="full_name" placeholder="{{ __('Nama lengkap sesuai KTP') }}"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                     @error('full_name') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Jenis Kelamin -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Jenis Kelamin <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Jenis Kelamin') }} <span class="text-red-500">*</span></label>
                     <select wire:model="gender"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                        <option value="">-- Pilih Jenis Kelamin --</option>
-                        <option value="Laki-laki">Laki-laki</option>
-                        <option value="Perempuan">Perempuan</option>
+                        <option value="">{{ __('-- Pilih Jenis Kelamin --') }}</option>
+                        <option value="Laki-laki">{{ __('Laki-laki') }}</option>
+                        <option value="Perempuan">{{ __('Perempuan') }}</option>
                     </select>
                     @error('gender') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Nomor Telepon / WA -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">No. Telepon / WhatsApp <span class="text-red-500">*</span></label>
-                    <input type="text" wire:model="phone" placeholder="Contoh: 081234567890"
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('No. Telepon / WhatsApp') }} <span class="text-red-500">*</span></label>
+                    <input type="text" wire:model="phone" placeholder="{{ __('Contoh: 081234567890') }}"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                     @error('phone') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Tempat Lahir -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Tempat Lahir <span class="text-red-500">*</span></label>
-                    <input type="text" wire:model="birth_place" placeholder="Kota tempat lahir"
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Tempat Lahir') }} <span class="text-red-500">*</span></label>
+                    <input type="text" wire:model="birth_place" placeholder="{{ __('Kota tempat lahir') }}"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                     @error('birth_place') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Tanggal Lahir -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Tanggal Lahir <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Tanggal Lahir') }} <span class="text-red-500">*</span></label>
                     <input type="date" wire:model="birth_date"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition cursor-pointer dark:[color-scheme:dark]">
                     @error('birth_date') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
@@ -197,27 +197,27 @@
 
                 <!-- Agama -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Agama</label>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Agama') }}</label>
                     <select wire:model="religion"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                        <option value="" class="dark:bg-[#14203A] dark:text-white">-- Pilih Agama --</option>
-                        <option value="Islam" class="dark:bg-[#14203A] dark:text-white">Islam</option>
-                        <option value="Kristen Protestan" class="dark:bg-[#14203A] dark:text-white">Kristen Protestan</option>
-                        <option value="Katolik" class="dark:bg-[#14203A] dark:text-white">Katolik</option>
-                        <option value="Hindu" class="dark:bg-[#14203A] dark:text-white">Hindu</option>
-                        <option value="Buddha" class="dark:bg-[#14203A] dark:text-white">Buddha</option>
-                        <option value="Konghucu" class="dark:bg-[#14203A] dark:text-white">Konghucu</option>
-                        <option value="Lainnya" class="dark:bg-[#14203A] dark:text-white">Lainnya</option>
+                        <option value="" class="dark:bg-[#14203A] dark:text-white">{{ __('-- Pilih Agama --') }}</option>
+                        <option value="Islam" class="dark:bg-[#14203A] dark:text-white">{{ __('Islam') }}</option>
+                        <option value="Kristen Protestan" class="dark:bg-[#14203A] dark:text-white">{{ __('Kristen Protestan') }}</option>
+                        <option value="Katolik" class="dark:bg-[#14203A] dark:text-white">{{ __('Katolik') }}</option>
+                        <option value="Hindu" class="dark:bg-[#14203A] dark:text-white">{{ __('Hindu') }}</option>
+                        <option value="Buddha" class="dark:bg-[#14203A] dark:text-white">{{ __('Buddha') }}</option>
+                        <option value="Konghucu" class="dark:bg-[#14203A] dark:text-white">{{ __('Konghucu') }}</option>
+                        <option value="Lainnya" class="dark:bg-[#14203A] dark:text-white">{{ __('Lainnya') }}</option>
                     </select>
                     @error('religion') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Golongan Darah -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Golongan Darah</label>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Golongan Darah') }}</label>
                     <select wire:model="blood_type"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                        <option value="" class="dark:bg-[#14203A] dark:text-white">-- Pilih Golongan Darah --</option>
+                        <option value="" class="dark:bg-[#14203A] dark:text-white">{{ __('-- Pilih Golongan Darah --') }}</option>
                         <option value="A" class="dark:bg-[#14203A] dark:text-white">A</option>
                         <option value="B" class="dark:bg-[#14203A] dark:text-white">B</option>
                         <option value="AB" class="dark:bg-[#14203A] dark:text-white">AB</option>
@@ -228,16 +228,16 @@
 
                 <!-- NPWP -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">NPWP</label>
-                    <input type="text" wire:model="npwp" placeholder="Nomor NPWP (jika ada)"
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('NPWP') }}</label>
+                    <input type="text" wire:model="npwp" placeholder="{{ __('Nomor NPWP (jika ada)') }}"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                     @error('npwp') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Kode Pos -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Kode Pos</label>
-                    <input type="text" wire:model="postal_code" placeholder="Contoh: 12345" maxlength="10"
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Kode Pos') }}</label>
+                    <input type="text" wire:model="postal_code" placeholder="{{ __('Contoh: 12345') }}" maxlength="10"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                     @error('postal_code') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
@@ -348,14 +348,14 @@
                     <!-- Kota / Kabupaten Dropdown -->
                     <div class="relative">
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                            Kota / Kabupaten Domisili <span class="text-red-500">*</span>
+                            {{ __('Kota / Kabupaten Domisili') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <input type="text" 
                                 x-model="$wire.city"
                                 @focus="searchRegency()"
                                 @input="searchRegency()"
-                                placeholder="Ketik untuk mencari Kota / Kabupaten..."
+                                placeholder="{{ __('Ketik untuk mencari Kota / Kabupaten...') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -383,14 +383,14 @@
                     <!-- Provinsi Dropdown -->
                     <div class="relative">
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                            Provinsi Domisili <span class="text-red-500">*</span>
+                            {{ __('Provinsi Domisili') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <input type="text" 
                                 x-model="$wire.province"
                                 @focus="searchProv()"
                                 @input="searchProv()"
-                                placeholder="Ketik untuk mencari Provinsi..."
+                                placeholder="{{ __('Ketik untuk mencari Provinsi...') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -419,16 +419,16 @@
 
                 <!-- Alamat Lengkap -->
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Alamat Lengkap <span class="text-red-500">*</span></label>
-                    <textarea wire:model="address" rows="3" placeholder="Alamat lengkap tempat tinggal saat ini"
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Alamat Lengkap') }} <span class="text-red-500">*</span></label>
+                    <textarea wire:model="address" rows="3" placeholder="{{ __('Alamat lengkap tempat tinggal saat ini') }}"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition"></textarea>
                     @error('address') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Tentang Saya -->
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Tentang Saya / Ringkasan Diri</label>
-                    <textarea wire:model="about_me" rows="4" placeholder="Tuliskan gambaran singkat mengenai latar belakang, motivasi, dan keahlian Anda..."
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Tentang Saya / Ringkasan Diri') }}</label>
+                    <textarea wire:model="about_me" rows="4" placeholder="{{ __('Tuliskan gambaran singkat mengenai latar belakang, motivasi, dan keahlian Anda...') }}"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition"></textarea>
                     @error('about_me') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
@@ -437,15 +437,15 @@
                 <div class="md:col-span-2 p-5 bg-slate-50/80 dark:bg-[#14203A]/60 border border-slate-200/80 dark:border-[#1D2E54] rounded-2xl space-y-4">
                     <div class="flex items-center justify-between">
                         <div>
-                            <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Dokumen CV / Resume (PDF / DOCX) <span class="text-red-500">*</span></label>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Unggah file CV terbaru Anda (Maksimal 5MB, Format PDF, DOC, atau DOCX)</p>
+                            <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">{{ __('Dokumen CV / Resume (PDF / DOCX)') }} <span class="text-red-500">*</span></label>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ __('Unggah file CV terbaru Anda (Maksimal 5MB, Format PDF, DOC, atau DOCX)') }}</p>
                         </div>
                         <a href="{{ route('profile.cv.preview') }}" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-[#93F514] hover:underline">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
-                            <span>Preview CV ATS System</span>
+                            <span>{{ __('Preview CV ATS System') }}</span>
                         </a>
                     </div>
 
@@ -455,7 +455,7 @@
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                             </svg>
-                            <span>{{ $current_cv_path ? 'Ganti File CV' : 'Pilih & Unggah CV' }}</span>
+                            <span>{{ $current_cv_path ? __('Ganti File CV') : __('Pilih & Unggah CV') }}</span>
                             <input type="file" wire:model.live="cv_file" accept=".pdf,.doc,.docx" class="hidden">
                         </label>
 
@@ -465,14 +465,14 @@
                                     <svg class="w-4 h-4 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                     </svg>
-                                    <span class="truncate">File CV Tersimpan</span>
+                                    <span class="truncate">{{ __('File CV Tersimpan') }}</span>
                                 </a>
-                                <button type="button" wire:click="deleteCv" wire:confirm="Apakah Anda yakin ingin menghapus file CV ini?" class="text-red-500 hover:text-red-700 font-medium text-xs ml-2">
-                                    Hapus
+                                <button type="button" wire:click="deleteCv" wire:confirm="{{ __('Apakah Anda yakin ingin menghapus file CV ini?') }}" class="text-red-500 hover:text-red-700 font-medium text-xs ml-2">
+                                    {{ __('Hapus') }}
                                 </button>
                             </div>
                         @else
-                            <span class="text-xs text-slate-400 dark:text-slate-500 italic">Belum ada file CV yang diunggah.</span>
+                            <span class="text-xs text-slate-400 dark:text-slate-500 italic">{{ __('Belum ada file CV yang diunggah.') }}</span>
                         @endif
                     </div>
 
@@ -482,7 +482,7 @@
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Mengunggah file...
+                        {{ __('Mengunggah file...') }}
                     </div>
 
                     @error('cv_file') <span class="text-xs text-red-500 block">{{ $message }}</span> @enderror
@@ -493,13 +493,13 @@
             <div class="flex justify-end pt-4 border-t border-slate-200/80 dark:border-[#1D2E54]">
                 <button type="submit" wire:loading.attr="disabled"
                     class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-sm font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition duration-150 ease-in-out flex items-center gap-2 active:scale-95">
-                    <span wire:loading.remove wire:target="save">Simpan Perubahan</span>
+                    <span wire:loading.remove wire:target="save">{{ __('Simpan Perubahan') }}</span>
                     <span wire:loading wire:target="save" class="flex items-center gap-2">
                         <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Menyimpan...
+                        {{ __('Menyimpan...') }}
                     </span>
                 </button>
             </div>
@@ -523,7 +523,7 @@
                         <svg class="w-5 h-5 text-emerald-600 dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 0L4 4m5.121 5.121L4 19" />
                         </svg>
-                        Atur & Potong Foto Profil
+                        {{ __('Atur & Potong Foto Profil') }}
                     </h3>
                     <button @click="cancelCrop" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -539,16 +539,16 @@
 
                 <!-- Toolbar Controls -->
                 <div class="flex items-center justify-center gap-3 py-3 bg-slate-50 dark:bg-[#14203A] border-t border-slate-200/80 dark:border-[#1D2E54]">
-                    <button type="button" @click="zoomIn" title="Perbesar" class="p-2 rounded-lg bg-white dark:bg-[#0D1527] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1D2E54] shadow-sm border border-slate-200 dark:border-[#1D2E54]">
+                    <button type="button" @click="zoomIn" title="{{ __('Perbesar') }}" class="p-2 rounded-lg bg-white dark:bg-[#0D1527] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1D2E54] shadow-sm border border-slate-200 dark:border-[#1D2E54]">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" /></svg>
                     </button>
-                    <button type="button" @click="zoomOut" title="Perkecil" class="p-2 rounded-lg bg-white dark:bg-[#0D1527] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1D2E54] shadow-sm border border-slate-200 dark:border-[#1D2E54]">
+                    <button type="button" @click="zoomOut" title="{{ __('Perkecil') }}" class="p-2 rounded-lg bg-white dark:bg-[#0D1527] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1D2E54] shadow-sm border border-slate-200 dark:border-[#1D2E54]">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" /></svg>
                     </button>
-                    <button type="button" @click="rotateLeft" title="Putar Kiri" class="p-2 rounded-lg bg-white dark:bg-[#0D1527] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1D2E54] shadow-sm border border-slate-200 dark:border-[#1D2E54]">
+                    <button type="button" @click="rotateLeft" title="{{ __('Putar Kiri') }}" class="p-2 rounded-lg bg-white dark:bg-[#0D1527] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1D2E54] shadow-sm border border-slate-200 dark:border-[#1D2E54]">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
                     </button>
-                    <button type="button" @click="rotateRight" title="Putar Kanan" class="p-2 rounded-lg bg-white dark:bg-[#0D1527] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1D2E54] shadow-sm border border-slate-200 dark:border-[#1D2E54]">
+                    <button type="button" @click="rotateRight" title="{{ __('Putar Kanan') }}" class="p-2 rounded-lg bg-white dark:bg-[#0D1527] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1D2E54] shadow-sm border border-slate-200 dark:border-[#1D2E54]">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" /></svg>
                     </button>
                 </div>
@@ -557,14 +557,14 @@
                 <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527]">
                     <button type="button" @click="cancelCrop"
                         class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-[#14203A] hover:bg-slate-200 dark:hover:bg-[#1A2A4C] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl transition">
-                        Batal
+                        {{ __('Batal') }}
                     </button>
                     <button type="button" @click="applyCrop"
                         class="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition flex items-center gap-1.5 active:scale-95">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        <span>Gunakan Foto Ini</span>
+                        <span>{{ __('Gunakan Foto Ini') }}</span>
                     </button>
                 </div>
             </div>
