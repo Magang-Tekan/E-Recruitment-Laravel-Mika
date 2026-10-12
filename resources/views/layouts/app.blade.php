@@ -9,7 +9,8 @@
     <title>{{ config('app.name', 'MIKA CAREER') }}</title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('images/mikaaaa.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/mika-favicon.png') }}?v=2">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v=2">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -635,6 +636,9 @@
 
     <!-- Session Heartbeat (Sliding Refresh saat aktif bekerja) -->
     <x-session-heartbeat />
+
+    <!-- Locale Switcher Loader (4-Dot Wave Loader identik halaman login) -->
+    <x-locale-loader />
 </body>
 
 </html>

@@ -32,6 +32,12 @@ class Pribadi extends Component
 
     public $npwp;
 
+    public $religion;
+
+    public $postal_code;
+
+    public $blood_type;
+
     public $about_me;
 
     public $photo;
@@ -67,6 +73,9 @@ class Pribadi extends Component
         $this->city = $profile->city;
         $this->province = $profile->province;
         $this->npwp = $profile->npwp;
+        $this->religion = $profile->religion;
+        $this->postal_code = $profile->postal_code;
+        $this->blood_type = $profile->blood_type;
         $this->about_me = $profile->about_me;
         $this->current_photo_url = $profile->photo ? (asset('storage/'.$profile->photo).'?v='.time()) : null;
         $this->current_cv_path = $profile->cv_file_path;
@@ -86,6 +95,9 @@ class Pribadi extends Component
             'city' => 'nullable|string|max:100',
             'province' => 'nullable|string|max:100',
             'npwp' => 'nullable|string|max:30',
+            'religion' => 'nullable|string|max:50',
+            'postal_code' => 'nullable|string|max:10',
+            'blood_type' => 'nullable|string|in:A,B,AB,O',
             'about_me' => 'nullable|string|max:1000',
             'photo' => 'nullable|image|max:5120',
             'cv_file' => 'nullable|file|max:10240',
@@ -96,6 +108,7 @@ class Pribadi extends Component
     {
         return [
             'nik.digits' => 'NIK harus terdiri dari 16 digit angka.',
+            'blood_type.in' => 'Pilihan golongan darah tidak valid.',
         ];
     }
 

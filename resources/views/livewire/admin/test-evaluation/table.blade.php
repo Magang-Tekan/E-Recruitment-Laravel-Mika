@@ -1,6 +1,8 @@
 @php
-    $isRecruiter = auth()->check() && (auth()->user()->role_id == 2 || strtolower(auth()->user()->role?->name ?? '') === 'recruiter');
-    $gradeActionPrefix = $isRecruiter ? '/recruiter/test-evaluations/' : '/admin/test-evaluations/';
+    $user = auth()->user();
+    $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+    $isRecruiter = request()->is('recruiter*') || request()->routeIs('recruiter.*') || ($user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter));
+    $gradeActionPrefix = (request()->is('recruiter*') || ($isRecruiter && !$isAdmin)) ? '/recruiter/test-evaluations/' : '/admin/test-evaluations/';
 @endphp
 
 <div class="space-y-6" x-data="{ 
@@ -27,6 +29,13 @@
         status: '',
         application_status: 'Reviewed',
         application_notes: '',
+        test_recruiter_approval: 'pending',
+        test_recruiter_notes: '',
+        test_recruiter_name: '',
+        test_admin_approval: 'pending',
+        test_admin_notes: '',
+        test_admin_name: '',
+        test_decision: 'approved',
         send_email: true,
         answers: []
     },
@@ -46,20 +55,26 @@
             }
         }
 
-        const initialStatus = att.job_application ? (att.job_application.status || 'Reviewed') : 'Reviewed';
-        let initialNotes = att.job_application ? (att.job_application.notes || '') : '';
+        const app = att.job_application;
+        const initialStatus = app ? (app.status || 'Reviewed') : 'Reviewed';
+        let initialNotes = app ? (app.notes || '') : '';
 
         // Jika catatan masih kosong, gunakan template status default
         if (!initialNotes && this.statusTemplates[initialStatus]) {
             initialNotes = this.statusTemplates[initialStatus];
         }
 
+        const recruiterAppr = app ? (app.test_recruiter_approval || 'pending') : 'pending';
+        const adminAppr = app ? (app.test_admin_approval || 'pending') : 'pending';
+        const recruiterName = app && (app.test_recruiter || app.testRecruiter) ? (app.test_recruiter?.name || app.testRecruiter?.name) : '';
+        const adminName = app && (app.test_admin || app.testAdmin) ? (app.test_admin?.name || app.testAdmin?.name) : '';
+
         this.gradingData = {
             id: att.id,
             applicant_name: name,
             applicant_email: email,
             applicant_photo: photo,
-            job_title: att.job_application && att.job_application.job ? att.job_application.job.title : '-',
+            job_title: app && app.job ? app.job.title : '-',
             test_title: att.test ? att.test.title : '-',
             passing_score: att.test ? att.test.passing_score : 0,
             objective_score: att.objective_score || 0,
@@ -68,6 +83,13 @@
             status: att.status || 'in_progress',
             application_status: initialStatus,
             application_notes: initialNotes,
+            test_recruiter_approval: recruiterAppr,
+            test_recruiter_notes: app ? (app.test_recruiter_notes || '') : '',
+            test_recruiter_name: recruiterName,
+            test_admin_approval: adminAppr,
+            test_admin_notes: app ? (app.test_admin_notes || '') : '',
+            test_admin_name: adminName,
+            test_decision: (adminAppr === 'rejected') ? 'rejected' : 'approved',
             send_email: true,
             answers: att.answers || [],
             disc_result: att.disc_test_result || null,
@@ -75,8 +97,8 @@
             papi_result: att.papi_test_result || null,
             is_papi: isPapi,
             participant_name: att.participant_name || name,
-            participant_age: att.participant_age || (att.job_application && att.job_application.applicant_profile ? att.job_application.applicant_profile.age : null),
-            participant_gender: att.participant_gender || (att.job_application && att.job_application.applicant_profile ? att.job_application.applicant_profile.gender : null),
+            participant_age: att.participant_age || (app && app.applicant_profile ? app.applicant_profile.age : null),
+            participant_gender: att.participant_gender || (app && app.applicant_profile ? app.applicant_profile.gender : null),
             test_date: att.test_date || (att.started_at ? att.started_at.substring(0, 10) : null)
         };
         this.showGradingModal = true;
@@ -337,9 +359,11 @@
                     <select wire:model.live="status" class="w-full pl-9 pr-8 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
                         <option value="">Semua Status</option>
                         <option value="needs_grading">Perlu Koreksi Essay</option>
+                        <option value="waiting_hr">Menunggu Verifikasi HR</option>
+                        <option value="double_approved">Double Approved</option>
+                        <option value="psychometric">Tes Kepribadian (DISC / PAPI)</option>
                         <option value="passed">Lolos Standar</option>
                         <option value="failed">Di Bawah Standar</option>
-                        <option value="disc">Tes Kepribadian (DISC)</option>
                         <option value="in_progress">Sedang Mengerjakan</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
@@ -353,14 +377,26 @@
             <!-- Toolbar Bottom Row: Quick Badges & Reset Button -->
             <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
                 <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                    <span class="text-[11px] font-bold text-gray-400 uppercase mr-1">Status:</span>
+                    <span class="text-[11px] font-bold text-gray-400 uppercase mr-1">Filter Cepat:</span>
                     <button type="button" wire:click="$set('status', '')"
                         class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === '' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
                         Semua
                     </button>
                     <button type="button" wire:click="$set('status', 'needs_grading')"
                         class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'needs_grading' ? 'bg-amber-500 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40' }}">
-                        Perlu Koreksi Essay
+                        Perlu Koreksi
+                    </button>
+                    <button type="button" wire:click="$set('status', 'waiting_hr')"
+                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'waiting_hr' ? 'bg-sky-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800 hover:bg-sky-50 dark:hover:bg-sky-950/40' }}">
+                        Menunggu HR
+                    </button>
+                    <button type="button" wire:click="$set('status', 'double_approved')"
+                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'double_approved' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40' }}">
+                        Double Approved
+                    </button>
+                    <button type="button" wire:click="$set('status', 'psychometric')"
+                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'psychometric' ? 'bg-purple-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/40' }}">
+                        DISC & PAPI
                     </button>
                     <button type="button" wire:click="$set('status', 'passed')"
                         class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'passed' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40' }}">
@@ -370,13 +406,9 @@
                         class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'failed' ? 'bg-rose-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40' }}">
                         Di Bawah Standar
                     </button>
-                    <button type="button" wire:click="$set('status', 'disc')"
-                        class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'disc' ? 'bg-purple-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/40' }}">
-                        DISC
-                    </button>
                     <button type="button" wire:click="$set('status', 'in_progress')"
                         class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $status === 'in_progress' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/40' }}">
-                        Sedang Mengerjakan
+                        Mengerjakan
                     </button>
                 </div>
 
@@ -412,13 +444,13 @@
             <table class="w-full text-left border-collapse table-fixed">
                 <colgroup>
                     <col style="width:40px">
-                    <col style="width:22%">
-                    <col style="width:16%">
-                    <col style="width:16%">
+                    <col style="width:21%">
                     <col style="width:14%">
+                    <col style="width:16%">
+                    <col style="width:12%">
                     <col style="width:11%">
-                    <col style="width:13%">
-                    <col style="width:8%">
+                    <col style="width:14%">
+                    <col style="width:12%">
                 </colgroup>
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold text-[11px]">
@@ -443,7 +475,7 @@
                         </th>
                         <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-indigo-600 transition" wire:click="sortBy('score')">
                             <div class="flex items-center justify-center gap-1">
-                                <span>Nilai</span>
+                                <span>Hasil / Nilai</span>
                                 @if ($sortField === 'score')
                                     <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
@@ -451,7 +483,7 @@
                         </th>
                         <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-indigo-600 transition" wire:click="sortBy('status')">
                             <div class="flex items-center justify-center gap-1">
-                                <span>Status</span>
+                                <span>Status & Approval</span>
                                 @if ($sortField === 'status')
                                     <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
@@ -495,6 +527,16 @@
                                         if ($candPhoto) {
                                             $candPhotoUrl = \Illuminate\Support\Str::startsWith($candPhoto, ['http://', 'https://']) ? $candPhoto : asset('storage/' . $candPhoto);
                                         }
+                                        $jobApp = $att->jobApplication;
+                                        $appStatus = $jobApp?->status ?? 'Reviewed';
+                                        $appBadgeClass = match(strtolower($appStatus)) {
+                                            'accepted' => 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800',
+                                            'rejected' => 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800',
+                                            'interview' => 'text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800',
+                                            'shortlisted' => 'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800',
+                                            'reviewed' => 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800',
+                                            default => 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800',
+                                        };
                                     @endphp
                                     @if ($candPhotoUrl)
                                         <img src="{{ $candPhotoUrl }}" alt="{{ $applicantName }}" class="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-[#1D2E54] shadow-2xs shrink-0">
@@ -514,6 +556,13 @@
                                             @endif
                                             <span class="truncate">{{ $profile?->user?->email ?? ($att->jobApplication?->applicantProfile?->user?->email ?? '-') }}</span>
                                         </div>
+                                        @if ($jobApp)
+                                            <div class="mt-1">
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border {{ $appBadgeClass }}">
+                                                    Lamaran: {{ $jobApp->status_label ?? $appStatus }}
+                                                </span>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </td>
@@ -521,7 +570,7 @@
                                 <div class="font-semibold text-gray-700 dark:text-slate-200 truncate">
                                     {{ $att->jobApplication?->job?->title ?? '-' }}
                                 </div>
-                                <div class="text-[11px] text-gray-400 dark:text-slate-500 truncate">
+                                <div class="text-[11px] text-gray-400 dark:text-slate-500 truncate mt-0.5">
                                     {{ $att->jobApplication?->job?->company?->name ?? '-' }}
                                 </div>
                             </td>
@@ -529,8 +578,23 @@
                                 <div class="font-semibold text-gray-800 dark:text-slate-200 truncate">
                                     {{ $att->test?->title ?? '-' }}
                                 </div>
-                                <div class="text-[11px] text-gray-400">
-                                    {{ $att->test?->category?->name ?? 'Tes Rekrutmen' }}
+                                <div class="mt-1 flex items-center gap-1.5">
+                                    @if ($isDisc)
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60">
+                                            DISC
+                                        </span>
+                                    @elseif ($isPapi)
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+                                            PAPI Kostick
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                            Teknis
+                                        </span>
+                                    @endif
+                                    <span class="text-[11px] text-gray-400 truncate">
+                                        {{ $att->test?->category?->name ?? 'Tes Rekrutmen' }}
+                                    </span>
                                 </div>
                             </td>
                             <td class="py-3 px-3 text-center">
@@ -538,7 +602,7 @@
                                     {{ $att->started_at ? \Carbon\Carbon::parse($att->started_at)->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') : '-' }}
                                 </div>
                                 @if ($att->duration)
-                                    <div class="text-[10px] text-gray-400">Durasi: {{ round($att->duration / 60) }} mnt</div>
+                                    <div class="text-[10px] text-gray-400 mt-0.5">Durasi: {{ round($att->duration / 60) }} mnt</div>
                                 @endif
                             </td>
                             <td class="py-3 px-3 text-center">
@@ -547,6 +611,7 @@
                                         <span class="px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs border border-purple-200 dark:border-purple-800/60">
                                             {{ $discResult->discProfile?->pattern_name ?? ($discResult->primary_trait ?? 'DISC Profil') }}
                                         </span>
+                                        <span class="text-[10px] text-gray-400 mt-0.5">Profil Kepribadian</span>
                                     </div>
                                 @elseif ($isPapi)
                                     <div class="inline-flex flex-col items-center">
@@ -574,61 +639,131 @@
                                 @endif
                             </td>
                             <td class="py-3 px-3 text-center">
-                                @if ($att->status === 'in_progress')
-                                    <span class="inline-flex items-center justify-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-semibold text-[11px] border border-sky-200 dark:border-sky-800">
-                                        Sedang Mengerjakan
-                                    </span>
-                                @elseif ($isDisc || $isPapi)
-                                    <span class="inline-flex items-center justify-center whitespace-nowrap px-2.5 py-1 rounded-full {{ $isPapi ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' : 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300' }} font-semibold text-[11px]">
-                                        Selesai
-                                    </span>
-                                @elseif ($hasUnreviewedEssay)
-                                    <span class="inline-flex items-center justify-center whitespace-nowrap px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-semibold text-[11px]">
-                                        Perlu Koreksi
-                                    </span>
-                                @elseif ($att->status === 'passed')
-                                    <span class="inline-flex items-center justify-center whitespace-nowrap px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-semibold text-[11px]">
-                                        Lolos Standar
-                                    </span>
-                                @elseif ($att->status === 'failed')
-                                    <span class="inline-flex items-center justify-center whitespace-nowrap px-2.5 py-1 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 font-semibold text-[11px]">
-                                        Di Bawah Standar
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center justify-center whitespace-nowrap px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-semibold text-[11px]">
-                                        Sedang Proses
-                                    </span>
-                                @endif
+                                @php
+                                    $jobApp = $att->jobApplication;
+                                    $testRecruiterAppr = $jobApp?->test_recruiter_approval ?? 'pending';
+                                    $testAdminAppr = $jobApp?->test_admin_approval ?? 'pending';
+                                    $isTestDoubleApproved = ($testRecruiterAppr === 'approved' && $testAdminAppr === 'approved');
+                                    $isTestRejected = ($testRecruiterAppr === 'rejected' || $testAdminAppr === 'rejected');
+                                @endphp
 
-                                @if ($att->jobApplication)
-                                    @php
-                                        $appStatus = $att->jobApplication->status;
-                                        $badgeBg = match(strtolower($appStatus)) {
-                                            'accepted' => 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800',
-                                            'rejected' => 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800',
-                                            'interview' => 'text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800',
-                                            'shortlisted' => 'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800',
-                                            'reviewed' => 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800',
-                                            default => 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800',
-                                        };
-                                    @endphp
-                                    <div class="mt-1">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border {{ $badgeBg }}">
-                                            Lamaran: {{ $appStatus }}
+                                <div class="inline-flex flex-col items-center">
+                                    {{-- Primary Status Pill --}}
+                                    @if ($att->status === 'in_progress')
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-semibold text-[11px] border border-sky-200 dark:border-sky-800">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
+                                            <span>Mengerjakan</span>
                                         </span>
-                                    </div>
-                                @endif
+                                        <span class="text-[10px] text-gray-400 mt-1">Ujian Sedang Berlangsung</span>
+                                    @elseif ($hasUnreviewedEssay)
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-semibold text-[11px] border border-amber-200 dark:border-amber-800">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                            <span>Perlu Koreksi</span>
+                                        </span>
+                                        <span class="text-[10px] text-amber-600 dark:text-amber-400 mt-1 font-medium">Esai Belum Dinilai</span>
+                                    @elseif ($isTestDoubleApproved)
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800" title="Ujian telah disetujui oleh Recruiter Teknis dan HR/Admin (Double Approved).">
+                                            <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                            <span>Double Approved</span>
+                                        </span>
+                                        <div class="flex items-center justify-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 mt-1 font-medium">
+                                            <span>Teknis ✓</span>
+                                            <span class="text-gray-300 dark:text-slate-700">•</span>
+                                            <span>HR ✓</span>
+                                        </div>
+                                    @elseif ($testRecruiterAppr === 'approved' && $testAdminAppr !== 'approved')
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-300 dark:border-sky-800" title="Recruiter Teknis telah menyetujui. Menunggu keputusan verifikasi HR.">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
+                                            <span>Menunggu HR</span>
+                                        </span>
+                                        <div class="flex items-center justify-center gap-1 text-[10px] text-gray-500 dark:text-slate-400 mt-1">
+                                            <span class="text-emerald-600 dark:text-emerald-400 font-medium">Teknis ✓</span>
+                                            <span class="text-gray-300 dark:text-slate-700">•</span>
+                                            <span class="text-amber-600 dark:text-amber-400 font-medium">HR ⏳</span>
+                                        </div>
+                                    @elseif ($testAdminAppr === 'approved' && $testRecruiterAppr !== 'approved')
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-800" title="HR telah menyetujui. Menunggu konfirmasi koreksi teknis Recruiter.">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                            <span>Menunggu Recruiter</span>
+                                        </span>
+                                        <div class="flex items-center justify-center gap-1 text-[10px] text-gray-500 dark:text-slate-400 mt-1">
+                                            <span class="text-amber-600 dark:text-amber-400 font-medium">Teknis ⏳</span>
+                                            <span class="text-gray-300 dark:text-slate-700">•</span>
+                                            <span class="text-emerald-600 dark:text-emerald-400 font-medium">HR ✓</span>
+                                        </div>
+                                    @elseif ($isTestRejected)
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                                            <svg class="w-3.5 h-3.5 text-rose-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1.414-1.414L10 10.586l1.414 1.414a1 1 0 001.414-1.414L11.414 9.172l1.414-1.414a1 1 0 00-1.414-1.414L10 7.758 8.586 6.344a1 1 0 00-1.414 1.414l1.414 1.414-1.414 1.414a1 1 0 001.414 1.414z" clip-rule="evenodd" /></svg>
+                                            <span>Ujian Ditolak</span>
+                                        </span>
+                                        <span class="text-[10px] text-rose-500 mt-1">Tidak Direkomendasikan</span>
+                                    @elseif ($isDisc || $isPapi)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold {{ $isPapi ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800' : 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800' }}">
+                                            Selesai
+                                        </span>
+                                        <span class="text-[10px] text-gray-400 mt-1">Interpretasi Otomatis</span>
+                                    @elseif ($att->status === 'passed')
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                            Lolos Standar
+                                        </span>
+                                        <div class="flex items-center justify-center gap-1 text-[10px] text-gray-400 mt-1">
+                                            <span>Teknis ⏳</span>
+                                            <span>•</span>
+                                            <span>HR ⏳</span>
+                                        </div>
+                                    @elseif ($att->status === 'failed')
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                                            Di Bawah Standar
+                                        </span>
+                                        <span class="text-[10px] text-gray-400 mt-1">Nilai &lt; KKM</span>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700">
+                                            Selesai
+                                        </span>
+                                        <span class="text-[10px] text-gray-400 mt-1">Selesai Dikerjakan</span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="py-3 px-3 text-right">
                                 <div class="flex items-center justify-end">
-                                    <button @click="openGradingModal({{ \Illuminate\Support\Js::from($att) }}, {{ $isDisc ? 'true' : 'false' }}, {{ $isPapi ? 'true' : 'false' }})" 
-                                        class="p-1.5 rounded-lg text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition cursor-pointer"
-                                        title="{{ $isPapi ? 'Riwayat & Interpretasi PAPI' : ($isDisc ? 'Riwayat Jawaban & Profil' : 'Riwayat Jawaban & Nilai') }}">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                    </button>
+                                    @if ($hasUnreviewedEssay)
+                                        <button @click="openGradingModal({{ \Illuminate\Support\Js::from($att) }}, {{ $isDisc ? 'true' : 'false' }}, {{ $isPapi ? 'true' : 'false' }})" 
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 transition shadow-2xs cursor-pointer"
+                                            title="Buka Lembar Koreksi Esai">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                            <span>Koreksi</span>
+                                        </button>
+                                    @elseif ($isDisc)
+                                        <button @click="openGradingModal({{ \Illuminate\Support\Js::from($att) }}, true, false)" 
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 border border-purple-500/30 transition shadow-2xs cursor-pointer"
+                                            title="Lihat Profil & Analisis Kepribadian DISC">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                            </svg>
+                                            <span>Profil</span>
+                                        </button>
+                                    @elseif ($isPapi)
+                                        <button @click="openGradingModal({{ \Illuminate\Support\Js::from($att) }}, false, true)" 
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 transition shadow-2xs cursor-pointer"
+                                            title="Lihat Diagram & Analisis PAPI Kostick">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <span>Diagram</span>
+                                        </button>
+                                    @else
+                                        <button @click="openGradingModal({{ \Illuminate\Support\Js::from($att) }}, false, false)" 
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/30 transition shadow-2xs cursor-pointer"
+                                            title="Periksa Detail Jawaban & Nilai Ujian">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            <span>Periksa</span>
+                                        </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -639,7 +774,12 @@
                                     <svg class="w-8 h-8 text-gray-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                     </svg>
-                                    <span>Belum ada data pengerjaan tes pelamar.</span>
+                                    @if(!empty($isDesignatedRecruiter) && ($assignedJobsCount ?? 0) === 0)
+                                        <span class="text-sm font-bold text-gray-800 dark:text-slate-200">Belum Ada Lowongan yang Ditugaskan ke Anda</span>
+                                        <span class="text-xs text-gray-500 dark:text-slate-400 max-w-sm">Anda telah ditunjuk sebagai Recruiter, namun belum dipilih sebagai Reviewer pada lowongan aktif. Hasil evaluasi ujian akan tampil di sini saat pelamar pada lowongan tugas Anda telah mengerjakan tes.</span>
+                                    @else
+                                        <span>Belum ada data pengerjaan tes pelamar.</span>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -766,6 +906,62 @@
                         </button>
                     </div>
 
+                    <!-- Double Approval Tahap 2: Status Banner -->
+                    <div class="my-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 space-y-2.5">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <span class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Tahap 2: Double Approval Hasil Ujian Online</span>
+                            </span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                :class="{
+                                    'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300': (gradingData.test_recruiter_approval === 'approved' && gradingData.test_admin_approval === 'approved'),
+                                    'bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200 dark:border-sky-800': (gradingData.test_recruiter_approval === 'approved' && gradingData.test_admin_approval !== 'approved'),
+                                    'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800': (gradingData.test_admin_approval === 'approved' && gradingData.test_recruiter_approval !== 'approved'),
+                                    'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300': (gradingData.test_recruiter_approval === 'rejected' || gradingData.test_admin_approval === 'rejected'),
+                                    'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300': (gradingData.test_recruiter_approval === 'pending' && gradingData.test_admin_approval === 'pending')
+                                }"
+                                x-text="(gradingData.test_recruiter_approval === 'approved' && gradingData.test_admin_approval === 'approved') ? 'Double Approved (Lolos Ujian)' : ((gradingData.test_recruiter_approval === 'approved') ? 'Menunggu HR (Recruiter Teknis ✓)' : ((gradingData.test_admin_approval === 'approved') ? 'Menunggu Recruiter (HR ✓)' : ((gradingData.test_recruiter_approval === 'rejected' || gradingData.test_admin_approval === 'rejected') ? 'Ujian Ditolak' : 'Menunggu Evaluasi')))">
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <!-- Gate 1: Recruiter Teknis -->
+                            <div class="p-2.5 rounded-xl border text-xs"
+                                 :class="gradingData.test_recruiter_approval === 'approved' ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60' : (gradingData.test_recruiter_approval === 'rejected' ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/60' : 'bg-white dark:bg-slate-900 border-gray-200/80 dark:border-slate-800')">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-[11px] text-gray-800 dark:text-slate-200">1. Recruiter Teknis (Esai & KKM)</span>
+                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                                          :class="gradingData.test_recruiter_approval === 'approved' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300' : (gradingData.test_recruiter_approval === 'rejected' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300')"
+                                          x-text="gradingData.test_recruiter_approval === 'approved' ? 'Disetujui Teknis' : (gradingData.test_recruiter_approval === 'rejected' ? 'Di Bawah KKM' : 'Pending Koreksi')">
+                                    </span>
+                                </div>
+                                <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5 leading-tight">"Kompetensi teknis & esai mencapai KKM"</p>
+                                <template x-if="gradingData.test_recruiter_notes">
+                                    <p class="italic text-[10px] text-gray-600 dark:text-slate-400 mt-1 bg-white/60 dark:bg-slate-900/40 p-1.5 rounded" x-text="'“' + gradingData.test_recruiter_notes + '”'"></p>
+                                </template>
+                            </div>
+
+                            <!-- Gate 2: HR / Admin Psikotes & Kuota -->
+                            <div class="p-2.5 rounded-xl border text-xs"
+                                 :class="gradingData.test_admin_approval === 'approved' ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60' : (gradingData.test_admin_approval === 'rejected' ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/60' : 'bg-white dark:bg-slate-900 border-gray-200/80 dark:border-slate-800')">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-[11px] text-gray-800 dark:text-slate-200">2. HR / Admin (Psikotes & Kuota)</span>
+                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                                          :class="gradingData.test_admin_approval === 'approved' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300' : (gradingData.test_admin_approval === 'rejected' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300')"
+                                          x-text="gradingData.test_admin_approval === 'approved' ? 'Disetujui HR' : (gradingData.test_admin_approval === 'rejected' ? 'Ditolak HR' : 'Menunggu HR')">
+                                    </span>
+                                </div>
+                                <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5 leading-tight">"Analisis DISC, PAPI & kelulusan ke wawancara"</p>
+                                <template x-if="gradingData.test_admin_notes">
+                                    <p class="italic text-[10px] text-gray-600 dark:text-slate-400 mt-1 bg-white/60 dark:bg-slate-900/40 p-1.5 rounded" x-text="'“' + gradingData.test_admin_notes + '”'"></p>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- DISC Personality Analysis Report (If DISC Result exists) -->
                     <template x-if="gradingData.disc_result">
                         <div class="my-4 p-5 rounded-2xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 space-y-4">
@@ -777,14 +973,14 @@
                                     <h4 class="text-sm font-bold text-gray-900 dark:text-white mt-1" x-text="gradingData.disc_result.disc_profile ? (gradingData.disc_result.disc_profile.pattern_code + ' - ' + gradingData.disc_result.disc_profile.title) : 'Tipe Kepribadian DISC'"></h4>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <a :href="'{{ $isRecruiter ? '/recruiter/test-evaluations/' : '/admin/test-evaluations/' }}' + gradingData.id + '/disc-pdf'" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100/80 hover:bg-purple-200 dark:bg-purple-900/60 dark:hover:bg-purple-800 text-purple-900 dark:text-purple-200 border border-purple-200 dark:border-purple-700 rounded-xl text-xs font-semibold shadow-2xs transition-all">
+                                    <a :href="'{{ $gradeActionPrefix }}' + gradingData.id + '/disc-pdf'" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100/80 hover:bg-purple-200 dark:bg-purple-900/60 dark:hover:bg-purple-800 text-purple-900 dark:text-purple-200 border border-purple-200 dark:border-purple-700 rounded-xl text-xs font-semibold shadow-2xs transition-all">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                         <span>Preview PDF</span>
                                     </a>
-                                    <a :href="'{{ $isRecruiter ? '/recruiter/test-evaluations/' : '/admin/test-evaluations/' }}' + gradingData.id + '/disc-pdf?download=1'" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold shadow-sm shadow-purple-500/20 transition-all">
+                                    <a :href="'{{ $gradeActionPrefix }}' + gradingData.id + '/disc-pdf?download=1'" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold shadow-sm shadow-purple-500/20 transition-all">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                         </svg>
@@ -1030,7 +1226,7 @@
                                     </h4>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <a :href="'{{ $isRecruiter ? '/recruiter/test-evaluations/' : '/admin/test-evaluations/' }}' + gradingData.id + '/papi-pdf'"
+                                    <a :href="'{{ $gradeActionPrefix }}' + gradingData.id + '/papi-pdf'"
                                         target="_blank"
                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100/80 hover:bg-amber-200 dark:bg-amber-900/60 dark:hover:bg-amber-800 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-700 rounded-xl text-xs font-semibold shadow-2xs transition-all">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1039,7 +1235,7 @@
                                         </svg>
                                         <span>Buka Lembar PDF PAPI</span>
                                     </a>
-                                    <a :href="'{{ $isRecruiter ? '/recruiter/test-evaluations/' : '/admin/test-evaluations/' }}' + gradingData.id + '/papi-pdf?download=1'"
+                                    <a :href="'{{ $gradeActionPrefix }}' + gradingData.id + '/papi-pdf?download=1'"
                                         class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold shadow-sm transition-all">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -1323,7 +1519,7 @@
                                             <div class="space-y-3">
                                                 <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-xs">
                                                     <span class="block text-[11px] font-semibold text-gray-400 uppercase mb-1">Jawaban Teks Pelamar:</span>
-                                                    <p class="font-medium text-gray-800 dark:text-slate-200 whitespace-pre-line" x-text="item.single_answer.essay_answer || '(Pelamar tidak mengisikan jawaban teks)'"></p>
+                                                    <p class="font-medium text-gray-800 dark:text-slate-200 whitespace-pre-line" x-text="item.single_answer.essay_answer ? (item.single_answer.essay_answer.replace(/\[Tautan Lampiran\/Video\]:\s*https?:\/\/[^\s]+/gi, '').trim() || (item.single_answer.essay_answer.match(/https?:\/\/[^\s]+/i) ? '(Tautan terlampir di bawah)' : '(Pelamar tidak mengisikan jawaban teks)')) : '(Pelamar tidak mengisikan jawaban teks)'"></p>
                                                 </div>
 
                                                 <!-- Tautan Terdeteksi (Google Drive / Video dll) -->
@@ -1340,8 +1536,8 @@
                                                                     <div class="min-w-0 truncate">
                                                                         <div class="flex items-center gap-2">
                                                                             <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                                                                                :class="url.includes('drive.google.com') ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300' : 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300'"
-                                                                                x-text="url.includes('drive.google.com') ? 'Tautan Google Drive' : 'Tautan Terdeteksi'"></span>
+                                                                                :class="url.includes('drive.google.com') ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300' : (url.includes('youtube.com') || url.includes('youtu.be') ? 'bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300' : 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300')"
+                                                                                x-text="url.includes('drive.google.com') ? 'Tautan Google Drive' : (url.includes('youtube.com') || url.includes('youtu.be') ? 'Tautan YouTube' : 'Tautan Terdeteksi')"></span>
                                                                         </div>
                                                                         <span class="text-[11px] text-gray-500 dark:text-slate-400 font-mono truncate block mt-0.5" x-text="url"></span>
                                                                     </div>
@@ -1398,111 +1594,173 @@
                             </div>
                         </template>
 
-                        <!-- KEPUTUSAN STATUS LAMARAN OLEH HR (ONE-STOP DECISION) -->
-                        <div class="mt-6 p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 space-y-3.5">
-                            <div class="flex items-center justify-between gap-2 flex-wrap">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                                        ✓
+                        @if($isAdmin)
+                            <!-- KEPUTUSAN KELULUSAN UJIAN OLEH HR (DOUBLE APPROVAL GATE 2) -->
+                            <div class="mt-6 p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 space-y-3.5">
+                                <div class="flex items-center justify-between gap-2 flex-wrap">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                                            ✓
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xs font-bold text-gray-900 dark:text-white">
+                                                Keputusan Kelulusan Ujian HR / Admin (Gate 2)
+                                            </h4>
+                                            <p class="text-[11px] text-gray-500 dark:text-slate-400">
+                                                Tinjau hasil teknis, grafik DISC & PAPI, lalu tentukan keputusan verifikasi HR
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <template x-if="gradingData.applicant_email">
+                                        <span class="inline-flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 font-medium bg-white dark:bg-slate-900 px-2.5 py-1 rounded-lg border border-indigo-200 dark:border-indigo-800 shadow-2xs">
+                                            <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            </svg>
+                                            <span x-text="gradingData.applicant_email"></span>
+                                        </span>
+                                    </template>
+                                </div>
+
+                                <!-- Pilihan Keputusan Double Approval HR -->
+                                <div class="space-y-2 pt-1">
+                                    <label class="block text-[11px] font-bold text-gray-700 dark:text-slate-300">
+                                        Pilih Keputusan Verifikasi HR:
+                                    </label>
+                                    <input type="hidden" name="test_decision" :value="gradingData.test_decision">
+
+                                    <div class="space-y-2">
+                                        <!-- Opsi 1: Setujui HR (Normal Double Approval) -->
+                                        <button type="button" 
+                                            @click="gradingData.test_decision = 'approved'; if (gradingData.test_recruiter_approval === 'approved') { gradingData.application_status = 'Shortlisted'; applyTemplate('Shortlisted'); }"
+                                            :class="gradingData.test_decision === 'approved' ? 'border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 ring-2 ring-emerald-500/20' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-emerald-300'"
+                                            class="w-full p-2.5 rounded-xl border text-left transition flex items-start justify-between cursor-pointer">
+                                            <div>
+                                                <span class="font-bold text-xs flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                                                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                    Persetujuan HR (Normal Double Approval)
+                                                </span>
+                                                <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5">
+                                                    Setujui profil karakter & hasil tes. Jika Recruiter Teknis sudah setuju esai ≥ KKM, status otomatis menjadi <strong>Lolos Ujian (Siap Wawancara)</strong>.
+                                                </p>
+                                            </div>
+                                            <span class="w-3.5 h-3.5 mt-0.5 rounded-full border shrink-0 flex items-center justify-center" :class="gradingData.test_decision === 'approved' ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 dark:border-slate-600'">
+                                                <span x-show="gradingData.test_decision === 'approved'" class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                            </span>
+                                        </button>
+
+                                        <!-- Opsi 2: Admin Override / Hak Veto -->
+                                        <button type="button" 
+                                            @click="gradingData.test_decision = 'override_shortlisted'; gradingData.application_status = 'Shortlisted'; applyTemplate('Shortlisted');"
+                                            :class="gradingData.test_decision === 'override_shortlisted' ? 'border-amber-500 bg-amber-50/80 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 ring-2 ring-amber-500/20' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-amber-300'"
+                                            class="w-full p-2.5 rounded-xl border text-left transition flex items-start justify-between cursor-pointer">
+                                            <div>
+                                                <span class="font-bold text-xs flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                                                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                    </svg>
+                                                    Admin Override / Hak Veto (Loloskan Langsung)
+                                                </span>
+                                                <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5">
+                                                    Bypass koreksi recruiter & seketika nyatakan pelamar lolos ujian <strong>(Lolos Ujian / Siap Wawancara)</strong>.
+                                                </p>
+                                            </div>
+                                            <span class="w-3.5 h-3.5 mt-0.5 rounded-full border shrink-0 flex items-center justify-center" :class="gradingData.test_decision === 'override_shortlisted' ? 'border-amber-500 bg-amber-500' : 'border-gray-300 dark:border-slate-600'">
+                                                <span x-show="gradingData.test_decision === 'override_shortlisted'" class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                            </span>
+                                        </button>
+
+                                        <!-- Opsi 3: Tolak Hasil Ujian -->
+                                        <button type="button" 
+                                            @click="gradingData.test_decision = 'rejected'; gradingData.application_status = 'Rejected'; applyTemplate('Rejected');"
+                                            :class="gradingData.test_decision === 'rejected' ? 'border-rose-500 bg-rose-50/80 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 ring-2 ring-rose-500/20' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-rose-300'"
+                                            class="w-full p-2.5 rounded-xl border text-left transition flex items-start justify-between cursor-pointer">
+                                            <div>
+                                                <span class="font-bold text-xs flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
+                                                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                    Tolak Hasil Ujian (Reject)
+                                                </span>
+                                                <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5">
+                                                    Hasil evaluasi tidak memenuhi kualifikasi lowongan (status langsung <strong>Rejected</strong>).
+                                                </p>
+                                            </div>
+                                            <span class="w-3.5 h-3.5 mt-0.5 rounded-full border shrink-0 flex items-center justify-center" :class="gradingData.test_decision === 'rejected' ? 'border-rose-500 bg-rose-500' : 'border-gray-300 dark:border-slate-600'">
+                                                <span x-show="gradingData.test_decision === 'rejected'" class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Feedback & Status Override -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                                    <div>
+                                        <label for="eval_app_status" class="block text-[11px] font-bold text-gray-700 dark:text-slate-300 mb-1">
+                                            Status Lamaran yang Diterapkan:
+                                        </label>
+                                        <select name="application_status" id="eval_app_status" x-model="gradingData.application_status" @change="onStatusChange($event.target.value)" class="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                            <option value="Reviewed">Lolos Berkas</option>
+                                            <option value="Shortlisted">Lolos Ujian</option>
+                                            <option value="Interview">Wawancara</option>
+                                            <option value="Accepted">Diterima</option>
+                                            <option value="Rejected">Ditolak</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <label for="eval_app_notes" class="block text-[11px] font-bold text-gray-700 dark:text-slate-300">
+                                                Catatan Evaluasi HR:
+                                            </label>
+                                            <button type="button" @click="applyTemplate()" class="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-0.5">
+                                                <span>Terapkan Pesan Template</span>
+                                            </button>
+                                        </div>
+                                        <textarea name="application_notes" id="eval_app_notes" rows="2" x-model="gradingData.application_notes" placeholder="Tambahkan catatan hasil tes untuk pelamar ini..." class="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition leading-relaxed"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Opsi Kirim Email Notifikasi Otomatis -->
+                                <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/60 shadow-2xs">
+                                    <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                                        <input type="hidden" name="send_email" value="0">
+                                        <input type="checkbox" name="send_email" value="1" x-model="gradingData.send_email" class="w-4 h-4 mt-0.5 text-indigo-600 rounded border-gray-300 dark:border-slate-600 focus:ring-indigo-500 transition">
+                                        <div class="space-y-0.5">
+                                            <span class="text-xs font-semibold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                                <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                </svg>
+                                                <span>Kirim notifikasi email otomatis ke pelamar</span>
+                                            </span>
+                                            <p class="text-[11px] text-gray-500 dark:text-slate-400 leading-tight">
+                                                Pelamar akan menerima email resmi berisi pembaruan status kelulusan tes dan instruksi langkah berikutnya.
+                                            </p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        @else
+                            <!-- KETERANGAN KHUSUS RECRUITER DEPARTEMEN (GATE 1) -->
+                            <div class="mt-6 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2.5">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                                        📝
                                     </div>
                                     <div>
                                         <h4 class="text-xs font-bold text-gray-900 dark:text-white">
-                                            Tindakan & Keputusan Status Lamaran
+                                            Koreksi Esai & Persetujuan Teknis (Recruiter - Gate 1)
                                         </h4>
-                                        <p class="text-[11px] text-gray-500 dark:text-slate-400">
-                                            Perbarui status lamaran kandidat secara langsung setelah evaluasi ujian selesai
+                                        <p class="text-[11px] text-gray-500 dark:text-slate-400 leading-relaxed">
+                                            Recruiter berwenang menilai jawaban esai teknis. Jika total nilai mencapai atau melampaui KKM, sistem akan <strong>otomatis mencatat persetujuan teknis Anda</strong> dan meneruskan kandidat ke tahap evaluasi psikotes & kuota oleh HR/Admin (Double Approval).
                                         </p>
                                     </div>
                                 </div>
-
-                                <template x-if="gradingData.applicant_email">
-                                    <span class="inline-flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 font-medium bg-white dark:bg-slate-900 px-2.5 py-1 rounded-lg border border-indigo-200 dark:border-indigo-800 shadow-2xs">
-                                        <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                        </svg>
-                                        <span x-text="gradingData.applicant_email"></span>
-                                    </span>
-                                </template>
                             </div>
-
-                            <!-- Pilihan Cepat / Template Pesan -->
-                            <div class="space-y-1.5 pt-1">
-                                <div class="flex items-center justify-between text-[11px]">
-                                    <span class="font-semibold text-gray-600 dark:text-slate-400 flex items-center gap-1">
-                                        <svg class="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                        </svg>
-                                        <span>Pilihan Cepat / Template Keputusan:</span>
-                                    </span>
-                                    <button type="button" @click="gradingData.application_notes = ''" class="text-gray-400 hover:text-rose-500 transition text-[10px]">
-                                        Kosongkan
-                                    </button>
-                                </div>
-                                <div class="flex flex-wrap gap-1.5">
-                                    <button type="button" @click="applyTemplate('Reviewed')" class="px-2 py-1 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-800/80 rounded-lg text-[10px] font-semibold text-amber-800 dark:text-amber-300 transition flex items-center gap-1">
-                                        <span>Lolos Berkas & Lanjut Tes</span>
-                                    </button>
-                                    <button type="button" @click="applyTemplate('Shortlisted')" class="px-2 py-1 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800/80 rounded-lg text-[10px] font-semibold text-indigo-700 dark:text-indigo-300 transition flex items-center gap-1">
-                                        <span>Lolos Ujian / Shortlisted</span>
-                                    </button>
-                                    <button type="button" @click="applyTemplate('Interview')" class="px-2 py-1 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800/80 rounded-lg text-[10px] font-semibold text-blue-700 dark:text-blue-300 transition flex items-center gap-1">
-                                        <span>Wawancara</span>
-                                    </button>
-                                    <button type="button" @click="applyTemplate('Accepted')" class="px-2 py-1 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/80 rounded-lg text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 transition flex items-center gap-1">
-                                        <span>Diterima</span>
-                                    </button>
-                                    <button type="button" @click="applyTemplate('Rejected')" class="px-2 py-1 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800/80 rounded-lg text-[10px] font-semibold text-rose-700 dark:text-rose-300 transition flex items-center gap-1">
-                                        <span>Ditolak</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                                <div>
-                                    <label for="eval_app_status" class="block text-[11px] font-bold text-gray-700 dark:text-slate-300 mb-1">
-                                        Pilih Status Lamaran:
-                                    </label>
-                                    <select name="application_status" id="eval_app_status" x-model="gradingData.application_status" @change="onStatusChange($event.target.value)" class="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
-                                        <option value="Reviewed">Reviewed (Lolos Berkas / Tahap Tes)</option>
-                                        <option value="Shortlisted">Shortlisted (Lolos Ujian / Siap Wawancara)</option>
-                                        <option value="Interview">Interview (Wawancara)</option>
-                                        <option value="Accepted">Accepted (Diterima)</option>
-                                        <option value="Rejected">Rejected (Ditolak)</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <div class="flex items-center justify-between mb-1">
-                                        <label for="eval_app_notes" class="block text-[11px] font-bold text-gray-700 dark:text-slate-300">
-                                            Catatan / Feedback Evaluasi:
-                                        </label>
-                                        <button type="button" @click="applyTemplate()" class="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-0.5">
-                                            <span>Terapkan Pesan</span>
-                                        </button>
-                                    </div>
-                                    <textarea name="application_notes" id="eval_app_notes" rows="2" x-model="gradingData.application_notes" placeholder="Tambahkan catatan evaluasi untuk pelamar ini..." class="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition leading-relaxed"></textarea>
-                                </div>
-                            </div>
-
-                            <!-- Opsi Kirim Email Notifikasi Otomatis -->
-                            <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/60 shadow-2xs">
-                                <label class="flex items-start gap-2.5 cursor-pointer select-none">
-                                    <input type="hidden" name="send_email" value="0">
-                                    <input type="checkbox" name="send_email" value="1" x-model="gradingData.send_email" class="w-4 h-4 mt-0.5 text-indigo-600 rounded border-gray-300 dark:border-slate-600 focus:ring-indigo-500 transition">
-                                    <div class="space-y-0.5">
-                                        <span class="text-xs font-semibold text-gray-900 dark:text-white flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                            </svg>
-                                            <span>Kirim notifikasi email otomatis ke pelamar</span>
-                                        </span>
-                                        <p class="text-[11px] text-gray-500 dark:text-slate-400 leading-tight">
-                                            Pelamar akan menerima email resmi berisi pembaruan status hasil evaluasi, pesan catatan di atas, dan langkah berikutnya.
-                                        </p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
+                            <input type="hidden" name="send_email" value="0">
+                        @endif
 
                         <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-slate-800">
                             <button type="button" @click="showGradingModal = false" class="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition">
@@ -1513,7 +1771,7 @@
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                <span x-text="isSubmittingGrading ? 'Menyimpan...' : 'Simpan Evaluasi & Perbarui Status'"></span>
+                                <span x-text="isSubmittingGrading ? 'Menyimpan...' : ('{{ $isAdmin ? 'Simpan Evaluasi & Perbarui Status' : 'Simpan Nilai Koreksi Esai' }}')"></span>
                             </button>
                         </div>
                     </form>

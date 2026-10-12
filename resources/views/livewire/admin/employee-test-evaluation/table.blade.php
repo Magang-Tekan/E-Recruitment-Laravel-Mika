@@ -1485,7 +1485,7 @@
                                                 <div
                                                     class="p-3.5 rounded-xl bg-gray-50/70 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-slate-300 font-mono text-[11px] whitespace-pre-line leading-relaxed">
                                                     <div
-                                                        x-text="item.single_answer.essay_answer || '(Karyawan tidak mengisi jawaban teks)'">
+                                                        x-text="item.single_answer.essay_answer ? (item.single_answer.essay_answer.replace(/\[Tautan Lampiran\/Video\]:\s*https?:\/\/[^\s]+/gi, '').trim() || (item.single_answer.essay_answer.match(/https?:\/\/[^\s]+/i) ? '(Tautan terlampir di bawah)' : '(Karyawan tidak mengisi jawaban teks)')) : '(Karyawan tidak mengisi jawaban teks)'">
                                                     </div>
                                                 </div>
 
@@ -1515,8 +1515,8 @@
                                                                                 class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
                                                                                 :class="url.includes('drive.google.com') ?
                                                                                     'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300' :
-                                                                                    'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300'"
-                                                                                x-text="url.includes('drive.google.com') ? 'Tautan Google Drive' : 'Tautan Terdeteksi'"></span>
+                                                                                    (url.includes('youtube.com') || url.includes('youtu.be') ? 'bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300' : 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300')"
+                                                                                x-text="url.includes('drive.google.com') ? 'Tautan Google Drive' : (url.includes('youtube.com') || url.includes('youtu.be') ? 'Tautan YouTube' : 'Tautan Terdeteksi')"></span>
                                                                         </div>
                                                                         <span
                                                                             class="text-[11px] text-gray-500 dark:text-slate-400 font-mono truncate block mt-0.5"

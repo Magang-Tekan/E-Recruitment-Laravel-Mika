@@ -122,7 +122,10 @@
                 <div><span class="text-slate-500 dark:text-[#93A5C9]">NIK:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->nik ?? '-' }}</span></div>
                 <div><span class="text-slate-500 dark:text-[#93A5C9]">Jenis Kelamin:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ ucfirst($profile?->gender ?? '-') }}</span></div>
                 <div><span class="text-slate-500 dark:text-[#93A5C9]">Tempat, Tgl Lahir:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->birth_place ?? '-' }}, {{ $profile?->birth_date ? \Carbon\Carbon::parse($profile->birth_date)->isoFormat('D MMMM YYYY') : '-' }}</span></div>
+                <div><span class="text-slate-500 dark:text-[#93A5C9]">Agama:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->religion ?? '-' }}</span></div>
+                <div><span class="text-slate-500 dark:text-[#93A5C9]">Golongan Darah:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->blood_type ?? '-' }}</span></div>
                 <div><span class="text-slate-500 dark:text-[#93A5C9]">NPWP:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->npwp ?? '-' }}</span></div>
+                <div><span class="text-slate-500 dark:text-[#93A5C9]">Kode Pos:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->postal_code ?? '-' }}</span></div>
                 <div class="sm:col-span-2"><span class="text-slate-500 dark:text-[#93A5C9]">Alamat Lengkap:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->address ?? '-' }}</span></div>
             </div>
         </section>

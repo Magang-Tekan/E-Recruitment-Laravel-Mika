@@ -46,11 +46,14 @@ class ApplicantOnlineTest extends Component
     // DISC: [ question_id => ['most' => option_id, 'least' => option_id] ]
     public $answers = [];
 
-    // Lampiran essay yang tersimpan di DB: [ question_id => ['url' => '...', 'name' => '...', 'size' => 12345] ]
-    public $essayAttachments = [];
+    // Lampiran file jawaban essay (1 file untuk semua soal uraian)
+    public $essayAttachment = null; // ['url' => '...', 'name' => '...', 'size' => 12345]
 
-    // Temporary upload per question: [ question_id => Livewire TemporaryUploadedFile ]
-    public $essayFiles = [];
+    // Form tautan khusus video/drive/eksternal (1 link untuk seluruh soal uraian)
+    public $essayLink = '';
+
+    // Temporary upload file
+    public $essayFile;
 
     public $timeRemainingSeconds = 0;
 
@@ -60,9 +63,9 @@ class ApplicantOnlineTest extends Component
     public $participantGender = 'male';
     public $testDate = '';
 
-    // Paginasi multi-soal: tampilkan beberapa soal sekaligus (khususnya PAPI Kostick)
+    // Paginasi multi-soal: tampilkan beberapa soal sekaligus (PAPI Kostick: 5, DISC & Ujian Umum: 1)
     public $currentPage = 0;       // Indeks halaman saat ini (0-based)
-    public $questionsPerPage = 5;  // Jumlah soal per halaman
+    public $questionsPerPage = 1;  // Jumlah soal per halaman
 
     public function mount($applicationId, $testId = null)
     {
@@ -133,6 +136,14 @@ class ApplicantOnlineTest extends Component
         }
 
         $this->testId = $this->test->id;
+
+        $categoryName = strtolower($this->test->category?->name ?? '');
+        $testTitle    = strtolower($this->test->title ?? '');
+        if (str_contains($categoryName, 'papi') || str_contains($testTitle, 'papi')) {
+            $this->questionsPerPage = 5;
+        } else {
+            $this->questionsPerPage = 1;
+        }
 
         // Cek apakah sudah ada attempt sebelumnya
         $existingAttempt = TestAttempt::with(['answers'])
@@ -317,13 +328,25 @@ class ApplicantOnlineTest extends Component
             || str_contains(strtolower($this->test->title), 'papi')
             || $linkedQuestions->contains('question_type', 'papi_kostick');
 
+        $isDisc = ($this->test->category && str_contains(strtolower($this->test->category->name), 'disc'))
+            || str_contains(strtolower($this->test->title), 'disc')
+            || $linkedQuestions->contains('question_type', 'disc');
+
         if ($isPapi) {
+            $this->questionsPerPage = 5;
+            $linkedQuestions = $linkedQuestions->sortBy(function ($q) {
+                return $q->metadata['number'] ?? $q->id;
+            })->values();
+        } elseif ($isDisc) {
+            $this->questionsPerPage = 1;
             $linkedQuestions = $linkedQuestions->sortBy(function ($q) {
                 return $q->metadata['number'] ?? $q->id;
             })->values();
         } elseif ($this->test->is_random) {
+            $this->questionsPerPage = 1;
             $linkedQuestions = $linkedQuestions->shuffle();
         } else {
+            $this->questionsPerPage = 1;
             $linkedQuestions = $linkedQuestions->sortBy(function ($q) {
                 return $q->pivot?->order_number ?? ($q->metadata['number'] ?? $q->id);
             })->values();
@@ -342,14 +365,27 @@ class ApplicantOnlineTest extends Component
                 } elseif ($ans->option_id) {
                     $this->answers[$ans->question_id] = $ans->option_id;
                 } elseif ($ans->essay_answer !== null) {
-                    $this->answers[$ans->question_id] = $ans->essay_answer;
+                    $firstEssay = collect($this->questions)->firstWhere('question_type', 'essay');
+                    if ($firstEssay && $ans->question_id == $firstEssay['id']) {
+                        if (preg_match('/(?:^|\n\n)\[Tautan Lampiran\/Video\]:\s*(https?:\/\/[^\s]+)/i', $ans->essay_answer, $matches)) {
+                            $this->essayLink = $matches[1];
+                            $cleanText = trim(str_replace($matches[0], '', $ans->essay_answer));
+                            $this->answers[$ans->question_id] = $cleanText;
+                        } else {
+                            $this->answers[$ans->question_id] = $ans->essay_answer;
+                        }
+                    } else {
+                        $this->answers[$ans->question_id] = $ans->essay_answer;
+                    }
                 }
 
-                if ($ans->attachment_url) {
-                    $this->essayAttachments[$ans->question_id] = [
+                // Load attachment dari soal essay pertama yang punya file
+                if ($ans->attachment_url && !$this->essayAttachment) {
+                    $this->essayAttachment = [
                         'url' => $ans->attachment_url,
                         'name' => $ans->attachment_name ?: 'Lampiran File',
                         'size' => $ans->attachment_size ?: 0,
+                        'question_id' => $ans->question_id,
                     ];
                 }
             }
@@ -446,6 +482,17 @@ class ApplicantOnlineTest extends Component
                 ]
             );
         } elseif ($question['question_type'] === 'essay') {
+            $firstEssayQuestion = collect($this->questions)->firstWhere('question_type', 'essay');
+            $essayToSave = $essayText;
+
+            // Jika soal ini adalah soal essay pertama dan ada tautan eksternal, sematkan tautan
+            if ($firstEssayQuestion && $questionId == $firstEssayQuestion['id'] && !empty($this->essayLink)) {
+                $base = trim($essayText ?? '');
+                $essayToSave = $base !== ''
+                    ? $base . "\n\n[Tautan Lampiran/Video]: " . trim($this->essayLink)
+                    : "[Tautan Lampiran/Video]: " . trim($this->essayLink);
+            }
+
             TestAnswer::updateOrCreate(
                 [
                     'attempt_id' => $this->attemptId,
@@ -453,7 +500,7 @@ class ApplicantOnlineTest extends Component
                 ],
                 [
                     'option_id' => null,
-                    'essay_answer' => $essayText,
+                    'essay_answer' => $essayToSave,
                     'score' => null, // Dinilai oleh HR
                 ]
             );
@@ -469,40 +516,46 @@ class ApplicantOnlineTest extends Component
     /**
      * Otomatis simpan file begitu dipilih oleh pelamar tanpa perlu menekan tombol upload
      */
-    public function updatedEssayFiles($value, $key)
+    public function updatedEssayFile()
     {
-        $questionId = (int) $key;
-        if ($questionId) {
-            $this->uploadEssayAttachment($questionId);
-        }
+        $this->uploadEssayAttachment();
     }
 
     /**
      * Handle upload file attachment jawaban essay ke Storage Laravel (Max 10MB, All File Types)
      */
-    public function uploadEssayAttachment($questionId)
+    public function uploadEssayAttachment()
     {
         $this->validate([
-            'essayFiles.' . $questionId => 'required|file|max:10240', // 10MB max
+            'essayFile' => 'required|file|max:10240', // 10MB max
         ], [
-            'essayFiles.' . $questionId . '.required' => 'Pilih file terlebih dahulu.',
-            'essayFiles.' . $questionId . '.file' => 'File tidak valid.',
-            'essayFiles.' . $questionId . '.max' => 'Ukuran file maksimal adalah 10MB. Untuk file video atau file besar, silakan gunakan tautan Google Drive.',
+            'essayFile.required' => 'Pilih file terlebih dahulu.',
+            'essayFile.file' => 'File tidak valid.',
+            'essayFile.max' => 'Ukuran file maksimal adalah 10MB.',
         ]);
 
-        $file = $this->essayFiles[$questionId] ?? null;
-        if (!$file) return;
+        if (!$this->essayFile || !$this->attemptId) return;
+
+        // Simpan ke soal essay pertama
+        $firstEssayQuestion = collect($this->questions)->firstWhere('question_type', 'essay');
+        if (!$firstEssayQuestion) return;
+        $questionId = $firstEssayQuestion['id'];
 
         try {
-            // Simpan ke storage/app/public/test-answers
-            $path = $file->store('test-answers', 'public');
+            $path = $this->essayFile->store('test-answers', 'public');
             $fileUrl = asset('storage/' . $path);
+            $originalName = $this->essayFile->getClientOriginalName();
+            $fileSize = $this->essayFile->getSize();
 
-            $originalName = $file->getClientOriginalName();
-            $fileSize = $file->getSize();
+            $finalAnswer = $this->answers[$questionId] ?? null;
+            if (!empty($this->essayLink)) {
+                $base = trim($finalAnswer ?? '');
+                $finalAnswer = $base !== ''
+                    ? $base . "\n\n[Tautan Lampiran/Video]: " . trim($this->essayLink)
+                    : "[Tautan Lampiran/Video]: " . trim($this->essayLink);
+            }
 
-            // Simpan ke database
-            $answer = TestAnswer::updateOrCreate(
+            TestAnswer::updateOrCreate(
                 [
                     'attempt_id' => $this->attemptId,
                     'question_id' => $questionId,
@@ -511,20 +564,18 @@ class ApplicantOnlineTest extends Component
                     'attachment_url' => $fileUrl,
                     'attachment_name' => $originalName,
                     'attachment_size' => $fileSize,
-                    'essay_answer' => $this->answers[$questionId] ?? null,
+                    'essay_answer' => $finalAnswer,
                 ]
             );
 
-            // Update local state
-            $this->essayAttachments[$questionId] = [
+            $this->essayAttachment = [
                 'url' => $fileUrl,
                 'name' => $originalName,
                 'size' => $fileSize,
+                'question_id' => $questionId,
             ];
 
-            // Reset input temporary file
-            unset($this->essayFiles[$questionId]);
-
+            $this->essayFile = null;
             session()->flash('message', 'File berhasil diunggah.');
         } catch (\Exception $e) {
             session()->flash('error', 'Terjadi kesalahan saat mengunggah file: ' . $e->getMessage());
@@ -534,16 +585,18 @@ class ApplicantOnlineTest extends Component
     /**
      * Hapus lampiran file essay
      */
-    public function removeEssayAttachment($questionId)
+    public function removeEssayAttachment()
     {
-        if (!$this->attemptId) return;
+        if (!$this->attemptId || !$this->essayAttachment) return;
+
+        $questionId = $this->essayAttachment['question_id'] ?? null;
+        if (!$questionId) return;
 
         $ans = TestAnswer::where('attempt_id', $this->attemptId)
             ->where('question_id', $questionId)
             ->first();
 
         if ($ans && $ans->attachment_url) {
-            // Hapus file fisik jika ada di local storage
             $relativePath = str_replace(asset('storage/'), '', $ans->attachment_url);
             if (\Illuminate\Support\Facades\Storage::disk('public')->exists($relativePath)) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($relativePath);
@@ -558,10 +611,91 @@ class ApplicantOnlineTest extends Component
                 'attachment_size' => null,
             ]);
 
-        unset($this->essayAttachments[$questionId]);
-        unset($this->essayFiles[$questionId]);
+        $this->essayAttachment = null;
+        $this->essayFile = null;
 
         session()->flash('message', 'Lampiran file berhasil dihapus.');
+    }
+
+    /**
+     * Simpan form khusus link video/drive/eksternal
+     */
+    public function saveEssayLink()
+    {
+        if (!$this->attemptId) return;
+
+        $firstEssayQuestion = collect($this->questions)->firstWhere('question_type', 'essay');
+        if (!$firstEssayQuestion) return;
+        $questionId = $firstEssayQuestion['id'];
+
+        $link = trim($this->essayLink);
+        if (!empty($link)) {
+            if (!preg_match('#^https?://#i', $link)) {
+                $link = 'https://' . $link;
+                $this->essayLink = $link;
+            }
+
+            if (!filter_var($link, FILTER_VALIDATE_URL)) {
+                $this->addError('essayLink', 'Format tautan URL tidak valid. Pastikan diawali dengan http:// atau https://');
+                return;
+            }
+        }
+
+        $this->resetErrorBag('essayLink');
+        $currentAnswer = $this->answers[$questionId] ?? '';
+        $this->persistEssayAnswerWithLink($questionId, $currentAnswer, $link);
+
+        if (!empty($link)) {
+            session()->flash('link_message', 'Tautan berhasil disimpan.');
+        }
+    }
+
+    /**
+     * Hapus form khusus link
+     */
+    public function removeEssayLink()
+    {
+        $this->essayLink = '';
+        $this->resetErrorBag('essayLink');
+
+        if (!$this->attemptId) return;
+
+        $firstEssayQuestion = collect($this->questions)->firstWhere('question_type', 'essay');
+        if (!$firstEssayQuestion) return;
+        $questionId = $firstEssayQuestion['id'];
+
+        $currentAnswer = $this->answers[$questionId] ?? '';
+        $this->persistEssayAnswerWithLink($questionId, $currentAnswer, '');
+
+        session()->flash('link_message', 'Tautan berhasil dihapus.');
+    }
+
+    /**
+     * Helper untuk persistensi jawaban essay dengan tautan
+     */
+    protected function persistEssayAnswerWithLink($questionId, $textAnswer, $link)
+    {
+        $text = trim($textAnswer ?? '');
+        $text = trim(preg_replace('/(?:^|\n\n)\[Tautan Lampiran\/Video\]:\s*https?:\/\/[^\s]+/i', '', $text));
+        $this->answers[$questionId] = $text;
+
+        $finalAnswer = $text;
+        if (!empty($link)) {
+            $finalAnswer = $text !== ''
+                ? $text . "\n\n[Tautan Lampiran/Video]: " . trim($link)
+                : "[Tautan Lampiran/Video]: " . trim($link);
+        }
+
+        TestAnswer::updateOrCreate(
+            [
+                'attempt_id' => $this->attemptId,
+                'question_id' => $questionId,
+            ],
+            [
+                'option_id' => null,
+                'essay_answer' => $finalAnswer !== '' ? $finalAnswer : null,
+            ]
+        );
     }
 
     /**
@@ -612,9 +746,12 @@ class ApplicantOnlineTest extends Component
                     ];
                 }
             } elseif ($qType === 'essay') {
+                $firstEssay = collect($this->questions)->firstWhere('question_type', 'essay');
+                $isFirstEssay = ($firstEssay && $firstEssay['id'] == $qId);
                 $hasText = !empty($this->answers[$qId]) && trim($this->answers[$qId]) !== '';
-                $hasAttachment = !empty($this->essayAttachments[$qId]);
-                if (!$hasText && !$hasAttachment) {
+                $hasFileOrLink = $isFirstEssay && ($this->essayAttachment || !empty($this->essayLink));
+
+                if (!$hasText && !$hasFileOrLink) {
                     $unanswered[] = [
                         'index' => $index,
                         'number' => $qNum,
@@ -645,6 +782,7 @@ class ApplicantOnlineTest extends Component
             if (!empty($unanswered)) {
                 // Arahkan kursor/tampilan soal ke butir pertama yang belum lengkap
                 $this->currentQuestionIndex = $unanswered[0]['index'];
+                $this->currentPage = (int) floor($this->currentQuestionIndex / max(1, $this->questionsPerPage));
 
                 $count = count($unanswered);
                 $details = array_map(function ($item) {

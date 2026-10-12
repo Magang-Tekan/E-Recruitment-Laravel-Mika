@@ -92,6 +92,12 @@
         return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
     },
 
+    isPdf(path) {
+        if (!path) return false;
+        const ext = path.split('.').pop().toLowerCase();
+        return ext === 'pdf';
+    },
+
     getFileName(path) {
         if (!path) return '';
         return path.split('/').pop();
@@ -821,20 +827,20 @@
                                 </div>
                             </template>
                             <template x-if="!isImage(detailData.image_path)">
-                                <div class="p-3.5 rounded-xl border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/60 dark:bg-indigo-950/40 flex items-center justify-between gap-3">
+                                <div class="p-3.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/30 flex items-center justify-between gap-3">
                                     <div class="flex items-center gap-3 min-w-0">
-                                        <div class="w-10 h-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0" x-text="getFileExt(detailData.image_path)">
+                                        <div class="w-10 h-10 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold text-xs shrink-0" x-text="getFileExt(detailData.image_path)">
                                         </div>
                                         <div class="min-w-0 text-left">
                                             <span class="block text-xs font-bold text-gray-900 dark:text-white truncate" x-text="getFileName(detailData.image_path)"></span>
-                                            <span class="block text-[11px] text-indigo-700 dark:text-indigo-300">File lampiran dokumen studi kasus / materi soal</span>
+                                            <span class="block text-[11px] text-gray-500 dark:text-slate-400">File lampiran dokumen studi kasus / materi soal</span>
                                         </div>
                                     </div>
-                                    <a :href="detailData.image_url" target="_blank" download class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1.5 shrink-0">
+                                    <a :href="detailData.image_url" target="_blank" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-semibold shadow-xs transition flex items-center gap-1.5 shrink-0" title="Buka Dokumen di Tab Baru">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                         </svg>
-                                        <span>Unduh / Buka File</span>
+                                        <span>Buka Tab Baru</span>
                                     </a>
                                 </div>
                             </template>

@@ -494,7 +494,7 @@
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
                 <h3 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                    Keahlian / Skill
+                    Kemampuan Teknis dan Aplikasi Komputer
                 </h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Tambahkan keahlian teknis atau soft-skill yang Anda miliki.</p>
             </div>

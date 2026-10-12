@@ -125,4 +125,37 @@ input[type="week"]::-webkit-calendar-picker-indicator:hover {
     opacity: 1;
 }
 
+/* 4-Dot Jumping Wave Loader (Identik Halaman Auth/Login) */
+@keyframes mikaDotBounce {
+    0%, 80%, 100% {
+        transform: translateY(0);
+        opacity: 0.45;
+    }
+    40% {
+        transform: translateY(-16px);
+        opacity: 1;
+    }
+}
+
+.animate-dot-1 {
+    animation: mikaDotBounce 1.3s infinite ease-in-out;
+    animation-delay: 0s;
+}
+
+.animate-dot-2 {
+    animation: mikaDotBounce 1.3s infinite ease-in-out;
+    animation-delay: 0.16s;
+}
+
+.animate-dot-3 {
+    animation: mikaDotBounce 1.3s infinite ease-in-out;
+    animation-delay: 0.32s;
+}
+
+.animate-dot-4 {
+    animation: mikaDotBounce 1.3s infinite ease-in-out;
+    animation-delay: 0.48s;
+}
+
+
 

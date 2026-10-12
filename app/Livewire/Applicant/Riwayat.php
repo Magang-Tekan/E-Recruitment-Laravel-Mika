@@ -94,10 +94,24 @@ class Riwayat extends Component
             }
 
             if ($this->statusFilter !== 'all') {
-                if ($this->statusFilter === 'process') {
+                $statusVal = $this->statusFilter;
+                $indoMap = [
+                    'diajukan'     => 'Submitted',
+                    'lolos berkas' => 'Reviewed',
+                    'lolos_berkas' => 'Reviewed',
+                    'lolos ujian'  => 'Shortlisted',
+                    'lolos_ujian'  => 'Shortlisted',
+                    'wawancara'    => 'Interview',
+                    'diterima'     => 'Accepted',
+                    'ditolak'      => 'Rejected',
+                ];
+                if (isset($indoMap[strtolower($statusVal)])) {
+                    $statusVal = $indoMap[strtolower($statusVal)];
+                }
+                if ($statusVal === 'process') {
                     $query->whereIn('status', ['Submitted', 'Reviewed', 'Shortlisted', 'Interview', 'applied', 'pending', 'screening']);
                 } else {
-                    $query->where('status', $this->statusFilter);
+                    $query->whereRaw('LOWER(status) = ?', [strtolower($statusVal)]);
                 }
             }
 

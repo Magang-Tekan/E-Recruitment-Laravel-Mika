@@ -81,9 +81,43 @@ class TestEvaluationTable extends Component
 
     public function render()
     {
-        $companies = Company::orderBy('name', 'asc')->get();
+        $user = auth()->user();
+        $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+        $isRecruiter = !$isAdmin && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter);
+        $userDeptId = $user?->employeeProfile?->department_id;
+        $userPosId  = $user?->employeeProfile?->position_id;
+        $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
+
+        $companiesQuery = Company::orderBy('name', 'asc');
+        if ($isRecruiter && $user) {
+            $companiesQuery->whereHas('jobs', function ($jq) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
+                if ($isDesignatedRecruiter) {
+                    $jq->where(function ($sq) use ($user, $userPosId) {
+                        $sq->where('reviewer_id', $user->id);
+                        if ($userPosId) {
+                            $sq->orWhere('position_id', $userPosId);
+                        }
+                    });
+                } elseif ($userDeptId) {
+                    $jq->where('department_id', $userDeptId);
+                }
+            });
+        }
+        $companies = $companiesQuery->get();
 
         $jobsQuery = Job::with('company')->orderBy('title', 'asc');
+        if ($isRecruiter && $user) {
+            $jobsQuery->where(function ($sq) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
+                if ($isDesignatedRecruiter) {
+                    $sq->where('reviewer_id', $user->id);
+                    if ($userPosId) {
+                        $sq->orWhere('position_id', $userPosId);
+                    }
+                } elseif ($userDeptId) {
+                    $sq->where('department_id', $userDeptId);
+                }
+            });
+        }
         if (!empty($this->companyId)) {
             $jobsQuery->where('company_id', $this->companyId);
         }
@@ -97,6 +131,8 @@ class TestEvaluationTable extends Component
         $query = TestAttempt::with([
             'jobApplication.applicantProfile.user',
             'jobApplication.job.company',
+            'jobApplication.testRecruiter',
+            'jobApplication.testAdmin',
             'test.category',
             'answers.question.options',
             'answers.option',
@@ -104,7 +140,28 @@ class TestEvaluationTable extends Component
             'discTestResult.discProfile',
             'papiTestResult',
         ])
-        ->where('attempt_type', 'applicant');
+        ->where('attempt_type', 'applicant')
+        ->when($isRecruiter && $user, function ($q) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
+            $q->where(function ($sq) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
+                $sq->whereHas('jobApplication.job', function ($jq) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
+                    if ($isDesignatedRecruiter) {
+                        $jq->where(function ($ssq) use ($user, $userPosId) {
+                            $ssq->where('reviewer_id', $user->id);
+                            if ($userPosId) {
+                                $ssq->orWhere('position_id', $userPosId);
+                            }
+                        });
+                    } elseif ($userDeptId) {
+                        $jq->where('department_id', $userDeptId);
+                    }
+                });
+                if (!$isDesignatedRecruiter && $userDeptId) {
+                    $sq->orWhereHas('test', function ($tq) use ($userDeptId) {
+                        $tq->where('department_id', $userDeptId);
+                    });
+                }
+            });
+        });
 
         // Search Filter
         if (!empty($this->search)) {
@@ -153,6 +210,22 @@ class TestEvaluationTable extends Component
                 })->whereHas('answers', function ($a) {
                     $a->whereNull('reviewed_by');
                 });
+            } elseif ($this->status === 'waiting_hr') {
+                // Menunggu persetujuan HR (Teknis sudah disetujui / esai >= KKM)
+                $query->whereHas('jobApplication', function ($jq) {
+                    $jq->where('test_recruiter_approval', 'approved')
+                       ->where('test_admin_approval', '!=', 'approved');
+                });
+            } elseif ($this->status === 'double_approved') {
+                // Double Approved (Kedua pihak setuju atau status Shortlisted / Interview / Accepted)
+                $query->whereHas('jobApplication', function ($jq) {
+                    $jq->where(function ($sub) {
+                        $sub->where(function ($s) {
+                            $s->where('test_recruiter_approval', 'approved')
+                              ->where('test_admin_approval', 'approved');
+                        })->orWhereIn(DB::raw('LOWER(status)'), ['shortlisted', 'interview', 'accepted']);
+                    });
+                });
             } elseif ($this->status === 'passed') {
                 $query->where('status', 'passed');
             } elseif ($this->status === 'failed') {
@@ -177,6 +250,28 @@ class TestEvaluationTable extends Component
                       ->orWhereHas('test', function ($t) {
                           $t->whereRaw('LOWER(title) LIKE ?', ['%disc%'])
                             ->orWhereRaw('LOWER(title) LIKE ?', ['%personality%']);
+                      });
+                });
+            } elseif ($this->status === 'papi') {
+                // Khusus Tes Kepribadian PAPI Kostick
+                $query->where(function ($q) {
+                    $q->whereHas('papiTestResult')
+                      ->orWhereHas('test', function ($t) {
+                          $t->whereRaw('LOWER(title) LIKE ?', ['%papi%'])
+                            ->orWhereRaw('LOWER(title) LIKE ?', ['%kostick%']);
+                      });
+                });
+            } elseif ($this->status === 'psychometric') {
+                // Semua Psikotes (DISC & PAPI)
+                $query->where(function ($q) {
+                    $q->whereHas('discTestResult')
+                      ->orWhereHas('papiTestResult')
+                      ->orWhereHas('test', function ($t) {
+                          $t->whereRaw('LOWER(title) LIKE ?', ['%disc%'])
+                            ->orWhereRaw('LOWER(title) LIKE ?', ['%papi%'])
+                            ->orWhereRaw('LOWER(title) LIKE ?', ['%kostick%'])
+                            ->orWhereRaw('LOWER(title) LIKE ?', ['%personality%'])
+                            ->orWhereRaw('LOWER(title) LIKE ?', ['%kepribadian%']);
                       });
                 });
             } elseif ($this->status === 'in_progress') {
@@ -218,17 +313,24 @@ class TestEvaluationTable extends Component
         $attempts = $query->paginate($this->perPage);
 
         return view('livewire.admin.test-evaluation.table', [
-            'attempts'      => $attempts,
-            'companies'     => $companies,
-            'jobs'          => $jobs,
-            'tests'         => $tests,
-            'search'        => $this->search,
-            'companyId'     => $this->companyId,
-            'jobId'         => $this->jobId,
-            'testId'        => $this->testId,
-            'status'        => $this->status,
-            'sortField'     => $this->sortField,
-            'sortDirection' => $this->sortDirection,
+            'attempts'              => $attempts,
+            'companies'             => $companies,
+            'jobs'                  => $jobs,
+            'tests'                 => $tests,
+            'search'                => $this->search,
+            'companyId'             => $this->companyId,
+            'jobId'                 => $this->jobId,
+            'testId'                => $this->testId,
+            'status'                => $this->status,
+            'sortField'             => $this->sortField,
+            'sortDirection'         => $this->sortDirection,
+            'isDesignatedRecruiter' => $isDesignatedRecruiter,
+            'assignedJobsCount'     => ($isDesignatedRecruiter && $user) ? Job::where(function ($sq) use ($user, $userPosId) {
+                $sq->where('reviewer_id', $user->id);
+                if ($userPosId) {
+                    $sq->orWhere('position_id', $userPosId);
+                }
+            })->count() : 0,
         ]);
     }
 }

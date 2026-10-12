@@ -54,11 +54,18 @@ class UserTable extends Component
             return;
         }
 
+        // Hanya karyawan (employee) yang dapat ditunjuk sebagai recruiter
+        $roleName = strtolower($user->role?->name ?? '');
+        if ($user->role_id != 4 && $roleName !== 'employee') {
+            session()->flash('error', "Hanya akun dengan role Karyawan (Employee) yang dapat ditunjuk sebagai Recruiter.");
+            return;
+        }
+
         $user->is_recruiter = !((bool) $user->is_recruiter);
         $user->save();
 
         $statusText = $user->is_recruiter ? 'diaktifkan' : 'dinonaktifkan';
-        session()->flash('create', "Hak akses Recruiter untuk {$user->name} berhasil {$statusText}.");
+        session()->flash('create', "Hak akses Recruiter untuk karyawan {$user->name} berhasil {$statusText}.");
     }
 
     public function render()

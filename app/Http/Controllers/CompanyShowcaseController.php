@@ -58,6 +58,8 @@ class CompanyShowcaseController extends Controller
         ]);
 
         Cache::forget('frontend_company_showcases');
+        Cache::forget('frontend_company_showcases_id');
+        Cache::forget('frontend_company_showcases_en');
 
         return redirect()->route('admin.showcase')->with('create', 'Kegiatan showcase berhasil ditambahkan!');
     }
@@ -113,12 +115,32 @@ class CompanyShowcaseController extends Controller
         $showcase->badge_title = $request->input('badge_title', $showcase->badge_title);
         $showcase->badge_sub = $request->input('badge_sub', $showcase->badge_sub);
 
+        if ($request->filled('title_en')) {
+            $showcase->title_en = $request->input('title_en');
+        } elseif ($showcase->isDirty('title')) {
+            $showcase->title_en = null;
+        }
+
+        if ($request->filled('description_en')) {
+            $showcase->description_en = $request->input('description_en');
+        } elseif ($showcase->isDirty('description')) {
+            $showcase->description_en = null;
+        }
+
+        if ($request->filled('tag_en')) {
+            $showcase->tag_en = $request->input('tag_en');
+        } elseif ($showcase->isDirty('tag')) {
+            $showcase->tag_en = null;
+        }
+
         // Handle is_active: if submitted via form checkbox
         $showcase->is_active = $request->has('is_active') ? (bool) $request->input('is_active') : false;
 
         $showcase->save();
 
         Cache::forget('frontend_company_showcases');
+        Cache::forget('frontend_company_showcases_id');
+        Cache::forget('frontend_company_showcases_en');
 
         return redirect()->route('admin.showcase')->with('update', 'Kegiatan showcase berhasil diperbarui!');
     }
@@ -137,6 +159,8 @@ class CompanyShowcaseController extends Controller
         $showcase->delete();
 
         Cache::forget('frontend_company_showcases');
+        Cache::forget('frontend_company_showcases_id');
+        Cache::forget('frontend_company_showcases_en');
 
         return redirect()->route('admin.showcase')->with('delete', 'Kegiatan showcase berhasil dihapus!');
     }

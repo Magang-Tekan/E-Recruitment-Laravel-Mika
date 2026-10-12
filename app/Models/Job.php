@@ -10,10 +10,49 @@ class Job extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'company_id', 'department_id', 'position_id', 'reviewer_id', 'title', 'description', 
+        'company_id', 'department_id', 'position_id', 'reviewer_id', 
+        'title', 'title_en', 
+        'description', 'description_en', 
         'employment_type', 'location', 'salary_min', 'salary_max', 
         'quota', 'deadline', 'status'
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function ($job) {
+            // Auto translate title to English if title_en is empty
+            if (empty($job->title_en) && !empty($job->title)) {
+                $job->title_en = \App\Services\TranslationService::translate($job->title);
+            }
+
+            // Auto translate description to English if description_en is empty
+            if (empty($job->description_en) && !empty($job->description)) {
+                $job->description_en = \App\Services\TranslationService::translate($job->description);
+            }
+        });
+    }
+
+    /**
+     * Accessor: Judul lowongan terjemahan sesuai locale aktif (ID/EN).
+     */
+    public function getLocalizedTitleAttribute(): string
+    {
+        if (app()->getLocale() === 'en' && !empty($this->title_en)) {
+            return $this->title_en;
+        }
+        return $this->title ? __($this->title) : '';
+    }
+
+    /**
+     * Accessor: Deskripsi lowongan terjemahan sesuai locale aktif (ID/EN).
+     */
+    public function getLocalizedDescriptionAttribute(): ?string
+    {
+        if (app()->getLocale() === 'en' && !empty($this->description_en)) {
+            return $this->description_en;
+        }
+        return $this->description;
+    }
 
     /**
      * Scope lowongan yang benar-benar aktif (status Open dan belum lewat batas tanggal).
@@ -79,7 +118,7 @@ class Job extends Model
         if (!$this->deadline) {
             return [
                 'status' => 'no_deadline',
-                'label' => 'Hingga Terpenuhi',
+                'label' => __('Hingga Terpenuhi'),
                 'color' => 'gray',
             ];
         }
@@ -87,7 +126,7 @@ class Job extends Model
         if ($this->is_expired || $this->status === 'Closed') {
             return [
                 'status' => 'closed',
-                'label' => 'Ditutup',
+                'label' => __('Ditutup'),
                 'color' => 'red',
             ];
         }
@@ -97,7 +136,7 @@ class Job extends Model
         if ($days === 0) {
             return [
                 'status' => 'today',
-                'label' => 'Berakhir Hari Ini!',
+                'label' => __('Berakhir Hari Ini!'),
                 'color' => 'rose',
             ];
         }
@@ -105,14 +144,14 @@ class Job extends Model
         if ($days !== null && $days <= 3) {
             return [
                 'status' => 'urgent',
-                'label' => "Sisa {$days} Hari Lagi!",
+                'label' => __('Sisa :days Hari Lagi!', ['days' => $days]),
                 'color' => 'amber',
             ];
         }
 
         return [
             'status' => 'open',
-            'label' => 'Batas: ' . Carbon::parse($this->deadline)->format('d M Y'),
+            'label' => __('Batas:') . ' ' . Carbon::parse($this->deadline)->translatedFormat('d M Y'),
             'color' => 'emerald',
         ];
     }

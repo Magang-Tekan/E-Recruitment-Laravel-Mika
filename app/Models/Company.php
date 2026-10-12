@@ -25,6 +25,7 @@ class Company extends Model
         'postal_code',
         'phone',
         'email',
+        'registration_passkey',
     ];
 
     protected $casts = [

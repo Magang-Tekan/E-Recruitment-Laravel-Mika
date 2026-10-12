@@ -8,6 +8,7 @@ use App\Models\EmployeeProfile;
 use App\Models\Company;
 use App\Models\Department;
 use App\Models\Position;
+use App\Models\Setting;
 use Illuminate\Validation\Rule;
 use App\Livewire\Traits\WithTableSkeleton;
 
@@ -46,6 +47,11 @@ class EmployeeTable extends Component
     public $promoteTargetType = 'permanent';
     public $promoteDepartmentId = '';
     public $promoteDepartmentName = '';
+
+    // Modal Master Passkey State
+    public $showPasskeyModal = false;
+    public $masterPasskey = '';
+    public $showPasskeyText = true;
 
     public function updatedEditDepartmentId()
     {
@@ -273,6 +279,46 @@ class EmployeeTable extends Component
         $statusText = $this->promoteTargetType === 'permanent' ? 'Karyawan Tetap' : 'Karyawan Kontrak';
         $this->closePromoteModal();
         session()->flash('message', 'Selamat! ' . $employee->full_name . ' berhasil diangkat menjadi ' . $statusText . ' dengan jabatan "' . $this->promoteNewPosition . '".');
+    }
+
+    public function openPasskeyModal()
+    {
+        $this->masterPasskey = Setting::get('employee_registration_passkey', env('EMPLOYEE_REGISTRATION_PASSKEY', 'MIKA2026'));
+        $this->showPasskeyText = true;
+        $this->resetErrorBag('masterPasskey');
+        $this->showPasskeyModal = true;
+    }
+
+    public function closePasskeyModal()
+    {
+        $this->showPasskeyModal = false;
+        $this->resetErrorBag('masterPasskey');
+    }
+
+    public function togglePasskeyVisibility()
+    {
+        $this->showPasskeyText = !$this->showPasskeyText;
+    }
+
+    public function generateRandomPasskey()
+    {
+        $this->masterPasskey = 'MIKA' . date('Y') . '-' . strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
+    }
+
+    public function savePasskey()
+    {
+        $this->validate([
+            'masterPasskey' => 'required|string|min:4|max:50',
+        ], [
+            'masterPasskey.required' => 'Master passkey pendaftaran tidak boleh kosong.',
+            'masterPasskey.min' => 'Master passkey minimal 4 karakter.',
+            'masterPasskey.max' => 'Master passkey maksimal 50 karakter.',
+        ]);
+
+        Setting::set('employee_registration_passkey', trim($this->masterPasskey), 'Master Passkey default registrasi akun karyawan');
+
+        $this->showPasskeyModal = false;
+        session()->flash('message', 'Master Passkey pendaftaran karyawan berhasil diperbarui menjadi: ' . trim($this->masterPasskey));
     }
 
     public function render()

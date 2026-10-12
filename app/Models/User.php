@@ -35,11 +35,19 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is a recruiter (role recruiter or employee with is_recruiter toggle).
+     */
+    public function isRecruiter(): bool
+    {
+        return $this->role_id == 2 || strtolower($this->role?->name ?? '') === 'recruiter' || (bool) $this->is_recruiter;
+    }
+
+    /**
      * Check if user can review job applicants.
      */
     public function canReview(): bool
     {
-        return $this->isAdmin() || $this->role_id == 2 || (bool) $this->is_recruiter;
+        return $this->isAdmin() || $this->isRecruiter();
     }
 
     /**
