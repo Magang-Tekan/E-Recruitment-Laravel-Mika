@@ -67,40 +67,80 @@ class CompanyShowcase extends Model
 
     public function getLocalizedTitleAttribute(): string
     {
-        if (app()->getLocale() === 'en' && !empty($this->title_en)) {
-            return $this->title_en;
+        if (app()->getLocale() === 'en') {
+            if (!empty($this->title_en)) {
+                return $this->title_en;
+            }
+            if (!empty($this->title)) {
+                $translated = \App\Services\TranslationService::translate($this->title);
+                if (!empty($translated)) {
+                    return $translated;
+                }
+            }
         }
         return __(trim($this->title));
     }
 
     public function getLocalizedDescriptionAttribute(): ?string
     {
-        if (app()->getLocale() === 'en' && !empty($this->description_en)) {
-            return $this->description_en;
+        if (app()->getLocale() === 'en') {
+            if (!empty($this->description_en)) {
+                return $this->description_en;
+            }
+            if (!empty($this->description)) {
+                $translated = \App\Services\TranslationService::translate($this->description);
+                if (!empty($translated)) {
+                    return $translated;
+                }
+            }
         }
         return $this->description ? __(trim($this->description)) : null;
     }
 
     public function getLocalizedTagAttribute(): ?string
     {
-        if (app()->getLocale() === 'en' && !empty($this->tag_en)) {
-            return $this->tag_en;
+        if (app()->getLocale() === 'en') {
+            if (!empty($this->tag_en)) {
+                return $this->tag_en;
+            }
+            if (!empty($this->tag)) {
+                $translated = \App\Services\TranslationService::translate($this->tag);
+                if (!empty($translated)) {
+                    return $translated;
+                }
+            }
         }
         return $this->tag ? __(trim($this->tag)) : __('Acara & Kolaborasi');
     }
 
     public function getLocalizedBadgeTitleAttribute(): ?string
     {
-        if (app()->getLocale() === 'en' && !empty($this->badge_title_en)) {
-            return $this->badge_title_en;
+        if (app()->getLocale() === 'en') {
+            if (!empty($this->badge_title_en)) {
+                return $this->badge_title_en;
+            }
+            if (!empty($this->badge_title)) {
+                $translated = \App\Services\TranslationService::translate($this->badge_title);
+                if (!empty($translated)) {
+                    return $translated;
+                }
+            }
         }
         return $this->badge_title ? __(trim($this->badge_title)) : 'EVENT';
     }
 
     public function getLocalizedBadgeSubAttribute(): ?string
     {
-        if (app()->getLocale() === 'en' && !empty($this->badge_sub_en)) {
-            return $this->badge_sub_en;
+        if (app()->getLocale() === 'en') {
+            if (!empty($this->badge_sub_en)) {
+                return $this->badge_sub_en;
+            }
+            if (!empty($this->badge_sub)) {
+                $translated = \App\Services\TranslationService::translate($this->badge_sub);
+                if (!empty($translated)) {
+                    return $translated;
+                }
+            }
         }
         return $this->badge_sub ? __(trim($this->badge_sub)) : null;
     }

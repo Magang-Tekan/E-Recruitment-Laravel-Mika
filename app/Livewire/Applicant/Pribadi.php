@@ -77,7 +77,13 @@ class Pribadi extends Component
         $this->postal_code = $profile->postal_code;
         $this->blood_type = $profile->blood_type;
         $this->about_me = $profile->about_me;
-        $this->current_photo_url = $profile->photo ? (asset('storage/'.$profile->photo).'?v='.time()) : null;
+        $photoUrl = $profile->photo_url;
+        $this->current_photo_url = null;
+        if ($photoUrl) {
+            $this->current_photo_url = \Illuminate\Support\Str::startsWith($photoUrl, ['http://', 'https://'])
+                ? $photoUrl
+                : ($photoUrl . (str_contains($photoUrl, '?') ? '&v=' : '?v=') . time());
+        }
         $this->current_cv_path = $profile->cv_file_path;
         $this->current_cv_url = $profile->cv_file_path ? asset('storage/'.$profile->cv_file_path) : null;
     }
@@ -155,7 +161,7 @@ class Pribadi extends Component
         $profile = ApplicantProfile::firstOrCreate(['user_id' => $user->id]);
 
         if ($this->cropped_photo_base64) {
-            if ($profile->photo && Storage::disk('public')->exists($profile->photo)) {
+            if ($profile->photo && !str_starts_with($profile->photo, 'http') && Storage::disk('public')->exists($profile->photo)) {
                 Storage::disk('public')->delete($profile->photo);
             }
 
@@ -176,7 +182,7 @@ class Pribadi extends Component
             $this->photo = null;
             $this->cropped_photo_base64 = null;
         } elseif ($this->photo) {
-            if ($profile->photo && Storage::disk('public')->exists($profile->photo)) {
+            if ($profile->photo && !str_starts_with($profile->photo, 'http') && Storage::disk('public')->exists($profile->photo)) {
                 Storage::disk('public')->delete($profile->photo);
             }
             $photoPath = $this->photo->store('applicant-photos', 'public');

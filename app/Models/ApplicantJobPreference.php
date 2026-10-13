@@ -33,4 +33,12 @@ class ApplicantJobPreference extends Model
     {
         return $this->belongsTo(ApplicantProfile::class, 'applicant_profile_id');
     }
+
+    /**
+     * Get job search status with default 'Aktif' if not specified
+     */
+    public function getJobSearchStatusAttribute($value): string
+    {
+        return !empty($value) ? $value : 'Aktif';
+    }
 }

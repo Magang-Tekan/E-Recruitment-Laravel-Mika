@@ -74,7 +74,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
     <!-- Header Card (Clean Enterprise Blueprint) -->
-    <div class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-blue-600 dark:border-l-[#93F514] p-6 md:p-7 transition-colors">
+    <div class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-emerald-600 dark:border-l-[#93F514] p-6 md:p-7 transition-colors">
         <div class="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]"
             style="background-image: radial-gradient(#93F514 1px, transparent 1px); background-size: 20px 20px;">
         </div>
@@ -107,17 +107,34 @@
         <form wire:submit.prevent="save" class="space-y-6">
 
             <!-- Photo & Basic Info Row -->
+            @php
+                $applicantDisplayName = $full_name ?: (auth()->user()->name ?? 'Pelamar');
+                $applicantInitial = strtoupper(mb_substr($applicantDisplayName, 0, 1, 'UTF-8')) ?: 'P';
+                $googleColors = [
+                    '#1A73E8', '#D93025', '#188038', '#E37400', '#8E24AA',
+                    '#00897B', '#D81B60', '#3949AB', '#F4511E', '#00ACC1'
+                ];
+                $applicantBgColor = $googleColors[abs(crc32($applicantDisplayName)) % count($googleColors)];
+            @endphp
             <div class="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-slate-200/80 dark:border-[#1D2E54]">
                 <div class="relative group shrink-0">
-                    <div class="w-28 h-28 rounded-full overflow-hidden bg-slate-100 dark:bg-[#14203A] border-2 border-emerald-500 dark:border-[#93F514] shadow-md flex items-center justify-center relative">
+                    <div class="w-28 h-28 rounded-full overflow-hidden border-2 border-emerald-500 dark:border-[#93F514] shadow-md flex items-center justify-center relative bg-slate-100 dark:bg-[#14203A]">
                         @if ($cropped_photo_base64)
                             <img src="{{ $cropped_photo_base64 }}" class="w-full h-full object-cover">
                         @elseif ($current_photo_url)
-                            <img src="{{ $current_photo_url }}" class="w-full h-full object-cover">
+                            <img src="{{ $current_photo_url }}" 
+                                 alt="{{ $applicantDisplayName }}" 
+                                 referrerpolicy="no-referrer" 
+                                 class="w-full h-full object-cover" 
+                                 onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                            <div class="hidden w-full h-full items-center justify-center font-black text-white text-3xl select-none shadow-inner" style="background-color: {{ $applicantBgColor }};">
+                                <span>{{ $applicantInitial }}</span>
+                            </div>
                         @else
-                            <svg class="w-14 h-14 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
+                            {{-- Tampilan bawaan saat daftar manual / belum ada foto profil (Initial avatar cerah & elegan ala Google Material) --}}
+                            <div class="w-full h-full flex items-center justify-center font-black text-white text-3xl select-none shadow-inner transition-transform group-hover:scale-105" style="background-color: {{ $applicantBgColor }};">
+                                <span>{{ $applicantInitial }}</span>
+                            </div>
                         @endif
                     </div>
                 </div>

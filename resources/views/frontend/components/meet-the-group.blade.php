@@ -93,7 +93,7 @@
 
                         <!-- Deskripsi Singkat -->
                         <p class="text-xs sm:text-sm text-gray-300 leading-relaxed line-clamp-4 relative z-10">
-                            {{ $companyItem->about ? __(trim($companyItem->about)) : ($companyItem->tagline ? __(trim($companyItem->tagline)) : __('Entitas bagian dari ekosistem grup yang bersinergi dalam memperkuat keandalan solusi dan keunggulan operasional.')) }}
+                            {{ $companyItem->localized_about ?: ($companyItem->localized_tagline ?: __('Entitas bagian dari ekosistem grup yang bersinergi dalam memperkuat keandalan solusi dan keunggulan operasional.')) }}
                         </p>
                     </div>
 

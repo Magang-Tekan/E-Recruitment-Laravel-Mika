@@ -9,12 +9,31 @@
             Preferensi & Minat Kerja
         </h4>
         @if ($pref)
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-emerald-950/20 p-3.5 rounded-2xl border border-emerald-900/40">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 bg-emerald-950/20 p-3.5 rounded-2xl border border-emerald-900/40">
                 <div>
                     <span class="text-emerald-400 block text-[11px]">Ekspektasi Gaji:</span>
                     <span class="font-bold text-emerald-300 text-xs">
                         {{ $pref->expected_salary ? 'Rp ' . number_format($pref->expected_salary, 0, ',', '.') : '-' }}
                     </span>
+                </div>
+                <div>
+                    <span class="text-emerald-400 block text-[11px]">Status Pencarian Kerja:</span>
+                    @if (($pref->job_search_status ?? 'Aktif') === 'Aktif')
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 mt-0.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Aktif
+                        </span>
+                    @elseif (($pref->job_search_status ?? '') === 'Pasif')
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-950/60 text-amber-400 border border-amber-800/50 mt-0.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            Pasif
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700 mt-0.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                            Tidak Aktif
+                        </span>
+                    @endif
                 </div>
                 <div>
                     <span class="text-emerald-400 block text-[11px]">Ketersediaan Kerja:</span>

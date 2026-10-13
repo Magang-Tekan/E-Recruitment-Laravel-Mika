@@ -15,8 +15,7 @@
         $socials = $prof?->socialMedias ?? collect();
         $apps = $prof?->jobApplications ?? collect();
 
-        $photo = $prof?->photo ?? $modalCandidate->avatar;
-        $photoUrl = $photo ? (\Illuminate\Support\Str::startsWith($photo, ['http://', 'https://']) ? $photo : asset('storage/' . $photo)) : null;
+        $photoUrl = $prof?->photo_url ?? $modalCandidate->avatar_url;
         $cvUrl = $prof?->cv_file_url ?? ($prof?->cv_file_path ? asset('storage/' . $prof->cv_file_path) : null);
         $candidateName = $prof?->full_name ?? $modalCandidate->name;
     @endphp
@@ -119,11 +118,18 @@
                                     {{-- Foto Profil --}}
                                     <div class="shrink-0">
                                         @if ($photoUrl)
-                                            <img src="{{ $photoUrl }}" 
-                                                alt="{{ $candidateName }}" 
-                                                class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-2xl border border-gray-200 dark:border-slate-700 shadow-xs">
+                                            <div class="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0">
+                                                <img src="{{ $photoUrl }}" 
+                                                    alt="{{ $candidateName }}" 
+                                                    referrerpolicy="no-referrer" 
+                                                    class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-2xl border border-gray-200 dark:border-slate-700 shadow-xs"
+                                                    onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                                <div class="hidden w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 font-semibold text-xl items-center justify-center shadow-xs">
+                                                    <span>{{ strtoupper(substr($candidateName, 0, 2)) }}</span>
+                                                </div>
+                                            </div>
                                         @else
-                                            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 font-semibold text-xl flex items-center justify-center shadow-xs">
+                                            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 font-semibold text-xl flex items-center justify-center shadow-xs shrink-0">
                                                 <span>{{ strtoupper(substr($candidateName, 0, 2)) }}</span>
                                             </div>
                                         @endif
@@ -602,12 +608,31 @@
                                     <span>Preferensi & Ekspektasi Kerja</span>
                                 </h4>
                                 @if ($pref)
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs pt-1">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 text-xs pt-1">
                                         <div>
                                             <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Ekspektasi Gaji:</span>
                                             <span class="font-bold text-emerald-600 dark:text-emerald-400">
                                                 {{ $pref->expected_salary ? 'Rp ' . number_format($pref->expected_salary, 0, ',', '.') : '-' }}
                                             </span>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Status Pencarian Kerja:</span>
+                                            @if (($pref->job_search_status ?? 'Aktif') === 'Aktif')
+                                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 mt-0.5">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                    Aktif
+                                                </span>
+                                            @elseif (($pref->job_search_status ?? '') === 'Pasif')
+                                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 mt-0.5">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                                    Pasif
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200 dark:border-slate-700 mt-0.5">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                                                    Tidak Aktif
+                                                </span>
+                                            @endif
                                         </div>
                                         <div>
                                             <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Ketersediaan Kerja:</span>

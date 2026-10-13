@@ -17,7 +17,27 @@ class ApplicantProfile extends Model
         'religion', 'postal_code', 'blood_type',
     ];
 
-    protected $appends = ['cv_url', 'cv_file_url'];
+    protected $appends = ['cv_url', 'cv_file_url', 'photo_url'];
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        // 1. Uploaded photo on applicant profile
+        if (! empty($this->photo)) {
+            return \Illuminate\Support\Str::startsWith($this->photo, ['http://', 'https://'])
+                ? $this->photo
+                : asset('storage/' . $this->photo);
+        }
+
+        // 2. Default email avatar / Google OAuth avatar from user account
+        $avatar = $this->user?->avatar;
+        if (! empty($avatar)) {
+            return \Illuminate\Support\Str::startsWith($avatar, ['http://', 'https://'])
+                ? $avatar
+                : asset('storage/' . $avatar);
+        }
+
+        return null;
+    }
 
     public function getCvFileUrlAttribute(): ?string
     {

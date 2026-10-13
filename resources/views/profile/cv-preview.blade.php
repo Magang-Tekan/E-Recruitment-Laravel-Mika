@@ -96,8 +96,11 @@
                 </div>
             </div>
 
-            @if($profile?->photo)
-                <img src="{{ asset('storage/' . $profile->photo) }}" alt="Foto Profile" class="w-24 h-28 object-cover rounded-xl border border-slate-200 dark:border-[#1D2E54] shadow-sm flex-shrink-0">
+            @php
+                $cvPhoto = $profile?->photo_url;
+            @endphp
+            @if($cvPhoto)
+                <img src="{{ $cvPhoto }}" alt="Foto Profile" referrerpolicy="no-referrer" class="w-24 h-28 object-cover rounded-xl border border-slate-200 dark:border-[#1D2E54] shadow-sm flex-shrink-0" onerror="this.style.display='none'">
             @endif
         </header>
 

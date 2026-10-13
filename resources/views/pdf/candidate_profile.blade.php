@@ -458,9 +458,14 @@
             <td class="info-label">Bersedia Relokasi</td>
             <td class="info-sep">:</td>
             <td class="info-value">{{ $pref ? ($pref->is_willing_to_relocate ? 'Ya, Bersedia' : 'Tidak') : '-' }}</td>
+            <td class="info-label">Status Pencarian Kerja</td>
+            <td class="info-sep">:</td>
+            <td class="info-value font-bold">{{ $pref->job_search_status ?? 'Aktif' }}</td>
+        </tr>
+        <tr>
             <td class="info-label">Bidang Minat</td>
             <td class="info-sep">:</td>
-            <td class="info-value">
+            <td class="info-value" colspan="4">
                 @if($pref)
                     {{ implode(', ', array_filter([$pref->interested_field_1, $pref->interested_field_2, $pref->interested_field_3])) ?: '-' }}
                 @else

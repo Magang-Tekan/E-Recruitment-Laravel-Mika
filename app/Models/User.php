@@ -84,6 +84,17 @@ class User extends Authenticatable
         return $this->hasMany(TestAttempt::class, 'user_id');
     }
 
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (! empty($this->avatar)) {
+            return \Illuminate\Support\Str::startsWith($this->avatar, ['http://', 'https://'])
+                ? $this->avatar
+                : asset('storage/' . $this->avatar);
+        }
+
+        return null;
+    }
+
     protected static function booted(): void
     {
         static::created(function (User $user) {
@@ -93,6 +104,7 @@ class User extends Authenticatable
                     [
                         'nik'       => $user->nik ?? null,
                         'full_name' => $user->name ?? null,
+                        'photo'     => $user->avatar ?? null,
                     ]
                 );
             } elseif ($user->role_id == 4 || strtolower($user->role?->name ?? '') === 'employee') {
@@ -101,6 +113,7 @@ class User extends Authenticatable
                     [
                         'nik'       => $user->nik ?? null,
                         'full_name' => $user->name ?? null,
+                        'photo'     => $user->avatar ?? null,
                     ]
                 );
             }

@@ -94,14 +94,13 @@
                             <div class="flex items-start sm:items-center gap-5 sm:gap-6 min-w-0 flex-1">
                                 {{-- Foto Pelamar --}}
                                 <div class="shrink-0">
-                                    <template x-if="detailData.applicant_profile && detailData.applicant_profile.photo">
-                                        <img :src="detailData.applicant_profile.photo.startsWith('http') 
-                                            ? detailData.applicant_profile.photo 
-                                            : ('/storage/' + detailData.applicant_profile.photo)" 
+                                    <template x-if="getApplicantPhotoUrl(detailData) && !modalImgFailed">
+                                        <img :src="getApplicantPhotoUrl(detailData)" 
                                             :alt="detailData.applicant_profile ? detailData.applicant_profile.full_name : 'Pelamar'" 
+                                            x-on:error="modalImgFailed = true"
                                             class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-2xl border border-gray-200 dark:border-slate-700 shadow-xs">
                                     </template>
-                                    <template x-if="!detailData.applicant_profile || !detailData.applicant_profile.photo">
+                                    <template x-if="!getApplicantPhotoUrl(detailData) || modalImgFailed">
                                         <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 font-semibold text-xl flex items-center justify-center shadow-xs">
                                             <span x-text="detailData.applicant_profile ? (detailData.applicant_profile.full_name || 'P').substring(0, 2).toUpperCase() : 'P'"></span>
                                         </div>
@@ -567,7 +566,24 @@
                                     </div>
                                     <div>
                                         <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Status Pencarian Kerja:</span>
-                                        <span class="font-semibold text-gray-800 dark:text-slate-200" x-text="detailData.applicant_profile.job_preference.job_search_status || '-'"></span>
+                                        <template x-if="detailData.applicant_profile.job_preference.job_search_status === 'Aktif' || (!detailData.applicant_profile.job_preference.job_search_status && detailData.applicant_profile.job_preference.id)">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 mt-0.5">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                Aktif
+                                            </span>
+                                        </template>
+                                        <template x-if="detailData.applicant_profile.job_preference.job_search_status === 'Pasif'">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 mt-0.5">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                                Pasif
+                                            </span>
+                                        </template>
+                                        <template x-if="detailData.applicant_profile.job_preference.job_search_status === 'Tidak Aktif'">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200 dark:border-slate-700 mt-0.5">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                                                Tidak Aktif
+                                            </span>
+                                        </template>
                                     </div>
                                     <div class="sm:col-span-2">
                                         <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Minat Industri / Bidang:</span>
