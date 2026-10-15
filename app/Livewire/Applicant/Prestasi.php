@@ -175,15 +175,17 @@ class Prestasi extends Component
         if ($this->isEditOrganization && $this->organization_id) {
             $org = Organization::where('profile_id', $profile->id)->where('id', $this->organization_id)->firstOrFail();
             $org->update($data);
-            session()->flash('message', __('Riwayat organisasi berhasil diperbarui.'));
+            $msg = __('Riwayat organisasi berhasil diperbarui.');
+            $action = 'update';
         } else {
             $data['profile_id'] = $profile->id;
             Organization::create($data);
-            session()->flash('message', __('Riwayat organisasi berhasil ditambahkan.'));
+            $msg = __('Riwayat organisasi berhasil ditambahkan.');
+            $action = 'create';
         }
 
         $this->closeOrganizationModal();
-        $this->dispatch('profile-updated');
+        $this->dispatch('profile-updated', message: $msg, action: $action);
     }
 
     public function deleteOrganization($id)
@@ -192,11 +194,10 @@ class Prestasi extends Component
         $profile = ApplicantProfile::where('user_id', $user->id)->first();
         if ($profile) {
             Organization::where('profile_id', $profile->id)->where('id', $id)->delete();
-            session()->flash('message', __('Riwayat organisasi berhasil dihapus.'));
         }
 
         $this->cancelDelete();
-        $this->dispatch('profile-updated');
+        $this->dispatch('profile-updated', message: __('Riwayat organisasi berhasil dihapus.'), action: 'delete');
     }
 
     // --- ACHIEVEMENT METHODS ---
@@ -290,7 +291,8 @@ class Prestasi extends Component
                 'description' => $this->achievement_description,
                 'certificate_path' => $certPath,
             ]);
-            session()->flash('message', __('Prestasi berhasil diperbarui.'));
+            $msg = __('Prestasi berhasil diperbarui.');
+            $action = 'update';
         } else {
             Achievement::create([
                 'profile_id' => $profile->id,
@@ -301,11 +303,12 @@ class Prestasi extends Component
                 'description' => $this->achievement_description,
                 'certificate_path' => $certPath,
             ]);
-            session()->flash('message', __('Prestasi berhasil ditambahkan.'));
+            $msg = __('Prestasi berhasil ditambahkan.');
+            $action = 'create';
         }
 
         $this->closeAchievementModal();
-        $this->dispatch('profile-updated');
+        $this->dispatch('profile-updated', message: $msg, action: $action);
     }
 
     public function deleteAchievement($id)
@@ -319,12 +322,11 @@ class Prestasi extends Component
                     Storage::disk('public')->delete($ach->certificate_path);
                 }
                 $ach->delete();
-                session()->flash('message', __('Prestasi berhasil dihapus.'));
             }
         }
 
         $this->cancelDelete();
-        $this->dispatch('profile-updated');
+        $this->dispatch('profile-updated', message: __('Prestasi berhasil dihapus.'), action: 'delete');
     }
 
     public function render()

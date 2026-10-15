@@ -127,15 +127,17 @@ class Organisasi extends Component
         if ($this->isEdit && $this->organization_id) {
             $org = Organization::where('profile_id', $profile->id)->where('id', $this->organization_id)->firstOrFail();
             $org->update($validatedData);
-            session()->flash('message', __('Riwayat organisasi berhasil diperbarui.'));
+            $msg = __('Riwayat organisasi berhasil diperbarui.');
+            $action = 'update';
         } else {
             $validatedData['profile_id'] = $profile->id;
             Organization::create($validatedData);
-            session()->flash('message', __('Riwayat organisasi berhasil ditambahkan.'));
+            $msg = __('Riwayat organisasi berhasil ditambahkan.');
+            $action = 'create';
         }
 
         $this->closeModal();
-        return redirect(route('profile', ['tab' => 'organisasi']));
+        $this->dispatch('profile-updated', message: $msg, action: $action);
     }
 
     public function confirmDelete($id)
@@ -157,14 +159,13 @@ class Organisasi extends Component
             $profile = ApplicantProfile::where('user_id', $user->id)->first();
             if ($profile) {
                 Organization::where('profile_id', $profile->id)->where('id', $this->deleteId)->delete();
-                session()->flash('message', __('Riwayat organisasi berhasil dihapus.'));
             }
         }
 
         $this->showDeleteModal = false;
         $this->deleteId = null;
 
-        return redirect(route('profile', ['tab' => 'organisasi']));
+        $this->dispatch('profile-updated', message: __('Riwayat organisasi berhasil dihapus.'), action: 'delete');
     }
 
     public function render()

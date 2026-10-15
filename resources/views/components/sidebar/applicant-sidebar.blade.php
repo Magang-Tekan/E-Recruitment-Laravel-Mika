@@ -79,7 +79,8 @@
                             <div
                                 class="flex items-center justify-between text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1">
                                 <span>{{ __('Kelengkapan Profil') }}</span>
-                                <span class="text-emerald-600 dark:text-[#93F514] font-extrabold">{{ $completionPercentage }}%</span>
+                                <span
+                                    class="text-emerald-600 dark:text-[#93F514] font-extrabold">{{ $completionPercentage }}%</span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-[#0D1527] rounded-full h-2 overflow-hidden mb-2">
                                 <div class="bg-emerald-500 dark:bg-[#93F514] h-2 rounded-full transition-all duration-500"
@@ -122,7 +123,7 @@
                     <div class="space-y-1">
                         <!-- 1. Data Pribadi -->
                         <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'pribadi'])" tab="pribadi"
-                            x-on:click.prevent="activeTab = 'pribadi'; $dispatch('switch-tab', 'pribadi')">
+                            x-on:click.prevent="switchTab('pribadi')">
                             <x-slot:icon>
                                 <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -144,7 +145,7 @@
 
                         <!-- Data Keluarga -->
                         <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'keluarga'])" tab="keluarga"
-                            x-on:click.prevent="activeTab = 'keluarga'; $dispatch('switch-tab', 'keluarga')">
+                            x-on:click.prevent="switchTab('keluarga')">
                             <x-slot:icon>
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -165,7 +166,7 @@
 
                         <!-- 2. Pendidikan -->
                         <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'pendidikan'])" tab="pendidikan"
-                            x-on:click.prevent="activeTab = 'pendidikan'; $dispatch('switch-tab', 'pendidikan')">
+                            x-on:click.prevent="switchTab('pendidikan')">
                             <x-slot:icon>
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -188,7 +189,7 @@
 
                         <!-- 3. Pengalaman Kerja & Minat Kerja -->
                         <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'pengalaman'])" tab="pengalaman"
-                            x-on:click.prevent="activeTab = 'pengalaman'; $dispatch('switch-tab', 'pengalaman')">
+                            x-on:click.prevent="switchTab('pengalaman')">
                             <x-slot:icon>
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -209,7 +210,7 @@
 
                         <!-- 4. Organisasi & Prestasi -->
                         <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'prestasi'])" tab="prestasi"
-                            x-on:click.prevent="activeTab = 'prestasi'; $dispatch('switch-tab', 'prestasi')">
+                            x-on:click.prevent="switchTab('prestasi')">
                             <x-slot:icon>
                                 <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -232,7 +233,7 @@
 
                         <!-- 6. Social Media -->
                         <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'social_media'])" tab="social_media"
-                            x-on:click.prevent="activeTab = 'social_media'; $dispatch('switch-tab', 'social_media')">
+                            x-on:click.prevent="switchTab('social_media')">
                             <x-slot:icon>
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -253,7 +254,7 @@
 
                         <!-- 7. Data Tambahan -->
                         <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'data_tambahan'])" tab="data_tambahan"
-                            x-on:click.prevent="activeTab = 'data_tambahan'; $dispatch('switch-tab', 'data_tambahan')">
+                            x-on:click.prevent="switchTab('data_tambahan')">
                             <x-slot:icon>
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -292,10 +293,12 @@
                                             class="text-xs font-bold text-emerald-600 dark:text-[#93F514]">{{ __('Aktif') }}</span>
                                     @elseif ($job_search_status === 'Pasif')
                                         <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                                        <span class="text-xs font-bold text-amber-600 dark:text-amber-400">{{ __('Pasif') }}</span>
+                                        <span
+                                            class="text-xs font-bold text-amber-600 dark:text-amber-400">{{ __('Pasif') }}</span>
                                     @else
                                         <span class="w-2 h-2 rounded-full bg-gray-400"></span>
-                                        <span class="text-xs font-bold text-gray-500 dark:text-slate-400">{{ __('Tidak Aktif') }}</span>
+                                        <span
+                                            class="text-xs font-bold text-gray-500 dark:text-slate-400">{{ __('Tidak Aktif') }}</span>
                                     @endif
                                 </div>
                             </button>
@@ -324,7 +327,7 @@
                     </div>
                     <div class="space-y-1">
                         <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'riwayat'])" tab="riwayat"
-                            x-on:click.prevent="activeTab = 'riwayat'; $dispatch('switch-tab', 'riwayat')">
+                            x-on:click.prevent="switchTab('riwayat')">
                             <x-slot:icon>
                                 <div class="relative">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -342,16 +345,18 @@
                                 @if ($hasUpcomingInterview)
                                     <span
                                         :class="activeTab === 'riwayat'
-                                            ? 'bg-white text-emerald-900 border-white shadow-xs dark:bg-white dark:text-slate-900 dark:border-white'
-                                            : 'bg-white text-slate-800 border-slate-200 shadow-2xs dark:bg-white dark:text-slate-900 dark:border-white'"
+                                            ?
+                                            'bg-white text-emerald-900 border-white shadow-xs dark:bg-white dark:text-slate-900 dark:border-white' :
+                                            'bg-white text-slate-800 border-slate-200 shadow-2xs dark:bg-white dark:text-slate-900 dark:border-white'"
                                         class="px-2 py-0.5 text-[11px] font-extrabold rounded-full border transition-colors shadow-xs">
                                         {{ __('Wawancara') }}
                                     </span>
                                 @elseif (!empty($applicationCount) && $applicationCount > 0)
                                     <span
                                         :class="activeTab === 'riwayat'
-                                            ? 'bg-white text-emerald-800 border-white/90 shadow-2xs dark:bg-black dark:text-white dark:border-black'
-                                            : 'bg-indigo-50 text-black border-indigo-200/80 dark:bg-indigo-50 dark:text-black dark:border-indigo-200/80'"
+                                            ?
+                                            'bg-white text-emerald-800 border-white/90 shadow-2xs dark:bg-black dark:text-white dark:border-black' :
+                                            'bg-indigo-50 text-black border-indigo-200/80 dark:bg-indigo-50 dark:text-black dark:border-indigo-200/80'"
                                         class="px-2 py-0.5 text-[11px] font-bold rounded-full border transition-colors">
                                         {{ $applicationCount }}
                                     </span>
@@ -360,7 +365,7 @@
                         </x-sidebar.single-nav-link>
 
                         <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'pengaturan'])" tab="pengaturan"
-                            x-on:click.prevent="activeTab = 'pengaturan'; $dispatch('switch-tab', 'pengaturan')">
+                            x-on:click.prevent="switchTab('pengaturan')">
                             <x-slot:icon>
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -411,8 +416,10 @@
                     <div
                         class="px-6 py-5 border-b border-gray-100 dark:border-[#1D2E54] flex items-center justify-between">
                         <div>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Status Pencari Kerja') }}</h3>
-                            <p class="text-xs text-gray-500 dark:text-[#93A5C9] mt-0.5">{{ __('Tentukan status pencarian kerjamu') }}</p>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                                {{ __('Status Pencari Kerja') }}</h3>
+                            <p class="text-xs text-gray-500 dark:text-[#93A5C9] mt-0.5">
+                                {{ __('Tentukan status pencarian kerjamu') }}</p>
                         </div>
                         <button type="button" wire:click="closeJobSearchStatusModal"
                             class="text-gray-400 hover:text-gray-600 dark:hover:text-[#93F514]">
@@ -488,7 +495,8 @@
                                         <input type="radio" wire:model.live="job_search_status" value="Tidak Aktif"
                                             class="mt-1 w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500 dark:bg-[#0D1527] dark:border-[#1D2E54]">
                                         <div>
-                                            <span class="block text-sm font-bold text-gray-900 dark:text-white">{{ __('Tidak Aktif') }}</span>
+                                            <span
+                                                class="block text-sm font-bold text-gray-900 dark:text-white">{{ __('Tidak Aktif') }}</span>
                                             <span
                                                 class="block text-xs text-gray-500 dark:text-[#93A5C9] mt-1 leading-relaxed">
                                                 {{ __('Saya tidak mencari pekerjaan dan tidak ingin menerima email apapun') }}
@@ -505,7 +513,9 @@
                                 @if ($job_search_status === 'Tidak Aktif')
                                     <div
                                         class="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-xl text-amber-800 dark:text-amber-300 text-xs">
-                                        {{ __('Status Anda saat ini adalah') }} <strong>{{ __('Tidak Aktif') }}</strong>. {{ __('Periode pengiriman notifikasi tidak dapat diatur.') }}
+                                        {{ __('Status Anda saat ini adalah') }}
+                                        <strong>{{ __('Tidak Aktif') }}</strong>.
+                                        {{ __('Periode pengiriman notifikasi tidak dapat diatur.') }}
                                     </div>
                                 @else
                                     <!-- Harian -->
@@ -571,9 +581,11 @@
                             </button>
                             <button type="submit" wire:loading.attr="disabled"
                                 class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 transition flex items-center gap-2 active:scale-95 cursor-pointer">
-                                <span wire:loading.remove wire:target="saveJobSearchStatus">{{ __('Simpan Status') }}</span>
+                                <span wire:loading.remove
+                                    wire:target="saveJobSearchStatus">{{ __('Simpan Status') }}</span>
                                 <span wire:loading wire:target="saveJobSearchStatus" class="flex items-center gap-2">
-                                    <svg class="animate-spin h-4 w-4 text-white dark:text-black" fill="none" viewBox="0 0 24 24">
+                                    <svg class="animate-spin h-4 w-4 text-white dark:text-black" fill="none"
+                                        viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10"
                                             stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor"

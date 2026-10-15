@@ -474,7 +474,43 @@
                                 @endif
 
                                 {{-- Kontak Darurat --}}
-                                @if ($fam?->emergency_contact_name || $fam?->emergency_contact_phone)
+                                @php
+                                    $emergencies = $fam?->emergency_contacts ?? [];
+                                    $sameHouse = $emergencies['same_house'] ?? [];
+                                    $diffHouse = $emergencies['diff_house'] ?? [];
+                                @endphp
+                                @if (!empty($sameHouse) || !empty($diffHouse))
+                                    <div class="p-3.5 bg-rose-50/50 dark:bg-rose-950/20 rounded-2xl border border-rose-200 dark:border-rose-900/40 space-y-3 md:col-span-2">
+                                        <div class="flex items-center gap-2 border-b border-rose-200/60 dark:border-rose-900/40 pb-1.5">
+                                            <div class="w-6 h-6 rounded-lg bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold text-xs">!</div>
+                                            <span class="font-bold text-rose-700 dark:text-rose-300 text-xs">Kontak Darurat (Emergency Contact)</span>
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+                                            @if (!empty($sameHouse))
+                                                <div class="p-2.5 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-rose-100 dark:border-rose-950/50 space-y-2">
+                                                    <span class="font-bold text-emerald-700 dark:text-emerald-400 block text-[10.5px]">Satu Tempat Tinggal (Rumah)</span>
+                                                    @foreach ($sameHouse as $i => $c)
+                                                        <div class="flex justify-between py-0.5 border-b border-gray-100 dark:border-slate-800 last:border-0">
+                                                            <span class="font-semibold text-gray-800 dark:text-slate-200">{{ $c['name'] ?? '-' }} ({{ $c['relation'] ?? '-' }})</span>
+                                                            <span class="text-rose-600 dark:text-rose-400 font-bold">{{ $c['phone'] ?? '-' }}</span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                            @if (!empty($diffHouse))
+                                                <div class="p-2.5 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-rose-100 dark:border-rose-950/50 space-y-2">
+                                                    <span class="font-bold text-blue-700 dark:text-blue-400 block text-[10.5px]">Tidak Satu Tempat Tinggal (Rumah)</span>
+                                                    @foreach ($diffHouse as $i => $c)
+                                                        <div class="flex justify-between py-0.5 border-b border-gray-100 dark:border-slate-800 last:border-0">
+                                                            <span class="font-semibold text-gray-800 dark:text-slate-200">{{ $c['name'] ?? '-' }} ({{ $c['relation'] ?? '-' }})</span>
+                                                            <span class="text-rose-600 dark:text-rose-400 font-bold">{{ $c['phone'] ?? '-' }}</span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @elseif ($fam?->emergency_contact_name || $fam?->emergency_contact_phone)
                                     <div class="p-3.5 bg-rose-50/50 dark:bg-rose-950/20 rounded-2xl border border-rose-200 dark:border-rose-900/40 space-y-2 md:col-span-2">
                                         <div class="flex items-center gap-2 border-b border-rose-200/60 dark:border-rose-900/40 pb-1.5">
                                             <div class="w-6 h-6 rounded-lg bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold text-xs">!</div>
@@ -573,11 +609,23 @@
                                     <div class="p-4 bg-gray-50/80 dark:bg-slate-800/40 rounded-2xl border border-gray-100 dark:border-slate-800 space-y-2">
                                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-gray-200/60 dark:border-slate-700/60 pb-2">
                                             <div>
-                                                <h4 class="font-bold text-gray-900 dark:text-white text-xs sm:text-sm">
-                                                    {{ $work->position ?: '-' }}
-                                                </h4>
-                                                <span class="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                                                    {{ $work->company_name ?? ($work->company ?? '-') }}
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <h4 class="font-bold text-gray-900 dark:text-white text-xs sm:text-sm">
+                                                        {{ $work->position ?: '-' }}
+                                                    </h4>
+                                                    @if ($work->initial_position)
+                                                        <span class="text-[11px] text-gray-400 dark:text-slate-500 font-medium">
+                                                            (Awal: {{ $work->initial_position }})
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <span class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex flex-wrap items-center gap-1.5 mt-0.5">
+                                                    <span>{{ $work->company_name ?? ($work->company ?? '-') }}</span>
+                                                    @if ($work->business_field)
+                                                        <span class="px-1.5 py-0.5 rounded text-[10px] bg-gray-200/60 dark:bg-slate-700/60 text-gray-700 dark:text-slate-300 font-normal">
+                                                            {{ $work->business_field }}
+                                                        </span>
+                                                    @endif
                                                     @if ($work->employment_type)
                                                         <span class="text-gray-400 dark:text-slate-500 font-normal">• {{ $work->employment_type }}</span>
                                                     @endif
@@ -588,6 +636,25 @@
                                                 {{ $work->currently_working ? 'Sekarang' : ($work->end_date ? \Carbon\Carbon::parse($work->end_date)->translatedFormat('M Y') : '-') }}
                                             </span>
                                         </div>
+
+                                        {{-- Extra info chips --}}
+                                        @if ($work->supervisor_name || $work->company_address || $work->initial_salary || $work->final_salary || $work->benefits)
+                                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-gray-500 dark:text-slate-400 pt-0.5">
+                                                @if ($work->supervisor_name)
+                                                    <span>Atasan: <strong class="text-gray-700 dark:text-slate-200">{{ $work->supervisor_name }}</strong></span>
+                                                @endif
+                                                @if ($work->company_address)
+                                                    <span>Alamat: <span class="text-gray-600 dark:text-slate-300">{{ $work->company_address }}</span></span>
+                                                @endif
+                                                @if ($work->final_salary)
+                                                    <span>Gaji Akhir: <strong class="text-emerald-600 dark:text-emerald-400">Rp {{ number_format($work->final_salary, 0, ',', '.') }}</strong></span>
+                                                @endif
+                                                @if ($work->benefits)
+                                                    <span>Fasilitas: <span class="text-gray-600 dark:text-slate-300">{{ $work->benefits }}</span></span>
+                                                @endif
+                                            </div>
+                                        @endif
+
                                         @if ($work->description)
                                             <p class="text-xs text-gray-600 dark:text-slate-300 leading-relaxed whitespace-pre-line pt-1">
                                                 {{ $work->description }}
@@ -733,22 +800,57 @@
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                                {{-- Keahlian / Skill --}}
+                                {{-- Keahlian / Kemampuan Teknis & Aplikasi Komputer --}}
                                 <div class="p-3.5 bg-gray-50/80 dark:bg-slate-800/40 rounded-2xl border border-gray-100 dark:border-slate-800 space-y-2">
                                     <h4 class="font-bold text-gray-900 dark:text-white flex items-center gap-1.5 text-xs border-b border-gray-200/60 dark:border-slate-700/60 pb-1.5">
-                                        <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                                        <span>Keahlian (Skills)</span>
+                                        <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                        <span>Kemampuan Teknis & Aplikasi Komputer</span>
                                     </h4>
-                                    <div class="flex flex-wrap gap-1.5 pt-1">
+                                    <div class="space-y-2 pt-1">
                                         @forelse ($skills as $sk)
-                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-900/50 shadow-2xs">
-                                                <span>{{ $sk->skill_name ?? ($sk->name ?? '-') }}</span>
-                                                @if ($sk->proficiency_level)
-                                                    <span class="text-[9.5px] opacity-75">({{ $sk->proficiency_level }})</span>
+                                            @php
+                                                $skillCert = $sk->certificate_path ?? ($sk->certificate_file_path ?? null);
+                                                $pColor = match($sk->proficiency) {
+                                                    'sangat_baik' => 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+                                                    'baik' => 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+                                                    'cukup' => 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
+                                                    'kurang' => 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800',
+                                                    default => 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
+                                                };
+                                                $pLabel = match($sk->proficiency) {
+                                                    'sangat_baik' => 'Sangat Baik',
+                                                    'baik' => 'Baik',
+                                                    'cukup' => 'Cukup',
+                                                    'kurang' => 'Kurang',
+                                                    default => ($sk->proficiency ? ucfirst(str_replace('_', ' ', $sk->proficiency)) : ($sk->proficiency_level ?? null)),
+                                                };
+                                            @endphp
+                                            <div class="p-2.5 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-800 text-[11px] flex flex-col gap-1.5">
+                                                <div class="flex items-center justify-between gap-2">
+                                                    <div class="flex items-center gap-1.5 flex-wrap min-w-0">
+                                                        <span class="font-bold text-gray-800 dark:text-slate-200">{{ $sk->skill_name ?? ($sk->name ?? '-') }}</span>
+                                                        @if ($pLabel)
+                                                            <span class="text-[9.5px] font-semibold px-2 py-0.5 rounded-md border {{ $pColor }}">
+                                                                {{ $pLabel }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                    @if ($skillCert)
+                                                        <a href="{{ asset('storage/' . ltrim($skillCert, '/')) }}" target="_blank"
+                                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10.5px] font-semibold text-emerald-700 dark:text-[#93F514] bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200/80 dark:border-emerald-800 transition shrink-0 shadow-2xs">
+                                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                            <span>Lihat Sertifikat</span>
+                                                        </a>
+                                                    @else
+                                                        <span class="text-[9.5px] text-gray-400 dark:text-slate-500 italic bg-gray-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md border border-gray-200/60 dark:border-slate-700/60 shrink-0">Tanpa Berkas</span>
+                                                    @endif
+                                                </div>
+                                                @if ($sk->description)
+                                                    <p class="text-[10.5px] text-gray-500 dark:text-slate-400 leading-relaxed">{{ $sk->description }}</p>
                                                 @endif
-                                            </span>
+                                            </div>
                                         @empty
-                                            <span class="text-gray-400 italic text-[11px]">Belum ada keahlian ditambahkan.</span>
+                                            <span class="text-gray-400 italic text-[11px] block py-1">Belum ada keahlian ditambahkan.</span>
                                         @endforelse
                                     </div>
                                 </div>
@@ -757,18 +859,50 @@
                                 <div class="p-3.5 bg-gray-50/80 dark:bg-slate-800/40 rounded-2xl border border-gray-100 dark:border-slate-800 space-y-2">
                                     <h4 class="font-bold text-gray-900 dark:text-white flex items-center gap-1.5 text-xs border-b border-gray-200/60 dark:border-slate-700/60 pb-1.5">
                                         <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
-                                        <span>Bahasa</span>
+                                        <span>Kemampuan Bahasa</span>
                                     </h4>
-                                    <div class="flex flex-wrap gap-1.5 pt-1">
+                                    <div class="space-y-2 pt-1">
                                         @forelse ($languages as $lang)
-                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200/80 dark:border-sky-900/50 shadow-2xs">
-                                                <span>{{ $lang->language ?? ($lang->name ?? '-') }}</span>
-                                                @if ($lang->proficiency)
-                                                    <span class="text-[9.5px] opacity-75">({{ $lang->proficiency }})</span>
+                                            @php
+                                                $langCert = $lang->certificate_path ?? ($lang->certificate_file_path ?? null);
+                                            @endphp
+                                            <div class="p-2.5 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-800 text-[11px] space-y-2">
+                                                <div class="flex items-center justify-between gap-2">
+                                                    <span class="font-bold text-gray-800 dark:text-slate-200 text-xs">{{ $lang->language ?? ($lang->name ?? '-') }}</span>
+                                                    @if ($langCert)
+                                                        <a href="{{ asset('storage/' . ltrim($langCert, '/')) }}" target="_blank"
+                                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10.5px] font-semibold text-emerald-700 dark:text-[#93F514] bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200/80 dark:border-emerald-800 transition shrink-0 shadow-2xs">
+                                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                            <span>Lihat Sertifikat</span>
+                                                        </a>
+                                                    @else
+                                                        <span class="text-[9.5px] text-gray-400 dark:text-slate-500 italic bg-gray-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md border border-gray-200/60 dark:border-slate-700/60 shrink-0">Tanpa Berkas</span>
+                                                    @endif
+                                                </div>
+
+                                                @if ($lang->oral || $lang->written || $lang->conversation)
+                                                    <div class="grid grid-cols-3 gap-1.5 text-center text-[10.5px]">
+                                                        <div class="px-2 py-1 rounded-lg bg-gray-50/90 dark:bg-slate-800/80 border border-gray-100 dark:border-slate-700/60">
+                                                            <span class="block text-[9px] uppercase tracking-wider text-gray-400 dark:text-slate-400 font-bold">Lisan</span>
+                                                            <span class="font-bold text-gray-800 dark:text-slate-200">{{ ucfirst($lang->oral ?? '-') }}</span>
+                                                        </div>
+                                                        <div class="px-2 py-1 rounded-lg bg-gray-50/90 dark:bg-slate-800/80 border border-gray-100 dark:border-slate-700/60">
+                                                            <span class="block text-[9px] uppercase tracking-wider text-gray-400 dark:text-slate-400 font-bold">Tulisan</span>
+                                                            <span class="font-bold text-gray-800 dark:text-slate-200">{{ ucfirst($lang->written ?? '-') }}</span>
+                                                        </div>
+                                                        <div class="px-2 py-1 rounded-lg bg-gray-50/90 dark:bg-slate-800/80 border border-gray-100 dark:border-slate-700/60">
+                                                            <span class="block text-[9px] uppercase tracking-wider text-gray-400 dark:text-slate-400 font-bold">Percakapan</span>
+                                                            <span class="font-bold text-gray-800 dark:text-slate-200">{{ ucfirst($lang->conversation ?? '-') }}</span>
+                                                        </div>
+                                                    </div>
+                                                @elseif ($lang->proficiency)
+                                                    <div class="text-[10.5px] text-gray-500">
+                                                        <span>Kemahiran: <strong class="text-gray-700 dark:text-slate-300">{{ $lang->proficiency }}</strong></span>
+                                                    </div>
                                                 @endif
-                                            </span>
+                                            </div>
                                         @empty
-                                            <span class="text-gray-400 italic text-[11px]">Belum ada data bahasa.</span>
+                                            <span class="text-gray-400 italic text-[11px] block py-1">Belum ada data bahasa.</span>
                                         @endforelse
                                     </div>
                                 </div>
@@ -781,16 +915,29 @@
                                     </h4>
                                     <div class="space-y-1.5 pt-1">
                                         @forelse ($certifications as $cert)
-                                            <div class="p-2 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-800 text-[11px] flex justify-between items-center gap-2">
-                                                <div>
-                                                    <span class="font-bold text-gray-800 dark:text-slate-200 block">{{ $cert->certificate_name ?? ($cert->name ?? '-') }}</span>
-                                                    <span class="text-gray-400 dark:text-slate-500">{{ $cert->issuing_organization ?: '-' }}</span>
-                                                </div>
-                                                <div class="flex items-center gap-1.5 shrink-0">
-                                                    @if ($cert->certificate_file_path ?? false)
-                                                        <a href="{{ asset('storage/' . $cert->certificate_file_path) }}" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold text-[10.5px]">File</a>
+                                            @php
+                                                $certPath = $cert->certificate_path ?? ($cert->certificate_file_path ?? null);
+                                            @endphp
+                                            <div class="p-2.5 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-800 text-[11px] flex justify-between items-center gap-2">
+                                                <div class="min-w-0 flex-1">
+                                                    <span class="font-bold text-gray-800 dark:text-slate-200 block truncate">{{ $cert->certificate_name ?? ($cert->name ?? '-') }}</span>
+                                                    @if (!empty($cert->issuing_organization))
+                                                        <span class="text-gray-400 dark:text-slate-500 text-[10.5px] block truncate">{{ $cert->issuing_organization }}</span>
                                                     @endif
-                                                    <span class="text-[10px] text-gray-400">{{ $cert->issue_year ?? ($cert->year ?? '') }}</span>
+                                                </div>
+                                                <div class="flex items-center gap-2 shrink-0">
+                                                    @if ($certPath)
+                                                        <a href="{{ asset('storage/' . ltrim($certPath, '/')) }}" target="_blank"
+                                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10.5px] font-semibold text-emerald-700 dark:text-[#93F514] bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200/80 dark:border-emerald-800 transition shadow-2xs">
+                                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                            <span>Lihat Sertifikat</span>
+                                                        </a>
+                                                    @else
+                                                        <span class="text-[9.5px] text-gray-400 dark:text-slate-500 italic bg-gray-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md border border-gray-200/60 dark:border-slate-700/60">Tanpa Berkas</span>
+                                                    @endif
+                                                    @if (!empty($cert->issue_year) || !empty($cert->year))
+                                                        <span class="text-[10px] text-gray-400">{{ $cert->issue_year ?? $cert->year }}</span>
+                                                    @endif
                                                 </div>
                                             </div>
                                         @empty
@@ -807,12 +954,30 @@
                                     </h4>
                                     <div class="space-y-1.5 pt-1">
                                         @forelse ($trainings as $trn)
-                                            <div class="p-2 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-800 text-[11px] flex justify-between items-center gap-2">
-                                                <div>
-                                                    <span class="font-bold text-gray-800 dark:text-slate-200 block">{{ $trn->training_name ?? ($trn->title ?? ($trn->name ?? '-')) }}</span>
-                                                    <span class="text-gray-400 dark:text-slate-500">{{ $trn->organizer ?: '-' }}</span>
+                                            @php
+                                                $trnPath = $trn->certificate_path ?? ($trn->certificate_file_path ?? null);
+                                            @endphp
+                                            <div class="p-2.5 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-800 text-[11px] flex justify-between items-center gap-2">
+                                                <div class="min-w-0 flex-1">
+                                                    <span class="font-bold text-gray-800 dark:text-slate-200 block truncate">{{ $trn->training_name ?? ($trn->title ?? ($trn->name ?? '-')) }}</span>
+                                                    @if (!empty($trn->organizer))
+                                                        <span class="text-gray-400 dark:text-slate-500 text-[10.5px] block truncate">{{ $trn->organizer }}</span>
+                                                    @endif
                                                 </div>
-                                                <span class="text-[10px] text-gray-400 shrink-0">{{ $trn->year ?: '' }}</span>
+                                                <div class="flex items-center gap-2 shrink-0">
+                                                    @if ($trnPath)
+                                                        <a href="{{ asset('storage/' . ltrim($trnPath, '/')) }}" target="_blank"
+                                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10.5px] font-semibold text-emerald-700 dark:text-[#93F514] bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200/80 dark:border-emerald-800 transition shadow-2xs">
+                                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                            <span>Lihat Sertifikat</span>
+                                                        </a>
+                                                    @else
+                                                        <span class="text-[9.5px] text-gray-400 dark:text-slate-500 italic bg-gray-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md border border-gray-200/60 dark:border-slate-700/60">Tanpa Berkas</span>
+                                                    @endif
+                                                    @if (!empty($trn->year))
+                                                        <span class="text-[10px] text-gray-400">{{ $trn->year }}</span>
+                                                    @endif
+                                                </div>
                                             </div>
                                         @empty
                                             <p class="text-[11px] text-gray-400 italic text-center py-1">Belum ada data pelatihan.</p>
@@ -919,7 +1084,7 @@
                 {{-- 4. Bottom Sticky / Fixed Action Footer Toolbar --}}
                 <div class="px-4 sm:px-6 py-3 bg-white/95 dark:bg-[#0d1527]/95 backdrop-blur-md border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 z-20">
                     <div class="text-xs text-gray-500 dark:text-slate-400 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        {{-- <span class="w-2 h-2 rounded-full bg-emerald-500"></span> --}}
                         <span>Mode Tinjauan Profil Portrait Lengkap (Read-Only)</span>
                     </div>
 

@@ -11,24 +11,7 @@
         </div>
     </div>
 
-    <!-- Success Flash Alert -->
-    @if (session()->has('message'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)" x-transition
-            class="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 rounded-xl shadow-sm">
-            <div class="flex items-center gap-3">
-                <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span class="text-sm font-medium">{{ session('message') }}</span>
-            </div>
-            <button @click="show = false" class="text-emerald-500 hover:text-emerald-700">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-    @endif
+
 
     <!-- Education List Cards -->
     <div class="space-y-4">
@@ -487,7 +470,7 @@
     @endif
 
     <!-- ========================================== -->
-    <!-- SECTION 2: KEAHLIAN / SKILL (Wajib)        -->
+    <!-- SECTION 2: KEMAMPUAN TEKNIS & APLIKASI KOMPUTER -->
     <!-- ========================================== -->
     <div class="mt-10 space-y-4 pt-6 border-t border-slate-200/80 dark:border-[#1D2E54]">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -495,51 +478,97 @@
                 <h3 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                     {{ __('Kemampuan Teknis dan Aplikasi Komputer') }}
                 </h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">{{ __('Tambahkan keahlian teknis atau soft-skill yang Anda miliki.') }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                    {{ __('Software atau aplikasi komputer yang dikuasai beserta tingkat kemahiran dan keterangan') }}
+                </p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             @forelse ($skills as $skill)
-                <div class="bg-white dark:bg-[#0D1527] p-4 rounded-xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] hover:border-slate-300 dark:hover:border-[#2D457C] transition flex items-center justify-between gap-3">
-                    <div class="space-y-1 overflow-hidden">
-                        <span class="font-bold text-sm text-slate-900 dark:text-white block truncate">{{ $skill->name }}</span>
-                        @if ($skill->certificate_path)
-                            <a href="{{ Storage::url($skill->certificate_path) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-[#93F514] hover:underline font-medium">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                                </svg>
-                                <span>{{ __('Sertifikat') }}</span>
-                            </a>
-                        @endif
-                    </div>
+                <div class="bg-white dark:bg-[#0D1527] p-4 rounded-xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] hover:border-slate-300 dark:hover:border-[#2D457C] transition flex flex-col justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-start justify-between gap-2">
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white truncate">
+                                {{ $skill->name }}
+                            </h4>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button wire:click="editSkill({{ $skill->id }})" class="p-1.5 text-slate-400 hover:text-emerald-600 dark:hover:text-[#93F514] rounded-lg hover:bg-slate-100 dark:hover:bg-[#14203A] transition" title="{{ __('Edit Aplikasi') }}">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <button wire:click="confirmDeleteSkill({{ $skill->id }})" class="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-slate-100 dark:hover:bg-[#14203A] transition" title="{{ __('Hapus Aplikasi') }}">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
 
-                    <div class="flex items-center gap-1 shrink-0">
-                        <button wire:click="editSkill({{ $skill->id }})" class="p-1.5 text-slate-400 hover:text-emerald-600 dark:hover:text-[#93F514] rounded-lg hover:bg-slate-100 dark:hover:bg-[#14203A] transition" title="{{ __('Edit Skill') }}">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                        </button>
-                        <button wire:click="confirmDeleteSkill({{ $skill->id }})" class="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-slate-100 dark:hover:bg-[#14203A] transition" title="{{ __('Hapus Skill') }}">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
+                        @if ($skill->proficiency)
+                            @php
+                                $badgeColor = match($skill->proficiency) {
+                                    'sangat_baik' => 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800',
+                                    'baik' => 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800',
+                                    'cukup' => 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800',
+                                    default => 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800',
+                                };
+                                $labelProficiency = match($skill->proficiency) {
+                                    'sangat_baik' => __('Sangat Baik'),
+                                    'baik' => __('Baik'),
+                                    'cukup' => __('Cukup'),
+                                    'kurang' => __('Kurang'),
+                                    default => ucfirst(str_replace('_', ' ', $skill->proficiency)),
+                                };
+                            @endphp
+                            <div class="mt-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border {{ $badgeColor }}">
+                                    {{ $labelProficiency }}
+                                </span>
+                            </div>
+                        @endif
+
+                        @if ($skill->description)
+                            <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-2 line-clamp-2">
+                                <span class="font-medium text-slate-700 dark:text-slate-300">{{ __('Keterangan:') }}</span> {{ $skill->description }}
+                            </p>
+                        @endif
+
+                        @if ($skill->certificate_path)
+                            <div class="mt-2.5">
+                                <a href="{{ asset('storage/' . ltrim($skill->certificate_path, '/')) }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:text-[#93F514] bg-emerald-50 dark:bg-[#14203A] hover:bg-emerald-100 dark:hover:bg-[#1D2E54] rounded-lg border border-emerald-200/80 dark:border-[#1D2E54] transition shadow-2xs cursor-pointer">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                    <span>{{ __('Lihat Sertifikat') }}</span>
+                                </a>
+                            </div>
+                        @else
+                            <div class="mt-2.5">
+                                <span class="inline-flex items-center text-[10px] text-slate-400 dark:text-slate-500 italic bg-slate-100 dark:bg-[#14203A] px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-[#1D2E54]">
+                                    {{ __('Tanpa Berkas') }}
+                                </span>
+                            </div>
+                        @endif
                     </div>
                 </div>
             @empty
-                <!-- Empty State matching standard section style -->
+                <!-- Empty State matching monitor icon style -->
                 <div class="col-span-full bg-white dark:bg-[#0D1527] p-8 md:p-10 rounded-2xl border border-slate-200/80 dark:border-[#1D2E54] text-center flex flex-col items-center justify-center space-y-4">
-                    <svg class="w-10 h-10 text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.816c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6A2.25 2.25 0 0 0 4.727 20.25h14.546a2.25 2.25 0 0 0 2.224-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
+                    <svg class="w-10 h-10 text-slate-300 dark:text-[#1D2E54]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ __('Belum ada data untuk ditampilkan') }}</p>
+                    <p class="text-sm font-medium text-slate-500 dark:text-[#93A5C9]">{{ __('Belum ada kemampuan aplikasi komputer ditambahkan') }}</p>
                     <button wire:click="openSkillModal"
                         class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-sm font-bold rounded-xl transition shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 active:scale-95">
                         <svg class="w-5 h-5 text-white dark:text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
-                        <span>{{ __('Tambah Skill') }}</span>
+                        <span>{{ __('Tambah Aplikasi Komputer') }}</span>
                     </button>
                 </div>
             @endforelse
@@ -552,13 +581,13 @@
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>{{ __('Tambah Skill') }}</span>
+                    <span>{{ __('Tambah Aplikasi Komputer') }}</span>
                 </button>
             </div>
         @endif
     </div>
 
-    <!-- Modal Form (Tambah / Edit Skill) -->
+    <!-- Modal Form (Tambah / Edit Skill Komputer) -->
     @if ($showSkillModal)
         <div class="fixed inset-0 z-50 overflow-y-auto" x-cloak>
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
@@ -569,7 +598,7 @@
                     <!-- Header -->
                     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200/80 dark:border-[#1D2E54]">
                         <h3 class="text-base font-bold text-slate-900 dark:text-white">
-                            {{ $isSkillEdit ? __('Edit Skill / Keahlian') : __('Tambah Skill / Keahlian') }}
+                            {{ $isSkillEdit ? __('Edit Aplikasi Komputer') : __('Tambah Aplikasi Komputer') }}
                         </h3>
                         <button type="button" wire:click="closeSkillModal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -581,10 +610,10 @@
                     <!-- Form Body -->
                     <form wire:submit.prevent="saveSkill" class="p-6 space-y-4">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                                {{ __('Nama Skill / Keahlian') }} <span class="text-rose-500">*</span>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-[#93A5C9] uppercase tracking-wider mb-2">
+                                {{ __('Aplikasi Komputer') }} <span class="text-rose-500">*</span>
                             </label>
-                            <input type="text" wire:model="skill_name" placeholder="{{ __('Misal: PHP Laravel, Public Speaking, Graphic Design...') }}"
+                            <input type="text" wire:model="skill_name" placeholder="{{ __('Misal: Microsoft Excel, AutoCAD, Photoshop, SAP...') }}"
                                 class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                             @error('skill_name')
                                 <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
@@ -592,14 +621,107 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-[#93A5C9] uppercase tracking-wider mb-2">
+                                {{ __('Tingkat Kemahiran') }}
+                            </label>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                @foreach(['sangat_baik' => __('Sangat Baik'), 'baik' => __('Baik'), 'cukup' => __('Cukup'), 'kurang' => __('Kurang')] as $val => $lbl)
+                                    <label class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border cursor-pointer text-xs font-semibold transition
+                                        {{ $skill_proficiency === $val ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 dark:border-[#93F514] text-emerald-700 dark:text-[#93F514]' : 'bg-slate-50 dark:bg-[#14203A] border-slate-200/80 dark:border-[#1D2E54] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1A2A4C]' }}">
+                                        <input type="radio" wire:model.live="skill_proficiency" value="{{ $val }}" class="sr-only">
+                                        <span>{{ $lbl }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            @error('skill_proficiency')
+                                <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-[#93A5C9] uppercase tracking-wider mb-2">
+                                {{ __('Keterangan (Opsional)') }}
+                            </label>
+                            <textarea wire:model="skill_description" rows="2"
+                                placeholder="{{ __('Contoh: Formula Excel (VLOOKUP, Pivot), AutoCAD 2D/3D, dll.') }}"
+                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] transition"></textarea>
+                            @error('skill_description')
+                                <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-[#93A5C9] uppercase tracking-wider mb-2">
                                 {{ __('File Sertifikat / Bukti Pendukung (Opsional)') }}
                             </label>
                             <input type="file" wire:model="skill_certificate" class="block w-full text-xs text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 dark:file:bg-[#14203A] dark:file:text-slate-200 hover:file:bg-slate-200 transition">
-                            @if ($existing_skill_certificate && !$skill_certificate)
-                                <p class="text-xs text-slate-500 mt-1">
-                                    {{ __('File saat ini:') }} <a href="{{ Storage::url($existing_skill_certificate) }}" target="_blank" class="text-emerald-600 dark:text-[#93F514] hover:underline">{{ __('Lihat Sertifikat') }}</a>
-                                </p>
+                            
+                            <div wire:loading wire:target="skill_certificate" class="mt-1.5 flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-[#93F514]">
+                                <svg class="animate-spin h-3.5 w-3.5 text-emerald-600 dark:text-[#93F514]" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>{{ __('Mengunggah file...') }}</span>
+                            </div>
+
+                            {{-- Live Preview Saat File Dipilih --}}
+                            @if ($skill_certificate)
+                                @php
+                                    $isImg = false;
+                                    $fileExt = '';
+                                    try {
+                                        $fileExt = strtolower($skill_certificate->getClientOriginalExtension());
+                                        $isImg = in_array($fileExt, ['jpg', 'jpeg', 'png', 'webp', 'gif']);
+                                    } catch (\Throwable $e) {}
+                                @endphp
+                                <div class="mt-2.5 p-3 rounded-xl bg-emerald-50/70 dark:bg-[#14203A] border border-emerald-200 dark:border-emerald-800/60">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            <span class="text-xs font-bold text-emerald-800 dark:text-[#93F514] truncate">
+                                                {{ $skill_certificate->getClientOriginalName() }}
+                                            </span>
+                                        </div>
+                                        <span class="text-[10px] text-emerald-600 dark:text-[#93F514] font-mono shrink-0 ml-2">
+                                            {{ number_format($skill_certificate->getSize() / 1024, 1) }} KB
+                                        </span>
+                                    </div>
+                                    @if ($isImg)
+                                        <div class="rounded-lg overflow-hidden border border-emerald-200 dark:border-emerald-800/60 max-h-48 flex items-center justify-center bg-black/5 dark:bg-black/20 p-1">
+                                            <img src="{{ $skill_certificate->temporaryUrl() }}" alt="Preview" class="max-h-44 w-auto object-contain rounded">
+                                        </div>
+                                    @else
+                                        <div class="flex items-center gap-2.5 p-2 bg-white dark:bg-[#0D1527] rounded-lg border border-emerald-200 dark:border-emerald-800/60">
+                                            <div class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <p class="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Dokumen PDF Terpilih</p>
+                                                <p class="text-[10px] text-slate-500">File siap disimpan bersama data</p>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            @elseif ($existing_skill_certificate)
+                                <div class="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-[#14203A] rounded-xl border border-slate-200/80 dark:border-[#1D2E54] mt-2">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <svg class="w-4 h-4 text-emerald-600 dark:text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                        </svg>
+                                        <span class="text-xs text-slate-700 dark:text-slate-300 font-medium truncate">{{ basename($existing_skill_certificate) }}</span>
+                                    </div>
+                                    <a href="{{ asset('storage/' . ltrim($existing_skill_certificate, '/')) }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="px-2.5 py-1 text-xs font-semibold text-emerald-600 dark:text-[#93F514] hover:bg-emerald-100 dark:hover:bg-[#1D2E54] rounded-lg transition shrink-0 flex items-center gap-1 cursor-pointer">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                        <span>{{ __('Buka di Tab Baru') }}</span>
+                                    </a>
+                                </div>
                             @endif
                             @error('skill_certificate')
                                 <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
@@ -611,7 +733,7 @@
                                 {{ __('Batal') }}
                             </button>
                             <button type="submit" wire:loading.attr="disabled" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 text-xs font-bold rounded-xl transition flex items-center gap-2 active:scale-95">
-                                <span wire:loading.remove wire:target="saveSkill">{{ $isSkillEdit ? __('Simpan Perubahan') : __('Tambah Skill') }}</span>
+                                <span wire:loading.remove wire:target="saveSkill">{{ $isSkillEdit ? __('Simpan Perubahan') : __('Tambah Aplikasi Komputer') }}</span>
                                 <span wire:loading wire:target="saveSkill" class="flex items-center gap-2">
                                     <svg class="animate-spin h-4 w-4 text-white dark:text-black" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -642,8 +764,8 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ __('Konfirmasi Hapus Skill') }}</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ __('Apakah Anda yakin ingin menghapus data keahlian ini?') }}</p>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ __('Konfirmasi Hapus Data') }}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ __('Apakah Anda yakin ingin menghapus data kemampuan aplikasi komputer ini?') }}</p>
                         </div>
                     </div>
 
@@ -660,4 +782,5 @@
             </div>
         </div>
     @endif
+
 </div>

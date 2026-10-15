@@ -149,8 +149,7 @@ class Pribadi extends Component
         $this->current_cv_url = asset('storage/' . $cvPath) . '?v=' . time();
         $this->cv_file = null;
 
-        session()->flash('message', __('File CV berhasil diunggah.'));
-        $this->dispatch('profile-updated', name: $this->full_name);
+        $this->dispatch('profile-updated', name: $this->full_name, message: __('File CV berhasil diunggah.'), action: 'create');
     }
 
     public function save()
@@ -224,8 +223,7 @@ class Pribadi extends Component
             $user->update($userUpdates);
         }
 
-        session()->flash('message', __('Data pribadi berhasil diperbarui.'));
-        $this->dispatch('profile-updated', name: $this->full_name, photo: $this->current_photo_url);
+        $this->dispatch('profile-updated', name: $this->full_name, photo: $this->current_photo_url, message: __('Data pribadi berhasil diperbarui.'), action: 'update');
     }
 
     public function deleteCv()
@@ -239,7 +237,7 @@ class Pribadi extends Component
             $profile->update(['cv_file_path' => null]);
             $this->current_cv_path = null;
             $this->current_cv_url = null;
-            session()->flash('message', __('File CV berhasil dihapus.'));
+            $this->dispatch('profile-updated', message: __('File CV berhasil dihapus.'), action: 'delete');
         }
     }
 

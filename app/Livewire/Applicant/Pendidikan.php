@@ -44,6 +44,8 @@ class Pendidikan extends Component
     public $isSkillEdit = false;
     public $skill_id = null;
     public $skill_name = '';
+    public $skill_proficiency = 'baik';
+    public $skill_description = '';
     public $skill_certificate = null;
     public $existing_skill_certificate = null;
 
@@ -236,15 +238,17 @@ class Pendidikan extends Component
         if ($this->isEdit && $this->education_id) {
             $education = Education::where('profile_id', $profile->id)->where('id', $this->education_id)->firstOrFail();
             $education->update($validatedData);
-            session()->flash('message', __('Riwayat pendidikan berhasil diperbarui.'));
+            $msg = __('Riwayat pendidikan berhasil diperbarui.');
+            $action = 'update';
         } else {
             $validatedData['profile_id'] = $profile->id;
             Education::create($validatedData);
-            session()->flash('message', __('Riwayat pendidikan berhasil ditambahkan.'));
+            $msg = __('Riwayat pendidikan berhasil ditambahkan.');
+            $action = 'create';
         }
 
         $this->closeModal();
-        $this->dispatch('profile-updated');
+        $this->dispatch('profile-updated', message: $msg, action: $action);
     }
 
     public function confirmDelete($id)
@@ -266,13 +270,12 @@ class Pendidikan extends Component
             $profile = ApplicantProfile::where('user_id', $user->id)->first();
             if ($profile) {
                 Education::where('profile_id', $profile->id)->where('id', $this->deleteId)->delete();
-                session()->flash('message', __('Riwayat pendidikan berhasil dihapus.'));
             }
         }
 
         $this->showDeleteModal = false;
         $this->deleteId = null;
-        $this->dispatch('profile-updated');
+        $this->dispatch('profile-updated', message: __('Riwayat pendidikan berhasil dihapus.'), action: 'delete');
     }
 
     // --- SKILL CRUD METHODS ---
@@ -280,6 +283,7 @@ class Pendidikan extends Component
     {
         $this->resetSkillForm();
         $this->isSkillEdit = false;
+        $this->skill_proficiency = 'baik';
         $this->showSkillModal = true;
     }
 
@@ -294,9 +298,12 @@ class Pendidikan extends Component
         $this->reset([
             'skill_id',
             'skill_name',
+            'skill_proficiency',
+            'skill_description',
             'skill_certificate',
             'existing_skill_certificate',
         ]);
+        $this->skill_proficiency = 'baik';
         $this->resetErrorBag();
     }
 
@@ -310,6 +317,8 @@ class Pendidikan extends Component
 
         $this->skill_id = $skill->id;
         $this->skill_name = $skill->name;
+        $this->skill_proficiency = $skill->proficiency ?? 'baik';
+        $this->skill_description = $skill->description ?? '';
         $this->existing_skill_certificate = $skill->certificate_path;
 
         $this->isSkillEdit = true;
@@ -320,9 +329,11 @@ class Pendidikan extends Component
     {
         $this->validate([
             'skill_name' => 'required|string|max:255',
+            'skill_proficiency' => 'nullable|in:sangat_baik,baik,cukup,kurang',
+            'skill_description' => 'nullable|string|max:500',
             'skill_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ], [
-            'skill_name.required' => 'Nama keahlian / skill wajib diisi.',
+            'skill_name.required' => 'Nama software / aplikasi komputer wajib diisi.',
             'skill_certificate.mimes' => 'Format file sertifikat/bukti harus PDF, JPG, JPEG, atau PNG.',
             'skill_certificate.max' => 'Ukuran file tidak boleh melebihi 2MB.',
         ]);
@@ -342,20 +353,28 @@ class Pendidikan extends Component
             $skill = Skill::where('profile_id', $profile->id)->where('id', $this->skill_id)->firstOrFail();
             $skill->update([
                 'name' => $this->skill_name,
+                'category' => 'computer',
+                'proficiency' => $this->skill_proficiency,
+                'description' => $this->skill_description,
                 'certificate_path' => $certPath,
             ]);
-            session()->flash('message', __('Skill / Keahlian berhasil diperbarui.'));
+            $msg = __('Kemampuan aplikasi komputer berhasil diperbarui.');
+            $action = 'update';
         } else {
             Skill::create([
                 'profile_id' => $profile->id,
+                'category' => 'computer',
                 'name' => $this->skill_name,
+                'proficiency' => $this->skill_proficiency,
+                'description' => $this->skill_description,
                 'certificate_path' => $certPath,
             ]);
-            session()->flash('message', __('Skill / Keahlian berhasil ditambahkan.'));
+            $msg = __('Kemampuan aplikasi komputer berhasil ditambahkan.');
+            $action = 'create';
         }
 
         $this->closeSkillModal();
-        $this->dispatch('profile-updated');
+        $this->dispatch('profile-updated', message: $msg, action: $action);
     }
 
     public function confirmDeleteSkill($id)
@@ -382,14 +401,13 @@ class Pendidikan extends Component
                         Storage::disk('public')->delete($skill->certificate_path);
                     }
                     $skill->delete();
-                    session()->flash('message', __('Skill / Keahlian berhasil dihapus.'));
                 }
             }
         }
 
         $this->showDeleteSkillModal = false;
         $this->deleteSkillId = null;
-        $this->dispatch('profile-updated');
+        $this->dispatch('profile-updated', message: __('Kemampuan aplikasi komputer berhasil dihapus.'), action: 'delete');
     }
 
     public function render()

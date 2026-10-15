@@ -8,7 +8,7 @@
 
     <!-- Welcome Header Card (Clean Enterprise Blueprint - Authentic & Non-AI) -->
     <div
-        class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-blue-600 dark:border-l-[#93F514] p-6 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 transition-colors">
+        class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-emerald-600 dark:border-l-[#93F514] p-6 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 transition-colors">
 
         <!-- Subtle Technical Blueprint Dot Grid (Authentic & Non-AI) -->
         <div class="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.06]"
@@ -17,7 +17,7 @@
 
         <div class="relative z-10 flex items-start sm:items-center gap-4">
             <div
-                class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-[#14203A] border border-blue-100 dark:border-[#1D2E54] text-blue-600 dark:text-[#93F514] flex items-center justify-center shrink-0 shadow-sm">
+                class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-[#93F514] flex items-center justify-center shrink-0 shadow-sm">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">

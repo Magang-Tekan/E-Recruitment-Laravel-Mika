@@ -100,6 +100,18 @@ class ApplicantProfile extends Model
         return $this->hasMany(Skill::class, 'profile_id');
     }
 
+    public function computerSkills()
+    {
+        return $this->hasMany(Skill::class, 'profile_id')->where('category', 'computer');
+    }
+
+    public function generalSkills()
+    {
+        return $this->hasMany(Skill::class, 'profile_id')->where(function ($q) {
+            $q->where('category', 'general')->orWhereNull('category');
+        });
+    }
+
     public function socialMedias()
     {
         return $this->hasMany(SocialMedia::class, 'profile_id');

@@ -1,35 +1,23 @@
 <div class="space-y-6">
     <!-- Header Card (Clean Enterprise Blueprint) -->
-    <div class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-emerald-600 dark:border-l-[#93F514] p-6 md:p-7 transition-colors">
+    <div
+        class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-emerald-600 dark:border-l-[#93F514] p-6 md:p-7 transition-colors">
         <div class="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]"
             style="background-image: radial-gradient(#93F514 1px, transparent 1px); background-size: 20px 20px;">
         </div>
         <div class="relative z-10">
-            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ __('Data Keluarga') }}</h2>
-            <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 font-medium">{{ __('* Isilah data susunan dan latar belakang keluarga Anda dengan sebenarnya.') }}</p>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                {{ __('Data Keluarga') }}</h2>
+            <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 font-medium">
+                {{ __('* Isilah data susunan dan latar belakang keluarga Anda dengan sebenarnya.') }}</p>
         </div>
     </div>
 
-    <!-- Success Flash Alert -->
-    @if (session()->has('message'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)" x-transition
-            class="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 rounded-xl shadow-sm">
-            <div class="flex items-center gap-3">
-                <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span class="text-sm font-medium">{{ session('message') }}</span>
-            </div>
-            <button @click="show = false" class="text-emerald-500 hover:text-emerald-700">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-    @endif
+
 
     <!-- Main Form Card -->
-    <div class="bg-white dark:bg-[#0D1527] p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54]">
+    <div
+        class="bg-white dark:bg-[#0D1527] p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54]">
         <form wire:submit.prevent="save" class="space-y-8">
 
             <!-- Section 1: Urutan Anak -->
@@ -40,7 +28,7 @@
                     </label>
                     <input type="number" min="1" wire:model="child_sequence" placeholder="0"
                         class="w-20 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm text-center focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                    
+
                     <span class="text-sm font-medium text-slate-600 dark:text-slate-400">{{ __('dari') }}</span>
 
                     <input type="number" min="1" wire:model="total_siblings" placeholder="0"
@@ -49,8 +37,12 @@
                     <span class="text-sm font-medium text-slate-600 dark:text-slate-400">{{ __('bersaudara') }}</span>
                 </div>
                 <div class="flex gap-4 mt-1">
-                    @error('child_sequence') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
-                    @error('total_siblings') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    @error('child_sequence')
+                        <span class="text-xs text-red-500">{{ $message }}</span>
+                    @enderror
+                    @error('total_siblings')
+                        <span class="text-xs text-red-500">{{ $message }}</span>
+                    @enderror
                 </div>
             </div>
 
@@ -60,7 +52,7 @@
                     years: @js($years),
                     educationOptions: @js($educationOptions),
                     occupationOptions: @js($occupationOptions),
-
+                
                     // Ayah dropdown states & search logic
                     openFatherYear: false,
                     openFatherEdu: false,
@@ -68,7 +60,7 @@
                     fatherYearQuery: '',
                     fatherEduQuery: '',
                     fatherOccQuery: '',
-
+                
                     get filteredFatherYears() {
                         if (!this.fatherYearQuery) return this.years;
                         return this.years.filter(y => String(y).includes(this.fatherYearQuery));
@@ -81,7 +73,7 @@
                         if (!this.fatherOccQuery) return this.occupationOptions;
                         return this.occupationOptions.filter(o => o.toLowerCase().includes(this.fatherOccQuery.toLowerCase()));
                     },
-
+                
                     // Ibu dropdown states & search logic
                     openMotherYear: false,
                     openMotherEdu: false,
@@ -89,7 +81,7 @@
                     motherYearQuery: '',
                     motherEduQuery: '',
                     motherOccQuery: '',
-
+                
                     get filteredMotherYears() {
                         if (!this.motherYearQuery) return this.years;
                         return this.years.filter(y => String(y).includes(this.motherYearQuery));
@@ -102,269 +94,303 @@
                         if (!this.motherOccQuery) return this.occupationOptions;
                         return this.occupationOptions.filter(o => o.toLowerCase().includes(this.motherOccQuery.toLowerCase()));
                     }
-                }" @click.outside="openFatherYear = false; openFatherEdu = false; openFatherOcc = false; openMotherYear = false; openMotherEdu = false; openMotherOcc = false;">
-                
+                }"
+                @click.outside="openFatherYear = false; openFatherEdu = false; openFatherOcc = false; openMotherYear = false; openMotherEdu = false; openMotherOcc = false;">
+
                 <!-- Kolom Ayah -->
                 <div class="space-y-5">
-                    <h3 class="text-sm font-bold uppercase tracking-wider text-blue-600 dark:text-[#93F514] flex items-center gap-2">
+                    <h3
+                        class="text-sm font-bold uppercase tracking-wider text-blue-600 dark:text-[#93F514] flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         {{ __('Data Ayah') }}
                     </h3>
 
                     <!-- Nama Ayah -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        <label
+                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                             {{ __('Nama Ayah') }} <span class="text-red-500">*</span>
                         </label>
                         <input type="text" wire:model="father_name" placeholder="{{ __('Masukkan Nama Lengkap') }}"
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                        @error('father_name') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('father_name')
+                            <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <!-- Tahun Lahir Ayah (Autocomplete Searchable Input) -->
                     <div class="relative">
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        <label
+                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                             {{ __('Tahun Lahir Ayah') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <input type="text" 
-                                x-model="$wire.father_birth_year"
+                            <input type="text" x-model="$wire.father_birth_year"
                                 @focus="openFatherYear = true; fatherYearQuery = ''"
                                 @input="openFatherYear = true; fatherYearQuery = $event.target.value"
                                 placeholder="{{ __('Pilih / Ketik Tahun Lahir') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                            <div
+                                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
                                 </svg>
                             </div>
                         </div>
 
                         <!-- Dropdown List Tahun Lahir Ayah -->
-                        <div x-show="openFatherYear && filteredFatherYears.length > 0" 
-                            x-transition
+                        <div x-show="openFatherYear && filteredFatherYears.length > 0" x-transition
                             class="absolute z-30 w-full mt-1 bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-[#1D2E54] rounded-xl shadow-xl max-h-60 overflow-y-auto">
                             <template x-for="yr in filteredFatherYears" :key="yr">
-                                <button type="button" 
-                                    @click="$wire.father_birth_year = yr; openFatherYear = false"
+                                <button type="button" @click="$wire.father_birth_year = yr; openFatherYear = false"
                                     class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#14203A] hover:text-emerald-600 dark:hover:text-[#93F514] transition flex items-center justify-between border-b border-slate-100 dark:border-[#1D2E54]/50 last:border-0">
                                     <span x-text="yr"></span>
                                 </button>
                             </template>
                         </div>
-                        @error('father_birth_year') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('father_birth_year')
+                            <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <!-- Pendidikan Terakhir Ayah (Autocomplete Searchable Input) -->
                     <div class="relative">
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        <label
+                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                             {{ __('Pendidikan Terakhir Ayah') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <input type="text" 
-                                x-model="$wire.father_last_education"
+                            <input type="text" x-model="$wire.father_last_education"
                                 @focus="openFatherEdu = true; fatherEduQuery = ''"
                                 @input="openFatherEdu = true; fatherEduQuery = $event.target.value"
                                 placeholder="{{ __('Pilih / Ketik Pendidikan') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                            <div
+                                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
                                 </svg>
                             </div>
                         </div>
 
                         <!-- Dropdown List Pendidikan Ayah -->
-                        <div x-show="openFatherEdu && filteredFatherEdus.length > 0" 
-                            x-transition
+                        <div x-show="openFatherEdu && filteredFatherEdus.length > 0" x-transition
                             class="absolute z-30 w-full mt-1 bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-[#1D2E54] rounded-xl shadow-xl max-h-60 overflow-y-auto">
                             <template x-for="edu in filteredFatherEdus" :key="edu">
-                                <button type="button" 
+                                <button type="button"
                                     @click="$wire.father_last_education = edu; openFatherEdu = false"
                                     class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#14203A] hover:text-emerald-600 dark:hover:text-[#93F514] transition flex items-center justify-between border-b border-slate-100 dark:border-[#1D2E54]/50 last:border-0">
                                     <span x-text="edu"></span>
                                 </button>
                             </template>
                         </div>
-                        @error('father_last_education') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('father_last_education')
+                            <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <!-- Pekerjaan Ayah (Autocomplete Searchable Input) -->
                     <div class="relative">
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        <label
+                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                             {{ __('Pekerjaan Ayah') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <input type="text" 
-                                x-model="$wire.father_occupation"
+                            <input type="text" x-model="$wire.father_occupation"
                                 @focus="openFatherOcc = true; fatherOccQuery = ''"
                                 @input="openFatherOcc = true; fatherOccQuery = $event.target.value"
                                 placeholder="{{ __('Pilih / Ketik Pekerjaan') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                            <div
+                                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
                                 </svg>
                             </div>
                         </div>
 
                         <!-- Dropdown List Pekerjaan Ayah -->
-                        <div x-show="openFatherOcc && filteredFatherOccs.length > 0" 
-                            x-transition
+                        <div x-show="openFatherOcc && filteredFatherOccs.length > 0" x-transition
                             class="absolute z-30 w-full mt-1 bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-[#1D2E54] rounded-xl shadow-xl max-h-60 overflow-y-auto">
                             <template x-for="occ in filteredFatherOccs" :key="occ">
-                                <button type="button" 
-                                    @click="$wire.father_occupation = occ; openFatherOcc = false"
+                                <button type="button" @click="$wire.father_occupation = occ; openFatherOcc = false"
                                     class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#14203A] hover:text-emerald-600 dark:hover:text-[#93F514] transition flex items-center justify-between border-b border-slate-100 dark:border-[#1D2E54]/50 last:border-0">
                                     <span x-text="occ"></span>
                                 </button>
                             </template>
                         </div>
-                        @error('father_occupation') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('father_occupation')
+                            <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <!-- Perusahaan / Institusi Ayah -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        <label
+                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                             {{ __('Perusahaan / Institusi') }} <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" wire:model="father_company" placeholder="{{ __('Masukkan nama perusahaan/institusi') }}"
+                        <input type="text" wire:model="father_company"
+                            placeholder="{{ __('Masukkan nama perusahaan/institusi') }}"
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                        @error('father_company') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('father_company')
+                            <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
 
                 <!-- Kolom Ibu -->
                 <div class="space-y-5">
-                    <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-600 dark:text-[#93F514] flex items-center gap-2">
+                    <h3
+                        class="text-sm font-bold uppercase tracking-wider text-emerald-600 dark:text-[#93F514] flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         {{ __('Data Ibu') }}
                     </h3>
 
                     <!-- Nama Ibu -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        <label
+                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                             {{ __('Nama Ibu') }} <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" wire:model="mother_name" placeholder="{{ __('Masukkan Nama Lengkap') }}"
+                        <input type="text" wire:model="mother_name"
+                            placeholder="{{ __('Masukkan Nama Lengkap') }}"
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                        @error('mother_name') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('mother_name')
+                            <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <!-- Tahun Lahir Ibu (Autocomplete Searchable Input) -->
                     <div class="relative">
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        <label
+                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                             {{ __('Tahun Lahir Ibu') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <input type="text" 
-                                x-model="$wire.mother_birth_year"
+                            <input type="text" x-model="$wire.mother_birth_year"
                                 @focus="openMotherYear = true; motherYearQuery = ''"
                                 @input="openMotherYear = true; motherYearQuery = $event.target.value"
                                 placeholder="{{ __('Pilih / Ketik Tahun Lahir') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                            <div
+                                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
                                 </svg>
                             </div>
                         </div>
 
                         <!-- Dropdown List Tahun Lahir Ibu -->
-                        <div x-show="openMotherYear && filteredMotherYears.length > 0" 
-                            x-transition
+                        <div x-show="openMotherYear && filteredMotherYears.length > 0" x-transition
                             class="absolute z-30 w-full mt-1 bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-[#1D2E54] rounded-xl shadow-xl max-h-60 overflow-y-auto">
                             <template x-for="yr in filteredMotherYears" :key="yr">
-                                <button type="button" 
-                                    @click="$wire.mother_birth_year = yr; openMotherYear = false"
+                                <button type="button" @click="$wire.mother_birth_year = yr; openMotherYear = false"
                                     class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#14203A] hover:text-emerald-600 dark:hover:text-[#93F514] transition flex items-center justify-between border-b border-slate-100 dark:border-[#1D2E54]/50 last:border-0">
                                     <span x-text="yr"></span>
                                 </button>
                             </template>
                         </div>
-                        @error('mother_birth_year') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('mother_birth_year')
+                            <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <!-- Pendidikan Terakhir Ibu (Autocomplete Searchable Input) -->
                     <div class="relative">
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        <label
+                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                             {{ __('Pendidikan Terakhir Ibu') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <input type="text" 
-                                x-model="$wire.mother_last_education"
+                            <input type="text" x-model="$wire.mother_last_education"
                                 @focus="openMotherEdu = true; motherEduQuery = ''"
                                 @input="openMotherEdu = true; motherEduQuery = $event.target.value"
                                 placeholder="{{ __('Pilih / Ketik Pendidikan') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                            <div
+                                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
                                 </svg>
                             </div>
                         </div>
 
                         <!-- Dropdown List Pendidikan Ibu -->
-                        <div x-show="openMotherEdu && filteredMotherEdus.length > 0" 
-                            x-transition
+                        <div x-show="openMotherEdu && filteredMotherEdus.length > 0" x-transition
                             class="absolute z-30 w-full mt-1 bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-[#1D2E54] rounded-xl shadow-xl max-h-60 overflow-y-auto">
                             <template x-for="edu in filteredMotherEdus" :key="edu">
-                                <button type="button" 
+                                <button type="button"
                                     @click="$wire.mother_last_education = edu; openMotherEdu = false"
                                     class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#14203A] hover:text-emerald-600 dark:hover:text-[#93F514] transition flex items-center justify-between border-b border-slate-100 dark:border-[#1D2E54]/50 last:border-0">
                                     <span x-text="edu"></span>
                                 </button>
                             </template>
                         </div>
-                        @error('mother_last_education') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('mother_last_education')
+                            <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <!-- Pekerjaan Ibu (Autocomplete Searchable Input) -->
                     <div class="relative">
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        <label
+                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                             {{ __('Pekerjaan Ibu') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <input type="text" 
-                                x-model="$wire.mother_occupation"
+                            <input type="text" x-model="$wire.mother_occupation"
                                 @focus="openMotherOcc = true; motherOccQuery = ''"
                                 @input="openMotherOcc = true; motherOccQuery = $event.target.value"
                                 placeholder="{{ __('Pilih / Ketik Pekerjaan') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                            <div
+                                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
                                 </svg>
                             </div>
                         </div>
 
                         <!-- Dropdown List Pekerjaan Ibu -->
-                        <div x-show="openMotherOcc && filteredMotherOccs.length > 0" 
-                            x-transition
+                        <div x-show="openMotherOcc && filteredMotherOccs.length > 0" x-transition
                             class="absolute z-30 w-full mt-1 bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-[#1D2E54] rounded-xl shadow-xl max-h-60 overflow-y-auto">
                             <template x-for="occ in filteredMotherOccs" :key="occ">
-                                <button type="button" 
-                                    @click="$wire.mother_occupation = occ; openMotherOcc = false"
+                                <button type="button" @click="$wire.mother_occupation = occ; openMotherOcc = false"
                                     class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#14203A] hover:text-emerald-600 dark:hover:text-[#93F514] transition flex items-center justify-between border-b border-slate-100 dark:border-[#1D2E54]/50 last:border-0">
                                     <span x-text="occ"></span>
                                 </button>
                             </template>
                         </div>
-                        @error('mother_occupation') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('mother_occupation')
+                            <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <!-- Perusahaan / Institusi Ibu -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        <label
+                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                             {{ __('Perusahaan / Institusi') }} <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" wire:model="mother_company" placeholder="{{ __('Masukkan nama perusahaan/institusi') }}"
+                        <input type="text" wire:model="mother_company"
+                            placeholder="{{ __('Masukkan nama perusahaan/institusi') }}"
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                        @error('mother_company') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('mother_company')
+                            <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
 
@@ -379,22 +405,278 @@
                     <label class="inline-flex items-center gap-2 cursor-pointer">
                         <input type="radio" wire:model="marital_status" value="lajang"
                             class="w-4 h-4 text-emerald-600 border-slate-300 dark:border-[#1D2E54] focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
-                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Lajang') }}</span>
+                        <span
+                            class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Lajang') }}</span>
                     </label>
 
                     <label class="inline-flex items-center gap-2 cursor-pointer">
                         <input type="radio" wire:model="marital_status" value="menikah"
                             class="w-4 h-4 text-emerald-600 border-slate-300 dark:border-[#1D2E54] focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
-                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Menikah') }}</span>
+                        <span
+                            class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Menikah') }}</span>
                     </label>
 
                     <label class="inline-flex items-center gap-2 cursor-pointer">
                         <input type="radio" wire:model="marital_status" value="bercerai"
                             class="w-4 h-4 text-emerald-600 border-slate-300 dark:border-[#1D2E54] focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
-                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Bercerai') }}</span>
+                        <span
+                            class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Bercerai') }}</span>
                     </label>
                 </div>
-                @error('marital_status') <span class="text-xs text-red-500 mt-2 block">{{ $message }}</span> @enderror
+                @error('marital_status')
+                    <span class="text-xs text-red-500 mt-2 block">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <!-- Section 4: Nomor yang Dapat Dihubungi Ketika Terjadi Keadaan Darurat -->
+            <div class="pt-6 border-t border-slate-200/80 dark:border-[#1D2E54] space-y-6">
+                <div class="flex items-start gap-3 sm:gap-3.5">
+                    <div
+                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200/80 dark:border-rose-500/20 flex items-center justify-center text-rose-500 dark:text-rose-400 shrink-0 mt-0.5 shadow-xs">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-snug sm:leading-normal">
+                            {{ __('Nomor yang Dapat Dihubungi Ketika Terjadi Keadaan Darurat') }}
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 leading-relaxed font-normal sm:font-medium">
+                            {{ __('* Mohon cantumkan kontak darurat keluarga/kerabat yang dapat dihubungi sewaktu-waktu (opsional 1 atau 2 orang).') }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                    <!-- Kelompok 1: Satu Tempat Tinggal (Rumah) -->
+                    <div
+                        class="p-4 sm:p-5 rounded-2xl bg-slate-50/70 dark:bg-[#14203A]/40 border border-slate-200/80 dark:border-[#1D2E54] space-y-5">
+                        <div class="flex items-center gap-2 pb-3 border-b border-slate-200/80 dark:border-[#1D2E54]">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                                {{ __('Satu Tempat Tinggal (Rumah)') }}
+                            </h4>
+                        </div>
+
+                        <!-- Baris 1 -->
+                        <div
+                            class="space-y-3 p-4 rounded-xl bg-white dark:bg-[#0D1527] border border-slate-200/60 dark:border-[#1D2E54]/70">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ __('Kontak Darurat 1') }}</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                        {{ __('Nama Lengkap') }}
+                                    </label>
+                                    <input type="text" wire:model="emergency_same_house_name_1"
+                                        placeholder="{{ __('Nama') }}"
+                                        class="w-full px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                    @error('emergency_same_house_name_1')
+                                        <span class="text-[10px] text-red-500 mt-0.5 block">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                        {{ __('No. Telp / No. HP') }}
+                                    </label>
+                                    <input type="text" wire:model="emergency_same_house_phone_1"
+                                        placeholder="{{ __('08xxxxxxxxxx') }}"
+                                        class="w-full px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                    @error('emergency_same_house_phone_1')
+                                        <span class="text-[10px] text-red-500 mt-0.5 block">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                        {{ __('Hubungan') }}
+                                    </label>
+                                    <input type="text" wire:model="emergency_same_house_relation_1"
+                                        placeholder="{{ __('Cth: Ayah / Suami / Kakak') }}"
+                                        class="w-full px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                    @error('emergency_same_house_relation_1')
+                                        <span class="text-[10px] text-red-500 mt-0.5 block">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Baris 2 -->
+                        <div
+                            class="space-y-3 p-4 rounded-xl bg-white dark:bg-[#0D1527] border border-slate-200/60 dark:border-[#1D2E54]/70">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ __('Kontak Darurat 2') }}</span>
+                                <span class="text-[10px] text-slate-400">{{ __('(Opsional)') }}</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                        {{ __('Nama Lengkap') }}
+                                    </label>
+                                    <input type="text" wire:model="emergency_same_house_name_2"
+                                        placeholder="{{ __('Nama') }}"
+                                        class="w-full px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                    @error('emergency_same_house_name_2')
+                                        <span class="text-[10px] text-red-500 mt-0.5 block">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                        {{ __('No. Telp / No. HP') }}
+                                    </label>
+                                    <input type="text" wire:model="emergency_same_house_phone_2"
+                                        placeholder="{{ __('08xxxxxxxxxx') }}"
+                                        class="w-full px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                    @error('emergency_same_house_phone_2')
+                                        <span class="text-[10px] text-red-500 mt-0.5 block">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                        {{ __('Hubungan') }}
+                                    </label>
+                                    <input type="text" wire:model="emergency_same_house_relation_2"
+                                        placeholder="{{ __('Cth: Ibu / Adik') }}"
+                                        class="w-full px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                    @error('emergency_same_house_relation_2')
+                                        <span class="text-[10px] text-red-500 mt-0.5 block">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Kelompok 2: Tidak Satu Tempat Tinggal (Rumah) -->
+                    <div
+                        class="p-4 sm:p-5 rounded-2xl bg-slate-50/70 dark:bg-[#14203A]/40 border border-slate-200/80 dark:border-[#1D2E54] space-y-5">
+                        <div class="flex items-center gap-2 pb-3 border-b border-slate-200/80 dark:border-[#1D2E54]">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                                {{ __('Tidak Satu Tempat Tinggal (Rumah)') }}
+                            </h4>
+                        </div>
+
+                        <!-- Baris 1 -->
+                        <div
+                            class="space-y-3 p-4 rounded-xl bg-white dark:bg-[#0D1527] border border-slate-200/60 dark:border-[#1D2E54]/70">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ __('Kontak Darurat 1') }}</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                        {{ __('Nama Lengkap') }}
+                                    </label>
+                                    <input type="text" wire:model="emergency_diff_house_name_1"
+                                        placeholder="{{ __('Nama') }}"
+                                        class="w-full px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                    @error('emergency_diff_house_name_1')
+                                        <span class="text-[10px] text-red-500 mt-0.5 block">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                        {{ __('No. Telp / No. HP') }}
+                                    </label>
+                                    <input type="text" wire:model="emergency_diff_house_phone_1"
+                                        placeholder="{{ __('08xxxxxxxxxx') }}"
+                                        class="w-full px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                    @error('emergency_diff_house_phone_1')
+                                        <span class="text-[10px] text-red-500 mt-0.5 block">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                        {{ __('Hubungan') }}
+                                    </label>
+                                    <input type="text" wire:model="emergency_diff_house_relation_1"
+                                        placeholder="{{ __('Cth: Paman / Bibi / Sahabat') }}"
+                                        class="w-full px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                    @error('emergency_diff_house_relation_1')
+                                        <span class="text-[10px] text-red-500 mt-0.5 block">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Baris 2 -->
+                        <div
+                            class="space-y-3 p-4 rounded-xl bg-white dark:bg-[#0D1527] border border-slate-200/60 dark:border-[#1D2E54]/70">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ __('Kontak Darurat 2') }}</span>
+                                <span class="text-[10px] text-slate-400">{{ __('(Opsional)') }}</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                        {{ __('Nama Lengkap') }}
+                                    </label>
+                                    <input type="text" wire:model="emergency_diff_house_name_2"
+                                        placeholder="{{ __('Nama') }}"
+                                        class="w-full px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                    @error('emergency_diff_house_name_2')
+                                        <span class="text-[10px] text-red-500 mt-0.5 block">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                        {{ __('No. Telp / No. HP') }}
+                                    </label>
+                                    <input type="text" wire:model="emergency_diff_house_phone_2"
+                                        placeholder="{{ __('08xxxxxxxxxx') }}"
+                                        class="w-full px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                    @error('emergency_diff_house_phone_2')
+                                        <span class="text-[10px] text-red-500 mt-0.5 block">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                        {{ __('Hubungan') }}
+                                    </label>
+                                    <input type="text" wire:model="emergency_diff_house_relation_2"
+                                        placeholder="{{ __('Cth: Sepupu / Kerabat') }}"
+                                        class="w-full px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                    @error('emergency_diff_house_relation_2')
+                                        <span class="text-[10px] text-red-500 mt-0.5 block">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
             </div>
 
             <!-- Submit Button -->
@@ -404,8 +686,11 @@
                     <span wire:loading.remove wire:target="save">{{ __('Simpan Perubahan') }}</span>
                     <span wire:loading wire:target="save" class="flex items-center gap-2">
                         <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
                         </svg>
                         {{ __('Menyimpan...') }}
                     </span>

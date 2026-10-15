@@ -11,9 +11,25 @@ class Skill extends Model
 
     protected $fillable = [
         'profile_id',
+        'category',
         'name',
+        'proficiency',
+        'description',
         'certificate_path',
     ];
+
+    public function scopeComputer($query)
+    {
+        return $query->where('category', 'computer');
+    }
+
+    public function scopeGeneral($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('category', 'general')
+              ->orWhereNull('category');
+        });
+    }
 
     public function applicantProfile(): BelongsTo
     {

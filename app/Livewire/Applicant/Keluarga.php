@@ -27,6 +27,24 @@ class Keluarga extends Component
     public $mother_occupation;
     public $mother_company;
 
+    // Emergency Contacts - Satu tempat tinggal (rumah)
+    public $emergency_same_house_name_1;
+    public $emergency_same_house_phone_1;
+    public $emergency_same_house_relation_1;
+
+    public $emergency_same_house_name_2;
+    public $emergency_same_house_phone_2;
+    public $emergency_same_house_relation_2;
+
+    // Emergency Contacts - Tidak satu tempat tinggal (rumah)
+    public $emergency_diff_house_name_1;
+    public $emergency_diff_house_phone_1;
+    public $emergency_diff_house_relation_1;
+
+    public $emergency_diff_house_name_2;
+    public $emergency_diff_house_phone_2;
+    public $emergency_diff_house_relation_2;
+
     public function mount()
     {
         $user = Auth::user();
@@ -49,6 +67,26 @@ class Keluarga extends Component
                 $this->mother_last_education = $family->mother_last_education;
                 $this->mother_occupation = $family->mother_occupation;
                 $this->mother_company = $family->mother_company;
+
+                $contacts = $family->emergency_contacts ?? [];
+                $sameHouse = $contacts['same_house'] ?? [];
+                $diffHouse = $contacts['diff_house'] ?? [];
+
+                $this->emergency_same_house_name_1 = $sameHouse[0]['name'] ?? null;
+                $this->emergency_same_house_phone_1 = $sameHouse[0]['phone'] ?? null;
+                $this->emergency_same_house_relation_1 = $sameHouse[0]['relation'] ?? null;
+
+                $this->emergency_same_house_name_2 = $sameHouse[1]['name'] ?? null;
+                $this->emergency_same_house_phone_2 = $sameHouse[1]['phone'] ?? null;
+                $this->emergency_same_house_relation_2 = $sameHouse[1]['relation'] ?? null;
+
+                $this->emergency_diff_house_name_1 = $diffHouse[0]['name'] ?? null;
+                $this->emergency_diff_house_phone_1 = $diffHouse[0]['phone'] ?? null;
+                $this->emergency_diff_house_relation_1 = $diffHouse[0]['relation'] ?? null;
+
+                $this->emergency_diff_house_name_2 = $diffHouse[1]['name'] ?? null;
+                $this->emergency_diff_house_phone_2 = $diffHouse[1]['phone'] ?? null;
+                $this->emergency_diff_house_relation_2 = $diffHouse[1]['relation'] ?? null;
             }
         }
     }
@@ -69,6 +107,20 @@ class Keluarga extends Component
             'mother_last_education' => 'nullable|string|max:255',
             'mother_occupation' => 'nullable|string|max:255',
             'mother_company' => 'nullable|string|max:255',
+
+            'emergency_same_house_name_1' => 'nullable|string|max:255',
+            'emergency_same_house_phone_1' => 'nullable|string|max:30',
+            'emergency_same_house_relation_1' => 'nullable|string|max:100',
+            'emergency_same_house_name_2' => 'nullable|string|max:255',
+            'emergency_same_house_phone_2' => 'nullable|string|max:30',
+            'emergency_same_house_relation_2' => 'nullable|string|max:100',
+
+            'emergency_diff_house_name_1' => 'nullable|string|max:255',
+            'emergency_diff_house_phone_1' => 'nullable|string|max:30',
+            'emergency_diff_house_relation_1' => 'nullable|string|max:100',
+            'emergency_diff_house_name_2' => 'nullable|string|max:255',
+            'emergency_diff_house_phone_2' => 'nullable|string|max:30',
+            'emergency_diff_house_relation_2' => 'nullable|string|max:100',
         ], [
             'child_sequence.numeric' => __('Urutan anak harus berupa angka.'),
             'child_sequence.min' => __('Urutan anak minimal 1.'),
@@ -94,6 +146,38 @@ class Keluarga extends Component
             'marital_status' => $this->marital_status ?: null,
         ]);
 
+        // Format emergency contacts json structure
+        $sameHouse = array_values(array_filter([
+            (!empty($this->emergency_same_house_name_1) || !empty($this->emergency_same_house_phone_1) || !empty($this->emergency_same_house_relation_1)) ? [
+                'name' => $this->emergency_same_house_name_1,
+                'phone' => $this->emergency_same_house_phone_1,
+                'relation' => $this->emergency_same_house_relation_1,
+            ] : null,
+            (!empty($this->emergency_same_house_name_2) || !empty($this->emergency_same_house_phone_2) || !empty($this->emergency_same_house_relation_2)) ? [
+                'name' => $this->emergency_same_house_name_2,
+                'phone' => $this->emergency_same_house_phone_2,
+                'relation' => $this->emergency_same_house_relation_2,
+            ] : null,
+        ]));
+
+        $diffHouse = array_values(array_filter([
+            (!empty($this->emergency_diff_house_name_1) || !empty($this->emergency_diff_house_phone_1) || !empty($this->emergency_diff_house_relation_1)) ? [
+                'name' => $this->emergency_diff_house_name_1,
+                'phone' => $this->emergency_diff_house_phone_1,
+                'relation' => $this->emergency_diff_house_relation_1,
+            ] : null,
+            (!empty($this->emergency_diff_house_name_2) || !empty($this->emergency_diff_house_phone_2) || !empty($this->emergency_diff_house_relation_2)) ? [
+                'name' => $this->emergency_diff_house_name_2,
+                'phone' => $this->emergency_diff_house_phone_2,
+                'relation' => $this->emergency_diff_house_relation_2,
+            ] : null,
+        ]));
+
+        $emergencyContacts = (!empty($sameHouse) || !empty($diffHouse)) ? [
+            'same_house' => $sameHouse,
+            'diff_house' => $diffHouse,
+        ] : null;
+
         // Update or create family fields
         ApplicantFamily::updateOrCreate(
             ['applicant_profile_id' => $profile->id],
@@ -108,11 +192,11 @@ class Keluarga extends Component
                 'mother_last_education' => $this->mother_last_education,
                 'mother_occupation' => $this->mother_occupation,
                 'mother_company' => $this->mother_company,
+                'emergency_contacts' => $emergencyContacts,
             ]
         );
 
-        $this->dispatch('profile-updated');
-        session()->flash('message', __('Data keluarga berhasil disimpan!'));
+        $this->dispatch('profile-updated', message: __('Data keluarga berhasil diperbarui.'), action: 'update');
     }
 
     public function render()

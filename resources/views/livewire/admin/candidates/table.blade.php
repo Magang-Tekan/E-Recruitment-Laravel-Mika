@@ -174,6 +174,8 @@
                 @endif
             </div>
         @endif
-    </div>    {{-- MODAL DETAIL KANDIDAT (Portrait Document View - Client-side Alpine) --}}
+    </div>
+
+    {{-- MODAL DETAIL KANDIDAT (Portrait Document View - Client-side Alpine) --}}
     @include('livewire.admin.candidates.partials.detail-modal-portrait')
 </div>

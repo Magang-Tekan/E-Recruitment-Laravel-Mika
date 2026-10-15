@@ -81,8 +81,7 @@ class ApplicantSidebar extends Component
         );
 
         $this->showJobSearchStatusModal = false;
-        $this->dispatch('profile-updated');
-        session()->flash('message', 'Status pencari kerja berhasil diperbarui.');
+        $this->dispatch('profile-updated', message: __('Status pencari kerja berhasil diperbarui.'), action: 'update');
     }
 
     public function render()
