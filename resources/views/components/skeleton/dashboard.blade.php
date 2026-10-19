@@ -9,12 +9,12 @@
 
     <!-- Welcome Banner Skeleton -->
     <div
-        class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-blue-600 dark:border-l-[#93F514] p-6 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 transition-colors">
+        class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-emerald-600 dark:border-l-[#93F514] p-6 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 transition-colors">
         
         <div class="flex items-start sm:items-center gap-4 w-full md:w-auto">
             <!-- Icon Box Skeleton -->
             <div
-                class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] shrink-0"></div>
+                class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 shrink-0"></div>
             
             <div class="space-y-2 flex-1 min-w-0">
                 <div class="h-6 sm:h-7 w-64 sm:w-80 bg-slate-200 dark:bg-[#1D2E54] rounded-lg"></div>

@@ -17,7 +17,27 @@ class ApplicantProfile extends Model
         'religion', 'postal_code', 'blood_type',
     ];
 
-    protected $appends = ['cv_url', 'cv_file_url'];
+    protected $appends = ['cv_url', 'cv_file_url', 'photo_url'];
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        // 1. Uploaded photo on applicant profile
+        if (! empty($this->photo)) {
+            return \Illuminate\Support\Str::startsWith($this->photo, ['http://', 'https://'])
+                ? $this->photo
+                : asset('storage/' . $this->photo);
+        }
+
+        // 2. Default email avatar / Google OAuth avatar from user account
+        $avatar = $this->user?->avatar;
+        if (! empty($avatar)) {
+            return \Illuminate\Support\Str::startsWith($avatar, ['http://', 'https://'])
+                ? $avatar
+                : asset('storage/' . $avatar);
+        }
+
+        return null;
+    }
 
     public function getCvFileUrlAttribute(): ?string
     {
@@ -78,6 +98,18 @@ class ApplicantProfile extends Model
     public function skills()
     {
         return $this->hasMany(Skill::class, 'profile_id');
+    }
+
+    public function computerSkills()
+    {
+        return $this->hasMany(Skill::class, 'profile_id')->where('category', 'computer');
+    }
+
+    public function generalSkills()
+    {
+        return $this->hasMany(Skill::class, 'profile_id')->where(function ($q) {
+            $q->where('category', 'general')->orWhereNull('category');
+        });
     }
 
     public function socialMedias()
@@ -197,11 +229,11 @@ class ApplicantProfile extends Model
     {
         $statuses = $this->section_statuses;
         $labels = [
-            'pribadi' => 'Data Pribadi',
-            'cv' => 'Unggah Dokumen CV',
-            'keluarga' => 'Data Keluarga',
-            'pendidikan' => 'Pendidikan',
-            'skill' => 'Skill / Keahlian',
+            'pribadi' => __('Data Pribadi'),
+            'cv' => __('Unggah Dokumen CV'),
+            'keluarga' => __('Data Keluarga'),
+            'pendidikan' => __('Pendidikan'),
+            'skill' => __('Skill / Keahlian'),
         ];
 
         $missing = [];

@@ -52,12 +52,12 @@ class Organisasi extends Component
     protected function messages()
     {
         return [
-            'name.required' => 'Nama organisasi wajib diisi.',
-            'position.required' => 'Jabatan / posisi wajib diisi.',
-            'start_month.required' => 'Bulan mulai wajib dipilih.',
-            'start_year.required' => 'Tahun mulai wajib diisi.',
-            'start_year.digits' => 'Tahun mulai harus 4 digit angka.',
-            'end_year.gte' => 'Tahun selesai harus lebih besar atau sama dengan tahun mulai.',
+            'name.required' => __('Nama organisasi wajib diisi.'),
+            'position.required' => __('Jabatan / posisi wajib diisi.'),
+            'start_month.required' => __('Bulan mulai wajib dipilih.'),
+            'start_year.required' => __('Tahun mulai wajib diisi.'),
+            'start_year.digits' => __('Tahun mulai harus 4 digit angka.'),
+            'end_year.gte' => __('Tahun selesai harus lebih besar atau sama dengan tahun mulai.'),
         ];
     }
 
@@ -127,15 +127,17 @@ class Organisasi extends Component
         if ($this->isEdit && $this->organization_id) {
             $org = Organization::where('profile_id', $profile->id)->where('id', $this->organization_id)->firstOrFail();
             $org->update($validatedData);
-            session()->flash('message', 'Riwayat organisasi berhasil diperbarui.');
+            $msg = __('Riwayat organisasi berhasil diperbarui.');
+            $action = 'update';
         } else {
             $validatedData['profile_id'] = $profile->id;
             Organization::create($validatedData);
-            session()->flash('message', 'Riwayat organisasi berhasil ditambahkan.');
+            $msg = __('Riwayat organisasi berhasil ditambahkan.');
+            $action = 'create';
         }
 
         $this->closeModal();
-        return redirect(route('profile', ['tab' => 'organisasi']));
+        $this->dispatch('profile-updated', message: $msg, action: $action);
     }
 
     public function confirmDelete($id)
@@ -157,14 +159,13 @@ class Organisasi extends Component
             $profile = ApplicantProfile::where('user_id', $user->id)->first();
             if ($profile) {
                 Organization::where('profile_id', $profile->id)->where('id', $this->deleteId)->delete();
-                session()->flash('message', 'Riwayat organisasi berhasil dihapus.');
             }
         }
 
         $this->showDeleteModal = false;
         $this->deleteId = null;
 
-        return redirect(route('profile', ['tab' => 'organisasi']));
+        $this->dispatch('profile-updated', message: __('Riwayat organisasi berhasil dihapus.'), action: 'delete');
     }
 
     public function render()

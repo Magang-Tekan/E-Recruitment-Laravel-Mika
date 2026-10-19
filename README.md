@@ -1,6 +1,6 @@
 # 💼 E-Recruitment System (Laravel & Livewire)
 
-Aplikasi web sistem rekrutmen terpadu, seleksi berkas, asesmen psikotes (DISC Test), dan manajemen kandidat berbasis **Laravel 13**, **Livewire 3**, dan **TailwindCSS**.
+Aplikasi web sistem rekrutmen terpadu, seleksi berkas, asesmen psikotes (DISC Test), PAPI Kostick dan manajemen kandidat berbasis **Laravel 13**, **Livewire 3**, dan **TailwindCSS**.
 
 ---
 
@@ -36,6 +36,7 @@ Aplikasi web sistem rekrutmen terpadu, seleksi berkas, asesmen psikotes (DISC Te
    - Ujian berbasis waktu, multiple choice & essay.
    - Bank soal dengan fitur import file Excel (Maatwebsite Excel).
    - Kalkulasi otomatis hasil tes kepribadian **DISC** beserta download hasil laporan PDF.
+   - Kalkulasi otomatis hasil tes kepribadian **PAPI Kostick** beserta download hasil laporan PDF.
 4. **Notifikasi Email**: Pemberitahuan otomatis status lamaran (Diterima, Wawancara, Ditolak) menggunakan antrean background (*queue*).
 5. **RESTful API**: Endpoint publik lowongan pekerjaan untuk integrasi dengan frontend eksternal (Next.js, Nuxt.js, mobile app).
 
@@ -49,7 +50,7 @@ Aplikasi web sistem rekrutmen terpadu, seleksi berkas, asesmen psikotes (DISC Te
 - **Authentication**: Laravel Breeze & Laravel Socialite (Google Login)
 - **PDF Generator**: [barryvdh/laravel-dompdf](https://github.com/barryvdh/laravel-dompdf)
 - **Excel Importer**: [maatwebsite/excel](https://maatwebsite.nl/laravel-excel)
-- **Database**: MySQL / PostgreSQL
+- **Database**: PostgreSQL
 
 ---
 

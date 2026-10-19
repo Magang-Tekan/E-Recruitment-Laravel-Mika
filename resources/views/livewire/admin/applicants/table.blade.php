@@ -46,8 +46,20 @@
         decision: 'approved',
         send_email: true
     },
+    modalImgFailed: false,
+    getApplicantPhotoUrl(app) {
+        if (!app || !app.applicant_profile) return null;
+        const prof = app.applicant_profile;
+        if (prof.photo_url) return prof.photo_url;
+        const raw = prof.photo || (prof.user ? prof.user.avatar : null);
+        if (raw) {
+            return (raw.startsWith('http://') || raw.startsWith('https://')) ? raw : ('/storage/' + raw);
+        }
+        return null;
+    },
     openDetailModal(application) {
         this.detailData = application;
+        this.modalImgFailed = false;
         this.activeDetailTab = 'pribadi';
         this.showDetailModal = true;
     },
@@ -505,13 +517,27 @@
                     <!-- Top Row: Candidate Profile Info & Status Badge -->
                     <div class="flex items-start justify-between gap-2.5">
                         <div class="flex items-center gap-3 min-w-0">
-                            @if ($app->applicantProfile && $app->applicantProfile->photo)
-                                <img src="{{ \Illuminate\Support\Str::startsWith($app->applicantProfile->photo, ['http://', 'https://']) ? $app->applicantProfile->photo : asset('storage/' . $app->applicantProfile->photo) }}" alt="{{ $app->applicantProfile->full_name }}" class="w-11 h-11 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm shrink-0">
-                            @else
-                                <div class="w-11 h-11 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
-                                    {{ strtoupper(substr($app->applicantProfile->full_name ?? 'P', 0, 2)) }}
-                                </div>
-                            @endif
+                            @php
+                                $applicantPhoto = $app->applicantProfile?->photo_url;
+                                $applicantName = $app->applicantProfile?->full_name ?? 'Pelamar';
+                                $applicantInitials = strtoupper(substr($applicantName, 0, 2));
+                            @endphp
+                            <div class="relative w-11 h-11 shrink-0">
+                                @if ($applicantPhoto)
+                                    <img src="{{ $applicantPhoto }}" 
+                                         alt="{{ $applicantName }}" 
+                                         referrerpolicy="no-referrer" 
+                                         class="w-11 h-11 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm"
+                                         onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                    <div class="hidden w-11 h-11 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs items-center justify-center shadow-2xs">
+                                        {{ $applicantInitials }}
+                                    </div>
+                                @else
+                                    <div class="w-11 h-11 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shadow-2xs">
+                                        {{ $applicantInitials }}
+                                    </div>
+                                @endif
+                            </div>
                             <div class="min-w-0">
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     <span class="font-bold text-gray-900 dark:text-white text-sm truncate max-w-[170px] sm:max-w-xs">{{ $app->applicantProfile->full_name ?? 'Pelamar' }}</span>
@@ -768,13 +794,27 @@
                             @if(in_array('applicant', $selectedColumns))
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
-                                        @if ($app->applicantProfile && $app->applicantProfile->photo)
-                                            <img src="{{ \Illuminate\Support\Str::startsWith($app->applicantProfile->photo, ['http://', 'https://']) ? $app->applicantProfile->photo : asset('storage/' . $app->applicantProfile->photo) }}" alt="{{ $app->applicantProfile->full_name }}" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm shrink-0">
-                                        @else
-                                            <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
-                                                {{ strtoupper(substr($app->applicantProfile->full_name ?? 'P', 0, 2)) }}
-                                            </div>
-                                        @endif
+                                        @php
+                                            $applicantPhoto = $app->applicantProfile?->photo_url;
+                                            $applicantName = $app->applicantProfile?->full_name ?? 'Pelamar';
+                                            $applicantInitials = strtoupper(substr($applicantName, 0, 2));
+                                        @endphp
+                                        <div class="relative w-10 h-10 shrink-0">
+                                            @if ($applicantPhoto)
+                                                <img src="{{ $applicantPhoto }}" 
+                                                     alt="{{ $applicantName }}" 
+                                                     referrerpolicy="no-referrer" 
+                                                     class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm"
+                                                     onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                                <div class="hidden w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs items-center justify-center shadow-2xs">
+                                                    {{ $applicantInitials }}
+                                                </div>
+                                            @else
+                                                <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shadow-2xs">
+                                                    {{ $applicantInitials }}
+                                                </div>
+                                            @endif
+                                        </div>
                                         <div>
                                             <div class="flex items-center gap-1.5 flex-wrap">
                                                 <span class="font-bold text-gray-900 dark:text-white text-sm">{{ $app->applicantProfile->full_name ?? 'Pelamar' }}</span>
@@ -1748,7 +1788,4 @@
                     </form>
                 </div>
 
-            </div>
-        </div>
-    </div>
 </div>

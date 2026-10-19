@@ -263,7 +263,35 @@
                     <td class="info-value">{{ $family->spouse_phone ?? '-' }}</td>
                 </tr>
             @endif
-            @if(!empty($family->emergency_contact_name) || !empty($family->emergency_contact_phone))
+            @php
+                $emergencies = $family->emergency_contacts ?? [];
+                $sameHouse = $emergencies['same_house'] ?? [];
+                $diffHouse = $emergencies['diff_house'] ?? [];
+            @endphp
+            @if(!empty($sameHouse) || !empty($diffHouse))
+                <tr>
+                    <td class="info-label" style="color: #dc2626; font-weight: bold; vertical-align: top;">Kontak Darurat</td>
+                    <td class="info-sep" style="vertical-align: top;">:</td>
+                    <td class="info-value" colspan="4">
+                        @if(!empty($sameHouse))
+                            <div style="margin-bottom: 3px;">
+                                <strong style="font-size: 8pt; color: #166534;">[Satu Rumah]</strong>
+                                @foreach($sameHouse as $idx => $ec)
+                                    <span>{{ $ec['name'] ?? '-' }} ({{ $ec['relation'] ?? '-' }}) - Telp: {{ $ec['phone'] ?? '-' }}{{ !$loop->last ? ' | ' : '' }}</span>
+                                @endforeach
+                            </div>
+                        @endif
+                        @if(!empty($diffHouse))
+                            <div>
+                                <strong style="font-size: 8pt; color: #1e40af;">[Tidak Satu Rumah]</strong>
+                                @foreach($diffHouse as $idx => $ec)
+                                    <span>{{ $ec['name'] ?? '-' }} ({{ $ec['relation'] ?? '-' }}) - Telp: {{ $ec['phone'] ?? '-' }}{{ !$loop->last ? ' | ' : '' }}</span>
+                                @endforeach
+                            </div>
+                        @endif
+                    </td>
+                </tr>
+            @elseif(!empty($family->emergency_contact_name) || !empty($family->emergency_contact_phone))
                 <tr>
                     <td class="info-label" style="color: #dc2626; font-weight: bold;">Kontak Darurat</td>
                     <td class="info-sep">:</td>
@@ -324,7 +352,13 @@
                     <tr>
                         <td style="width: 70%;">
                             <span class="bold" style="font-size: 10.5px;">{{ $work->position }}</span>
+                            @if($work->initial_position)
+                                <span class="text-muted" style="font-size: 9px;">(Awal: {{ $work->initial_position }})</span>
+                            @endif
                             <span class="text-primary bold"> &bull; {{ $work->company_name }}</span>
+                            @if($work->business_field)
+                                <span class="text-muted" style="font-size: 9px;">[{{ $work->business_field }}]</span>
+                            @endif
                             @if($work->employment_type)
                                 <span class="text-muted" style="font-size: 9px;">({{ $work->employment_type }})</span>
                             @endif
@@ -334,6 +368,24 @@
                             {{ $work->currently_working ? 'Sekarang' : ($work->end_date ? \Carbon\Carbon::parse($work->end_date)->translatedFormat('M Y') : '-') }}
                         </td>
                     </tr>
+                    @if($work->supervisor_name || $work->company_address)
+                        <tr>
+                            <td colspan="2" style="font-size: 8.5px; color: #64748b; padding-top: 2px;">
+                                @if($work->supervisor_name) Atasan: <strong>{{ $work->supervisor_name }}</strong> @endif
+                                @if($work->supervisor_name && $work->company_address) &bull; @endif
+                                @if($work->company_address) Alamat: {{ $work->company_address }} @endif
+                            </td>
+                        </tr>
+                    @endif
+                    @if($work->initial_salary || $work->final_salary || $work->benefits)
+                        <tr>
+                            <td colspan="2" style="font-size: 8.5px; color: #475569; padding-top: 2px;">
+                                @if($work->final_salary) Gaji Akhir: <strong>Rp {{ number_format($work->final_salary, 0, ',', '.') }}</strong> @endif
+                                @if($work->final_salary && $work->benefits) &bull; @endif
+                                @if($work->benefits) Fasilitas: {{ $work->benefits }} @endif
+                            </td>
+                        </tr>
+                    @endif
                     @if($work->description)
                         <tr>
                             <td colspan="2" style="padding-top: 4px; font-size: 9px; color: #334155; line-height: 1.4;">
@@ -390,26 +442,97 @@
     </table>
 
     <!-- 6. KEAHLIAN, BAHASA, SERTIFIKASI & PELATIHAN -->
-    <div class="section-title">VI. Keahlian, Kemampuan Bahasa & Sertifikasi</div>
+    <div class="section-title">VI. Kemampuan Bahasa, Komputer & Sertifikasi</div>
+    
+    <!-- KEMAMPUAN BERBAHASA -->
+    <div style="font-weight: bold; font-size: 9.5px; color: #1e293b; margin-top: 6px; margin-bottom: 3px;">Kemampuan Berbahasa</div>
+    <table class="data-table" style="margin-top: 2px; margin-bottom: 4px; border: 1px solid #cbd5e1;">
+        <thead>
+            <tr>
+                <th rowspan="2" style="vertical-align: middle; width: 28%; text-align: left; border-right: 1px solid #cbd5e1;">Bahasa Asing</th>
+                <th colspan="3" style="text-align: center; border-right: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">Lisan</th>
+                <th colspan="3" style="text-align: center; border-right: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">Tulisan</th>
+                <th colspan="3" style="text-align: center; border-bottom: 1px solid #cbd5e1;">Percakapan</th>
+            </tr>
+            <tr>
+                <th style="width: 8%; text-align: center; font-size: 8px; border-right: 1px solid #cbd5e1;">Baik</th>
+                <th style="width: 8%; text-align: center; font-size: 8px; border-right: 1px solid #cbd5e1;">Cukup</th>
+                <th style="width: 8%; text-align: center; font-size: 8px; border-right: 1px solid #cbd5e1;">Kurang</th>
+                <th style="width: 8%; text-align: center; font-size: 8px; border-right: 1px solid #cbd5e1;">Baik</th>
+                <th style="width: 8%; text-align: center; font-size: 8px; border-right: 1px solid #cbd5e1;">Cukup</th>
+                <th style="width: 8%; text-align: center; font-size: 8px; border-right: 1px solid #cbd5e1;">Kurang</th>
+                <th style="width: 8%; text-align: center; font-size: 8px; border-right: 1px solid #cbd5e1;">Baik</th>
+                <th style="width: 8%; text-align: center; font-size: 8px; border-right: 1px solid #cbd5e1;">Cukup</th>
+                <th style="width: 8%; text-align: center; font-size: 8px;">Kurang</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($profile->languages as $lang)
+                <tr>
+                    <td style="font-weight: bold; border-right: 1px solid #cbd5e1;">{{ $lang->name }}</td>
+                    <td style="text-align: center; font-weight: bold; border-right: 1px solid #cbd5e1;">{{ strtolower($lang->oral) === 'baik' ? 'X' : '' }}</td>
+                    <td style="text-align: center; font-weight: bold; border-right: 1px solid #cbd5e1;">{{ strtolower($lang->oral) === 'cukup' ? 'X' : '' }}</td>
+                    <td style="text-align: center; font-weight: bold; border-right: 1px solid #cbd5e1;">{{ strtolower($lang->oral) === 'kurang' ? 'X' : '' }}</td>
+                    <td style="text-align: center; font-weight: bold; border-right: 1px solid #cbd5e1;">{{ strtolower($lang->written) === 'baik' ? 'X' : '' }}</td>
+                    <td style="text-align: center; font-weight: bold; border-right: 1px solid #cbd5e1;">{{ strtolower($lang->written) === 'cukup' ? 'X' : '' }}</td>
+                    <td style="text-align: center; font-weight: bold; border-right: 1px solid #cbd5e1;">{{ strtolower($lang->written) === 'kurang' ? 'X' : '' }}</td>
+                    <td style="text-align: center; font-weight: bold; border-right: 1px solid #cbd5e1;">{{ strtolower($lang->conversation) === 'baik' ? 'X' : '' }}</td>
+                    <td style="text-align: center; font-weight: bold; border-right: 1px solid #cbd5e1;">{{ strtolower($lang->conversation) === 'cukup' ? 'X' : '' }}</td>
+                    <td style="text-align: center; font-weight: bold;">{{ strtolower($lang->conversation) === 'kurang' ? 'X' : '' }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="10" style="text-align: center; color: #94a3b8; font-style: italic;">Tidak ada data kemampuan bahasa.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+    <div style="font-size: 8px; color: #64748b; margin-top: -2px; margin-bottom: 8px;">*) Beri tanda 'X' pada kolom yang sesuai</div>
+
+    <!-- KEMAMPUAN APLIKASI KOMPUTER -->
+    <div style="font-weight: bold; font-size: 9.5px; color: #1e293b; margin-top: 4px; margin-bottom: 3px;">Kemampuan Aplikasi Komputer</div>
+    <table class="data-table" style="margin-top: 2px; margin-bottom: 8px; border: 1px solid #cbd5e1;">
+        <thead>
+            <tr>
+                <th style="width: 32%; border-right: 1px solid #cbd5e1;">Aplikasi Komputer</th>
+                <th style="width: 12%; text-align: center; border-right: 1px solid #cbd5e1;">Sangat Baik</th>
+                <th style="width: 12%; text-align: center; border-right: 1px solid #cbd5e1;">Baik</th>
+                <th style="width: 12%; text-align: center; border-right: 1px solid #cbd5e1;">Cukup</th>
+                <th style="width: 12%; text-align: center; border-right: 1px solid #cbd5e1;">Kurang</th>
+                <th style="width: 20%;">Keterangan</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php
+                $computerSkills = $profile->skills ? $profile->skills->where('category', 'computer') : collect();
+                $generalSkills = $profile->skills ? $profile->skills->where(fn($s) => $s->category === 'general' || empty($s->category)) : collect();
+            @endphp
+            @forelse($computerSkills as $cSkill)
+                <tr>
+                    <td style="font-weight: bold; border-right: 1px solid #cbd5e1;">{{ $cSkill->name }}</td>
+                    <td style="text-align: center; font-weight: bold; border-right: 1px solid #cbd5e1;">{{ strtolower($cSkill->proficiency) === 'sangat_baik' ? 'X' : '' }}</td>
+                    <td style="text-align: center; font-weight: bold; border-right: 1px solid #cbd5e1;">{{ strtolower($cSkill->proficiency) === 'baik' ? 'X' : '' }}</td>
+                    <td style="text-align: center; font-weight: bold; border-right: 1px solid #cbd5e1;">{{ strtolower($cSkill->proficiency) === 'cukup' ? 'X' : '' }}</td>
+                    <td style="text-align: center; font-weight: bold; border-right: 1px solid #cbd5e1;">{{ strtolower($cSkill->proficiency) === 'kurang' ? 'X' : '' }}</td>
+                    <td>{{ $cSkill->description ?? '-' }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6" style="text-align: center; color: #94a3b8; font-style: italic;">Tidak ada data kemampuan aplikasi komputer.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <!-- KEAHLIAN LAIN, SERTIFIKASI & PELATIHAN -->
     <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px;">
         <tr>
             <td style="width: 50%; vertical-align: top; padding-right: 8px;">
-                <div style="font-weight: bold; font-size: 9.5px; color: #475569; margin-bottom: 4px;">Keahlian (Skills):</div>
+                <div style="font-weight: bold; font-size: 9.5px; color: #475569; margin-bottom: 4px;">Keahlian Umum (Skills):</div>
                 <div>
-                    @if($profile->skills && $profile->skills->count() > 0)
-                        @foreach($profile->skills as $skill)
+                    @if($generalSkills->count() > 0)
+                        @foreach($generalSkills as $skill)
                             <span class="pill">{{ $skill->name ?? $skill->skill_name }}</span>
-                        @endforeach
-                    @else
-                        <span class="text-muted" style="font-style: italic;">-</span>
-                    @endif
-                </div>
-
-                <div style="font-weight: bold; font-size: 9.5px; color: #475569; margin-top: 8px; margin-bottom: 4px;">Kemampuan Bahasa:</div>
-                <div>
-                    @if($profile->languages && $profile->languages->count() > 0)
-                        @foreach($profile->languages as $lang)
-                            <span class="pill" style="background-color: #ecfdf5; color: #065f46;">{{ $lang->name }}</span>
                         @endforeach
                     @else
                         <span class="text-muted" style="font-style: italic;">-</span>
@@ -426,7 +549,7 @@
                     <div class="text-muted" style="font-style: italic; font-size: 9px;">-</div>
                 @endif
 
-                <div style="font-weight: bold; font-size: 9.5px; color: #475569; margin-top: 8px; margin-bottom: 4px;">Pelatihan / Kursus:</div>
+                <div style="font-weight: bold; font-size: 9.5px; color: #475569; margin-top: 6px; margin-bottom: 4px;">Pelatihan / Kursus:</div>
                 @if($profile->trainings && $profile->trainings->count() > 0)
                     @foreach($profile->trainings as $tr)
                         <div style="font-size: 9px; padding: 2px 0;">&bull; <strong>{{ $tr->name }}</strong></div>
@@ -458,9 +581,14 @@
             <td class="info-label">Bersedia Relokasi</td>
             <td class="info-sep">:</td>
             <td class="info-value">{{ $pref ? ($pref->is_willing_to_relocate ? 'Ya, Bersedia' : 'Tidak') : '-' }}</td>
+            <td class="info-label">Status Pencarian Kerja</td>
+            <td class="info-sep">:</td>
+            <td class="info-value font-bold">{{ $pref->job_search_status ?? 'Aktif' }}</td>
+        </tr>
+        <tr>
             <td class="info-label">Bidang Minat</td>
             <td class="info-sep">:</td>
-            <td class="info-value">
+            <td class="info-value" colspan="4">
                 @if($pref)
                     {{ implode(', ', array_filter([$pref->interested_field_1, $pref->interested_field_2, $pref->interested_field_3])) ?: '-' }}
                 @else

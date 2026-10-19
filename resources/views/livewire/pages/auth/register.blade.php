@@ -96,9 +96,9 @@ new #[Layout('layouts.guest')] class extends Component {
         ];
 
         $messages = [
-            'nik.required' => 'Nomor Induk Kependudukan (NIK) wajib diisi.',
-            'nik.digits' => 'NIK harus terdiri dari tepat 16 digit angka.',
-            'nik.unique' => 'NIK ini sudah terdaftar dalam sistem.',
+            'nik.required' => __('Nomor Induk Kependudukan (NIK) wajib diisi.'),
+            'nik.digits' => __('NIK harus terdiri dari tepat 16 digit angka.'),
+            'nik.unique' => __('NIK ini sudah terdaftar dalam sistem.'),
         ];
 
         if ($this->account_type === 'employee') {
@@ -116,14 +116,14 @@ new #[Layout('layouts.guest')] class extends Component {
                     $expectedPasskey = !empty($company?->registration_passkey) ? $company->registration_passkey : $globalPasskey;
 
                     if (trim((string) $value) !== trim((string) $expectedPasskey)) {
-                        $companySuffix = $company?->name ? " untuk {$company->name}" : "";
-                        $fail("Kode token perusahaan tidak valid{$companySuffix}. Silakan hubungi tim HR.");
+                        $companySuffix = $company?->name ? ' ' . __('untuk :company', ['company' => $company->name]) : '';
+                        $fail(__('Kode token perusahaan tidak valid:suffix. Silakan hubungi tim HR.', ['suffix' => $companySuffix]));
                     }
                 },
             ];
 
-            $messages['company_id.required'] = 'Silakan pilih Perusahaan tempat Anda bekerja.';
-            $messages['department_id.required'] = 'Silakan pilih Departemen tempat Anda bekerja.';
+            $messages['company_id.required'] = __('Silakan pilih Perusahaan tempat Anda bekerja.');
+            $messages['department_id.required'] = __('Silakan pilih Departemen tempat Anda bekerja.');
         }
 
         $validated = $this->validate($rules, $messages);
@@ -158,7 +158,7 @@ new #[Layout('layouts.guest')] class extends Component {
 
         event(new Registered($user));
 
-        session()->flash('status', 'Registrasi berhasil! Silakan masuk menggunakan akun Anda.');
+        session()->flash('status', __('Registrasi berhasil! Silakan masuk menggunakan akun Anda.'));
         $this->redirect(route('login', absolute: false));
     }
 }; ?>
@@ -175,7 +175,7 @@ new #[Layout('layouts.guest')] class extends Component {
             <span class="w-3.5 h-3.5 rounded-full bg-[#93F514] animate-dot-4 inline-block"></span>
         </div>
         <p class="mt-2.5 text-xs font-semibold text-white tracking-wide">
-            <span class="text-[#93F514]">Mendaftarkan</span> Akun...
+            <span class="text-[#93F514]">{{ __('Mendaftarkan') }}</span> {{ __('Akun...') }}
         </p>
     </div>
 
@@ -190,7 +190,7 @@ new #[Layout('layouts.guest')] class extends Component {
             <span class="w-3.5 h-3.5 rounded-full bg-[#93F514] animate-dot-4 inline-block"></span>
         </div>
         <p class="mt-2.5 text-xs font-semibold text-white tracking-wide">
-            Memuat Daftar Google...
+            {{ __('Memuat Daftar Google...') }}
         </p>
     </div>
 
@@ -239,18 +239,33 @@ new #[Layout('layouts.guest')] class extends Component {
                                 MIKA <span class="text-[#93F514]">CAREER</span>
                             </span>
                             <span class="block text-[10px] text-gray-400 font-normal">
-                                Portal Rekrutmen & Asesmen Online
+                                {{ __('Portal Rekrutmen & Asesmen Online') }}
                             </span>
                         </div>
                     </a>
 
                     <!-- Slogan Heading -->
-                    <div class="mt-8">
-                        <h2 class="heading-font text-2xl sm:text-3xl font-bold text-white leading-tight">
-                            Start your journey with <br>
-                            <span class="text-[#93F514]">
-                                Mitra Karya Analitika Group
-                            </span>
+                    @php
+                        $cleanCompanyName = preg_replace(
+                            '/^PT\.?\s+/i',
+                            '',
+                            $mainCompany->name ?? 'Mitra Karya Analitika',
+                        );
+                    @endphp
+                    <div class="mt-6 sm:mt-7">
+                        <h2
+                            class="heading-font text-xl sm:text-2xl lg:text-[1.65rem] font-bold text-white leading-snug tracking-tight">
+                            @if (app()->getLocale() === 'en')
+                                Start your journey with
+                                <span class="text-[#93F514] block mt-1 font-extrabold">
+                                    {{ $cleanCompanyName }}
+                                </span>
+                            @else
+                                Mulai langkah karier bersama
+                                <span class="text-[#93F514] block mt-1 font-extrabold">
+                                    {{ $cleanCompanyName }}
+                                </span>
+                            @endif
                         </h2>
                     </div>
                 </div>
@@ -331,7 +346,7 @@ new #[Layout('layouts.guest')] class extends Component {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
-                        <span>Kembali ke Beranda</span>
+                        <span>{{ __('Kembali ke Beranda') }}</span>
                     </a>
                 </div>
             </div>
@@ -343,11 +358,11 @@ new #[Layout('layouts.guest')] class extends Component {
                 <div class="mb-4 sm:mb-5">
                     <div class="flex items-center justify-between mb-1">
                         <h1 class="heading-font text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                            Buat Akun Baru
+                            {{ __('Buat Akun Baru') }}
                         </h1>
                     </div>
                     <p class="text-xs sm:text-sm text-gray-400 font-normal">
-                        Silakan pilih tipe pendaftaran dan lengkapi data Anda.
+                        {{ __('Silakan pilih tipe pendaftaran dan lengkapi data Anda.') }}
                     </p>
                 </div>
 
@@ -372,7 +387,7 @@ new #[Layout('layouts.guest')] class extends Component {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        <span>Pelamar Kerja</span>
+                        <span>{{ __('Pelamar Kerja') }}</span>
                     </button>
 
                     <button type="button" wire:click="$set('account_type', 'employee')"
@@ -381,7 +396,7 @@ new #[Layout('layouts.guest')] class extends Component {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
-                        <span>Karyawan Internal</span>
+                        <span>{{ __('Karyawan Internal') }}</span>
                     </button>
                 </div>
 
@@ -400,15 +415,14 @@ new #[Layout('layouts.guest')] class extends Component {
                             <path fill="#EA4335"
                                 d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
                         </svg>
-                        <span>Daftar dengan Google</span>
+                        <span>{{ __('Daftar dengan Google') }}</span>
                     </a>
 
                     <!-- Or Divider -->
                     <div class="relative flex items-center justify-center mb-4">
                         <div class="border-t border-white/10 w-full"></div>
                         <span
-                            class="bg-[#051406] px-3 text-[11px] text-gray-400 uppercase tracking-wider font-medium absolute">atau
-                            daftar manual</span>
+                            class="bg-[#051406] px-3 text-[11px] text-gray-400 uppercase tracking-wider font-medium absolute">{{ __('atau daftar manual') }}</span>
                     </div>
                 @endif
 
@@ -422,9 +436,9 @@ new #[Layout('layouts.guest')] class extends Component {
                                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <div>
-                            <span class="font-semibold block text-white">Khusus Karyawan Internal MIKA Group</span>
-                            Masukkan kode token perusahaan yang diberikan oleh tim HR untuk memverifikasi akun karyawan
-                            Anda.
+                            <span
+                                class="font-semibold block text-white">{{ __('Khusus Karyawan Internal MIKA Group') }}</span>
+                            {{ __('Masukkan kode token perusahaan yang diberikan oleh tim HR untuk memverifikasi akun karyawan Anda.') }}
                         </div>
                     </div>
                 @endif
@@ -434,7 +448,7 @@ new #[Layout('layouts.guest')] class extends Component {
                     <!-- NIK Field -->
                     <div>
                         <label for="nik" class="block text-xs font-semibold text-gray-300 mb-1">
-                            Nomor Induk Kependudukan (NIK KTP - 16 Digit)
+                            {{ __('Nomor Induk Kependudukan (NIK KTP - 16 Digit)') }}
                         </label>
                         <div class="relative">
                             <div
@@ -446,7 +460,7 @@ new #[Layout('layouts.guest')] class extends Component {
                             </div>
                             <input wire:model="nik" id="nik" type="text" name="nik" maxlength="16"
                                 inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required
-                                autofocus autocomplete="nik" placeholder="16 digit nomor NIK sesuai KTP"
+                                autofocus autocomplete="nik" placeholder="{{ __('16 digit nomor NIK sesuai KTP') }}"
                                 class="w-full pl-10 pr-4 py-2.5 bg-black/40 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white placeholder-gray-500 transition outline-none" />
                         </div>
                         @if ($errors->has('nik'))
@@ -463,7 +477,7 @@ new #[Layout('layouts.guest')] class extends Component {
                     <!-- Nama Lengkap -->
                     <div>
                         <label for="name" class="block text-xs font-semibold text-gray-300 mb-1">
-                            Nama Lengkap
+                            {{ __('Nama Lengkap') }}
                         </label>
                         <div class="relative">
                             <div
@@ -474,7 +488,7 @@ new #[Layout('layouts.guest')] class extends Component {
                                 </svg>
                             </div>
                             <input wire:model="name" id="name" type="text" name="name" required
-                                autocomplete="name" placeholder="Nama lengkap"
+                                autocomplete="name" placeholder="{{ __('Nama lengkap') }}"
                                 class="w-full pl-10 pr-4 py-2.5 bg-black/40 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white placeholder-gray-500 transition outline-none" />
                         </div>
                         @if ($errors->has('name'))
@@ -491,7 +505,7 @@ new #[Layout('layouts.guest')] class extends Component {
                     <!-- Alamat Email -->
                     <div>
                         <label for="email" class="block text-xs font-semibold text-gray-300 mb-1">
-                            Alamat Email
+                            {{ __('Alamat Email') }}
                         </label>
                         <div class="relative">
                             <div
@@ -520,17 +534,17 @@ new #[Layout('layouts.guest')] class extends Component {
                         <!-- EMPLOYEE ONLY: Tipe Pegawai / Status Hubungan Kerja -->
                         <div>
                             <label for="employee_type" class="block text-xs font-semibold text-gray-300 mb-1">
-                                Status / Kategori Pegawai <span class="text-[#93F514]">*</span>
+                                {{ __('Status / Kategori Pegawai') }} <span class="text-[#93F514]">*</span>
                             </label>
                             <div class="relative">
                                 <select wire:model="employee_type" id="employee_type" required
                                     class="w-full px-3.5 py-2.5 bg-black/60 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white transition outline-none cursor-pointer">
-                                    <option value="permanent" class="bg-gray-900 text-white">Karyawan Tetap
-                                        (Permanent)</option>
-                                    <option value="contract" class="bg-gray-900 text-white">Karyawan Kontrak (Contract
-                                        / PKWT)</option>
-                                    <option value="internship" class="bg-gray-900 text-white">Magang / Internship
-                                    </option>
+                                    <option value="permanent" class="bg-gray-900 text-white">
+                                        {{ __('Karyawan Tetap (Permanent)') }}</option>
+                                    <option value="contract" class="bg-gray-900 text-white">
+                                        {{ __('Karyawan Kontrak (Contract / PKWT)') }}</option>
+                                    <option value="internship" class="bg-gray-900 text-white">
+                                        {{ __('Magang / Internship') }}</option>
                                 </select>
                             </div>
                             @if ($errors->has('employee_type'))
@@ -544,13 +558,14 @@ new #[Layout('layouts.guest')] class extends Component {
                         <div>
                             <label for="company_id"
                                 class="block text-xs font-semibold text-gray-300 mb-1 flex items-center justify-between">
-                                <span>Perusahaan / Entitas <span class="text-[#93F514]">*</span></span>
-                                <span class="text-[10px] text-gray-400 font-normal">Wajib dipilih</span>
+                                <span>{{ __('Perusahaan / Entitas') }} <span class="text-[#93F514]">*</span></span>
+                                <span class="text-[10px] text-gray-400 font-normal">{{ __('Wajib dipilih') }}</span>
                             </label>
                             <div class="relative">
                                 <select wire:model.live="company_id" id="company_id" required
                                     class="w-full px-3.5 py-2.5 bg-black/60 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white transition outline-none cursor-pointer">
-                                    <option value="" class="bg-gray-900 text-gray-400">-- Pilih Perusahaan --
+                                    <option value="" class="bg-gray-900 text-gray-400">
+                                        {{ __('-- Pilih Perusahaan --') }}
                                     </option>
                                     @foreach ($companies as $comp)
                                         <option value="{{ $comp->id }}" class="bg-gray-900 text-white">
@@ -572,10 +587,10 @@ new #[Layout('layouts.guest')] class extends Component {
                             <div>
                                 <label for="department_id"
                                     class="block text-xs font-semibold text-gray-300 mb-1 flex items-center justify-between">
-                                    <span>Departemen / Divisi <span class="text-[#93F514]">*</span></span>
+                                    <span>{{ __('Departemen / Divisi') }} <span class="text-[#93F514]">*</span></span>
                                     @if (!$company_id)
-                                        <span class="text-[10px] text-amber-400/80 font-normal">Pilih Perusahaan
-                                            dulu</span>
+                                        <span
+                                            class="text-[10px] text-amber-400/80 font-normal">{{ __('Pilih Perusahaan dulu') }}</span>
                                     @endif
                                 </label>
                                 <div class="relative">
@@ -583,18 +598,18 @@ new #[Layout('layouts.guest')] class extends Component {
                                         {{ !$company_id ? 'disabled' : '' }}
                                         class="w-full px-3.5 py-2.5 bg-black/60 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white transition outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                                         @if (!$company_id)
-                                            <option value="" class="bg-gray-900 text-gray-400">-- Pilih
-                                                Perusahaan Dahulu --</option>
+                                            <option value="" class="bg-gray-900 text-gray-400">
+                                                {{ __('-- Pilih Perusahaan Dahulu --') }}</option>
                                         @else
-                                            <option value="" class="bg-gray-900 text-gray-400">-- Pilih
-                                                Departemen --</option>
+                                            <option value="" class="bg-gray-900 text-gray-400">
+                                                {{ __('-- Pilih Departemen --') }}</option>
                                             @forelse ($departments as $dept)
                                                 <option value="{{ $dept->id }}" class="bg-gray-900 text-white">
                                                     {{ $dept->name }}
                                                 </option>
                                             @empty
                                                 <option value="" disabled class="bg-gray-900 text-gray-500">
-                                                    Tidak ada departemen terdaftar</option>
+                                                    {{ __('Tidak ada departemen terdaftar') }}</option>
                                             @endforelse
                                         @endif
                                     </select>
@@ -610,11 +625,13 @@ new #[Layout('layouts.guest')] class extends Component {
                             <div>
                                 <label for="position_id"
                                     class="block text-xs font-semibold text-gray-300 mb-1 flex items-center justify-between">
-                                    <span>Pilih Jabatan Baku</span>
+                                    <span>{{ __('Pilih Jabatan Baku') }}</span>
                                     @if (!$department_id)
-                                        <span class="text-[10px] text-gray-500 font-normal">Pilih Dept dulu</span>
+                                        <span
+                                            class="text-[10px] text-gray-500 font-normal">{{ __('Pilih Dept dulu') }}</span>
                                     @else
-                                        <span class="text-[10px] text-[#93F514] font-normal">Tersaring</span>
+                                        <span
+                                            class="text-[10px] text-[#93F514] font-normal">{{ __('Tersaring') }}</span>
                                     @endif
                                 </label>
                                 <div class="relative">
@@ -622,18 +639,18 @@ new #[Layout('layouts.guest')] class extends Component {
                                         {{ !$department_id ? 'disabled' : '' }}
                                         class="w-full px-3.5 py-2.5 bg-black/60 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white transition outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                                         @if (!$department_id)
-                                            <option value="" class="bg-gray-900 text-gray-400">-- Pilih
-                                                Departemen Dahulu --</option>
+                                            <option value="" class="bg-gray-900 text-gray-400">
+                                                {{ __('-- Pilih Departemen Dahulu --') }}</option>
                                         @else
-                                            <option value="" class="bg-gray-900 text-gray-400">-- Pilih Posisi
-                                                (Opsional) --</option>
+                                            <option value="" class="bg-gray-900 text-gray-400">
+                                                {{ __('-- Pilih Posisi (Opsional) --') }}</option>
                                             @forelse ($positions as $pos)
                                                 <option value="{{ $pos->id }}" class="bg-gray-900 text-white">
                                                     {{ $pos->name }}
                                                 </option>
                                             @empty
                                                 <option value="" disabled class="bg-gray-900 text-gray-500">
-                                                    Tidak ada posisi terdaftar</option>
+                                                    {{ __('Tidak ada posisi terdaftar') }}</option>
                                             @endforelse
                                         @endif
                                     </select>
@@ -650,11 +667,12 @@ new #[Layout('layouts.guest')] class extends Component {
                         <div>
                             <label for="position_title"
                                 class="block text-xs font-semibold text-gray-300 mb-1 flex items-center justify-between">
-                                <span>Nama Jabatan / Posisi Spesifik</span>
-                                <span class="text-[10px] text-gray-400 font-normal">Dapat disesuaikan</span>
+                                <span>{{ __('Nama Jabatan / Posisi Spesifik') }}</span>
+                                <span
+                                    class="text-[10px] text-gray-400 font-normal">{{ __('Dapat disesuaikan') }}</span>
                             </label>
                             <input wire:model="position_title" id="position_title" type="text"
-                                placeholder="Contoh: Staff IT, Supervisor HR, Account Executive, dll"
+                                placeholder="{{ __('Contoh: Staff IT, Supervisor HR, Account Executive, dll') }}"
                                 class="w-full px-3.5 py-2.5 bg-black/40 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white placeholder-gray-500 transition outline-none" />
                             @if ($errors->has('position_title'))
                                 <p class="mt-1 text-xs text-red-400 font-normal">
@@ -667,8 +685,8 @@ new #[Layout('layouts.guest')] class extends Component {
                         <div>
                             <label for="company_passkey"
                                 class="block text-xs font-semibold text-[#93F514] mb-1 flex items-center justify-between">
-                                <span>Kode Token Perusahaan (Passkey HR) *</span>
-                                <span class="text-[10px] text-gray-400 font-normal">Wajib diisi</span>
+                                <span>{{ __('Kode Token Perusahaan (Passkey HR) *') }}</span>
+                                <span class="text-[10px] text-gray-400 font-normal">{{ __('Wajib diisi') }}</span>
                             </label>
                             <div class="relative">
                                 <div
@@ -679,7 +697,7 @@ new #[Layout('layouts.guest')] class extends Component {
                                     </svg>
                                 </div>
                                 <input wire:model="company_passkey" id="company_passkey" type="password" required
-                                    placeholder="Masukkan kode token dari HR"
+                                    placeholder="{{ __('Masukkan kode token dari HR') }}"
                                     class="w-full pl-10 pr-4 py-2.5 bg-black/40 border border-[#93F514]/40 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white placeholder-gray-500 transition outline-none" />
                             </div>
                             @if ($errors->has('company_passkey'))
@@ -700,17 +718,17 @@ new #[Layout('layouts.guest')] class extends Component {
                         <!-- Password -->
                         <div x-data="{ showPassword: false }">
                             <label for="password" class="block text-xs font-semibold text-gray-300 mb-1">
-                                Kata Sandi
+                                {{ __('Kata Sandi') }}
                             </label>
                             <div class="relative">
                                 <input wire:model="password" id="password"
                                     x-bind:type="showPassword ? 'text' : 'password'" type="password" name="password"
-                                    required autocomplete="new-password" placeholder="Min. 8 karakter"
+                                    required autocomplete="new-password" placeholder="{{ __('Min. 8 karakter') }}"
                                     class="w-full pl-3.5 pr-10 py-2.5 bg-black/40 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white placeholder-gray-500 transition outline-none" />
 
                                 <button type="button" @click="showPassword = !showPassword"
                                     class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-[#93F514] transition focus:outline-none"
-                                    title="Tampilkan/Sembunyikan Kata Sandi">
+                                    title="{{ __('Tampilkan/Sembunyikan Kata Sandi') }}">
                                     <svg x-show="!showPassword" class="w-4 h-4 shrink-0" fill="none"
                                         stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -735,18 +753,18 @@ new #[Layout('layouts.guest')] class extends Component {
                         <!-- Confirm Password -->
                         <div x-data="{ showConfirmPassword: false }">
                             <label for="password_confirmation" class="block text-xs font-semibold text-gray-300 mb-1">
-                                Ulangi Sandi
+                                {{ __('Ulangi Sandi') }}
                             </label>
                             <div class="relative">
                                 <input wire:model="password_confirmation" id="password_confirmation"
                                     x-bind:type="showConfirmPassword ? 'text' : 'password'" type="password"
                                     name="password_confirmation" required autocomplete="new-password"
-                                    placeholder="Ulangi sandi"
+                                    placeholder="{{ __('Ulangi sandi') }}"
                                     class="w-full pl-3.5 pr-10 py-2.5 bg-black/40 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white placeholder-gray-500 transition outline-none" />
 
                                 <button type="button" @click="showConfirmPassword = !showConfirmPassword"
                                     class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-[#93F514] transition focus:outline-none"
-                                    title="Tampilkan/Sembunyikan Konfirmasi Sandi">
+                                    title="{{ __('Tampilkan/Sembunyikan Konfirmasi Sandi') }}">
                                     <svg x-show="!showConfirmPassword" class="w-4 h-4 shrink-0" fill="none"
                                         stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -774,7 +792,7 @@ new #[Layout('layouts.guest')] class extends Component {
                         <button type="submit" wire:loading.attr="disabled"
                             class="w-full py-3 px-4 bg-[#93F514] hover:bg-[#82dc0e] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed text-black font-semibold text-sm rounded-xl shadow-lg shadow-[#93F514]/20 hover:shadow-[#93F514]/30 transition flex items-center justify-center gap-2 group cursor-pointer">
                             <span wire:loading.remove wire:target="register" class="inline-flex items-center gap-2">
-                                <span>{{ $account_type === 'employee' ? 'Daftar Sebagai Karyawan' : 'Daftar Sekarang' }}</span>
+                                <span>{{ $account_type === 'employee' ? __('Daftar Sebagai Karyawan') : __('Daftar Sekarang') }}</span>
                                 {{-- <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                                 </svg> --}}
@@ -789,7 +807,7 @@ new #[Layout('layouts.guest')] class extends Component {
                                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                     </path>
                                 </svg>
-                                <span>Mendaftarkan...</span>
+                                <span>{{ __('Mendaftarkan...') }}</span>
                             </span>
                         </button>
                     </div>
@@ -798,9 +816,9 @@ new #[Layout('layouts.guest')] class extends Component {
                 <!-- Divider & Login Link -->
                 <div class="mt-6 pt-4 border-t border-white/10 text-center">
                     <p class="text-xs text-gray-400">
-                        Sudah punya akun?
+                        {{ __('Sudah punya akun?') }}
                         <a href="{{ route('login') }}" class="font-semibold text-[#93F514] hover:underline ml-1">
-                            Masuk
+                            {{ __('Masuk') }}
                         </a>
                     </p>
                 </div>

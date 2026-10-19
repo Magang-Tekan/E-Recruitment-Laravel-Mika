@@ -76,12 +76,12 @@ new class extends Component
         </div>
         <div>
             <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                {{ $hasCurrentPassword ? 'Perbarui Kata Sandi' : 'Buat Kata Sandi Akun' }}
+                {{ $hasCurrentPassword ? __('Perbarui Kata Sandi') : __('Buat Kata Sandi Akun') }}
             </h2>
             <p class="mt-1 text-xs text-slate-500 dark:text-[#93A5C9] leading-relaxed">
                 {{ $hasCurrentPassword 
-                    ? 'Amankan akun Anda dengan menggunakan kombinasi kata sandi yang kuat dan unik.' 
-                    : 'Akun Anda saat ini masuk melalui Google dan belum memiliki kata sandi lokal. Buat kata sandi agar Anda juga dapat masuk dengan email dan kata sandi biasa.' }}
+                    ? __('Amankan akun Anda dengan menggunakan kombinasi kata sandi yang kuat dan unik.') 
+                    : __('Akun Anda saat ini masuk melalui Google dan belum memiliki kata sandi lokal. Buat kata sandi agar Anda juga dapat masuk dengan email dan kata sandi biasa.') }}
             </p>
         </div>
     </header>
@@ -93,8 +93,8 @@ new class extends Component
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                <span class="font-bold block text-slate-900 dark:text-white mb-0.5">Akun Anda Terhubung Melalui Google</span>
-                Email akun Anda terhubung dengan Google (<strong>{{ auth()->user()->email }}</strong>). Saat ini akun belum memiliki kata sandi lokal. Setelah membuat kata sandi baru di bawah ini, Anda memiliki fleksibilitas untuk masuk dengan <strong>tombol Google</strong> ataupun dengan <strong>email & kata sandi biasa</strong>.
+                <span class="font-bold block text-slate-900 dark:text-white mb-0.5">{{ __('Akun Anda Terhubung Melalui Google') }}</span>
+                {!! __('Email akun Anda terhubung dengan Google (<strong>:email</strong>). Saat ini akun belum memiliki kata sandi lokal. Setelah membuat kata sandi baru di bawah ini, Anda memiliki fleksibilitas untuk masuk dengan <strong>tombol Google</strong> ataupun dengan <strong>email & kata sandi biasa</strong>.', ['email' => auth()->user()->email]) !!}
             </div>
         </div>
     @endif
@@ -104,7 +104,7 @@ new class extends Component
             <!-- Current Password -->
             <div>
                 <label for="update_password_current_password" class="block text-xs font-semibold text-slate-700 dark:text-[#93A5C9] uppercase tracking-wider mb-2">
-                    Kata Sandi Saat Ini <span class="text-rose-500">*</span>
+                    {{ __('Kata Sandi Saat Ini') }} <span class="text-rose-500">*</span>
                 </label>
                 <div class="relative rounded-xl shadow-xs">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -117,7 +117,7 @@ new class extends Component
                            name="current_password" 
                            :type="showCurrent ? 'text' : 'password'" 
                            class="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-[#14203A] focus:border-blue-500 dark:focus:border-[#93F514] focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-[#93F514]/10 transition duration-150" 
-                           placeholder="Masukkan kata sandi lama Anda"
+                           placeholder="{{ __('Masukkan kata sandi lama Anda') }}"
                            autocomplete="current-password" />
                     <button type="button" @click="showCurrent = !showCurrent" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
                         <svg x-show="!showCurrent" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -131,7 +131,7 @@ new class extends Component
         <!-- New Password -->
         <div>
             <label for="update_password_password" class="block text-xs font-semibold text-slate-700 dark:text-[#93A5C9] uppercase tracking-wider mb-2">
-                {{ $hasCurrentPassword ? 'Kata Sandi Baru' : 'Kata Sandi' }} <span class="text-rose-500">*</span>
+                {{ $hasCurrentPassword ? __('Kata Sandi Baru') : __('Kata Sandi') }} <span class="text-rose-500">*</span>
             </label>
             <div class="relative rounded-xl shadow-xs">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -144,11 +144,11 @@ new class extends Component
                        name="password" 
                        :type="showNew ? 'text' : 'password'" 
                        class="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-[#14203A] focus:border-blue-500 dark:focus:border-[#93F514] focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-[#93F514]/10 transition duration-150" 
-                       placeholder="Minimal 8 karakter"
+                       placeholder="{{ __('Minimal 8 karakter') }}"
                        autocomplete="new-password" />
                 <button type="button" @click="showNew = !showNew" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
                     <svg x-show="!showNew" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                    <svg x-show="showNew" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                    <svg x-show="showCurrent" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
                 </button>
             </div>
             
@@ -157,12 +157,12 @@ new class extends Component
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium transition"
                       :class="lengthValid ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-[#93F514] border border-emerald-200 dark:border-emerald-800' : 'bg-slate-100 text-slate-500 dark:bg-[#14203A] dark:text-[#93A5C9] border border-transparent dark:border-[#1D2E54]'">
                     <svg class="w-3 h-3" :class="lengthValid ? 'text-emerald-600 dark:text-[#93F514]' : 'text-slate-400'" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
-                    Min. 8 Karakter
+                    {{ __('Min. 8 Karakter') }}
                 </span>
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium transition"
                       :class="hasNumber ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-[#93F514] border border-emerald-200 dark:border-emerald-800' : 'bg-slate-100 text-slate-500 dark:bg-[#14203A] dark:text-[#93A5C9] border border-transparent dark:border-[#1D2E54]'">
                     <svg class="w-3 h-3" :class="hasNumber ? 'text-emerald-600 dark:text-[#93F514]' : 'text-slate-400'" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
-                    Ada Angka
+                    {{ __('Ada Angka') }}
                 </span>
             </div>
             <x-input-error :messages="$errors->get('password')" class="mt-1.5" />
@@ -171,7 +171,7 @@ new class extends Component
         <!-- Confirm Password -->
         <div>
             <label for="update_password_password_confirmation" class="block text-xs font-semibold text-slate-700 dark:text-[#93A5C9] uppercase tracking-wider mb-2">
-                Konfirmasi Kata Sandi <span class="text-rose-500">*</span>
+                {{ __('Konfirmasi Kata Sandi') }} <span class="text-rose-500">*</span>
             </label>
             <div class="relative rounded-xl shadow-xs">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -184,7 +184,7 @@ new class extends Component
                        name="password_confirmation" 
                        :type="showConfirm ? 'text' : 'password'" 
                        class="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-[#14203A] focus:border-blue-500 dark:focus:border-[#93F514] focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-[#93F514]/10 transition duration-150" 
-                       placeholder="Ulangi kata sandi baru"
+                       placeholder="{{ __('Ulangi kata sandi baru') }}"
                        autocomplete="new-password" />
                 <button type="button" @click="showConfirm = !showConfirm" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
                     <svg x-show="!showConfirm" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -206,11 +206,11 @@ new class extends Component
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span>{{ $hasCurrentPassword ? 'Simpan Perubahan' : 'Simpan & Buat Kata Sandi' }}</span>
+                <span>{{ $hasCurrentPassword ? __('Simpan Perubahan') : __('Simpan & Buat Kata Sandi') }}</span>
             </button>
 
             <x-action-message class="text-xs font-medium text-emerald-600 dark:text-[#93F514] bg-emerald-50 dark:bg-emerald-950/50 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800" on="password-updated">
-                {{ $hasCurrentPassword ? '✓ Kata sandi berhasil diperbarui!' : '✓ Kata sandi baru berhasil dibuat!' }}
+                {{ $hasCurrentPassword ? __('✓ Kata sandi berhasil diperbarui!') : __('✓ Kata sandi baru berhasil dibuat!') }}
             </x-action-message>
         </div>
     </form>

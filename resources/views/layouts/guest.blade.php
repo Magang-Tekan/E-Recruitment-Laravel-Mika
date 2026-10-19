@@ -123,11 +123,57 @@
             animation: mikaDotBounce 1.3s infinite ease-in-out;
             animation-delay: 0.48s;
         }
+        html.light-mode .nav-lang-pill {
+            background-color: rgba(243, 244, 246, 0.95) !important;
+            border-color: rgba(0, 0, 0, 0.12) !important;
+            color: #4b5563 !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        }
+        html.light-mode .nav-lang-pill:hover {
+            border-color: rgba(61, 122, 0, 0.35) !important;
+        }
+        html.light-mode .nav-lang-btn {
+            color: #64748b !important;
+        }
+        html.light-mode .nav-lang-btn:hover:not(.nav-lang-btn-active) {
+            color: #3C7800 !important;
+            background-color: rgba(60, 120, 0, 0.08) !important;
+        }
+        html.light-mode .nav-lang-btn-active {
+            background-color: #3C7800 !important;
+            color: #ffffff !important;
+            box-shadow: 0 1px 3px rgba(60, 120, 0, 0.35) !important;
+            font-weight: 800 !important;
+        }
     </style>
 </head>
 
 <body class="font-sans antialiased text-[#EEEEEE] bg-[#040904] min-h-screen relative overflow-x-hidden selection:bg-[#93F514] selection:text-black flex items-center justify-center p-3 sm:p-6 lg:p-10">
     
+    <!-- Language Switcher Pill (Top Right) -->
+    <div class="fixed top-3 right-3 sm:top-5 sm:right-6 z-40 flex items-center gap-2">
+        @php
+            $guestCurrentLocale = app()->getLocale();
+            $guestCurrentUrl = request()->fullUrl();
+        @endphp
+        <div class="nav-lang-pill inline-flex items-center p-0.5 rounded-full border border-slate-200/90 dark:border-[#93F514]/40 bg-slate-100/90 dark:bg-[#061806]/85 backdrop-blur-md text-[11px] font-bold text-slate-600 dark:text-gray-300 shadow-lg select-none transition-all duration-200">
+            <button type="button" 
+               data-lang-btn="id"
+               onclick="window.mikaSwitchLocale('id', '{{ $guestCurrentUrl }}')"
+               title="Bahasa Indonesia"
+               class="nav-lang-btn px-2.5 py-1 rounded-full transition-all duration-150 cursor-pointer {{ $guestCurrentLocale === 'id' ? 'nav-lang-btn-active bg-[#3C7800] dark:bg-[#93F514] text-white dark:text-black shadow-xs font-black cursor-default' : 'text-slate-500 dark:text-gray-400 hover:text-[#3C7800] dark:hover:text-white hover:bg-[#3C7800]/10 dark:hover:bg-white/5 active:scale-95' }}">
+                ID
+            </button>
+            <button type="button" 
+               data-lang-btn="en"
+               onclick="window.mikaSwitchLocale('en', '{{ $guestCurrentUrl }}')"
+               title="English"
+               class="nav-lang-btn px-2.5 py-1 rounded-full transition-all duration-150 cursor-pointer {{ $guestCurrentLocale === 'en' ? 'nav-lang-btn-active bg-[#3C7800] dark:bg-[#93F514] text-white dark:text-black shadow-xs font-black cursor-default' : 'text-slate-500 dark:text-gray-400 hover:text-[#3C7800] dark:hover:text-white hover:bg-[#3C7800]/10 dark:hover:bg-white/5 active:scale-95' }}">
+                EN
+            </button>
+        </div>
+    </div>
+
     @if(request()->routeIs('login') || request()->routeIs('register'))
         <!-- 4-Dot Loading Overlay saat memuat Halaman Masuk & Daftar -->
         <div id="auth-page-loader"
@@ -140,7 +186,7 @@
                 <span class="w-3.5 h-3.5 rounded-full bg-[#93F514] animate-dot-4 inline-block"></span>
             </div>
             <p class="mt-2.5 text-xs font-semibold text-white tracking-wide">
-                {{ request()->routeIs('login') ? 'Memuat Halaman Masuk...' : 'Memuat Halaman Pendaftaran...' }}
+                {{ request()->routeIs('login') ? __('Memuat Halaman Masuk...') : __('Memuat Halaman Pendaftaran...') }}
             </p>
         </div>
 
@@ -181,6 +227,9 @@
     <main class="relative z-10 w-full flex justify-center items-center">
         {{ $slot }}
     </main>
+
+    <!-- 4-Dot Locale Switch Loader Component -->
+    <x-locale-loader />
 
 </body>
 

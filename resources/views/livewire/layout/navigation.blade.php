@@ -160,7 +160,7 @@ new class extends Component
                              x-on:profile-updated.window="if ($event.detail && 'photo' in $event.detail) photo = $event.detail.photo"
                              class="shrink-0 flex items-center justify-center">
                             <template x-if="photo">
-                                <img :src="photo" alt="{{ $displayName }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-500/20 dark:ring-[#93F514]/30 group-hover:ring-emerald-500 dark:group-hover:ring-[#93F514] transition">
+                                <img :src="photo" alt="{{ $displayName }}" referrerpolicy="no-referrer" class="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-500/20 dark:ring-[#93F514]/30 group-hover:ring-emerald-500 dark:group-hover:ring-[#93F514] transition">
                             </template>
                             <template x-if="!photo">
                                 <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-500 dark:from-[#93F514] dark:to-emerald-400 dark:text-black flex items-center justify-center text-white font-bold text-xs shadow-2xs">
@@ -324,7 +324,7 @@ new class extends Component
                      x-on:profile-updated.window="if ($event.detail && 'photo' in $event.detail) photo = $event.detail.photo"
                      class="shrink-0 flex items-center justify-center">
                     <template x-if="photo">
-                        <img :src="photo" alt="{{ $displayName }}" class="w-10 h-10 rounded-full object-cover ring-2 ring-emerald-500/20 dark:ring-[#93F514]/30 shrink-0">
+                        <img :src="photo" alt="{{ $displayName }}" referrerpolicy="no-referrer" class="w-10 h-10 rounded-full object-cover ring-2 ring-emerald-500/20 dark:ring-[#93F514]/30 shrink-0">
                     </template>
                     <template x-if="!photo">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 dark:from-[#93F514] dark:to-emerald-400 dark:text-black flex items-center justify-center text-white font-bold text-sm shrink-0">

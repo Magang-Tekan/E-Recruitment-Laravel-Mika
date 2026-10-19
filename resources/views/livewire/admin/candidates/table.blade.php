@@ -63,20 +63,25 @@
                             $profile = $candidate->applicantProfile;
                             $latestEdu = $profile?->educations?->sortByDesc('end_year')->first();
                             $appCount = $profile?->jobApplications?->count() ?? 0;
-                            $photo = $profile?->photo ?? $candidate->avatar;
-                            $photoUrl = $photo ? (\Illuminate\Support\Str::startsWith($photo, ['http://', 'https://']) ? $photo : asset('storage/' . $photo)) : null;
+                            $photoUrl = $profile?->photo_url ?? $candidate->avatar_url;
+                            $candidateName = $profile?->full_name ?? $candidate->name;
+                            $candidateInitials = strtoupper(substr($candidateName, 0, 2));
                         @endphp
                         <tr class="hover:bg-gray-50/80 dark:hover:bg-slate-800/40 transition-colors">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    @if ($photoUrl)
-                                        <img src="{{ $photoUrl }}" alt="{{ $profile?->full_name ?? $candidate->name }}" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm shrink-0">
-                                    @else
-                                        <div
-                                            class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
-                                            {{ strtoupper(substr($profile?->full_name ?? $candidate->name, 0, 2)) }}
-                                        </div>
-                                    @endif
+                                    <div class="relative w-10 h-10 shrink-0">
+                                        @if ($photoUrl)
+                                            <img src="{{ $photoUrl }}" alt="{{ $candidateName }}" referrerpolicy="no-referrer" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                            <div class="hidden w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs items-center justify-center shadow-2xs">
+                                                {{ $candidateInitials }}
+                                            </div>
+                                        @else
+                                            <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shadow-2xs">
+                                                {{ $candidateInitials }}
+                                            </div>
+                                        @endif
+                                    </div>
                                     <div>
                                         <span class="font-semibold text-gray-900 dark:text-white block">
                                             {{ $profile?->full_name ?? $candidate->name }}
@@ -169,6 +174,8 @@
                 @endif
             </div>
         @endif
-    </div>    {{-- MODAL DETAIL KANDIDAT (Portrait Document View - Client-side Alpine) --}}
+    </div>
+
+    {{-- MODAL DETAIL KANDIDAT (Portrait Document View - Client-side Alpine) --}}
     @include('livewire.admin.candidates.partials.detail-modal-portrait')
 </div>

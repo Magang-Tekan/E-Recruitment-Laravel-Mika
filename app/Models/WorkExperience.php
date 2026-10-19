@@ -12,11 +12,18 @@ class WorkExperience extends Model
     protected $fillable = [
         'profile_id',
         'company_name',
+        'business_field',
+        'company_address',
+        'supervisor_name',
         'position',
+        'initial_position',
         'employment_type',
         'start_date',
         'end_date',
         'currently_working',
+        'initial_salary',
+        'final_salary',
+        'benefits',
         'description',
     ];
 
@@ -26,6 +33,8 @@ class WorkExperience extends Model
             'start_date' => 'date',
             'end_date' => 'date',
             'currently_working' => 'boolean',
+            'initial_salary' => 'decimal:2',
+            'final_salary' => 'decimal:2',
         ];
     }
 

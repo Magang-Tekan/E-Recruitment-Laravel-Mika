@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\InterviewSchedule;
 use App\Models\JobApplication;
 use App\Models\ApplicationStatusHistory;
+use App\Mail\ApplicationStatusUpdatedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class InterviewScheduleController extends Controller
 {
@@ -289,12 +292,52 @@ class InterviewScheduleController extends Controller
                     'changed_by'          => auth()->id() ?? 1,
                     'changed_at'          => now(),
                 ]);
+
+                // Notifikasi Email Otomatis:
+                // 1. Jika HR/Admin: kirim jika send_email bernilai true (atau default true untuk status final Accepted / Rejected).
+                // 2. Jika Recruiter: kirim jika persetujuan melengkapi Double Approval sehingga resmi Accepted.
+                $defaultStatusNotes = [
+                    'Accepted' => 'Selamat! Anda dinyatakan DITERIMA untuk bergabung bersama kami. Tim HR akan segera menghubungi Anda terkait proses offering dan onboarding.',
+                    'Rejected' => 'Terima kasih atas partisipasi Anda dalam tahap wawancara. Saat ini kualifikasi Anda belum sesuai dengan kriteria yang kami butuhkan.',
+                ];
+
+                $shouldSendEmail = false;
+                if ($isAdmin) {
+                    $shouldSendEmail = $request->has('send_email')
+                        ? $request->boolean('send_email')
+                        : in_array($targetStatus, ['Accepted', 'Rejected']);
+                } else {
+                    if ($targetStatus === 'Accepted') {
+                        $shouldSendEmail = true;
+                    }
+                }
+
+                $emailSent = false;
+                if ($shouldSendEmail) {
+                    try {
+                        $application->load(['job.company', 'applicantProfile.user']);
+                        $applicantEmail = $application->applicantProfile?->user?->email;
+                        if ($applicantEmail) {
+                            $mailNotes = $notes ?: ($defaultStatusNotes[$targetStatus] ?? null);
+                            Mail::to($applicantEmail)->send(
+                                new ApplicationStatusUpdatedMail($application, $targetStatus, $mailNotes)
+                            );
+                            $emailSent = true;
+                        }
+                    } catch (\Throwable $mailEx) {
+                        Log::warning('Gagal kirim email notifikasi hasil wawancara: ' . $mailEx->getMessage(), [
+                            'application_id' => $application->id,
+                            'status'         => $targetStatus,
+                        ]);
+                    }
+                }
             }
 
             DB::commit();
 
+            $emailNote = ($emailSent ?? false) ? ' Notifikasi email resmi telah berhasil dikirim ke kandidat.' : '';
             return redirect()->route($this->getRedirectRoute())
-                ->with('update', 'Hasil wawancara dan status pelamar berhasil diperbarui.');
+                ->with('update', 'Hasil wawancara dan status pelamar berhasil diperbarui.' . $emailNote);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()

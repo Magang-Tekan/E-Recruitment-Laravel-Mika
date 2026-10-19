@@ -61,7 +61,7 @@
 
     // Helper to get candidate photo from schedule
     getCandidatePhoto(schedule) {
-        let p = schedule?.job_application?.applicant_profile?.photo || schedule?.job_application?.applicant_profile?.user?.avatar || null;
+        let p = schedule?.job_application?.applicant_profile?.photo_url || schedule?.job_application?.applicant_profile?.photo || schedule?.job_application?.applicant_profile?.user?.avatar || null;
         if (!p) return null;
         return p.startsWith('http') ? p : ('/storage/' + p);
     },
@@ -97,6 +97,7 @@
         score: '',
         application_decision: '{{ $isAdmin ? "admin_approved" : "recruiter_approved" }}',
         notes: '',
+        send_email: true,
         interview_recruiter_approval: 'pending',
         interview_recruiter_notes: '',
         interview_recruiter_name: '',
@@ -181,6 +182,7 @@
         this.completeData.status = 'Completed';
         this.completeData.score = '';
         this.completeData.notes = '';
+        this.completeData.send_email = true;
 
         const app = schedule.job_application || {};
         this.completeData.interview_recruiter_approval = app.interview_recruiter_approval || 'pending';
@@ -490,22 +492,21 @@
                                 <div class="flex items-center gap-3">
                                     @php
                                         $candProfile = $schedule->jobApplication?->applicantProfile;
-                                        $candPhoto = $candProfile?->photo ?? $candProfile?->user?->avatar;
-                                        $candPhotoUrl = null;
-                                        if ($candPhoto) {
-                                            $candPhotoUrl = \Illuminate\Support\Str::startsWith($candPhoto, ['http://', 'https://'])
-                                                ? $candPhoto
-                                                : asset('storage/' . $candPhoto);
-                                        }
+                                        $candPhotoUrl = $candProfile?->photo_url ?? ($candProfile?->user?->avatar ? (\Illuminate\Support\Str::startsWith($candProfile->user->avatar, ['http://', 'https://']) ? $candProfile->user->avatar : asset('storage/' . $candProfile->user->avatar)) : null);
                                         $candName = $candProfile->full_name ?? 'Pelamar Tidak Ditemukan';
                                     @endphp
-                                    @if ($candPhotoUrl)
-                                        <img src="{{ $candPhotoUrl }}" alt="{{ $candName }}" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm shrink-0">
-                                    @else
-                                        <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
-                                            {{ strtoupper(substr($candName, 0, 2)) }}
-                                        </div>
-                                    @endif
+                                    <div class="relative w-10 h-10 shrink-0">
+                                        @if ($candPhotoUrl)
+                                            <img src="{{ $candPhotoUrl }}" alt="{{ $candName }}" referrerpolicy="no-referrer" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                            <div class="hidden w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs items-center justify-center shadow-2xs">
+                                                {{ strtoupper(substr($candName, 0, 2)) }}
+                                            </div>
+                                        @else
+                                            <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shadow-2xs">
+                                                {{ strtoupper(substr($candName, 0, 2)) }}
+                                            </div>
+                                        @endif
+                                    </div>
                                     <div class="min-w-0">
                                         <p class="font-bold text-gray-900 dark:text-white truncate">
                                             {{ $candName }}
@@ -1675,6 +1676,31 @@
                                 <textarea name="notes" id="complete_notes" rows="2" x-model="completeData.notes" placeholder="Catatan kompetensi, komunikasi, atau pertimbangan offering..." class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50/70 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"></textarea>
                             </div>
                         </div>
+
+                        <!-- Email Notification Option -->
+                        @if($isAdmin)
+                            <div class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-slate-800/60 border border-gray-200/60 dark:border-slate-700/60 flex items-center justify-between">
+                                <label class="flex items-center gap-2.5 cursor-pointer select-none text-xs font-medium text-gray-800 dark:text-slate-200">
+                                    <input type="hidden" name="send_email" value="0">
+                                    <input type="checkbox" name="send_email" value="1" x-model="completeData.send_email" class="w-4 h-4 text-indigo-600 rounded border-gray-300 dark:border-slate-600 focus:ring-indigo-500 transition cursor-pointer">
+                                    <span class="flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                        <span>Kirim email pemberitahuan otomatis ke pelamar jika status Diterima / Ditolak</span>
+                                    </span>
+                                </label>
+                                <span class="text-[10px] text-gray-400 dark:text-slate-500 hidden sm:inline">Notifikasi resmi terkirim otomatis</span>
+                            </div>
+                        @else
+                            <div class="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 text-[10.5px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Jika kedua pihak (Recruiter & HR) sepakat menyetujui, email penerimaan resmi akan terkirim otomatis ke kandidat.</span>
+                            </div>
+                            <input type="hidden" name="send_email" value="1">
+                        @endif
 
                         <!-- Modal Actions Footer -->
                         <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-gray-100 dark:border-slate-800">

@@ -96,8 +96,11 @@
                 </div>
             </div>
 
-            @if($profile?->photo)
-                <img src="{{ asset('storage/' . $profile->photo) }}" alt="Foto Profile" class="w-24 h-28 object-cover rounded-xl border border-slate-200 dark:border-[#1D2E54] shadow-sm flex-shrink-0">
+            @php
+                $cvPhoto = $profile?->photo_url;
+            @endphp
+            @if($cvPhoto)
+                <img src="{{ $cvPhoto }}" alt="Foto Profile" referrerpolicy="no-referrer" class="w-24 h-28 object-cover rounded-xl border border-slate-200 dark:border-[#1D2E54] shadow-sm flex-shrink-0" onerror="this.style.display='none'">
             @endif
         </header>
 
@@ -168,7 +171,14 @@
                         <div>
                             <div class="flex flex-col sm:flex-row sm:items-baseline justify-between mb-1">
                                 <h3 class="text-sm font-bold text-slate-900 dark:text-white">
-                                    {{ $exp->position }} <span class="font-normal text-slate-600 dark:text-[#93A5C9]">di {{ $exp->company_name }}</span>
+                                    {{ $exp->position }}
+                                    @if($exp->initial_position)
+                                        <span class="text-xs font-normal text-slate-400 dark:text-slate-500">(Awal: {{ $exp->initial_position }})</span>
+                                    @endif
+                                    <span class="font-normal text-slate-600 dark:text-[#93A5C9]">di {{ $exp->company_name }}</span>
+                                    @if($exp->business_field)
+                                        <span class="text-xs font-normal text-slate-400 dark:text-slate-500">[{{ $exp->business_field }}]</span>
+                                    @endif
                                 </h3>
                                 <span class="text-xs text-slate-500 dark:text-[#93A5C9] font-medium">
                                     {{ \Carbon\Carbon::parse($exp->start_date)->isoFormat('MMM YYYY') }} - 
@@ -233,23 +243,26 @@
 
         <!-- Keahlian, Sertifikasi & Pelatihan -->
         @php
-            $hasSkills = $profile?->skills && $profile->skills->count() > 0;
+            $generalSkills = $profile?->skills ? $profile->skills->where(fn($s) => $s->category === 'general' || empty($s->category)) : collect();
+            $computerSkills = $profile?->skills ? $profile->skills->where('category', 'computer') : collect();
+            $hasSkills = $generalSkills->count() > 0;
+            $hasCompSkills = $computerSkills->count() > 0;
             $hasCerts = $profile?->certifications && $profile->certifications->count() > 0;
             $hasTrainings = $profile?->trainings && $profile->trainings->count() > 0;
             $hasLangs = $profile?->languages && $profile->languages->count() > 0;
         @endphp
 
-        @if($hasSkills || $hasCerts || $hasTrainings || $hasLangs)
+        @if($hasSkills || $hasCompSkills || $hasCerts || $hasTrainings || $hasLangs)
             <section class="mb-8">
                 <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#93A5C9] border-b border-slate-200/80 dark:border-[#1D2E54] pb-1 mb-3">
-                    Keahlian & Data Tambahan
+                    {{ __('Keahlian & Data Tambahan') }}
                 </h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
                     @if($hasSkills)
                         <div>
-                            <h3 class="font-semibold text-slate-700 dark:text-slate-300 mb-2">Keahlian (Skills):</h3>
+                            <h3 class="font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('Keahlian (Skills):') }}</h3>
                             <div class="flex flex-wrap gap-1.5">
-                                @foreach($profile->skills as $sk)
+                                @foreach($generalSkills as $sk)
                                     <span class="px-2.5 py-1 bg-emerald-50 dark:bg-[#14203A] text-emerald-700 dark:text-[#93F514] border border-emerald-200 dark:border-[#1D2E54] rounded-lg text-xs font-medium">
                                         {{ $sk->name }}
                                     </span>
@@ -258,12 +271,51 @@
                         </div>
                     @endif
 
+                    @if($hasCompSkills)
+                        <div>
+                            <h3 class="font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('Aplikasi Komputer:') }}</h3>
+                            <div class="space-y-1.5">
+                                @foreach($computerSkills as $csk)
+                                    <div class="p-2 rounded-lg bg-slate-50 dark:bg-[#14203A] border border-slate-200/70 dark:border-[#1D2E54] flex items-center justify-between gap-2">
+                                        <div>
+                                            <span class="font-semibold text-slate-800 dark:text-white">{{ $csk->name }}</span>
+                                            @if($csk->description)
+                                                <span class="text-[11px] text-slate-500 dark:text-slate-400 block">{{ $csk->description }}</span>
+                                            @endif
+                                        </div>
+                                        <div class="flex items-center gap-1.5 shrink-0">
+                                            @if($csk->proficiency)
+                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                                    {{ ucfirst(str_replace('_', ' ', $csk->proficiency)) }}
+                                                </span>
+                                            @endif
+                                            @if($csk->certificate_path)
+                                                <a href="{{ asset('storage/' . ltrim($csk->certificate_path, '/')) }}" target="_blank" class="no-print text-[10px] font-semibold text-emerald-600 dark:text-[#93F514] hover:underline flex items-center gap-0.5">
+                                                    <span>{{ __('Berkas') }}</span>
+                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     @if($hasCerts)
                         <div>
-                            <h3 class="font-semibold text-slate-700 dark:text-slate-300 mb-2">Sertifikasi:</h3>
-                            <ul class="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300">
+                            <h3 class="font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('Sertifikasi:') }}</h3>
+                            <ul class="space-y-1 text-slate-700 dark:text-slate-300">
                                 @foreach($profile->certifications as $cert)
-                                    <li>{{ $cert->name }}</li>
+                                    <li class="flex items-center justify-between gap-2">
+                                        <span>&bull; {{ $cert->name }}</span>
+                                        @if($cert->certificate_path)
+                                            <a href="{{ asset('storage/' . ltrim($cert->certificate_path, '/')) }}" target="_blank" class="no-print text-[10.5px] font-semibold text-emerald-600 dark:text-[#93F514] hover:underline flex items-center gap-0.5 shrink-0">
+                                                <span>{{ __('Berkas') }}</span>
+                                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                            </a>
+                                        @endif
+                                    </li>
                                 @endforeach
                             </ul>
                         </div>
@@ -271,23 +323,46 @@
 
                     @if($hasTrainings)
                         <div>
-                            <h3 class="font-semibold text-slate-700 dark:text-slate-300 mb-2">Pelatihan:</h3>
-                            <ul class="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300">
+                            <h3 class="font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('Pelatihan:') }}</h3>
+                            <ul class="space-y-1 text-slate-700 dark:text-slate-300">
                                 @foreach($profile->trainings as $tr)
-                                    <li>{{ $tr->name }}</li>
+                                    <li class="flex items-center justify-between gap-2">
+                                        <span>&bull; {{ $tr->name }}</span>
+                                        @if($tr->certificate_path)
+                                            <a href="{{ asset('storage/' . ltrim($tr->certificate_path, '/')) }}" target="_blank" class="no-print text-[10.5px] font-semibold text-emerald-600 dark:text-[#93F514] hover:underline flex items-center gap-0.5 shrink-0">
+                                                <span>{{ __('Berkas') }}</span>
+                                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                            </a>
+                                        @endif
+                                    </li>
                                 @endforeach
                             </ul>
                         </div>
                     @endif
 
                     @if($hasLangs)
-                        <div>
-                            <h3 class="font-semibold text-slate-700 dark:text-slate-300 mb-2">Bahasa:</h3>
-                            <div class="flex flex-wrap gap-1.5">
+                        <div class="sm:col-span-2">
+                            <h3 class="font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('Kemampuan Bahasa:') }}</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                                 @foreach($profile->languages as $lang)
-                                    <span class="px-2 py-0.5 bg-slate-100 dark:bg-[#14203A] text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-[#1D2E54] rounded font-medium">
-                                        {{ $lang->name }}
-                                    </span>
+                                    <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-[#14203A] border border-slate-200/70 dark:border-[#1D2E54] flex flex-col justify-between gap-1.5">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span class="font-bold text-slate-800 dark:text-white">{{ $lang->name }}</span>
+                                            @if($lang->certificate_path)
+                                                <a href="{{ asset('storage/' . ltrim($lang->certificate_path, '/')) }}" target="_blank" class="no-print text-[10.5px] font-semibold text-emerald-600 dark:text-[#93F514] hover:underline flex items-center gap-0.5 shrink-0">
+                                                    <span>{{ __('Berkas') }}</span>
+                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                </a>
+                                            @endif
+                                        </div>
+                                        <div class="text-[10px] text-slate-500 dark:text-[#93A5C9] flex gap-2">
+                                            <span>{{ __('Lisan') }}: <strong>{{ ucfirst($lang->oral ?? '-') }}</strong></span>
+                                            <span>&bull;</span>
+                                            <span>{{ __('Tulisan') }}: <strong>{{ ucfirst($lang->written ?? '-') }}</strong></span>
+                                            <span>&bull;</span>
+                                            <span>{{ __('Percakapan') }}: <strong>{{ ucfirst($lang->conversation ?? '-') }}</strong></span>
+                                        </div>
+                                    </div>
                                 @endforeach
                             </div>
                         </div>

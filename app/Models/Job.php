@@ -37,8 +37,16 @@ class Job extends Model
      */
     public function getLocalizedTitleAttribute(): string
     {
-        if (app()->getLocale() === 'en' && !empty($this->title_en)) {
-            return $this->title_en;
+        if (app()->getLocale() === 'en') {
+            if (!empty($this->title_en)) {
+                return $this->title_en;
+            }
+            if (!empty($this->title)) {
+                $translated = \App\Services\TranslationService::translate($this->title);
+                if (!empty($translated)) {
+                    return $translated;
+                }
+            }
         }
         return $this->title ? __($this->title) : '';
     }
@@ -48,8 +56,16 @@ class Job extends Model
      */
     public function getLocalizedDescriptionAttribute(): ?string
     {
-        if (app()->getLocale() === 'en' && !empty($this->description_en)) {
-            return $this->description_en;
+        if (app()->getLocale() === 'en') {
+            if (!empty($this->description_en)) {
+                return $this->description_en;
+            }
+            if (!empty($this->description)) {
+                $translated = \App\Services\TranslationService::translate($this->description);
+                if (!empty($translated)) {
+                    return $translated;
+                }
+            }
         }
         return $this->description;
     }

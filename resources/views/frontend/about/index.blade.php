@@ -190,7 +190,7 @@
                     <div class="reveal-on-scroll text-sm sm:text-base text-gray-300 leading-relaxed space-y-4" data-delay="150">
                         @if($company->about)
                             <p class="text-justify">
-                                {{ __(trim($company->about)) }}
+                                {{ $company->localized_about ?? __(trim($company->about)) }}
                             </p>
                         @else
                             <p class="text-justify">

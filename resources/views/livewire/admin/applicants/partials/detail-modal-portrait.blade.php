@@ -94,14 +94,13 @@
                             <div class="flex items-start sm:items-center gap-5 sm:gap-6 min-w-0 flex-1">
                                 {{-- Foto Pelamar --}}
                                 <div class="shrink-0">
-                                    <template x-if="detailData.applicant_profile && detailData.applicant_profile.photo">
-                                        <img :src="detailData.applicant_profile.photo.startsWith('http') 
-                                            ? detailData.applicant_profile.photo 
-                                            : ('/storage/' + detailData.applicant_profile.photo)" 
+                                    <template x-if="getApplicantPhotoUrl(detailData) && !modalImgFailed">
+                                        <img :src="getApplicantPhotoUrl(detailData)" 
                                             :alt="detailData.applicant_profile ? detailData.applicant_profile.full_name : 'Pelamar'" 
+                                            x-on:error="modalImgFailed = true"
                                             class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-2xl border border-gray-200 dark:border-slate-700 shadow-xs">
                                     </template>
-                                    <template x-if="!detailData.applicant_profile || !detailData.applicant_profile.photo">
+                                    <template x-if="!getApplicantPhotoUrl(detailData) || modalImgFailed">
                                         <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 font-semibold text-xl flex items-center justify-center shadow-xs">
                                             <span x-text="detailData.applicant_profile ? (detailData.applicant_profile.full_name || 'P').substring(0, 2).toUpperCase() : 'P'"></span>
                                         </div>
@@ -567,7 +566,24 @@
                                     </div>
                                     <div>
                                         <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Status Pencarian Kerja:</span>
-                                        <span class="font-semibold text-gray-800 dark:text-slate-200" x-text="detailData.applicant_profile.job_preference.job_search_status || '-'"></span>
+                                        <template x-if="detailData.applicant_profile.job_preference.job_search_status === 'Aktif' || (!detailData.applicant_profile.job_preference.job_search_status && detailData.applicant_profile.job_preference.id)">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 mt-0.5">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                Aktif
+                                            </span>
+                                        </template>
+                                        <template x-if="detailData.applicant_profile.job_preference.job_search_status === 'Pasif'">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 mt-0.5">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                                Pasif
+                                            </span>
+                                        </template>
+                                        <template x-if="detailData.applicant_profile.job_preference.job_search_status === 'Tidak Aktif'">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200 dark:border-slate-700 mt-0.5">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                                                Tidak Aktif
+                                            </span>
+                                        </template>
                                     </div>
                                     <div class="sm:col-span-2">
                                         <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Minat Industri / Bidang:</span>
@@ -683,16 +699,47 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                            {{-- Keahlian (Skills) --}}
+                            {{-- Keahlian / Kemampuan Teknis & Aplikasi Komputer --}}
                             <div class="p-3.5 bg-gray-50/80 dark:bg-slate-800/40 rounded-2xl border border-gray-100 dark:border-slate-800 space-y-2">
-                                <h3 class="font-bold text-gray-900 dark:text-white text-xs flex items-center gap-1.5">
-                                    <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                                    Keahlian & Kompetensi (Skills)
+                                <h3 class="font-bold text-gray-900 dark:text-white text-xs flex items-center gap-1.5 border-b border-gray-200/60 dark:border-slate-700/60 pb-1.5">
+                                    <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                    Kemampuan Teknis & Aplikasi Komputer
                                 </h3>
                                 <template x-if="detailData.applicant_profile && detailData.applicant_profile.skills && detailData.applicant_profile.skills.length > 0">
-                                    <div class="flex flex-wrap gap-1.5 pt-1">
+                                    <div class="space-y-2 pt-1">
                                         <template x-for="sk in detailData.applicant_profile.skills" :key="sk.id">
-                                            <span class="px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 rounded-lg text-[11px] font-semibold border border-indigo-100 dark:border-indigo-900/60" x-text="sk.name || sk.skill_name"></span>
+                                            <div class="p-2.5 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-800 text-[11px] flex flex-col gap-1">
+                                                <div class="flex items-center justify-between gap-2">
+                                                    <div class="flex items-center gap-1.5 flex-wrap min-w-0">
+                                                        <span class="font-bold text-gray-800 dark:text-slate-200" x-text="sk.name || sk.skill_name"></span>
+                                                        <template x-if="sk.proficiency">
+                                                            <span class="text-[9.5px] font-semibold px-2 py-0.5 rounded-md border"
+                                                                :class="{
+                                                                    'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800': sk.proficiency === 'sangat_baik',
+                                                                    'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800': sk.proficiency === 'baik',
+                                                                    'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800': sk.proficiency === 'cukup',
+                                                                    'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800': sk.proficiency === 'kurang'
+                                                                }"
+                                                                x-text="sk.proficiency === 'sangat_baik' ? 'Sangat Baik' : (sk.proficiency === 'baik' ? 'Baik' : (sk.proficiency === 'cukup' ? 'Cukup' : (sk.proficiency === 'kurang' ? 'Kurang' : sk.proficiency)))">
+                                                            </span>
+                                                        </template>
+                                                    </div>
+                                                    <template x-if="sk.certificate_path">
+                                                        <a :href="sk.certificate_path.startsWith('http') ? sk.certificate_path : ('{{ asset('storage') }}/' + sk.certificate_path.replace(/^\/+/, ''))" 
+                                                           target="_blank" 
+                                                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10.5px] font-semibold text-emerald-700 dark:text-[#93F514] bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200/80 dark:border-emerald-800 transition shrink-0 shadow-2xs">
+                                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                            <span>Lihat Sertifikat</span>
+                                                        </a>
+                                                    </template>
+                                                    <template x-if="!sk.certificate_path">
+                                                        <span class="text-[9.5px] text-gray-400 dark:text-slate-500 italic bg-gray-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md border border-gray-200/60 dark:border-slate-700/60 shrink-0">Tanpa Berkas</span>
+                                                    </template>
+                                                </div>
+                                                <template x-if="sk.description">
+                                                    <p class="text-[10.5px] text-gray-500 dark:text-slate-400 leading-relaxed" x-text="sk.description"></p>
+                                                </template>
+                                            </div>
                                         </template>
                                     </div>
                                 </template>
@@ -703,14 +750,46 @@
 
                             {{-- Kemampuan Bahasa --}}
                             <div class="p-3.5 bg-gray-50/80 dark:bg-slate-800/40 rounded-2xl border border-gray-100 dark:border-slate-800 space-y-2">
-                                <h3 class="font-bold text-gray-900 dark:text-white text-xs flex items-center gap-1.5">
-                                    <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+                                <h3 class="font-bold text-gray-900 dark:text-white text-xs flex items-center gap-1.5 border-b border-gray-200/60 dark:border-slate-700/60 pb-1.5">
+                                    <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
                                     Kemampuan Bahasa
                                 </h3>
                                 <template x-if="detailData.applicant_profile && detailData.applicant_profile.languages && detailData.applicant_profile.languages.length > 0">
-                                    <div class="flex flex-wrap gap-1.5 pt-1">
+                                    <div class="space-y-2 pt-1">
                                         <template x-for="lang in detailData.applicant_profile.languages" :key="lang.id">
-                                            <span class="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 rounded-lg text-[11px] font-semibold border border-emerald-100 dark:border-emerald-900/60" x-text="lang.name"></span>
+                                            <div class="p-2.5 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-800 text-[11px] space-y-2">
+                                                <div class="flex items-center justify-between gap-2">
+                                                    <span class="font-bold text-gray-800 dark:text-slate-200 text-xs" x-text="lang.name"></span>
+                                                    <template x-if="lang.certificate_path">
+                                                        <a :href="lang.certificate_path.startsWith('http') ? lang.certificate_path : ('{{ asset('storage') }}/' + lang.certificate_path.replace(/^\/+/, ''))" 
+                                                           target="_blank" 
+                                                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10.5px] font-semibold text-emerald-700 dark:text-[#93F514] bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200/80 dark:border-emerald-800 transition shrink-0 shadow-2xs">
+                                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                            <span>Lihat Sertifikat</span>
+                                                        </a>
+                                                    </template>
+                                                    <template x-if="!lang.certificate_path">
+                                                        <span class="text-[9.5px] text-gray-400 dark:text-slate-500 italic bg-gray-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md border border-gray-200/60 dark:border-slate-700/60 shrink-0">Tanpa Berkas</span>
+                                                    </template>
+                                                </div>
+
+                                                <template x-if="lang.oral || lang.written || lang.conversation">
+                                                    <div class="grid grid-cols-3 gap-1.5 text-center text-[10.5px]">
+                                                        <div class="px-2 py-1 rounded-lg bg-gray-50/90 dark:bg-slate-800/80 border border-gray-100 dark:border-slate-700/60">
+                                                            <span class="block text-[9px] uppercase tracking-wider text-gray-400 dark:text-slate-400 font-bold">Lisan</span>
+                                                            <span class="font-bold text-gray-800 dark:text-slate-200" x-text="lang.oral ? (lang.oral.charAt(0).toUpperCase() + lang.oral.slice(1)) : '-'"></span>
+                                                        </div>
+                                                        <div class="px-2 py-1 rounded-lg bg-gray-50/90 dark:bg-slate-800/80 border border-gray-100 dark:border-slate-700/60">
+                                                            <span class="block text-[9px] uppercase tracking-wider text-gray-400 dark:text-slate-400 font-bold">Tulisan</span>
+                                                            <span class="font-bold text-gray-800 dark:text-slate-200" x-text="lang.written ? (lang.written.charAt(0).toUpperCase() + lang.written.slice(1)) : '-'"></span>
+                                                        </div>
+                                                        <div class="px-2 py-1 rounded-lg bg-gray-50/90 dark:bg-slate-800/80 border border-gray-100 dark:border-slate-700/60">
+                                                            <span class="block text-[9px] uppercase tracking-wider text-gray-400 dark:text-slate-400 font-bold">Percakapan</span>
+                                                            <span class="font-bold text-gray-800 dark:text-slate-200" x-text="lang.conversation ? (lang.conversation.charAt(0).toUpperCase() + lang.conversation.slice(1)) : '-'"></span>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
                                         </template>
                                     </div>
                                 </template>
@@ -721,21 +800,25 @@
 
                             {{-- Sertifikasi Profesional --}}
                             <div class="p-3.5 bg-gray-50/80 dark:bg-slate-800/40 rounded-2xl border border-gray-100 dark:border-slate-800 space-y-2">
-                                <h3 class="font-bold text-gray-900 dark:text-white text-xs flex items-center gap-1.5">
-                                    <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                                <h3 class="font-bold text-gray-900 dark:text-white text-xs flex items-center gap-1.5 border-b border-gray-200/60 dark:border-slate-700/60 pb-1.5">
+                                    <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
                                     Sertifikasi Profesional
                                 </h3>
                                 <template x-if="detailData.applicant_profile && detailData.applicant_profile.certifications && detailData.applicant_profile.certifications.length > 0">
-                                    <div class="space-y-1.5">
+                                    <div class="space-y-1.5 pt-1">
                                         <template x-for="cert in detailData.applicant_profile.certifications" :key="cert.id">
-                                            <div class="p-2.5 bg-white dark:bg-slate-800/80 rounded-xl border border-gray-100 dark:border-slate-700/60 flex items-center justify-between gap-2">
-                                                <span class="font-semibold text-gray-900 dark:text-white truncate text-xs" x-text="cert.name"></span>
+                                            <div class="p-2.5 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                                                <span class="font-bold text-gray-800 dark:text-slate-200 truncate text-xs" x-text="cert.name"></span>
                                                 <template x-if="cert.certificate_path">
                                                     <a :href="cert.certificate_path.startsWith('http') ? cert.certificate_path : ('{{ asset('storage') }}/' + cert.certificate_path.replace(/^\/+/, ''))" 
                                                        target="_blank" 
-                                                       class="px-2 py-0.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 rounded border border-indigo-200 dark:border-indigo-800 transition shrink-0">
-                                                        Berkas
+                                                       class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10.5px] font-semibold text-emerald-700 dark:text-[#93F514] bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200/80 dark:border-emerald-800 transition shrink-0 shadow-2xs">
+                                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                        <span>Lihat Sertifikat</span>
                                                     </a>
+                                                </template>
+                                                <template x-if="!cert.certificate_path">
+                                                    <span class="text-[9.5px] text-gray-400 dark:text-slate-500 italic bg-gray-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md border border-gray-200/60 dark:border-slate-700/60 shrink-0">Tanpa Berkas</span>
                                                 </template>
                                             </div>
                                         </template>
@@ -746,14 +829,45 @@
                                 </template>
                             </div>
 
-                            {{-- Akun Medsos & Portofolio Online --}}
+                            {{-- Pelatihan & Kursus --}}
                             <div class="p-3.5 bg-gray-50/80 dark:bg-slate-800/40 rounded-2xl border border-gray-100 dark:border-slate-800 space-y-2">
-                                <h3 class="font-bold text-gray-900 dark:text-white text-xs flex items-center gap-1.5">
-                                    <svg class="w-4 h-4 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                                <h3 class="font-bold text-gray-900 dark:text-white text-xs flex items-center gap-1.5 border-b border-gray-200/60 dark:border-slate-700/60 pb-1.5">
+                                    <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                                    Pelatihan & Kursus
+                                </h3>
+                                <template x-if="detailData.applicant_profile && detailData.applicant_profile.trainings && detailData.applicant_profile.trainings.length > 0">
+                                    <div class="space-y-1.5 pt-1">
+                                        <template x-for="trn in detailData.applicant_profile.trainings" :key="trn.id">
+                                            <div class="p-2.5 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                                                <span class="font-bold text-gray-800 dark:text-slate-200 truncate text-xs" x-text="trn.name"></span>
+                                                <template x-if="trn.certificate_path">
+                                                    <a :href="trn.certificate_path.startsWith('http') ? trn.certificate_path : ('{{ asset('storage') }}/' + trn.certificate_path.replace(/^\/+/, ''))" 
+                                                       target="_blank" 
+                                                       class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10.5px] font-semibold text-emerald-700 dark:text-[#93F514] bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200/80 dark:border-emerald-800 transition shrink-0 shadow-2xs">
+                                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                        <span>Lihat Sertifikat</span>
+                                                    </a>
+                                                </template>
+                                                <template x-if="!trn.certificate_path">
+                                                    <span class="text-[9.5px] text-gray-400 dark:text-slate-500 italic bg-gray-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md border border-gray-200/60 dark:border-slate-700/60 shrink-0">Tanpa Berkas</span>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template x-if="!detailData.applicant_profile || !detailData.applicant_profile.trainings || detailData.applicant_profile.trainings.length === 0">
+                                    <span class="text-gray-400 italic text-[11px] block pt-1">Belum ada pelatihan.</span>
+                                </template>
+                            </div>
+
+                            {{-- Akun Medsos & Portofolio Online --}}
+                            <div class="p-3.5 bg-gray-50/80 dark:bg-slate-800/40 rounded-2xl border border-gray-100 dark:border-slate-800 space-y-2 md:col-span-2">
+                                <h3 class="font-bold text-gray-900 dark:text-white text-xs flex items-center gap-1.5 border-b border-gray-200/60 dark:border-slate-700/60 pb-1.5">
+                                    <svg class="w-3.5 h-3.5 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
                                     Media Sosial & Portofolio
                                 </h3>
                                 <template x-if="detailData.applicant_profile && detailData.applicant_profile.social_medias && detailData.applicant_profile.social_medias.length > 0">
-                                    <div class="space-y-1.5">
+                                    <div class="space-y-1.5 pt-1">
                                         <template x-for="sm in detailData.applicant_profile.social_medias" :key="sm.id">
                                             <a :href="sm.url" target="_blank" class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-gray-100 dark:border-slate-700/60 hover:border-indigo-300 transition text-xs group">
                                                 <span class="font-semibold text-gray-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400" x-text="sm.platform_name"></span>

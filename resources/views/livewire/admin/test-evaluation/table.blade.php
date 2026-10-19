@@ -46,7 +46,7 @@
         let photo = null;
         if (att.job_application && att.job_application.applicant_profile) {
             name = att.job_application.applicant_profile.full_name || 'Pelamar';
-            let p = att.job_application.applicant_profile.photo || (att.job_application.applicant_profile.user ? att.job_application.applicant_profile.user.avatar : null);
+            let p = att.job_application.applicant_profile.photo_url || att.job_application.applicant_profile.photo || (att.job_application.applicant_profile.user ? att.job_application.applicant_profile.user.avatar : null);
             if (p) {
                 photo = p.startsWith('http') ? p : ('/storage/' + p);
             }
@@ -522,11 +522,7 @@
                             <td class="py-3 px-3">
                                 <div class="flex items-center gap-3">
                                     @php
-                                        $candPhoto = $profile?->photo ?? $profile?->user?->avatar;
-                                        $candPhotoUrl = null;
-                                        if ($candPhoto) {
-                                            $candPhotoUrl = \Illuminate\Support\Str::startsWith($candPhoto, ['http://', 'https://']) ? $candPhoto : asset('storage/' . $candPhoto);
-                                        }
+                                        $candPhotoUrl = $profile?->photo_url ?? ($profile?->user?->avatar ? (\Illuminate\Support\Str::startsWith($profile->user->avatar, ['http://', 'https://']) ? $profile->user->avatar : asset('storage/' . $profile->user->avatar)) : null);
                                         $jobApp = $att->jobApplication;
                                         $appStatus = $jobApp?->status ?? 'Reviewed';
                                         $appBadgeClass = match(strtolower($appStatus)) {
@@ -538,13 +534,18 @@
                                             default => 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800',
                                         };
                                     @endphp
-                                    @if ($candPhotoUrl)
-                                        <img src="{{ $candPhotoUrl }}" alt="{{ $applicantName }}" class="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-[#1D2E54] shadow-2xs shrink-0">
-                                    @else
-                                        <div class="w-9 h-9 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
-                                            {{ strtoupper(substr($applicantName, 0, 2)) }}
-                                        </div>
-                                    @endif
+                                    <div class="relative w-9 h-9 shrink-0">
+                                        @if ($candPhotoUrl)
+                                            <img src="{{ $candPhotoUrl }}" alt="{{ $applicantName }}" referrerpolicy="no-referrer" class="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-[#1D2E54] shadow-2xs" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                            <div class="hidden w-9 h-9 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs items-center justify-center shadow-2xs">
+                                                {{ strtoupper(substr($applicantName, 0, 2)) }}
+                                            </div>
+                                        @else
+                                            <div class="w-9 h-9 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shadow-2xs">
+                                                {{ strtoupper(substr($applicantName, 0, 2)) }}
+                                            </div>
+                                        @endif
+                                    </div>
                                     <div class="min-w-0">
                                         <div class="font-bold text-gray-900 dark:text-white text-sm truncate">
                                             {{ $applicantName }}

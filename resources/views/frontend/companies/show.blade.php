@@ -182,7 +182,7 @@
                     </div>
 
                     <div class="text-sm sm:text-base text-gray-300 leading-relaxed text-justify whitespace-pre-line mt-0.5 company-about-text">
-                        {{ __(trim($company->about)) }}
+                        {{ $company->localized_about ?? __(trim($company->about)) }}
                     </div>
                 </div>
             @endif

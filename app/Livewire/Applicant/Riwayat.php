@@ -77,7 +77,7 @@ class Riwayat extends Component
                 'job.tests',
                 'testAttempts.test',
                 'statusHistories', 
-                'interviewSchedules'
+                'interviewSchedules.user'
             ])->where('profile_id', $applicantProfile->id);
 
             if (!empty($this->search)) {

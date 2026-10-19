@@ -510,9 +510,10 @@ class JobApplicationController extends Controller
         ]);
 
         // KETENTUAN PENGIRIMAN EMAIL:
-        // 1. Recruiter TIDAK PERNAH diizinkan mengirim email ke pelamar (selalu false).
+        // 1. Recruiter tidak diizinkan mengirim email sembarangan, KECUALI jika persetujuan recruiter
+        //    melengkapi Double Approval sehingga pelamar resmi DITERIMA (Accepted).
         // 2. Pada status 'Partial Approved' atau 'Interview' saat menunggu pihak lain, email tidak dikirim jika belum final.
-        // 3. Email HANYA dikirim jika dipicu oleh Admin dan opsi send_email aktif.
+        // 3. Email dikirim jika dipicu oleh Admin dan opsi send_email aktif, atau otomatis saat final Accepted.
         $shouldSendEmail = false;
 
         if ($isAdmin) {
@@ -523,6 +524,9 @@ class JobApplicationController extends Controller
             if ($newStatus === 'Partial Approved' || ($newStatus === 'Interview' && $decision === 'approved' && $application->interview_recruiter_approval !== 'approved')) {
                 $shouldSendEmail = false;
             }
+        } elseif ($newStatus === 'Accepted') {
+            // Ketika Recruiter melengkapi Double Approval sehingga kandidat resmi DITERIMA (Accepted):
+            $shouldSendEmail = true;
         }
 
         $emailSent = false;
