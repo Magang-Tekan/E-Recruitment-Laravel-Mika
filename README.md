@@ -19,6 +19,7 @@ Aplikasi web sistem rekrutmen terpadu, seleksi berkas, asesmen psikotes (DISC Te
   - [8. Install Dependensi Frontend & Build Asset](#8-install-dependensi-frontend--build-asset)
   - [9. Menjalankan Aplikasi](#9-menjalankan-aplikasi)
 - [Panduan Setup Menggunakan Docker & Deploy VPS](#-panduan-setup-menggunakan-docker--deploy-vps)
+- [Migrasi VPS, Domain, dan CI/CD Production](#-migrasi-vps-domain-dan-cicd-production)
 - [Integrasi Antrean & Notifikasi (Queue & Mail)](#-integrasi-antrean--notifikasi-queue--mail)
 - [REST API Endpoints](#-rest-api-endpoints)
 - [Troubleshooting & Solusi Masalah Umum](#-troubleshooting--solusi-masalah-umum)
@@ -44,7 +45,7 @@ Aplikasi web sistem rekrutmen terpadu, seleksi berkas, asesmen psikotes (DISC Te
 
 ## 🛠 Teknologi yang Digunakan
 - **Backend Framework**: [Laravel 13](https://laravel.com/)
-- **PHP Version**: PHP 8.3+
+- **PHP Version**: PHP 8.4.1+ (sesuai dependency pada `composer.lock`)
 - **Reactive UI**: [Laravel Livewire 3](https://livewire.laravel.com/) & [Livewire Volt](https://livewire.laravel.com/docs/volt)
 - **Frontend / Styling**: [TailwindCSS](https://tailwindcss.com/) & [Vite](https://vitejs.dev/)
 - **Authentication**: Laravel Breeze & Laravel Socialite (Google Login)
@@ -56,7 +57,7 @@ Aplikasi web sistem rekrutmen terpadu, seleksi berkas, asesmen psikotes (DISC Te
 
 ## 💻 Persyaratan Sistem (Prerequisites)
 Pastikan komputer/laptop Anda telah terpasang:
-- **PHP**: Versi **8.3** atau lebih baru
+- **PHP**: Versi **8.4.1** atau lebih baru
   - Ekstensi PHP wajib: `pdo_mysql`, `mbstring`, `openssl`, `fileinfo`, `gd` (atau `imagick`), `curl`, `xml`, `zip`
 - **Composer**: Versi **2.x** ([Download Composer](https://getcomposer.org/))
 - **Node.js & NPM**: Versi **18.x** atau **20.x+** ([Download Node.js](https://nodejs.org/))
@@ -267,14 +268,14 @@ nano .env.docker
 
 > 🔒 **Poin Kritis Konfigurasi VPS Produksi:**
 > - Ubah `APP_ENV=production` dan `APP_DEBUG=false`.
-> - Set `APP_URL=https://recruitment.tekna.id`.
+> - Set `APP_URL=https://career.mikacares.co.id`.
 >
 > Contoh nilai penting di `.env.docker` untuk domain ini:
 > ```env
 > APP_ENV=production
 > APP_DEBUG=false
-> APP_URL=https://recruitment.tekna.id
-> GOOGLE_REDIRECT_URI=https://recruitment.tekna.id/auth/google/callback
+> APP_URL=https://career.mikacares.co.id
+> GOOGLE_REDIRECT_URI=https://career.mikacares.co.id/auth/google/callback
 > ```
 > - Ganti `DB_PASSWORD` dengan kata sandi acak yang kuat.
 > - Masukkan konfigurasi SMTP email (Gmail / Mailgun / Brevo) agar notifikasi pembaruan status pelamar dapat terkirim secara otomatis.
@@ -394,11 +395,11 @@ Agar aplikasi dapat diakses publik melalui domain resmi menggunakan port standar
    ```bash
    sudo nano /etc/nginx/sites-available/erecruitment
    ```
-   Isi konfigurasi berikut untuk `recruitment.tekna.id`:
+   Isi konfigurasi berikut untuk `career.mikacares.co.id`:
    ```nginx
    server {
        listen 80;
-       server_name recruitment.tekna.id;
+       server_name career.mikacares.co.id;
 
        client_max_body_size 50M;
 
@@ -416,7 +417,7 @@ Agar aplikasi dapat diakses publik melalui domain resmi menggunakan port standar
    ```bash
    sudo ln -s /etc/nginx/sites-available/erecruitment /etc/nginx/sites-enabled/
    sudo nginx -t && sudo systemctl reload nginx
-   sudo certbot --nginx -d recruitment.tekna.id
+   sudo certbot --nginx -d career.mikacares.co.id
    ```
 
 ---
@@ -457,6 +458,541 @@ Agar aplikasi dapat diakses publik melalui domain resmi menggunakan port standar
   ```bash
   docker compose down -v
   ```
+
+---
+
+
+## 🔄 Migrasi VPS, Domain, dan CI/CD Production
+
+Bagian ini adalah runbook produksi untuk memindahkan aplikasi:
+
+- VPS lama: `212.85.24.19`
+- VPS baru: `72.60.76.18`
+- Domain lama: `recruitment.tekna.id`
+- Domain baru: `career.mikacares.co.id`
+- Direktori project VPS lama: `/root/project/E-Recruitment-Laravel-Mika`
+- Direktori deployment VPS baru: `/root/project/career`
+- Port aplikasi pada host: `127.0.0.1:8097`
+- Port PostgreSQL pada host: `127.0.0.1:5441`
+
+Port `8097` dan `5441` tidak bertabrakan dengan port container yang sudah berjalan pada VPS baru (`3001`, `3010`, `8001`, `8080`, `3308`, dan `5437`). `docker-compose.yml` mengikat kedua port tersebut hanya ke `127.0.0.1`, sehingga web hanya dapat diakses melalui reverse proxy Nginx dan PostgreSQL tidak terbuka ke internet.
+
+> Lakukan satu kali migrasi percobaan sebelum cutover final. Pada cutover final, aktifkan maintenance mode di VPS lama terlebih dahulu agar tidak ada lamaran atau perubahan data yang tertinggal setelah backup terakhir.
+
+### A. Checklist sebelum migrasi
+
+1. Turunkan TTL DNS `career.mikacares.co.id` menjadi `300` detik setidaknya beberapa jam sebelum cutover.
+2. Pastikan record `A` untuk domain baru dapat diubah ke `72.60.76.18`.
+3. Catat seluruh nilai `.env.docker` dari VPS lama. Jangan memasukkan file ini ke Git karena berisi password dan API key.
+4. Siapkan akses SSH key dari workstation/admin ke kedua VPS dengan langkah pada bagian A.1.
+5. Pastikan ruang disk VPS baru cukup untuk image Docker, database, berkas upload, dan backup deployment.
+6. Simpan backup di lokasi lain sebelum menghapus VPS lama.
+
+### A.1. Setup akses SSH ke kedua VPS
+
+Ada tiga koneksi yang berbeda:
+
+1. workstation/admin → VPS lama, untuk mengambil backup;
+2. workstation/admin → VPS baru, untuk setup dan troubleshooting;
+3. GitHub Actions → VPS baru, untuk deployment otomatis.
+
+Gunakan key terpisah untuk akses admin dan GitHub Actions. Jangan mengirim private key ke VPS atau menyimpan private key di repository.
+
+#### 1. Buat SSH key admin pada workstation
+
+Jalankan pada komputer/workstation Anda, bukan pada VPS:
+
+```bash
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+ssh-keygen -t ed25519 -a 100 \
+  -C "mika-career-vps-admin" \
+  -f ~/.ssh/mika-career-vps-admin
+```
+
+Perintah tersebut menghasilkan:
+
+- `~/.ssh/mika-career-vps-admin`: private key; jangan dibagikan;
+- `~/.ssh/mika-career-vps-admin.pub`: public key; file ini yang dipasang di VPS.
+
+Tampilkan public key untuk disalin:
+
+```bash
+cat ~/.ssh/mika-career-vps-admin.pub
+```
+
+#### 2. Aktifkan SSH pada masing-masing VPS
+
+Karena saat ini belum ada akses SSH, masuk dahulu melalui web console/VNC/serial console dari provider VPS atau console yang sekarang digunakan. Jalankan blok berikut pada **VPS lama dan VPS baru**:
+
+```bash
+apt update
+apt install -y openssh-server
+systemctl enable --now ssh
+ss -ltnp | grep ':22'
+```
+
+Jika UFW aktif, izinkan SSH:
+
+```bash
+ufw status
+ufw allow OpenSSH
+```
+
+Pastikan firewall pada dashboard provider VPS juga mengizinkan TCP port `22`. Selama setup manual, port dapat dibatasi hanya untuk IP publik workstation/admin. GitHub-hosted runner memakai alamat sumber yang dapat berubah; agar workflow dapat deploy, gunakan salah satu dari dua pendekatan berikut:
+
+- izinkan TCP `22` ke VPS baru, gunakan autentikasi key-only, dan aktifkan proteksi seperti Fail2ban; atau
+- gunakan self-hosted runner/static egress bila kebijakan firewall wajib memakai allowlist IP.
+
+Untuk proteksi dasar saat port SSH dapat dijangkau publik:
+
+```bash
+apt install -y fail2ban
+systemctl enable --now fail2ban
+```
+
+Izinkan login `root` menggunakan public key tanpa mengaktifkan login root berbasis password:
+
+```bash
+mkdir -p /etc/ssh/sshd_config.d
+nano /etc/ssh/sshd_config.d/60-mika-career.conf
+```
+
+Isi file tersebut:
+
+```text
+PubkeyAuthentication yes
+PermitRootLogin prohibit-password
+```
+
+Validasi lalu reload SSH:
+
+```bash
+sshd -t
+systemctl reload ssh
+```
+
+Jangan menutup console provider sebelum koneksi SSH key berhasil diuji.
+
+#### 3. Pasang public key admin pada kedua VPS
+
+Masih melalui console provider, jalankan pada **masing-masing VPS**:
+
+```bash
+install -d -m 700 /root/.ssh
+nano /root/.ssh/authorized_keys
+```
+
+Paste satu baris lengkap dari `mika-career-vps-admin.pub`, simpan, kemudian atur permission:
+
+```bash
+chmod 700 /root/.ssh
+chmod 600 /root/.ssh/authorized_keys
+chown -R root:root /root/.ssh
+```
+
+Jika login SSH menggunakan password sudah tersedia, `ssh-copy-id` dapat digunakan sebagai alternatif dari workstation:
+
+```bash
+ssh-copy-id -i ~/.ssh/mika-career-vps-admin.pub root@212.85.24.19
+ssh-copy-id -i ~/.ssh/mika-career-vps-admin.pub root@72.60.76.18
+```
+
+#### 4. Buat alias kedua server pada workstation
+
+Edit `~/.ssh/config` pada workstation:
+
+```sshconfig
+Host career-old
+    HostName 212.85.24.19
+    User root
+    Port 22
+    IdentityFile ~/.ssh/mika-career-vps-admin
+    IdentitiesOnly yes
+
+Host career-new
+    HostName 72.60.76.18
+    User root
+    Port 22
+    IdentityFile ~/.ssh/mika-career-vps-admin
+    IdentitiesOnly yes
+```
+
+Atur permission dan uji kedua koneksi:
+
+```bash
+chmod 600 ~/.ssh/config
+ssh career-old
+ssh career-new
+```
+
+Saat pertama kali terhubung, cocokkan fingerprint yang tampil dengan fingerprint host dari console VPS:
+
+```bash
+ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
+```
+
+Jangan menerima host key jika fingerprint berbeda.
+
+Audit port pada VPS baru:
+
+```bash
+sudo ss -ltnp
+docker ps --format 'table {{.Names}}\t{{.Ports}}'
+```
+
+Jika `8097` atau `5441` ternyata sudah dipakai saat deployment dilakukan, pilih port kosong lain di `.env.docker`, misalnya:
+
+```env
+WEB_PORT=8098
+FORWARD_DB_PORT=5442
+```
+
+Jika `WEB_PORT` diubah, samakan tujuan `proxy_pass` Nginx dengan port baru tersebut.
+
+### B. Persiapan VPS baru (`72.60.76.18`)
+
+Install Docker, Git, Nginx, dan Certbot:
+
+```bash
+sudo apt update
+sudo apt install -y git nginx certbot python3-certbot-nginx
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+```
+
+Karena lokasi project yang digunakan adalah `/root/project/career`, perintah deployment dijalankan sebagai user `root`. Pastikan repository sudah benar:
+
+```bash
+mkdir -p /root/project
+cd /root/project/career
+git status
+git remote -v
+test -f .env.docker || cp .env.docker.example .env.docker
+chmod 600 .env.docker
+```
+
+Jika `/root/project/career` belum berisi repository, clone terlebih dahulu:
+
+```bash
+git clone https://github.com/Magang-Tekan/E-Recruitment-Laravel-Mika.git \
+  /root/project/career
+```
+
+Untuk repository private, pasang GitHub deploy key read-only pada user `root`, lalu gunakan remote SSH (`git@github.com:Magang-Tekan/E-Recruitment-Laravel-Mika.git`). Koneksi Git dari VPS diperlukan karena workflow menjalankan `git pull --ff-only` di server.
+
+Edit `/root/project/career/.env.docker` dan gunakan minimal konfigurasi produksi berikut. Salin nilai rahasia SMTP, Google, Cloudinary, dan integrasi lain dari environment lama; jangan memakai placeholder di produksi.
+
+```env
+APP_NAME=MikaCareer
+APP_ENV=production
+APP_KEY=base64:PASTE_APP_KEY_LAMA_DI_SINI
+APP_DEBUG=false
+APP_URL=https://career.mikacares.co.id
+APP_TIMEZONE=Asia/Jakarta
+
+COMPOSE_PROJECT_NAME=erecruitment
+WEB_PORT=8097
+FORWARD_DB_PORT=5441
+
+DB_CONNECTION=pgsql
+DB_HOST=db
+DB_PORT=5432
+DB_DATABASE=rekruitmen_db
+DB_USERNAME=postgres
+DB_PASSWORD=GANTI_DENGAN_PASSWORD_DATABASE_YANG_KUAT
+
+SESSION_SECURE_COOKIE=true
+SESSION_DOMAIN=career.mikacares.co.id
+QUEUE_CONNECTION=database
+
+GOOGLE_REDIRECT_URI=https://career.mikacares.co.id/auth/google/callback
+```
+
+Pertahankan `APP_KEY` lama agar session/data terenkripsi yang sudah ada tetap dapat dibaca. Jika key lama tidak tersedia, generate key baru dengan `docker compose run --rm app php artisan key:generate --show`, tetapi session lama dan data terenkripsi tertentu tidak lagi valid.
+
+Validasi konfigurasi dan pastikan port masih kosong:
+
+```bash
+cd /root/project/career
+docker compose config --quiet
+sudo ss -ltn | grep -E ':(8097|5441)[[:space:]]' || true
+```
+
+### C. Backup data pada VPS lama (`212.85.24.19`)
+
+Masuk ke folder project lama. Sesuaikan path bila instalasi lama menggunakan lokasi berbeda:
+
+```bash
+cd /root/project/E-Recruitment-Laravel-Mika
+mkdir -p /tmp/e-recruitment-migration
+```
+
+Backup PostgreSQL dalam bentuk SQL terkompresi. Perintah membaca username dan nama database langsung dari environment container sehingga tidak menampilkan password:
+
+```bash
+docker compose exec -T db sh -lc \
+  'pg_dump --clean --if-exists --no-owner --no-privileges -U "$POSTGRES_USER" "$POSTGRES_DB"' \
+  | gzip > /tmp/e-recruitment-migration/database.sql.gz
+```
+
+Backup seluruh file upload Laravel dari volume `storage/app`:
+
+```bash
+docker compose exec -T app tar -C /var/www/storage/app -czf - . \
+  > /tmp/e-recruitment-migration/storage-app.tar.gz
+```
+
+Pastikan hasil backup tidak kosong:
+
+```bash
+ls -lh /tmp/e-recruitment-migration/
+gzip -t /tmp/e-recruitment-migration/database.sql.gz
+gzip -t /tmp/e-recruitment-migration/storage-app.tar.gz
+```
+
+### D. Salin dan restore ke VPS baru
+
+Cara yang direkomendasikan adalah memindahkan backup melalui workstation. Ini tidak memerlukan private key VPS lama untuk disimpan di VPS baru:
+
+```bash
+mkdir -p /tmp/e-recruitment-migration
+scp career-old:/tmp/e-recruitment-migration/database.sql.gz \
+  /tmp/e-recruitment-migration/
+scp career-old:/tmp/e-recruitment-migration/storage-app.tar.gz \
+  /tmp/e-recruitment-migration/
+scp /tmp/e-recruitment-migration/database.sql.gz career-new:/tmp/
+scp /tmp/e-recruitment-migration/storage-app.tar.gz career-new:/tmp/
+```
+
+Pada VPS baru, hidupkan database dan restore backup. Pastikan `.env.docker` sudah benar sebelum menjalankan langkah ini:
+
+```bash
+cd /root/project/career
+docker compose up -d db
+docker compose ps
+gunzip -c /tmp/database.sql.gz \
+  | docker compose exec -T db sh -lc \
+      'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" "$POSTGRES_DB"'
+```
+
+Build aplikasi, hidupkan service `app`, kemudian restore file upload:
+
+```bash
+docker compose build --pull
+docker compose up -d app
+gunzip -c /tmp/storage-app.tar.gz \
+  | docker compose exec -T -u root app tar -C /var/www/storage/app -xvf -
+docker compose exec -T -u root app chown -R www-data:www-data /var/www/storage
+```
+
+Jalankan migration yang belum terdapat di database lama, siapkan storage link/cache, kemudian hidupkan seluruh service:
+
+```bash
+docker compose exec -T app php artisan migrate --force
+docker compose up -d --remove-orphans
+docker compose exec -T app php artisan storage:link --force
+docker compose exec -T app php artisan optimize:clear
+docker compose exec -T app php artisan optimize
+docker compose exec -T app php artisan queue:restart
+docker compose ps
+```
+
+Periksa log dan endpoint lokal:
+
+```bash
+docker compose logs --tail=100 app web queue db
+curl -I http://127.0.0.1:8097
+```
+
+### E. Cutover final tanpa kehilangan data
+
+Setelah rehearsal berhasil, lakukan cutover final pada waktu maintenance:
+
+1. Pada VPS lama, hentikan perubahan data baru:
+
+   ```bash
+   cd /root/project/E-Recruitment-Laravel-Mika
+   docker compose exec -T app php artisan down --retry=60
+   docker compose exec -T queue php artisan queue:restart
+   ```
+
+2. Buat ulang backup database dan storage dengan perintah pada bagian C. Gunakan backup final ini untuk meng-overwrite hasil rehearsal di VPS baru.
+3. Restore ulang database dan storage pada VPS baru dengan perintah bagian D.
+4. Jalankan `php artisan migrate --force`, lalu verifikasi jumlah data penting seperti user, kandidat, lamaran, dan lowongan.
+5. Jangan matikan atau menghapus VPS lama sampai domain, login, upload, email, queue, dan data produksi telah diverifikasi.
+
+### F. Reverse proxy Nginx dan SSL domain baru
+
+Buat `/etc/nginx/sites-available/career.mikacares.co.id` pada VPS baru:
+
+```nginx
+server {
+    listen 80;
+    listen [::]:80;
+    server_name career.mikacares.co.id;
+
+    client_max_body_size 50M;
+
+    location / {
+        proxy_pass http://127.0.0.1:8097;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Aktifkan site dan validasi Nginx:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/career.mikacares.co.id \
+  /etc/nginx/sites-enabled/career.mikacares.co.id
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+Ubah record DNS `A` `career.mikacares.co.id` menjadi `72.60.76.18`. Setelah DNS resolve ke IP baru, terbitkan SSL:
+
+```bash
+dig +short career.mikacares.co.id
+sudo certbot --nginx -d career.mikacares.co.id
+sudo certbot renew --dry-run
+```
+
+Perbarui **Authorized redirect URI** pada Google OAuth menjadi:
+
+```text
+https://career.mikacares.co.id/auth/google/callback
+```
+
+Jika domain lama masih harus melayani bookmark pengguna, arahkan DNS `recruitment.tekna.id` ke VPS baru dan tambahkan redirect permanen setelah sertifikat domain lama tersedia:
+
+```nginx
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name recruitment.tekna.id;
+    return 301 https://career.mikacares.co.id$request_uri;
+}
+```
+
+### G. Menyiapkan secret GitHub Actions
+
+Workflow berada di `.github/workflows/deploy.yml`. Deployment hanya berjalan setelah job test dan frontend build berhasil pada push ke branch `main`. Pull request hanya menjalankan test/build dan tidak menyentuh VPS.
+
+Buat key khusus GitHub Actions pada komputer admin. Jangan gunakan private key personal atau private key milik VPS:
+
+```bash
+ssh-keygen -t ed25519 -a 100 \
+  -C "github-actions-e-recruitment" \
+  -f ~/.ssh/github-actions-e-recruitment
+```
+
+Pasang public key GitHub Actions hanya pada VPS baru. Perintah berikut login memakai key admin alias `career-new`, kemudian menambahkan public key CI/CD ke `/root/.ssh/authorized_keys`:
+
+```bash
+ssh-copy-id -i ~/.ssh/github-actions-e-recruitment.pub career-new
+```
+
+Tampilkan private key untuk disalin ke secret `VPS_SSH_KEY`:
+
+```bash
+cat ~/.ssh/github-actions-e-recruitment
+```
+
+Simpan private key hanya sebagai GitHub secret. Jangan menyalinnya ke VPS lama, VPS baru, repository, chat, atau dokumentasi.
+
+Ambil SSH host key dari koneksi tepercaya dan cocokkan fingerprint dengan key di VPS:
+
+```bash
+ssh-keyscan -p 22 72.60.76.18
+ssh-keyscan -p 22 72.60.76.18 2>/dev/null | ssh-keygen -lf -
+```
+
+Di repository GitHub buka **Settings → Environments → New environment**, buat environment bernama `production`, lalu tambahkan:
+
+| Jenis | Nama | Nilai |
+| :--- | :--- | :--- |
+| Environment secret | `VPS_HOST` | `72.60.76.18` |
+| Environment secret | `VPS_PORT` | `22` atau port SSH yang dipakai |
+| Environment secret | `VPS_USERNAME` | `root` |
+| Environment secret | `VPS_SSH_KEY` | Seluruh isi private key `github-actions-e-recruitment` |
+| Environment secret | `VPS_KNOWN_HOSTS` | Seluruh output `ssh-keyscan` yang fingerprint-nya sudah diverifikasi |
+| Environment variable | `DEPLOY_PATH` | `/root/project/career` |
+
+Jangan memasukkan `APP_KEY`, `DB_PASSWORD`, SMTP password, atau Cloudinary secret ke workflow ini. Nilai tersebut disimpan di `/root/project/career/.env.docker` pada VPS dan file tersebut di-ignore oleh Git.
+
+Direkomendasikan juga untuk mengatur **required reviewer** pada environment `production` jika deployment harus mendapat persetujuan manual.
+
+### H. Cara kerja deployment otomatis
+
+Untuk setiap push ke `main`, workflow akan:
+
+1. Validasi Composer, install dependency PHP/Node, build asset Vite, dan menjalankan test Laravel menggunakan SQLite in-memory. Unit test bersifat wajib; feature test tetap dilaporkan tetapi sementara non-blocking sampai test redirect role-based yang lama diselaraskan dengan perilaku aplikasi saat ini.
+2. Terhubung ke VPS memakai SSH dengan verifikasi `known_hosts`.
+3. Menjalankan `git pull --ff-only`, validasi Compose, lalu build image terbaru.
+4. Mengaktifkan maintenance mode jika aplikasi lama sedang berjalan.
+5. Menunggu PostgreSQL healthy dan membuat backup ke `/root/project/e-recruitment-backups/pre-deploy-<timestamp>.sql.gz`.
+6. Menjalankan `php artisan migrate --force`. Perintah ini aman dijalankan setiap deploy karena Laravel hanya menjalankan migration berstatus pending.
+7. Menjalankan container baru, membuat storage link, menyegarkan cache, me-restart queue worker, menonaktifkan maintenance mode, dan melakukan health check internal.
+
+Backup deployment tidak dihapus otomatis. Pantau kapasitas disk dan pindahkan backup penting ke object storage; hapus backup lama hanya setelah kebijakan retensi disepakati.
+
+Deployment manual dapat dimulai dari tab **Actions → CI and production deployment → Run workflow**. Karena menggunakan commit branch `main`, pastikan perubahan yang akan dirilis sudah di-merge terlebih dahulu.
+
+### I. Verifikasi sesudah deployment
+
+```bash
+cd /root/project/career
+docker compose ps
+docker compose exec -T app php artisan migrate:status
+docker compose exec -T app php artisan about
+docker compose logs --tail=100 queue
+curl -fsS https://career.mikacares.co.id/ > /dev/null
+```
+
+Uji secara manual:
+
+- halaman publik dan detail lowongan;
+- login seluruh role dan login Google;
+- upload/download CV atau foto;
+- pembuatan lamaran dan pembacaan data lama;
+- email notifikasi dan pemrosesan queue;
+- sertifikat HTTPS serta redirect HTTP ke HTTPS.
+
+### J. Recovery jika deployment gagal
+
+Jika gagal sebelum migration berjalan, aplikasi lama dapat dibuka kembali:
+
+```bash
+cd /root/project/career
+docker compose exec -T app php artisan up
+docker compose ps
+```
+
+Jika migration sudah mulai atau selesai, jangan menjalankan `migrate:rollback` secara otomatis. Periksa migration yang berhasil dan log error lebih dahulu:
+
+```bash
+docker compose exec -T app php artisan migrate:status
+docker compose logs --tail=200 app db
+ls -lh /root/project/e-recruitment-backups/
+```
+
+Restore backup pre-deploy hanya bila perubahan database memang harus dibatalkan dan dampaknya sudah dipahami:
+
+```bash
+cd /root/project/career
+docker compose exec -T app php artisan down --retry=60
+gunzip -c /root/project/e-recruitment-backups/pre-deploy-TIMESTAMP.sql.gz \
+  | docker compose exec -T db sh -lc \
+      'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" "$POSTGRES_DB"'
+docker compose exec -T app php artisan up
+```
+
+Untuk deployment production berikutnya, buat migration yang backward-compatible bila memungkinkan: tambahkan kolom/table lebih dahulu, deploy kode yang dapat membaca struktur lama dan baru, baru hapus struktur lama pada rilis berikutnya.
 
 ---
 
