@@ -997,7 +997,7 @@ Untuk deployment production berikutnya, buat migration yang backward-compatible 
 ---
 
 
-## 📬 Integrasi Antrean & Notifikasi (Queue & Mail)
+## 📬 Integrasi Antrean & Notifikasi (Queue & Mail) 
 
 Aplikasi menggunakan antrean berbasis database untuk pengiriman email notifikasi pembaruan status lamaran (`ApplicationStatusUpdatedMail`).
 
