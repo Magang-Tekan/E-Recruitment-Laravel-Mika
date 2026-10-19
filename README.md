@@ -1002,7 +1002,7 @@ Untuk deployment production berikutnya, buat migration yang backward-compatible 
 Aplikasi menggunakan antrean berbasis database untuk pengiriman email notifikasi pembaruan status lamaran (`ApplicationStatusUpdatedMail`).
 
 Pastikan variabel berikut ada pada file `.env`:
-```env
+```env 
 QUEUE_CONNECTION=database
 ``` 
 
