@@ -266,7 +266,15 @@ nano .env.docker
 
 > 🔒 **Poin Kritis Konfigurasi VPS Produksi:**
 > - Ubah `APP_ENV=production` dan `APP_DEBUG=false`.
-> - Sesuaikan `APP_URL` dengan domain resmi Anda (misal `https://karir.perusahaan.com` atau `http://IP_VPS:8097`).
+> - Set `APP_URL=https://recruitment.tekna.id`.
+>
+> Contoh nilai penting di `.env.docker` untuk domain ini:
+> ```env
+> APP_ENV=production
+> APP_DEBUG=false
+> APP_URL=https://recruitment.tekna.id
+> GOOGLE_REDIRECT_URI=https://recruitment.tekna.id/auth/google/callback
+> ```
 > - Ganti `DB_PASSWORD` dengan kata sandi acak yang kuat.
 > - Masukkan konfigurasi SMTP email (Gmail / Mailgun / Brevo) agar notifikasi pembaruan status pelamar dapat terkirim secara otomatis.
 
@@ -385,11 +393,11 @@ Agar aplikasi dapat diakses publik melalui domain resmi menggunakan port standar
    ```bash
    sudo nano /etc/nginx/sites-available/erecruitment
    ```
-   Isi konfigurasi berikut (sesuaikan `domain-anda.com`):
+   Isi konfigurasi berikut untuk `recruitment.tekna.id`:
    ```nginx
    server {
        listen 80;
-       server_name domain-anda.com www.domain-anda.com;
+       server_name recruitment.tekna.id;
 
        client_max_body_size 50M;
 
@@ -407,7 +415,7 @@ Agar aplikasi dapat diakses publik melalui domain resmi menggunakan port standar
    ```bash
    sudo ln -s /etc/nginx/sites-available/erecruitment /etc/nginx/sites-enabled/
    sudo nginx -t && sudo systemctl reload nginx
-   sudo certbot --nginx -d domain-anda.com -d www.domain-anda.com
+   sudo certbot --nginx -d recruitment.tekna.id
    ```
 
 ---
