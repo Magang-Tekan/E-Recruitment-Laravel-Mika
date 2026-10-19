@@ -1004,7 +1004,7 @@ Aplikasi menggunakan antrean berbasis database untuk pengiriman email notifikasi
 Pastikan variabel berikut ada pada file `.env`:
 ```env
 QUEUE_CONNECTION=database
-```
+``` 
 
 Untuk pengujian email lokal tanpa mengirim email nyata ke internet, atur:
 ```env
