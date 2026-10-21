@@ -1,6 +1,6 @@
 @extends('frontend.layouts.app')
 
-@section('title', 'Beranda | Mika Career')
+@section('title', __('Beranda') . ' | Mika Career')
 
 @section('content')
     <div class="relative overflow-hidden -mt-[88px] sm:-mt-[96px]">
@@ -28,17 +28,16 @@
                 <!-- Main Headline Hero with Neon #93F514 -->
                 <h1
                     class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#EEEEEE] leading-tight sm:leading-none max-w-4xl drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
-                    Temukan Karir Impian, <br>
+                    {{ __('Temukan Karir Impian,') }} <br>
                     <span class="text-[#93F514]">
-                        Wujudkan Potensi Terbaikmu
+                        {{ __('Wujudkan Potensi Terbaikmu') }}
                     </span>
                 </h1>
 
                 <!-- Subtitle Description / Slogan Layer -->
                 <p
                     class="mt-6 text-base sm:text-xl text-gray-200 max-w-2xl font-normal leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-                    Bergabunglah bersama ribuan profesional bertalenta. Jelajahi lowongan kerja, ikuti tes seleksi online
-                    terintegrasi, dan raih karir masa depan sekarang.
+                    {{ __('Bergabunglah bersama ribuan profesional bertalenta. Jelajahi lowongan kerja, ikuti tes seleksi online terintegrasi, dan raih karir masa depan sekarang.') }}
                 </p>
 
                 @php
@@ -81,7 +80,7 @@
                                 </svg>
                             </div>
                             <input type="text" name="search" value="{{ request('search') }}"
-                                placeholder="Cari lowongan yang Anda inginkan..."
+                                placeholder="{{ __('Cari lowongan yang Anda inginkan...') }}"
                                 style="background-color: transparent !important; color: #111827 !important;"
                                 class="w-full py-2 bg-transparent text-gray-900 placeholder-gray-400 border-0 outline-none focus:outline-none focus:ring-0 focus:border-0 shadow-none text-sm font-medium">
                         </div>
@@ -97,11 +96,11 @@
                                     '{{ $comp->id }}': '{{ addslashes($comp->name) }}', @endforeach
                             },
                             getDisplayText() {
-                                if (!this.selected || this.selected.length === 0) return 'Semua Perusahaan';
+                                if (!this.selected || this.selected.length === 0) return '{{ __('Semua Perusahaan') }}';
                                 if (this.selected.length === 1) {
-                                    return this.companiesMap[this.selected[0]] || '1 Perusahaan';
+                                    return this.companiesMap[this.selected[0]] || '1 {{ __('Perusahaan') }}';
                                 }
-                                return this.selected.length + ' Perusahaan';
+                                return this.selected.length + ' {{ __('Perusahaan') }}';
                             },
                             openDropdown() {
                                 this.tempSelected = [...this.selected];
@@ -138,12 +137,12 @@
                                     <span class="truncate" x-text="getDisplayText()">
                                         @if (!empty($homeSelectedCompanies))
                                             @if (count($homeSelectedCompanies) === 1)
-                                                {{ $companies->firstWhere('id', $homeSelectedCompanies[0])?->name ?? '1 Perusahaan' }}
+                                                {{ $companies->firstWhere('id', $homeSelectedCompanies[0])?->name ?? '1 ' . __('Perusahaan') }}
                                             @else
-                                                {{ count($homeSelectedCompanies) }} Perusahaan
+                                                {{ count($homeSelectedCompanies) }} {{ __('Perusahaan') }}
                                             @endif
                                         @else
-                                            Semua Perusahaan
+                                            {{ __('Semua Perusahaan') }}
                                         @endif
                                     </span>
                                 </div>
@@ -173,7 +172,7 @@
                                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
-                                    <input type="text" x-model="search" placeholder="Temukan perusahaan..."
+                                    <input type="text" x-model="search" placeholder="{{ __('Temukan perusahaan...') }}"
                                         class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#93F514]/40 focus:border-[#93F514]">
                                 </div>
 
@@ -182,15 +181,15 @@
                                     class="flex items-center gap-3 py-2 px-1 text-xs font-semibold text-gray-700 hover:text-black cursor-pointer border-b border-gray-100">
                                     <input type="checkbox" :checked="tempSelected.length === 0" @change="tempSelected = []"
                                         class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer">
-                                    <span>Semua Perusahaan</span>
+                                    <span>{{ __('Semua Perusahaan') }}</span>
                                 </label>
 
                                 <!-- Group Title -->
                                 <div
                                     class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                                    <span>Pilihan Perusahaan</span>
+                                    <span>{{ __('Pilihan Perusahaan') }}</span>
                                     <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase"
-                                        x-text="tempSelected.length + ' dipilih'"></span>
+                                        x-text="tempSelected.length + ' {{ __('dipilih') }}'"></span>
                                 </div>
 
                                 <!-- 2-Column Grid List items (Compact & Scrollable) -->
@@ -215,11 +214,11 @@
                                 <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
                                     <button type="button" @click="reset()"
                                         class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition">
-                                        Atur Ulang
+                                        {{ __('Atur Ulang') }}
                                     </button>
                                     <button type="button" @click="apply()"
                                         class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-sm transition">
-                                        Pilih
+                                        {{ __('Pilih') }}
                                     </button>
                                 </div>
                             </div>
@@ -233,14 +232,14 @@
                             tempSelected: {{ json_encode(array_map('strval', $homeSelectedDepartments ?? [])) }},
                             departmentsMap: {
                                 @foreach ($departments as $dept)
-                                    '{{ $dept->id }}': '{{ addslashes($dept->name) }}', @endforeach
+                                    '{{ $dept->id }}': '{{ addslashes(__($dept->name)) }}', @endforeach
                             },
                             getDisplayText() {
-                                if (!this.selected || this.selected.length === 0) return 'Semua Departemen';
+                                if (!this.selected || this.selected.length === 0) return '{{ __('Semua Departemen') }}';
                                 if (this.selected.length === 1) {
-                                    return this.departmentsMap[this.selected[0]] || '1 Departemen';
+                                    return this.departmentsMap[this.selected[0]] || '1 {{ __('Departemen') }}';
                                 }
-                                return this.selected.length + ' Departemen';
+                                return this.selected.length + ' {{ __('Departemen') }}';
                             },
                             openDropdown() {
                                 this.tempSelected = [...this.selected];
@@ -277,12 +276,12 @@
                                     <span class="truncate" x-text="getDisplayText()">
                                         @if (!empty($homeSelectedDepartments))
                                             @if (count($homeSelectedDepartments) === 1)
-                                                {{ $departments->firstWhere('id', $homeSelectedDepartments[0])?->name ?? '1 Departemen' }}
+                                                {{ __($departments->firstWhere('id', $homeSelectedDepartments[0])?->name ?? '1 ' . __('Departemen')) }}
                                             @else
-                                                {{ count($homeSelectedDepartments) }} Departemen
+                                                {{ count($homeSelectedDepartments) }} {{ __('Departemen') }}
                                             @endif
                                         @else
-                                            Semua Departemen
+                                            {{ __('Semua Departemen') }}
                                         @endif
                                     </span>
                                 </div>
@@ -312,7 +311,8 @@
                                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
-                                    <input type="text" x-model="search" placeholder="Temukan fungsi / departemen..."
+                                    <input type="text" x-model="search"
+                                        placeholder="{{ __('Temukan fungsi / departemen...') }}"
                                         class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#93F514]/40 focus:border-[#93F514]">
                                 </div>
 
@@ -322,15 +322,15 @@
                                     <input type="checkbox" :checked="tempSelected.length === 0"
                                         @change="tempSelected = []"
                                         class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer">
-                                    <span>Semua Departemen</span>
+                                    <span>{{ __('Semua Departemen') }}</span>
                                 </label>
 
                                 <!-- Group Title -->
                                 <div
                                     class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                                    <span>Pilihan Departemen</span>
+                                    <span>{{ __('Pilihan Departemen') }}</span>
                                     <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase"
-                                        x-text="tempSelected.length + ' dipilih'"></span>
+                                        x-text="tempSelected.length + ' {{ __('dipilih') }}'"></span>
                                 </div>
 
                                 <!-- 2-Column Grid List items (Compact & Scrollable) -->
@@ -344,7 +344,7 @@
                                                     <input type="checkbox" value="{{ $dept->id }}"
                                                         x-model="tempSelected"
                                                         class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer shrink-0">
-                                                    <span class="truncate">{{ $dept->name }}</span>
+                                                    <span class="truncate">{{ __($dept->name) }}</span>
                                                 </label>
                                             @endforeach
                                         @endif
@@ -355,11 +355,11 @@
                                 <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
                                     <button type="button" @click="reset()"
                                         class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition">
-                                        Atur Ulang
+                                        {{ __('Atur Ulang') }}
                                     </button>
                                     <button type="button" @click="apply()"
                                         class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-sm transition">
-                                        Pilih
+                                        {{ __('Pilih') }}
                                     </button>
                                 </div>
                             </div>
@@ -372,12 +372,20 @@
                             selected: {{ json_encode($homeSelectedTypes ?? []) }},
                             tempSelected: {{ json_encode($homeSelectedTypes ?? []) }},
                             types: ['Magang', 'Full Time', 'Part Time', 'Contract', 'Freelance', 'Remote'],
+                            typesMap: {
+                                'Magang': '{{ __('Magang') }}',
+                                'Full Time': '{{ __('Full Time') }}',
+                                'Part Time': '{{ __('Part Time') }}',
+                                'Contract': '{{ __('Contract') }}',
+                                'Freelance': '{{ __('Freelance') }}',
+                                'Remote': '{{ __('Remote') }}'
+                            },
                             getDisplayText() {
-                                if (!this.selected || this.selected.length === 0) return 'Semua Tipe Pekerjaan';
+                                if (!this.selected || this.selected.length === 0) return '{{ __('Semua Tipe Pekerjaan') }}';
                                 if (this.selected.length === 1) {
-                                    return this.selected[0];
+                                    return this.typesMap[this.selected[0]] || this.selected[0];
                                 }
-                                return this.selected.length + ' Tipe Dipilih';
+                                return this.selected.length + ' {{ __('Tipe Dipilih') }}';
                             },
                             openDropdown() {
                                 this.tempSelected = [...this.selected];
@@ -414,12 +422,12 @@
                                     <span class="truncate" x-text="getDisplayText()">
                                         @if (!empty($homeSelectedTypes))
                                             @if (count($homeSelectedTypes) === 1)
-                                                {{ $homeSelectedTypes[0] }}
+                                                {{ __($homeSelectedTypes[0]) }}
                                             @else
-                                                {{ count($homeSelectedTypes) }} Tipe Dipilih
+                                                {{ count($homeSelectedTypes) }} {{ __('Tipe Dipilih') }}
                                             @endif
                                         @else
-                                            Semua Tipe Pekerjaan
+                                            {{ __('Semua Tipe Pekerjaan') }}
                                         @endif
                                     </span>
                                 </div>
@@ -449,7 +457,8 @@
                                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
-                                    <input type="text" x-model="search" placeholder="Temukan Tipe Pekerjaan..."
+                                    <input type="text" x-model="search"
+                                        placeholder="{{ __('Temukan Tipe Pekerjaan...') }}"
                                         class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#93F514]/40 focus:border-[#93F514]">
                                 </div>
 
@@ -459,15 +468,15 @@
                                     <input type="checkbox" :checked="tempSelected.length === 0"
                                         @change="tempSelected = []"
                                         class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer">
-                                    <span>Semua Tipe Pekerjaan</span>
+                                    <span>{{ __('Semua Tipe Pekerjaan') }}</span>
                                 </label>
 
                                 <!-- Group Title -->
                                 <div
                                     class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                                    <span>Pilihan Tipe Pekerjaan</span>
+                                    <span>{{ __('Pilihan Tipe Pekerjaan') }}</span>
                                     <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase"
-                                        x-text="tempSelected.length + ' dipilih'"></span>
+                                        x-text="tempSelected.length + ' {{ __('dipilih') }}'"></span>
                                 </div>
 
                                 <!-- 2-Column Grid List items (Compact & Scrollable) -->
@@ -481,7 +490,7 @@
                                                 x-show="!search || type.toLowerCase().includes(search.toLowerCase())">
                                                 <input type="checkbox" :value="type" x-model="tempSelected"
                                                     class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer shrink-0">
-                                                <span x-text="type" class="truncate"></span>
+                                                <span x-text="typesMap[type] || type" class="truncate"></span>
                                             </label>
                                         </template>
                                     </div>
@@ -491,11 +500,11 @@
                                 <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
                                     <button type="button" @click="reset()"
                                         class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition">
-                                        Atur Ulang
+                                        {{ __('Atur Ulang') }}
                                     </button>
                                     <button type="button" @click="apply()"
                                         class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-sm transition">
-                                        Pilih
+                                        {{ __('Pilih') }}
                                     </button>
                                 </div>
                             </div>
@@ -510,7 +519,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
-                                <span class="whitespace-nowrap">Cari Lowongan</span>
+                                <span class="whitespace-nowrap">{{ __('Cari Lowongan') }}</span>
                             </button>
                             @if (request('search') ||
                                     !empty($homeSelectedCompanies) ||
@@ -530,7 +539,7 @@
 
                 <!-- Popular Searches tags -->
                 <div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs text-gray-400">
-                    <span class="font-bold text-[#93F514]">Pencarian Populer:</span>
+                    <span class="font-bold text-[#93F514]">{{ __('Pencarian Populer:') }}</span>
                     <a href="{{ route('jobs.index', ['search' => 'Software Engineer']) }}"
                         class="px-3 py-1 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition">Software
                         Engineer</a>
@@ -550,22 +559,22 @@
                     <div class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
                         data-delay="100">
                         <div class="text-2xl sm:text-3xl font-black text-[#EEEEEE]">{{ $totalJobsCount ?? 0 }}+</div>
-                        <div class="text-xs text-[#93F514] font-semibold mt-1">Lowongan Aktif</div>
+                        <div class="text-xs text-[#93F514] font-semibold mt-1">{{ __('Lowongan Aktif') }}</div>
                     </div>
                     <div class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
                         data-delay="200">
                         <div class="text-2xl sm:text-3xl font-black text-[#EEEEEE]">{{ $companiesCount ?? 0 }}+</div>
-                        <div class="text-xs text-[#93F514] font-semibold mt-1">Perusahaan Mitra</div>
+                        <div class="text-xs text-[#93F514] font-semibold mt-1">{{ __('Perusahaan Mitra') }}</div>
                     </div>
                     <div class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
                         data-delay="300">
                         <div class="text-2xl sm:text-3xl font-black text-[#EEEEEE]">{{ $departmentsCount ?? 0 }}+</div>
-                        <div class="text-xs text-[#93F514] font-semibold mt-1">Bidang / Departemen</div>
+                        <div class="text-xs text-[#93F514] font-semibold mt-1">{{ __('Departemen') }}</div>
                     </div>
                     <div class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
                         data-delay="400">
                         <div class="text-2xl sm:text-3xl font-black text-[#EEEEEE]">{{ $totalQuotaCount ?? 0 }}+</div>
-                        <div class="text-xs text-[#93F514] font-semibold mt-1">Total Kuota Formasi</div>
+                        <div class="text-xs text-[#93F514] font-semibold mt-1">{{ __('Total Kuota Formasi') }}</div>
                     </div>
                 </div>
 
@@ -706,7 +715,7 @@
                                 <div class="pt-4 flex flex-wrap items-center gap-3">
                                     <a href="{{ route('jobs.index') }}"
                                         class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#93F514] hover:bg-[#7edc0b] text-black font-extrabold text-xs sm:text-sm tracking-wide shadow-md shadow-black/40 transition duration-200">
-                                        <span>Lihat Lowongan</span>
+                                        <span>{{ __('Lihat Lowongan') }}</span>
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                                 d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -721,7 +730,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                                             </svg>
-                                            <span>Kunjungi Website</span>
+                                            <span>{{ __('Kunjungi Website') }}</span>
                                             <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24"
                                                 stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -743,6 +752,7 @@
                                         <div
                                             class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/20">
                                             <img :src="slide.img1" alt="Team Collaboration"
+                                                x-on:error="$el.src = '/storage/asset-compro/aniv1.jpg'"
                                                 class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
                                         </div>
                                     </div>
@@ -752,7 +762,8 @@
                                         class="absolute right-0 top-0 w-[48%] sm:w-[50%] h-[200px] sm:h-[235px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-bl from-[#93F514]/60 via-white/15 to-transparent shadow-2xl shadow-black/90 group z-10">
                                         <div
                                             class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/20">
-                                            <img :src="slide.img2" alt="Professional Presentation"
+                                            <img :src="slide.img2 || slide.img1" alt="Professional Presentation"
+                                                x-on:error="$el.src = slide.img1 || '/storage/asset-compro/outbond.jpg'"
                                                 class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
                                         </div>
                                     </div>
@@ -762,7 +773,8 @@
                                         class="absolute left-[35%] sm:left-[32%] bottom-0 w-[50%] sm:w-[52%] h-[190px] sm:h-[220px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-tr from-[#93F514]/60 via-white/15 to-transparent shadow-2xl shadow-black/95 group z-20">
                                         <div
                                             class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/25">
-                                            <img :src="slide.img3" alt="Meeting and Discussion"
+                                            <img :src="slide.img3 || slide.img1" alt="Meeting and Discussion"
+                                                x-on:error="$el.src = slide.img1 || '/storage/asset-compro/aniv.jpg'"
                                                 class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
                                         </div>
                                     </div>
@@ -838,44 +850,51 @@
         <section id="alur-pendaftaran"
             class="reveal-on-scroll py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative border-t border-gray-200/80 dark:border-white/[0.08]"
             x-data="{ activeStep: 1 }">
-            
+
             <!-- Section Header -->
             <div class="text-center max-w-3xl mx-auto mb-10">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Alur Pendaftaran & Seleksi</h2>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                    {{ __('Alur Pendaftaran & Seleksi') }}</h2>
                 <p class="mt-3 text-sm sm:text-base text-gray-600 dark:text-zinc-400 leading-relaxed max-w-2xl mx-auto">
-                    Ikuti 6 tahapan sistematis dan transparan untuk bergabung menjadi bagian dari talenta terbaik PT Mitra Karya Analitika (MIKA).
+                    {{ __('Ikuti 6 tahapan sistematis dan transparan untuk bergabung menjadi bagian dari talenta terbaik PT Mitra Karya Analitika (MIKA).') }}
                 </p>
             </div>
 
             <!-- Connected Interactive Pipeline Stepper Bar -->
             <div class="mb-8">
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
-                    <template x-for="step in [
-                        { num: 1, id: '01', title: 'Registrasi', sub: 'Buat Akun Pelamar' },
-                        { num: 2, id: '02', title: 'Profil & CV', sub: 'Lengkapi Berkas' },
-                        { num: 3, id: '03', title: 'Seleksi Berkas', sub: 'Screening HRD' },
-                        { num: 4, id: '04', title: 'Asesmen CBT', sub: 'Ujian & Tes DISC' },
-                        { num: 5, id: '05', title: 'Wawancara', sub: 'HRD & User' },
-                        { num: 6, id: '06', title: 'Offering', sub: 'Hasil & Kontrak' }
-                    ]" :key="step.num">
+                    <template
+                        x-for="step in [
+                        { num: 1, id: '01', title: '{{ __('Registrasi') }}', sub: '{{ __('Buat Akun Pelamar') }}' },
+                        { num: 2, id: '02', title: '{{ __('Profil & CV') }}', sub: '{{ __('Lengkapi Berkas') }}' },
+                        { num: 3, id: '03', title: '{{ __('Seleksi Berkas') }}', sub: '{{ __('Screening HRD') }}' },
+                        { num: 4, id: '04', title: '{{ __('Asesmen CBT') }}', sub: '{{ __('Ujian & Tes DISC') }}' },
+                        { num: 5, id: '05', title: '{{ __('Wawancara') }}', sub: '{{ __('HRD & User') }}' },
+                        { num: 6, id: '06', title: '{{ __('Offering') }}', sub: '{{ __('Hasil & Kontrak') }}' }
+                    ]"
+                        :key="step.num">
                         <button @click="activeStep = step.num" type="button"
                             class="group relative text-left p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer overflow-hidden"
-                            :class="activeStep === step.num ? 
-                                'bg-white dark:bg-white/[0.08] border-[#3b8004] dark:border-[#93F514] shadow-sm' : 
+                            :class="activeStep === step.num ?
+                                'bg-white dark:bg-white/[0.08] border-[#3b8004] dark:border-[#93F514] shadow-sm' :
                                 'bg-white dark:bg-white/[0.02] hover:bg-gray-50 dark:hover:bg-white/[0.05] border-gray-200 dark:border-white/[0.06] hover:border-gray-300 dark:hover:border-white/15 shadow-sm dark:shadow-none'">
-                            
+
                             <div class="flex items-center justify-between mb-1.5">
                                 <span class="text-xs font-extrabold tracking-wider transition-colors"
-                                    :class="activeStep === step.num ? 'text-[#3b8004] dark:text-[#93F514]' : 'text-gray-400 dark:text-zinc-500 group-hover:text-gray-600 dark:group-hover:text-zinc-400'"
+                                    :class="activeStep === step.num ? 'text-[#3b8004] dark:text-[#93F514]' :
+                                        'text-gray-400 dark:text-zinc-500 group-hover:text-gray-600 dark:group-hover:text-zinc-400'"
                                     x-text="step.id"></span>
                                 <span class="w-2 h-2 rounded-full transition-colors"
-                                    :class="activeStep === step.num ? 'bg-[#4fa304] dark:bg-[#93F514]' : 'bg-gray-300 dark:bg-zinc-700'"></span>
+                                    :class="activeStep === step.num ? 'bg-[#4fa304] dark:bg-[#93F514]' :
+                                        'bg-gray-300 dark:bg-zinc-700'"></span>
                             </div>
                             <div class="text-xs sm:text-sm font-bold truncate transition-colors"
-                                :class="activeStep === step.num ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-zinc-300 group-hover:text-gray-900 dark:group-hover:text-white'"
+                                :class="activeStep === step.num ? 'text-gray-900 dark:text-white' :
+                                    'text-gray-700 dark:text-zinc-300 group-hover:text-gray-900 dark:group-hover:text-white'"
                                 x-text="step.title"></div>
                             <div class="text-[11px] font-medium truncate mt-0.5 transition-colors"
-                                :class="activeStep === step.num ? 'text-gray-600 dark:text-zinc-400' : 'text-gray-500 dark:text-zinc-500'"
+                                :class="activeStep === step.num ? 'text-gray-600 dark:text-zinc-400' :
+                                    'text-gray-500 dark:text-zinc-500'"
                                 x-text="step.sub"></div>
                         </button>
                     </template>
@@ -883,7 +902,8 @@
             </div>
 
             <!-- Active Stage Detail Display Canvas -->
-            <div class="relative rounded-3xl bg-white dark:bg-gradient-to-b dark:from-[#0a120a] dark:via-[#050905] dark:to-[#040604] border border-gray-200/90 dark:border-white/[0.08] p-6 sm:p-10 lg:p-12 shadow-xl shadow-gray-200/60 dark:shadow-2xl dark:shadow-black/80 overflow-hidden">
+            <div
+                class="relative rounded-3xl bg-white dark:bg-gradient-to-b dark:from-[#0a120a] dark:via-[#050905] dark:to-[#040604] border border-gray-200/90 dark:border-white/[0.08] p-6 sm:p-10 lg:p-12 shadow-xl shadow-gray-200/60 dark:shadow-2xl dark:shadow-black/80 overflow-hidden">
 
                 <!-- ================= Step 1: Registrasi Pengguna ================= -->
                 <div x-show="activeStep === 1" x-transition:enter="transition ease-out duration-300"
@@ -891,40 +911,48 @@
                     class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                     <div class="lg:col-span-7 space-y-6">
                         <div class="space-y-3">
-                            <div class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
+                            <div
+                                class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
                                 {{-- <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span> --}}
-                                <span>Tahap 01 — Registrasi Akun</span>
+                                <span>{{ __('Tahap 01 — Registrasi Akun') }}</span>
                             </div>
-                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
-                                Buat Akun Pelamar dengan Cepat & Aman
+                            <h3
+                                class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
+                                {{ __('Buat Akun Pelamar dengan Cepat & Aman') }}
                             </h3>
                             <p class="text-sm sm:text-base text-gray-600 dark:text-zinc-300 leading-relaxed">
-                                Lakukan registrasi menggunakan Google Authentication atau Form Manual (Nama Lengkap, NIK KTP valid, dan Email aktif). Akun ini menjadi pusat portal seluruh aktivitas pelamaran, verifikasi dokumen, ujian seleksi, hingga penawaran kerja.
+                                {{ __('Lakukan registrasi menggunakan Google Authentication atau Form Manual (Nama Lengkap, NIK KTP valid, dan Email aktif). Akun ini menjadi pusat portal seluruh aktivitas pelamaran, verifikasi dokumen, ujian seleksi, hingga penawaran kerja.') }}
                             </p>
                         </div>
 
                         <!-- Structured Milestone Items -->
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>Autentikasi Cepat</span>
+                                    <span>{{ __('Autentikasi Cepat') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Google OAuth atau form NIK terverifikasi.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Google OAuth atau form NIK terverifikasi.') }}</p>
                             </div>
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>Akses Fleksibel</span>
+                                    <span>{{ __('Akses Fleksibel') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Responsif 24/7 di smartphone & desktop.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Responsif 24/7 di smartphone & desktop.') }}</p>
                             </div>
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>Pemberitahuan</span>
+                                    <span>{{ __('Pemberitahuan') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Status seleksi langsung ke portal akun.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Status seleksi langsung ke portal akun.') }}</p>
                             </div>
                         </div>
 
@@ -949,23 +977,26 @@
                                 @endphp
                                 <a href="{{ $dashRoute }}"
                                     class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
-                                    <span>{{ $isAdminOrRecruiter ? 'Buka Dashboard Manajemen' : 'Buka Profil Saya' }}</span>
+                                    <span>{{ $isAdminOrRecruiter ? __('Buka Dashboard Manajemen') : __('Buka Profil Saya') }}</span>
                                 </a>
                             @else
                                 <a href="{{ route('register') }}"
                                     class="inline-flex items-center gap-3 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25 group">
-                                    <span>Daftar Akun Sekarang</span>
-                                    <span class="w-5 h-5 rounded-md bg-black/10 flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                                    <span>{{ __('Daftar Akun Sekarang') }}</span>
+                                    <span
+                                        class="w-5 h-5 rounded-md bg-black/10 flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                         </svg>
                                     </span>
                                 </a>
                             @endauth
                             <button type="button" @click="activeStep = 2"
                                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-gray-700 hover:text-gray-900 dark:text-zinc-300 dark:hover:text-white font-semibold text-xs sm:text-sm border border-gray-200 dark:border-white/10 transition cursor-pointer">
-                                <span>Lanjut: Profil & CV</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+                                <span>{{ __('Lanjut: Profil & CV') }}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
                             </button>
@@ -974,21 +1005,27 @@
 
                     <!-- Right Column: Stage Intelligence & Guidance Panel -->
                     <div class="lg:col-span-5">
-                        <div class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
+                        <div
+                            class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
                             <div class="pb-3 border-b border-gray-200/80 dark:border-white/[0.06]">
-                                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Ketentuan Tahap 01</span>
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">{{ __('Ketentuan Tahap 01') }}</span>
                             </div>
                             <div class="space-y-2">
-                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Tips Registrasi Akun</h4>
-                                <div class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
-                                    Pastikan nomor NIK KTP dan alamat email yang didaftarkan aktif dan valid untuk memastikan kelancaran verifikasi identitas serta notifikasi status seleksi.
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">
+                                    {{ __('Tips Registrasi Akun') }}</h4>
+                                <div
+                                    class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
+                                    {{ __('Pastikan nomor NIK KTP dan alamat email yang didaftarkan aktif dan valid untuk memastikan kelancaran verifikasi identitas serta notifikasi status seleksi.') }}
                                 </div>
                             </div>
                             <div class="pt-1 flex items-center gap-2 text-[11px] text-gray-500 dark:text-zinc-400">
-                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                 </svg>
-                                <span>Data terlindungi dengan enkripsi keamanan portal resmi MIKA</span>
+                                <span>{{ __('Data terlindungi dengan enkripsi keamanan portal resmi MIKA') }}</span>
                             </div>
                         </div>
                     </div>
@@ -1000,40 +1037,48 @@
                     class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                     <div class="lg:col-span-7 space-y-6">
                         <div class="space-y-3">
-                            <div class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
+                            <div
+                                class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
                                 {{-- <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span> --}}
-                                <span>Tahap 02 — Kelengkapan Profil & CV</span>
+                                <span>{{ __('Tahap 02 — Kelengkapan Profil & CV') }}</span>
                             </div>
-                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
-                                Lengkapi Biodata, Riwayat & CV Digital
+                            <h3
+                                class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
+                                {{ __('Lengkapi Biodata, Riwayat & CV Digital') }}
                             </h3>
                             <p class="text-sm sm:text-base text-gray-600 dark:text-zinc-300 leading-relaxed">
-                                Lengkapi profil Anda secara menyeluruh: Biodata Pribadi, Kontak Keluarga, Riwayat Pendidikan, Pengalaman Kerja, Organisasi, Prestasi, hingga Keahlian/Sertifikasi. Sistem secara otomatis menyusun data Anda menjadi format CV profesional.
+                                {{ __('Lengkapi profil Anda secara menyeluruh: Biodata Pribadi, Kontak Keluarga, Riwayat Pendidikan, Pengalaman Kerja, Organisasi, Prestasi, hingga Keahlian/Sertifikasi. Sistem secara otomatis menyusun data Anda menjadi format CV profesional.') }}
                             </p>
                         </div>
 
                         <!-- Structured Milestone Items -->
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
                                     <span>ATS-Friendly</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Generate & preview CV digital terstandar.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Generate & preview CV digital terstandar.') }}</p>
                             </div>
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>Update Fleksibel</span>
+                                    <span>{{ __('Update Fleksibel') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Pembaruan data dapat dilakukan berkala.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Pembaruan data dapat dilakukan berkala.') }}</p>
                             </div>
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>Unggah Dokumen</span>
+                                    <span>{{ __('Unggah Dokumen') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Ijazah, transkrip nilai, & sertifikat.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Ijazah, transkrip nilai, & sertifikat.') }}</p>
                             </div>
                         </div>
 
@@ -1042,18 +1087,19 @@
                             @auth
                                 <a href="{{ route('profile') }}"
                                     class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
-                                    <span>Lengkapi Profil Sekarang</span>
+                                    <span>{{ __('Lengkapi Profil Sekarang') }}</span>
                                 </a>
                             @else
                                 <a href="{{ route('login') }}"
                                     class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
-                                    <span>Masuk untuk Lengkapi Profil</span>
+                                    <span>{{ __('Masuk untuk Lengkapi Profil') }}</span>
                                 </a>
                             @endauth
                             <button type="button" @click="activeStep = 3"
                                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-gray-700 hover:text-gray-900 dark:text-zinc-300 dark:hover:text-white font-semibold text-xs sm:text-sm border border-gray-200 dark:border-white/10 transition cursor-pointer">
-                                <span>Lanjut: Lamar & Seleksi</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+                                <span>{{ __('Lanjut: Lamar & Seleksi') }}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
                             </button>
@@ -1062,21 +1108,27 @@
 
                     <!-- Right Column: Stage Intelligence & Guidance Panel -->
                     <div class="lg:col-span-5">
-                        <div class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
+                        <div
+                            class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
                             <div class="pb-3 border-b border-gray-200/80 dark:border-white/[0.06]">
-                                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Ketentuan Tahap 02</span>
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">{{ __('Ketentuan Tahap 02') }}</span>
                             </div>
                             <div class="space-y-2">
-                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Prioritas Screening</h4>
-                                <div class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
-                                    Profil pelamar dengan persentase kelengkapan data di atas 85% memiliki prioritas lebih tinggi dalam peninjauan administrasi oleh tim HRD.
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">
+                                    {{ __('Prioritas Screening') }}</h4>
+                                <div
+                                    class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
+                                    {{ __('Profil pelamar dengan persentase kelengkapan data di atas 85% memiliki prioritas lebih tinggi dalam peninjauan administrasi oleh tim HRD.') }}
                                 </div>
                             </div>
                             <div class="pt-1 flex items-center gap-2 text-[11px] text-gray-500 dark:text-zinc-400">
-                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
-                                <span>Format resume disinkronkan otomatis ke database rekruter</span>
+                                <span>{{ __('Format resume disinkronkan otomatis ke database rekruter') }}</span>
                             </div>
                         </div>
                     </div>
@@ -1088,40 +1140,48 @@
                     class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                     <div class="lg:col-span-7 space-y-6">
                         <div class="space-y-3">
-                            <div class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
+                            <div
+                                class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
                                 {{-- <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span> --}}
-                                <span>Tahap 03 — Seleksi Berkas</span>
+                                <span>{{ __('Tahap 03 — Seleksi Berkas') }}</span>
                             </div>
-                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
-                                Eksplorasi Lowongan & Seleksi Berkas
+                            <h3
+                                class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
+                                {{ __('Eksplorasi Lowongan & Seleksi Berkas') }}
                             </h3>
                             <p class="text-sm sm:text-base text-gray-600 dark:text-zinc-300 leading-relaxed">
-                                Temukan posisi karir yang sesuai dengan kompetensi Anda di PT Mitra Karya Analitika (MIKA) atau grup bisnis kami. Ajukan lamaran dalam satu klik, lalu tim HRD & Rekruter akan meninjau kualifikasi dan kesesuaian berkas Anda secara transparan.
+                                {{ __('Temukan posisi karir yang sesuai dengan kompetensi Anda di PT Mitra Karya Analitika (MIKA) atau grup bisnis kami. Ajukan lamaran dalam satu klik, lalu tim HRD & Rekruter akan meninjau kualifikasi dan kesesuaian berkas Anda secara transparan.') }}
                             </p>
                         </div>
 
                         <!-- Structured Milestone Items -->
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
                                     <span>One-Click Apply</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Lamaran praktis dengan profil terintegrasi.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Lamaran praktis dengan profil terintegrasi.') }}</p>
                             </div>
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>Pelacakan Status</span>
+                                    <span>{{ __('Pelacakan Status') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Update real-time (Terkirim, Review, Lolos).</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Update real-time (Terkirim, Review, Lolos).') }}</p>
                             </div>
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>Notifikasi Hasil</span>
+                                    <span>{{ __('Notifikasi Hasil') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Kelulusan administrasi sebelum ke tahap ujian.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Kelulusan administrasi sebelum ke tahap ujian.') }}</p>
                             </div>
                         </div>
 
@@ -1129,12 +1189,13 @@
                         <div class="pt-3 flex flex-wrap items-center gap-3">
                             <a href="{{ route('jobs.index') }}"
                                 class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
-                                <span>Jelajahi Lowongan Tersedia</span>
+                                <span>{{ __('Jelajahi Lowongan Tersedia') }}</span>
                             </a>
                             <button type="button" @click="activeStep = 4"
                                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-gray-700 hover:text-gray-900 dark:text-zinc-300 dark:hover:text-white font-semibold text-xs sm:text-sm border border-gray-200 dark:border-white/10 transition cursor-pointer">
-                                <span>Lanjut: Asesmen CBT</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+                                <span>{{ __('Lanjut: Asesmen CBT') }}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
                             </button>
@@ -1143,21 +1204,27 @@
 
                     <!-- Right Column: Stage Intelligence & Guidance Panel -->
                     <div class="lg:col-span-5">
-                        <div class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
+                        <div
+                            class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
                             <div class="pb-3 border-b border-gray-200/80 dark:border-white/[0.06]">
-                                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Ketentuan Tahap 03</span>
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">{{ __('Ketentuan Tahap 03') }}</span>
                             </div>
                             <div class="space-y-2">
-                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Seleksi Administrasi</h4>
-                                <div class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
-                                    Tim Rekruter akan mencocokkan latar belakang pendidikan, kompetensi, dan pengalaman kerja Anda dengan kualifikasi formasi yang dilamar.
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">
+                                    {{ __('Seleksi Administrasi') }}</h4>
+                                <div
+                                    class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
+                                    {{ __('Tim Rekruter akan mencocokkan latar belakang pendidikan, kompetensi, dan pengalaman kerja Anda dengan kualifikasi formasi yang dilamar.') }}
                                 </div>
                             </div>
                             <div class="pt-1 flex items-center gap-2 text-[11px] text-gray-500 dark:text-zinc-400">
-                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
-                                <span>Transparan tanpa perantara atau pungutan biaya</span>
+                                <span>{{ __('Transparan tanpa perantara atau pungutan biaya') }}</span>
                             </div>
                         </div>
                     </div>
@@ -1169,40 +1236,48 @@
                     class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                     <div class="lg:col-span-7 space-y-6">
                         <div class="space-y-3">
-                            <div class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
+                            <div
+                                class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
                                 {{-- <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span> --}}
-                                <span>Tahap 04 — Ujian Asesmen Online</span>
+                                <span>{{ __('Tahap 04 — Ujian Asesmen Online') }}</span>
                             </div>
-                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
-                                Ikuti Ujian CBT & Tes Kepribadian DISC
+                            <h3
+                                class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
+                                {{ __('Ikuti Ujian CBT & Tes Kepribadian DISC') }}
                             </h3>
                             <p class="text-sm sm:text-base text-gray-600 dark:text-zinc-300 leading-relaxed">
-                                Setelah dinyatakan lolos berkas administrasi, Anda dapat langsung mengakses sistem Ujian Online terintegrasi. Ujian meliputi Tes Kepribadian DISC (24 kuadran Most/Least) serta Tes Kompetensi Teknis (Pilihan Ganda & Soal Essay + Lampiran Berkas).
+                                {{ __('Setelah dinyatakan lolos berkas administrasi, Anda dapat langsung mengakses sistem Ujian Online terintegrasi. Ujian meliputi Tes Kepribadian DISC (24 kuadran Most/Least) serta Tes Kompetensi Teknis (Pilihan Ganda & Soal Essay + Lampiran Berkas).') }}
                             </p>
                         </div>
 
                         <!-- Structured Milestone Items -->
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>CBT Terpadu</span>
+                                    <span>{{ __('CBT Terpadu') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Timer real-time dan evaluasi terstandar.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Timer real-time dan evaluasi terstandar.') }}</p>
                             </div>
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>Tes DISC</span>
+                                    <span>{{ __('Tes DISC') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Kalkulasi otomatis profil kepribadian kerja.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Kalkulasi otomatis profil kepribadian kerja.') }}</p>
                             </div>
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>Auto-Save Aman</span>
+                                    <span>{{ __('Auto-Save Aman') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Penyimpanan jawaban berkala anti hilang.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Penyimpanan jawaban berkala anti hilang.') }}</p>
                             </div>
                         </div>
 
@@ -1211,18 +1286,19 @@
                             @auth
                                 <a href="{{ route('profile', ['tab' => 'riwayat']) }}"
                                     class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
-                                    <span>Cek Status Ujian di Riwayat</span>
+                                    <span>{{ __('Cek Status Ujian di Riwayat') }}</span>
                                 </a>
                             @else
                                 <a href="{{ route('login') }}"
                                     class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
-                                    <span>Masuk ke Portal Ujian</span>
+                                    <span>{{ __('Masuk ke Portal Ujian') }}</span>
                                 </a>
                             @endauth
                             <button type="button" @click="activeStep = 5"
                                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-gray-700 hover:text-gray-900 dark:text-zinc-300 dark:hover:text-white font-semibold text-xs sm:text-sm border border-gray-200 dark:border-white/10 transition cursor-pointer">
-                                <span>Lanjut: Wawancara</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+                                <span>{{ __('Lanjut: Wawancara') }}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
                             </button>
@@ -1231,21 +1307,27 @@
 
                     <!-- Right Column: Stage Intelligence & Guidance Panel -->
                     <div class="lg:col-span-5">
-                        <div class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
+                        <div
+                            class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
                             <div class="pb-3 border-b border-gray-200/80 dark:border-white/[0.06]">
-                                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Ketentuan Tahap 04</span>
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">{{ __('Ketentuan Tahap 04') }}</span>
                             </div>
                             <div class="space-y-2">
-                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Persiapan Ujian</h4>
-                                <div class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
-                                    Gunakan perangkat komputer/laptop dengan koneksi internet yang stabil untuk pengalaman optimal saat menyelesaikan tes DISC dan ujian teknis.
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">{{ __('Persiapan Ujian') }}
+                                </h4>
+                                <div
+                                    class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
+                                    {{ __('Gunakan perangkat komputer/laptop dengan koneksi internet yang stabil untuk pengalaman optimal saat menyelesaikan tes DISC dan ujian teknis.') }}
                                 </div>
                             </div>
                             <div class="pt-1 flex items-center gap-2 text-[11px] text-gray-500 dark:text-zinc-400">
-                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                                 </svg>
-                                <span>Hasil terkomputasi langsung ke dashboard seleksi rekruter</span>
+                                <span>{{ __('Hasil terkomputasi langsung ke dashboard seleksi rekruter') }}</span>
                             </div>
                         </div>
                     </div>
@@ -1257,40 +1339,48 @@
                     class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                     <div class="lg:col-span-7 space-y-6">
                         <div class="space-y-3">
-                            <div class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
+                            <div
+                                class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
                                 {{-- <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span> --}}
-                                <span>Tahap 05 — Sesi Wawancara</span>
+                                <span>{{ __('Tahap 05 — Sesi Wawancara') }}</span>
                             </div>
-                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
-                                Sesi Interview Daring atau Tatap Muka
+                            <h3
+                                class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
+                                {{ __('Sesi Interview Daring atau Tatap Muka') }}
                             </h3>
                             <p class="text-sm sm:text-base text-gray-600 dark:text-zinc-300 leading-relaxed">
-                                Kandidat yang lolos tahap ujian asesmen (Shortlisted) akan dijadwalkan untuk sesi wawancara mendalam bersama tim HRD dan User. Informasi jadwal, pewawancara, serta tautan video conference (Google Meet) atau lokasi kantor ditampilkan langsung pada dashboard Anda.
+                                {{ __('Kandidat yang lolos tahap ujian asesmen (Shortlisted) akan dijadwalkan untuk sesi wawancara mendalam bersama tim HRD dan User. Informasi jadwal, pewawancara, serta tautan video conference (Google Meet) atau lokasi kantor ditampilkan langsung pada dashboard Anda.') }}
                             </p>
                         </div>
 
                         <!-- Structured Milestone Items -->
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>Jadwal Terintegrasi</span>
+                                    <span>{{ __('Jadwal Terintegrasi') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Pewawancara dan waktu (WIB) tertera jelas.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Pewawancara dan waktu (WIB) tertera jelas.') }}</p>
                             </div>
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>Link Meet Langsung</span>
+                                    <span>{{ __('Link Meet Langsung') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Akses video call dari kartu riwayat lamaran.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Akses video call dari kartu riwayat lamaran.') }}</p>
                             </div>
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>Pengingat Otomatis</span>
+                                    <span>{{ __('Pengingat Otomatis') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Notifikasi terjadwal di portal akun Anda.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Notifikasi terjadwal di portal akun Anda.') }}</p>
                             </div>
                         </div>
 
@@ -1299,18 +1389,19 @@
                             @auth
                                 <a href="{{ route('profile', ['tab' => 'riwayat']) }}"
                                     class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
-                                    <span>Pantau Jadwal Wawancara</span>
+                                    <span>{{ __('Pantau Jadwal Wawancara') }}</span>
                                 </a>
                             @else
                                 <a href="{{ route('jobs.index') }}"
                                     class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
-                                    <span>Lihat Peluang Karir</span>
+                                    <span>{{ __('Lihat Peluang Karir') }}</span>
                                 </a>
                             @endauth
                             <button type="button" @click="activeStep = 6"
                                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-gray-700 hover:text-gray-900 dark:text-zinc-300 dark:hover:text-white font-semibold text-xs sm:text-sm border border-gray-200 dark:border-white/10 transition cursor-pointer">
-                                <span>Lanjut: Hasil Akhir</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+                                <span>{{ __('Lanjut: Hasil Akhir') }}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
                             </button>
@@ -1319,21 +1410,27 @@
 
                     <!-- Right Column: Stage Intelligence & Guidance Panel -->
                     <div class="lg:col-span-5">
-                        <div class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
+                        <div
+                            class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
                             <div class="pb-3 border-b border-gray-200/80 dark:border-white/[0.06]">
-                                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Ketentuan Tahap 05</span>
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">{{ __('Ketentuan Tahap 05') }}</span>
                             </div>
                             <div class="space-y-2">
-                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Persiapan Wawancara</h4>
-                                <div class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
-                                    Pelajari profil dan nilai inti MIKA (Menghargai, Integritas, Komitmen, Akuntabel), kenali tanggung jawab posisi, dan siapkan perangkat kamera/audio jika sesi berlangsung secara daring.
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">
+                                    {{ __('Persiapan Wawancara') }}</h4>
+                                <div
+                                    class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
+                                    {{ __('Pelajari profil dan nilai inti MIKA (Menghargai, Integritas, Komitmen, Akuntabel), kenali tanggung jawab posisi, dan siapkan perangkat kamera/audio jika sesi berlangsung secara daring.') }}
                                 </div>
                             </div>
                             <div class="pt-1 flex items-center gap-2 text-[11px] text-gray-500 dark:text-zinc-400">
-                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                 </svg>
-                                <span>Sesi wawancara berlangsung profesional & solutif</span>
+                                <span>{{ __('Sesi wawancara berlangsung profesional & solutif') }}</span>
                             </div>
                         </div>
                     </div>
@@ -1345,40 +1442,48 @@
                     class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                     <div class="lg:col-span-7 space-y-6">
                         <div class="space-y-3">
-                            <div class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
+                            <div
+                                class="inline-flex items-center gap-2 text-xs text-[#3b8004] dark:text-[#93F514] font-bold uppercase tracking-wider">
                                 {{-- <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span> --}}
-                                <span>Tahap 06 — Hasil Akhir & Penawaran</span>
+                                <span>{{ __('Tahap 06 — Hasil Akhir & Penawaran') }}</span>
                             </div>
-                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
-                                Pengumuman Kelulusan & Penawaran Kerja
+                            <h3
+                                class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
+                                {{ __('Pengumuman Kelulusan & Penawaran Kerja') }}
                             </h3>
                             <p class="text-sm sm:text-base text-gray-600 dark:text-zinc-300 leading-relaxed">
-                                Kandidat terbaik yang terpilih akan menerima pemberitahuan kelulusan resmi dengan status Diterima (Accepted). Tim MIKA akan menerbitkan surat penawaran kerja (*Offering Letter*) resmi beserta panduan onboarding kerja.
+                                {{ __('Kandidat terbaik yang terpilih akan menerima pemberitahuan kelulusan resmi dengan status Diterima (Accepted). Tim MIKA akan menerbitkan surat penawaran kerja (*Offering Letter*) resmi beserta panduan onboarding kerja.') }}
                             </p>
                         </div>
 
                         <!-- Structured Milestone Items -->
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>Hasil Transparan</span>
+                                    <span>{{ __('Hasil Transparan') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Status resmi langsung tertera di akun Anda.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Status resmi langsung tertera di akun Anda.') }}</p>
                             </div>
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>Offering Letter</span>
+                                    <span>{{ __('Offering Letter') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Surat penawaran resmi beserta paket benefit.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Surat penawaran resmi beserta paket benefit.') }}</p>
                             </div>
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
+                            <div
+                                class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.06] space-y-1">
                                 <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#4fa304] dark:bg-[#93F514]"></span>
-                                    <span>100% Gratis</span>
+                                    <span>{{ __('100% Gratis') }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">Tanpa pungutan biaya apapun dalam proses.</p>
+                                <p class="text-[11px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+                                    {{ __('Tanpa pungutan biaya apapun dalam proses.') }}</p>
                             </div>
                         </div>
 
@@ -1387,15 +1492,17 @@
                             @auth
                                 <a href="{{ route('profile', ['tab' => 'riwayat']) }}"
                                     class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
-                                    <span>Lihat Riwayat & Status Saya</span>
+                                    <span>{{ __('Lihat Riwayat & Status Saya') }}</span>
                                 </a>
                             @else
                                 <a href="{{ route('register') }}"
                                     class="inline-flex items-center gap-3 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25 group">
-                                    <span>Daftar & Raih Karir Impian</span>
-                                    <span class="w-5 h-5 rounded-md bg-black/10 flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                                    <span>{{ __('Daftar & Raih Karir Impian') }}</span>
+                                    <span
+                                        class="w-5 h-5 rounded-md bg-black/10 flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                         </svg>
                                     </span>
                                 </a>
@@ -1405,21 +1512,27 @@
 
                     <!-- Right Column: Stage Intelligence & Guidance Panel -->
                     <div class="lg:col-span-5">
-                        <div class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
+                        <div
+                            class="p-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-200/80 dark:border-white/10 space-y-4">
                             <div class="pb-3 border-b border-gray-200/80 dark:border-white/[0.06]">
-                                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Ketentuan Tahap 06</span>
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">{{ __('Ketentuan Tahap 06') }}</span>
                             </div>
                             <div class="space-y-2">
-                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Selamat Bergabung!</h4>
-                                <div class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
-                                    Siapkan diri Anda untuk melangkah ke babak baru perjalanan karir profesional masa depan bersama PT Mitra Karya Analitika (MIKA).
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">
+                                    {{ __('Selamat Bergabung!') }}</h4>
+                                <div
+                                    class="p-3.5 rounded-xl bg-[#93F514]/10 dark:bg-white/[0.02] border-l-4 border-[#4fa304] dark:border-[#93F514] text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
+                                    {{ __('Siapkan diri Anda untuk melangkah ke babak baru perjalanan karir profesional masa depan bersama PT Mitra Karya Analitika (MIKA).') }}
                                 </div>
                             </div>
                             <div class="pt-1 flex items-center gap-2 text-[11px] text-gray-500 dark:text-zinc-400">
-                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                                <svg class="w-4 h-4 text-[#4fa304] dark:text-[#93F514]" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
                                 </svg>
-                                <span>Onboarding terstruktur & pendampingan tim MIKA</span>
+                                <span>{{ __('Onboarding terstruktur & pendampingan tim MIKA') }}</span>
                             </div>
                         </div>
                     </div>
@@ -1435,7 +1548,7 @@
                 {{-- <div class="inline-flex items-center gap-2 text-[#93F514] text-xs font-bold uppercase tracking-widest mb-2">
                 <span class="w-2 h-2 rounded-full bg-[#93F514]"></span> Bidang Karir
             </div> --}}
-                <h2 class="text-2xl sm:text-3xl font-extrabold text-[#EEEEEE]">Kategori Departemen</h2>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-[#EEEEEE]">{{ __('Kategori Departemen') }}</h2>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -1458,7 +1571,7 @@
                         </div>
                     </a>
                 @empty
-                    <div class="col-span-full text-xs text-gray-400">Belum ada data departemen.</div>
+                    <div class="col-span-full text-xs text-gray-400">{{ __('Belum ada data departemen.') }}</div>
                 @endforelse
             </div>
         </section>
@@ -1469,10 +1582,10 @@
                 class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#041a04] via-[#062906] to-[#031203] border border-[#93F514]/50 p-8 sm:p-12 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8 shadow-2xl shadow-black/80">
                 <div class="max-w-xl z-10">
                     <h2 class="text-2xl sm:text-3xl font-extrabold text-[#EEEEEE] leading-tight">
-                        Siap Memulai Karir Baru Bersama Kami?
+                        {{ __('Siap Memulai Karir Baru Bersama Kami?') }}
                     </h2>
                     <p class="mt-2 text-sm text-gray-300 leading-relaxed">
-                        Daftar akun sekarang dan ikuti seleksi online untuk posisi pekerjaan impian Anda.
+                        {{ __('Daftar akun sekarang dan ikuti seleksi online untuk posisi pekerjaan impian Anda.') }}
                     </p>
                 </div>
 
@@ -1496,16 +1609,16 @@
                         @endphp
                         <a href="{{ $dashRoute }}"
                             class="px-8 py-3.5 rounded-full bg-gradient-to-r from-[#93F514] to-[#5ef558] hover:from-[#7edc0b] hover:to-[#43e63d] text-black font-extrabold text-sm shadow-md shadow-black/40 transition-all duration-300">
-                            {{ $isAdminOrRecruiter ? 'Buka Panel Dashboard' : 'Buka Profil Pelamar' }}
+                            {{ $isAdminOrRecruiter ? __('Buka Panel Dashboard') : __('Buka Profil Pelamar') }}
                         </a>
                     @else
                         <a href="{{ route('register') }}"
                             class="w-full sm:w-auto px-8 py-3.5 rounded-full bg-gradient-to-r from-[#93F514] to-[#5ef558] hover:from-[#7edc0b] hover:to-[#43e63d] text-black font-extrabold text-sm shadow-md shadow-black/40 transition-all duration-300 text-center">
-                            Daftar Akun Sekarang
+                            {{ __('Daftar Akun Sekarang') }}
                         </a>
                         <a href="{{ route('login') }}"
                             class="w-full sm:w-auto px-6 py-3.5 rounded-full bg-black/50 hover:bg-black/80 border border-[#93F514]/50 text-[#EEEEEE] font-semibold text-sm transition text-center">
-                            Masuk Akun
+                            {{ __('Masuk Akun') }}
                         </a>
                     @endauth
                 </div>

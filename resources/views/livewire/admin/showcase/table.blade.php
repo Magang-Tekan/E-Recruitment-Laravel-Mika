@@ -173,13 +173,13 @@
                                 <div class="flex items-center gap-1.5">
                                     <!-- Foto 1 (Utama) -->
                                     <div class="relative group/pic1 w-16 h-14 rounded-lg bg-black/40 overflow-hidden border border-gray-200 dark:border-[#1D2E54] shrink-0" title="Foto Utama / Poster">
-                                        <img src="{{ $item->img1_url }}" alt="{{ $item->title }}" class="w-full h-full object-cover group-hover/pic1:scale-110 transition-transform duration-300">
+                                        <img src="{{ $item->img1_url }}" alt="{{ $item->title }}" onerror="this.onerror=null; this.src='/storage/asset-compro/aniv1.jpg'" class="w-full h-full object-cover group-hover/pic1:scale-110 transition-transform duration-300">
                                         <span class="absolute bottom-0 inset-x-0 bg-black/75 text-[9px] text-white text-center py-0.5 font-bold">1. Utama</span>
                                     </div>
                                     <!-- Foto 2 -->
                                     <div class="relative group/pic2 w-12 h-14 rounded-lg bg-black/40 overflow-hidden border border-gray-200 dark:border-[#1D2E54] shrink-0" title="Foto Aktivitas">
                                         @if($item->img2_url)
-                                            <img src="{{ $item->img2_url }}" alt="Foto 2" class="w-full h-full object-cover group-hover/pic2:scale-110 transition-transform duration-300">
+                                            <img src="{{ $item->img2_url }}" alt="Foto 2" onerror="this.onerror=null; this.src='{{ $item->img1_url }}'" class="w-full h-full object-cover group-hover/pic2:scale-110 transition-transform duration-300">
                                             <span class="absolute bottom-0 inset-x-0 bg-black/75 text-[8.5px] text-gray-300 text-center py-0.5">2</span>
                                         @else
                                             <div class="w-full h-full flex items-center justify-center text-[10px] text-gray-400 bg-gray-100 dark:bg-[#14203A]">-</div>
@@ -188,7 +188,7 @@
                                     <!-- Foto 3 -->
                                     <div class="relative group/pic3 w-12 h-14 rounded-lg bg-black/40 overflow-hidden border border-gray-200 dark:border-[#1D2E54] shrink-0" title="Foto Pameran/Display">
                                         @if($item->img3_url)
-                                            <img src="{{ $item->img3_url }}" alt="Foto 3" class="w-full h-full object-cover group-hover/pic3:scale-110 transition-transform duration-300">
+                                            <img src="{{ $item->img3_url }}" alt="Foto 3" onerror="this.onerror=null; this.src='{{ $item->img1_url }}'" class="w-full h-full object-cover group-hover/pic3:scale-110 transition-transform duration-300">
                                             <span class="absolute bottom-0 inset-x-0 bg-black/75 text-[8.5px] text-gray-300 text-center py-0.5">3</span>
                                         @else
                                             <div class="w-full h-full flex items-center justify-center text-[10px] text-gray-400 bg-gray-100 dark:bg-[#14203A]">-</div>
@@ -431,6 +431,14 @@
                                 <span class="text-xs font-semibold text-gray-800 dark:text-slate-200">Aktifkan & Tampilkan</span>
                             </label>
                         </div>
+
+                        <!-- Auto-Translate Notice -->
+                        <div class="flex items-center gap-2.5 text-blue-700 dark:text-blue-300 text-xs bg-blue-50/70 dark:bg-blue-950/30 p-3 rounded-xl border border-blue-200/70 dark:border-blue-900/50">
+                            <svg class="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                            </svg>
+                            <span><strong>Penerjemahan Otomatis Aktif:</strong> Cukup tulis dalam Bahasa Indonesia. Sistem akan secara otomatis menerjemahkan judul, tag, dan deskripsi ke Bahasa Inggris untuk pengunjung mode EN.</span>
+                        </div>
                     </div>
 
                     <!-- Footer Buttons -->
@@ -592,6 +600,14 @@
                                 <input type="checkbox" name="is_active" value="1" x-model="editData.is_active" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300 dark:border-[#1D2E54] dark:bg-[#14203A]">
                                 <span class="text-xs font-semibold text-gray-800 dark:text-slate-200">Aktifkan & Tampilkan</span>
                             </label>
+                        </div>
+
+                        <!-- Auto-Translate Notice -->
+                        <div class="flex items-center gap-2.5 text-blue-700 dark:text-blue-300 text-xs bg-blue-50/70 dark:bg-blue-950/30 p-3 rounded-xl border border-blue-200/70 dark:border-blue-900/50">
+                            <svg class="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                            </svg>
+                            <span><strong>Penerjemahan Otomatis Aktif:</strong> Jika Anda memperbarui judul atau deskripsi, versi Bahasa Inggris akan otomatis diperbarui oleh sistem saat disimpan.</span>
                         </div>
                     </div>
 

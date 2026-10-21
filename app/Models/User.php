@@ -35,11 +35,19 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is a recruiter (role recruiter or employee with is_recruiter toggle).
+     */
+    public function isRecruiter(): bool
+    {
+        return $this->role_id == 2 || strtolower($this->role?->name ?? '') === 'recruiter' || (bool) $this->is_recruiter;
+    }
+
+    /**
      * Check if user can review job applicants.
      */
     public function canReview(): bool
     {
-        return $this->isAdmin() || $this->role_id == 2 || (bool) $this->is_recruiter;
+        return $this->isAdmin() || $this->isRecruiter();
     }
 
     /**
@@ -76,6 +84,17 @@ class User extends Authenticatable
         return $this->hasMany(TestAttempt::class, 'user_id');
     }
 
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (! empty($this->avatar)) {
+            return \Illuminate\Support\Str::startsWith($this->avatar, ['http://', 'https://'])
+                ? $this->avatar
+                : asset('storage/' . $this->avatar);
+        }
+
+        return null;
+    }
+
     protected static function booted(): void
     {
         static::created(function (User $user) {
@@ -85,6 +104,7 @@ class User extends Authenticatable
                     [
                         'nik'       => $user->nik ?? null,
                         'full_name' => $user->name ?? null,
+                        'photo'     => $user->avatar ?? null,
                     ]
                 );
             } elseif ($user->role_id == 4 || strtolower($user->role?->name ?? '') === 'employee') {
@@ -93,6 +113,7 @@ class User extends Authenticatable
                     [
                         'nik'       => $user->nik ?? null,
                         'full_name' => $user->name ?? null,
+                        'photo'     => $user->avatar ?? null,
                     ]
                 );
             }

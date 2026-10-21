@@ -25,6 +25,7 @@ class Company extends Model
         'postal_code',
         'phone',
         'email',
+        'registration_passkey',
     ];
 
     protected $casts = [
@@ -113,5 +114,62 @@ class Company extends Model
         }
 
         return strtoupper(substr($cleanName, 0, 2));
+    }
+
+    /**
+     * Get localized company about description
+     */
+    public function getLocalizedAboutAttribute(): ?string
+    {
+        if (app()->getLocale() === 'en') {
+            if (!empty($this->about_en)) {
+                return $this->about_en;
+            }
+            if (!empty($this->about)) {
+                $translated = \App\Services\TranslationService::translate($this->about);
+                if (!empty($translated)) {
+                    return $translated;
+                }
+            }
+        }
+        return $this->about ? __(trim($this->about)) : null;
+    }
+
+    /**
+     * Get localized company tagline
+     */
+    public function getLocalizedTaglineAttribute(): ?string
+    {
+        if (app()->getLocale() === 'en') {
+            if (!empty($this->tagline_en)) {
+                return $this->tagline_en;
+            }
+            if (!empty($this->tagline)) {
+                $translated = \App\Services\TranslationService::translate($this->tagline);
+                if (!empty($translated)) {
+                    return $translated;
+                }
+            }
+        }
+        return $this->tagline ? __(trim($this->tagline)) : null;
+    }
+
+    /**
+     * Get localized company vision
+     */
+    public function getLocalizedVisionAttribute(): ?string
+    {
+        if (app()->getLocale() === 'en') {
+            if (!empty($this->vision_en)) {
+                return $this->vision_en;
+            }
+            if (!empty($this->vision)) {
+                $translated = \App\Services\TranslationService::translate($this->vision);
+                if (!empty($translated)) {
+                    return $translated;
+                }
+            }
+        }
+        return $this->vision ? __(trim($this->vision)) : null;
     }
 }

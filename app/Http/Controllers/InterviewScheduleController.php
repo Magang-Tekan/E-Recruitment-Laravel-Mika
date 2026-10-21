@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\InterviewSchedule;
 use App\Models\JobApplication;
 use App\Models\ApplicationStatusHistory;
+use App\Mail\ApplicationStatusUpdatedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class InterviewScheduleController extends Controller
 {
@@ -16,8 +19,9 @@ class InterviewScheduleController extends Controller
     private function getRedirectRoute(): string
     {
         $user = auth()->user();
-        $isRecruiter = $user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter');
-        return $isRecruiter ? 'recruiter.interview_schedule' : 'admin.interview_schedule';
+        $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+        $isRecruiter = request()->is('recruiter/*') || request()->routeIs('recruiter.*') || ($user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter));
+        return (request()->is('recruiter/*') || ($isRecruiter && !$isAdmin)) ? 'recruiter.interview_schedule' : 'admin.interview_schedule';
     }
 
     /**
@@ -25,6 +29,12 @@ class InterviewScheduleController extends Controller
      */
     public function store(Request $request)
     {
+        $user = auth()->user();
+        $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+        if (!$isAdmin) {
+            abort(403, 'Akses ditolak. Hanya HR/Admin yang memiliki wewenang untuk membuat jadwal wawancara.');
+        }
+
         $request->validate([
             'job_applications_id' => 'required|exists:job_applications,id',
             'users_id'            => 'required|exists:users,id',
@@ -40,6 +50,16 @@ class InterviewScheduleController extends Controller
         $type = $request->input('interview_type');
         $location = $request->input('location');
         $meetingLink = $request->input('meeting_link');
+
+        // Cegah duplikasi: jika kandidat sudah memiliki jadwal aktif yang belum dibatalkan
+        $existingActiveSchedule = InterviewSchedule::where('job_applications_id', $request->job_applications_id)
+            ->whereNotIn('status', ['Cancelled'])
+            ->first();
+        if ($existingActiveSchedule) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Kandidat ini sudah memiliki jadwal wawancara aktif. Silakan ubah jadwal yang sudah ada pada tabel.');
+        }
 
         // Jika online dan meeting_link diisi namun lokasi kosong / default
         if ($type === 'online') {
@@ -65,8 +85,11 @@ class InterviewScheduleController extends Controller
 
             // Status lamaran otomatis → Interview
             $application   = JobApplication::find($request->job_applications_id);
-            $sendEmail      = $request->input('send_email', '0') === '1';
-            $targetStatus   = 'Interview';
+            $user          = auth()->user();
+            $isAdmin       = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+            // Recruiter tidak diizinkan mengirim email langsung ke pelamar
+            $sendEmail     = $isAdmin && ($request->input('send_email', '0') === '1');
+            $targetStatus  = 'Interview';
 
             if ($application) {
                 $prevStatus = $application->status;
@@ -147,16 +170,24 @@ class InterviewScheduleController extends Controller
         try {
             DB::beginTransaction();
 
-            $oldStatus = $schedule->status;
-            $newStatus = $request->status;
+            $user = auth()->user();
+            $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+            $isRecruiter = request()->is('recruiter/*') || request()->routeIs('recruiter.*') || ($user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter));
 
-            $schedule->update([
-                'users_id'       => $request->users_id,
-                'interview_date' => $request->interview_date,
-                'location'       => $location,
-                'meeting_link'   => $meetingLink,
-                'status'         => $newStatus,
-            ]);
+            if ($isAdmin) {
+                $schedule->update([
+                    'users_id'       => $request->users_id,
+                    'interview_date' => $request->interview_date,
+                    'location'       => $location,
+                    'meeting_link'   => $meetingLink,
+                    'status'         => $request->status,
+                ]);
+            } else {
+                // Recruiter hanya berwenang memberikan evaluasi/approval wawancara, tidak dapat mengubah data jadwal
+                $schedule->update([
+                    'status' => 'Completed',
+                ]);
+            }
 
             // Tangani keputusan hasil wawancara dan update status lamaran jika ada
             $decision = $request->input('application_decision', 'keep');
@@ -165,17 +196,89 @@ class InterviewScheduleController extends Controller
 
             if ($schedule->jobApplication) {
                 $application = $schedule->jobApplication;
-                $targetStatus = in_array($decision, ['Accepted', 'Rejected', 'Interview']) ? $decision : $application->status;
-
+                $targetStatus = $application->status;
+                $historyNotes = "";
                 $scoreText = (!is_null($score) && $score !== '') ? " Nilai: {$score}/100." : "";
-                $decisionLabel = match($decision) {
-                    'Accepted'  => 'Lolos Wawancara (Diterima / Accepted)',
-                    'Rejected'  => 'Tidak Lolos Wawancara (Ditolak / Rejected)',
-                    'Interview' => 'Lolos ke Tahap Wawancara Berikutnya',
-                    default     => 'Sesi Wawancara Selesai (Completed)',
-                };
 
-                $historyNotes = "[{$decisionLabel}].{$scoreText}" . ($notes ? " Catatan Evaluasi: {$notes}" : "");
+                if ($isAdmin) {
+                    if ($decision === 'admin_override_accepted') {
+                        // ⚡ ADMIN OVERRIDE / EMERGENCY APPROVAL (Kuasa Penuh Admin)
+                        $application->interview_admin_approval = 'approved';
+                        $application->interview_admin_notes = $notes ?: 'Disetujui melalui Admin Override (Emergency Approval).';
+                        $application->interview_admin_id = $user->id;
+                        $application->interview_admin_approved_at = now();
+
+                        $application->interview_recruiter_approval = 'approved';
+                        $application->interview_recruiter_notes = $application->interview_recruiter_notes ?: '[Bypassed by Admin Override]';
+                        $application->interview_recruiter_approved_at = $application->interview_recruiter_approved_at ?: now();
+
+                        $targetStatus = 'Accepted';
+                        $historyNotes = "[⚡ Admin Override: Diterima Resmi (Emergency Approval)].{$scoreText}" . ($notes ? " Catatan HR: {$notes}" : "");
+                    } elseif ($decision === 'admin_approved') {
+                        // Persetujuan HR/Admin (Normal Flow)
+                        $application->interview_admin_approval = 'approved';
+                        $application->interview_admin_notes = $notes ?: 'Persetujuan HR: Gaji, psikotes, kuota, dan kontrak kerja disetujui.';
+                        $application->interview_admin_id = $user->id;
+                        $application->interview_admin_approved_at = now();
+
+                        if ($application->interview_recruiter_approval === 'approved') {
+                            $targetStatus = 'Accepted';
+                            $historyNotes = "[Double Approved: Lolos Wawancara].{$scoreText} Kedua pihak (Recruiter & HR) telah sepakat menyetujui kandidat." . ($notes ? " Catatan HR: {$notes}" : "");
+                        } else {
+                            $targetStatus = 'Interview';
+                            $historyNotes = "[Persetujuan HR Wawancara].{$scoreText} Disetujui oleh HR/Admin. Menunggu konfirmasi Recruiter teknis." . ($notes ? " Catatan HR: {$notes}" : "");
+                        }
+                    } elseif ($decision === 'Accepted') {
+                        // Jika Admin langsung klik Accepted
+                        $application->interview_admin_approval = 'approved';
+                        $application->interview_admin_notes = $notes;
+                        $application->interview_admin_id = $user->id;
+                        $application->interview_admin_approved_at = now();
+
+                        $targetStatus = 'Accepted';
+                        $historyNotes = "[Lolos Wawancara (Diterima / Accepted)].{$scoreText}" . ($notes ? " Catatan: {$notes}" : "");
+                    } elseif ($decision === 'Rejected') {
+                        $application->interview_admin_approval = 'rejected';
+                        $application->interview_admin_notes = $notes;
+                        $application->interview_admin_id = $user->id;
+                        $application->interview_admin_approved_at = now();
+
+                        $targetStatus = 'Rejected';
+                        $historyNotes = "[Tidak Lolos Wawancara (Ditolak / Rejected)]." . ($notes ? " Catatan: {$notes}" : "");
+                    } elseif ($decision === 'Interview') {
+                        $targetStatus = 'Interview';
+                        $historyNotes = "[Lolos ke Tahap Wawancara Berikutnya]." . ($notes ? " Catatan: {$notes}" : "");
+                    } else {
+                        // keep
+                        $historyNotes = "[Sesi Wawancara Selesai (Completed)].{$scoreText}" . ($notes ? " Catatan: {$notes}" : "");
+                    }
+                } else {
+                    // Recruiter (Pewawancara)
+                    if ($decision === 'recruiter_approved' || $decision === 'Accepted' || $decision === 'approved') {
+                        $application->interview_recruiter_approval = 'approved';
+                        $application->interview_recruiter_notes = $notes ?: 'Persetujuan Teknis: Recruiter menyetujui kompetensi kandidat layak masuk tim.';
+                        $application->interview_recruiter_id = $user->id;
+                        $application->interview_recruiter_approved_at = now();
+
+                        if ($application->interview_admin_approval === 'approved') {
+                            $targetStatus = 'Accepted';
+                            $historyNotes = "[Double Approved: Lolos Wawancara].{$scoreText} Kedua pihak (Recruiter & HR) telah sepakat menyetujui kandidat." . ($notes ? " Catatan Recruiter: {$notes}" : "");
+                        } else {
+                            $targetStatus = 'Interview';
+                            $historyNotes = "[Persetujuan Teknis Wawancara].{$scoreText} Disetujui oleh Recruiter ({$user->name}). Menunggu keputusan HR/Admin." . ($notes ? " Catatan Recruiter: {$notes}" : "");
+                        }
+                    } elseif ($decision === 'recruiter_rejected' || $decision === 'Rejected' || $decision === 'rejected') {
+                        $application->interview_recruiter_approval = 'rejected';
+                        $application->interview_recruiter_notes = $notes ?: 'Rekomendasi penolakan hasil wawancara teknis.';
+                        $application->interview_recruiter_id = $user->id;
+                        $application->interview_recruiter_approved_at = now();
+
+                        $targetStatus = 'Interview';
+                        $historyNotes = "[Rekomendasi Tidak Lolos Wawancara oleh Recruiter: {$user->name}].{$scoreText}" . ($notes ? " Catatan: {$notes}" : "");
+                    } else {
+                        $historyNotes = "[Evaluasi Wawancara Disimpan oleh Recruiter].{$scoreText}" . ($notes ? " Catatan: {$notes}" : "");
+                    }
+                }
 
                 $application->update([
                     'status' => $targetStatus,
@@ -189,12 +292,52 @@ class InterviewScheduleController extends Controller
                     'changed_by'          => auth()->id() ?? 1,
                     'changed_at'          => now(),
                 ]);
+
+                // Notifikasi Email Otomatis:
+                // 1. Jika HR/Admin: kirim jika send_email bernilai true (atau default true untuk status final Accepted / Rejected).
+                // 2. Jika Recruiter: kirim jika persetujuan melengkapi Double Approval sehingga resmi Accepted.
+                $defaultStatusNotes = [
+                    'Accepted' => 'Selamat! Anda dinyatakan DITERIMA untuk bergabung bersama kami. Tim HR akan segera menghubungi Anda terkait proses offering dan onboarding.',
+                    'Rejected' => 'Terima kasih atas partisipasi Anda dalam tahap wawancara. Saat ini kualifikasi Anda belum sesuai dengan kriteria yang kami butuhkan.',
+                ];
+
+                $shouldSendEmail = false;
+                if ($isAdmin) {
+                    $shouldSendEmail = $request->has('send_email')
+                        ? $request->boolean('send_email')
+                        : in_array($targetStatus, ['Accepted', 'Rejected']);
+                } else {
+                    if ($targetStatus === 'Accepted') {
+                        $shouldSendEmail = true;
+                    }
+                }
+
+                $emailSent = false;
+                if ($shouldSendEmail) {
+                    try {
+                        $application->load(['job.company', 'applicantProfile.user']);
+                        $applicantEmail = $application->applicantProfile?->user?->email;
+                        if ($applicantEmail) {
+                            $mailNotes = $notes ?: ($defaultStatusNotes[$targetStatus] ?? null);
+                            Mail::to($applicantEmail)->send(
+                                new ApplicationStatusUpdatedMail($application, $targetStatus, $mailNotes)
+                            );
+                            $emailSent = true;
+                        }
+                    } catch (\Throwable $mailEx) {
+                        Log::warning('Gagal kirim email notifikasi hasil wawancara: ' . $mailEx->getMessage(), [
+                            'application_id' => $application->id,
+                            'status'         => $targetStatus,
+                        ]);
+                    }
+                }
             }
 
             DB::commit();
 
+            $emailNote = ($emailSent ?? false) ? ' Notifikasi email resmi telah berhasil dikirim ke kandidat.' : '';
             return redirect()->route($this->getRedirectRoute())
-                ->with('update', 'Hasil wawancara dan status pelamar berhasil diperbarui.');
+                ->with('update', 'Hasil wawancara dan status pelamar berhasil diperbarui.' . $emailNote);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
@@ -208,6 +351,12 @@ class InterviewScheduleController extends Controller
      */
     public function destroy(string $id)
     {
+        $user = auth()->user();
+        $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+        if (!$isAdmin) {
+            abort(403, 'Akses ditolak. Hanya HR/Admin yang memiliki wewenang untuk menghapus jadwal wawancara.');
+        }
+
         try {
             $schedule = InterviewSchedule::findOrFail($id);
             $schedule->delete();

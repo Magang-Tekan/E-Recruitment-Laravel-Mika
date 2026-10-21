@@ -1,7 +1,6 @@
 @extends('frontend.layouts.app')
 
-{{-- @section('title', 'Tentang Kami | ' . ($company->name ?? 'PT Mitra Karya Analitika')) --}}
-@section('title', 'Tentang Kami | Mika Career')
+@section('title', __('Tentang Kami') . ' | Mika Career')
 
 @section('content')
     <div class="relative overflow-hidden">
@@ -66,7 +65,7 @@
                                     <!-- Main Large Photo (Left Background Layer) -->
                                     <div class="absolute left-0 top-6 w-[56%] sm:w-[58%] h-[260px] sm:h-[310px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-br from-[#93F514]/50 via-white/10 to-transparent shadow-2xl shadow-black/80 group">
                                         <div class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/20">
-                                            <img :src="slide.img1" alt="Dokumentasi Perusahaan"
+                                            <img :src="slide.img1" alt="{{ __('Dokumentasi Perusahaan') }}"
                                                 class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
                                         </div>
                                     </div>
@@ -74,7 +73,7 @@
                                     <!-- Top-Right Secondary Photo Layer -->
                                     <div class="absolute right-0 top-0 w-[48%] sm:w-[50%] h-[200px] sm:h-[235px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-bl from-[#93F514]/60 via-white/15 to-transparent shadow-2xl shadow-black/90 group z-10">
                                         <div class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/20">
-                                            <img :src="slide.img2" alt="Dokumentasi Aktivitas"
+                                            <img :src="slide.img2" alt="{{ __('Dokumentasi Aktivitas') }}"
                                                 class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
                                         </div>
                                     </div>
@@ -82,7 +81,7 @@
                                     <!-- Bottom Center/Right Overlapping Tertiary Photo -->
                                     <div class="absolute left-[35%] sm:left-[32%] bottom-0 w-[50%] sm:w-[52%] h-[190px] sm:h-[220px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-tr from-[#93F514]/60 via-white/15 to-transparent shadow-2xl shadow-black/95 group z-20">
                                         <div class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/25">
-                                            <img :src="slide.img3" alt="Dokumentasi Event"
+                                            <img :src="slide.img3" alt="{{ __('Dokumentasi Event') }}"
                                                 class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
                                         </div>
                                     </div>
@@ -104,13 +103,13 @@
 
                             <!-- Slide Prev/Next Arrows overlay for easy control -->
                             <div class="absolute -bottom-10 left-0 z-30 flex items-center gap-2">
-                                <button @click="prev()" aria-label="Previous Slide"
+                                <button @click="prev()" aria-label="{{ __('Previous') }}"
                                     class="w-8 h-8 rounded-lg bg-[#061506] hover:bg-[#93F514] text-gray-300 hover:text-black border border-[#93F514]/40 transition-all flex items-center justify-center cursor-pointer shadow-md">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
                                     </svg>
                                 </button>
-                                <button @click="next()" aria-label="Next Slide"
+                                <button @click="next()" aria-label="{{ __('Next') }}"
                                     class="w-8 h-8 rounded-lg bg-[#061506] hover:bg-[#93F514] text-gray-300 hover:text-black border border-[#93F514]/40 transition-all flex items-center justify-center cursor-pointer shadow-md">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
@@ -125,7 +124,7 @@
                     <div class="lg:col-span-6 space-y-6 text-left order-1 lg:order-2">
                         <!-- Main Heading -->
                         <h1 class="reveal-on-scroll text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight text-[#EEEEEE] leading-[1.15]" data-delay="100">
-                            Mengenal Lebih Dekat <br>
+                            {{ __('Mengenal Lebih Dekat') }} <br>
                             <span class="text-[#93F514]">
                                 {{ $company->name ?? 'PT Mitra Karya Analitika' }}
                             </span>
@@ -133,24 +132,24 @@
 
                         <!-- Tagline Quote -->
                         <p class="reveal-on-scroll text-base sm:text-lg lg:text-xl text-gray-200 font-medium italic leading-relaxed" data-delay="150">
-                            &ldquo;{{ $company->tagline ?? 'The Best Choice for Your Business Partner' }}&rdquo;
+                            &ldquo;{{ $company->tagline ? __($company->tagline) : 'The Best Choice for Your Business Partner' }}&rdquo;
                         </p>
 
                         <!-- Subtitle -->
                         <p class="reveal-on-scroll text-xs sm:text-sm md:text-base text-gray-300 leading-relaxed max-w-xl" data-delay="200">
-                            Mitra terpercaya di Indonesia dalam penyediaan instrumen laboratorium modern, keselamatan kerja (HSE), dan teknologi pemantauan lingkungan sejak 2014.
+                            {{ __('Mitra terpercaya di Indonesia dalam penyediaan instrumen laboratorium modern, keselamatan kerja (HSE), dan teknologi pemantauan lingkungan sejak 2014.') }}
                         </p>
 
                         <!-- Action Buttons & Quick Nav -->
                         <div class="reveal-on-scroll pt-2 flex flex-wrap items-center gap-3.5" data-delay="250">
                             <a href="{{ route('jobs.index') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#93F514] hover:bg-[#a6ff2e] text-black font-extrabold text-xs sm:text-sm tracking-wide shadow-md shadow-black/30 hover:scale-[1.02] transition-all duration-200">
-                                <span>Lihat Lowongan Karir</span>
+                                <span>{{ __('Lihat Lowongan Karir') }}</span>
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                 </svg>
                             </a>
                             <a href="#meet-the-group" class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#061506] hover:bg-[#092209] text-[#EEEEEE] hover:text-[#93F514] border border-[#93F514]/40 font-bold text-xs sm:text-sm transition-all duration-200 shadow-sm">
-                                <span>Ekosistem Grup</span>
+                                <span>{{ __('Ekosistem Grup') }}</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
@@ -159,7 +158,7 @@
 
                         <!-- Slide Navigation Dots (Controls) -->
                         <div class="reveal-on-scroll pt-4 flex items-center gap-2.5" data-delay="300">
-                            <span class="text-xs text-gray-400 font-semibold mr-1 about-doc-label">Dokumentasi:</span>
+                            <span class="text-xs text-gray-400 font-semibold mr-1 about-doc-label">{{ __('Dokumentasi:') }}</span>
                             <template x-for="(slide, index) in slides" :key="index">
                                 <button @click="goTo(index)"
                                     :class="currentSlide === index ? 'w-8 bg-[#93F514] shadow-sm about-dot-active' : 'w-2.5 bg-white/25 hover:bg-white/45 border border-white/10 about-dot-inactive'"
@@ -181,24 +180,24 @@
                 <!-- Left Narrative Column (7 cols) -->
                 <div class="lg:col-span-7 space-y-6">
                     <div class="reveal-on-scroll inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] text-xs font-bold uppercase tracking-wider">
-                        Profil & Eksistensi Perusahaan
+                        {{ __('Profil & Eksistensi Perusahaan') }}
                     </div>
 
                     <h2 class="reveal-on-scroll text-2xl sm:text-4xl font-extrabold text-[#EEEEEE] leading-tight" data-delay="100">
-                        Solusi Presisi untuk <span class="text-[#93F514]">Laboratorium, HSE, & Lingkungan</span>
+                        {{ __('Solusi Presisi untuk') }} <span class="text-[#93F514]">{{ __('Laboratorium, HSE, & Lingkungan') }}</span>
                     </h2>
 
                     <div class="reveal-on-scroll text-sm sm:text-base text-gray-300 leading-relaxed space-y-4" data-delay="150">
                         @if($company->about)
                             <p class="text-justify">
-                                {{ $company->about }}
+                                {{ $company->localized_about ?? __(trim($company->about)) }}
                             </p>
                         @else
                             <p class="text-justify">
-                                <strong>{{ $company->name ?? 'PT Mitra Karya Analitika' }} (MIKA)</strong> didirikan sejak tahun 2014 di Kota Semarang, Jawa Tengah. Berawal dari komitmen tinggi untuk mendukung kemajuan riset, industri, dan keberlanjutan lingkungan hidup di Indonesia, kami bertumbuh menjadi penyedia solusi instrumen analitika dan keselamatan terpercaya.
+                                <strong>{{ $company->name ?? 'PT Mitra Karya Analitika' }} (MIKA)</strong> {{ __('didirikan sejak tahun 2014 di Kota Semarang, Jawa Tengah. Berawal dari komitmen tinggi untuk mendukung kemajuan riset, industri, dan keberlanjutan lingkungan hidup di Indonesia, kami bertumbuh menjadi penyedia solusi instrumen analitika dan keselamatan terpercaya.') }}
                             </p>
                             <p class="text-justify">
-                                Selama lebih dari 10 tahun perjalanan, kami secara konsisten menyuplai instrumen laboratorium mutakhir, alat pelindung diri (HSE), hingga peralatan pemantauan kualitas lingkungan hidup kepada ratusan mitra bisnis di seluruh nusantara.
+                                {{ __('Selama lebih dari 10 tahun perjalanan, kami secara konsisten menyuplai instrumen laboratorium mutakhir, alat pelindung diri (HSE), hingga peralatan pemantauan kualitas lingkungan hidup kepada ratusan mitra bisnis di seluruh nusantara.') }}
                             </p>
                         @endif
                     </div>
@@ -212,8 +211,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h4 class="text-sm font-bold text-[#EEEEEE]">Kualitas Internasional</h4>
-                                <p class="text-xs text-gray-400 mt-0.5">Produk berstandar mutu tinggi dari manufaktur teruji.</p>
+                                <h4 class="text-sm font-bold text-[#EEEEEE]">{{ __('Kualitas Internasional') }}</h4>
+                                <p class="text-xs text-gray-400 mt-0.5">{{ __('Produk berstandar mutu tinggi dari manufaktur teruji.') }}</p>
                             </div>
                         </div>
 
@@ -224,8 +223,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h4 class="text-sm font-bold text-[#EEEEEE]">Dukungan Purna Jual</h4>
-                                <p class="text-xs text-gray-400 mt-0.5">Layanan teknis, garansi resmi, dan pendampingan ahli.</p>
+                                <h4 class="text-sm font-bold text-[#EEEEEE]">{{ __('Dukungan Purna Jual') }}</h4>
+                                <p class="text-xs text-gray-400 mt-0.5">{{ __('Layanan teknis, garansi resmi, dan pendampingan ahli.') }}</p>
                             </div>
                         </div>
                     </div>
@@ -255,15 +254,15 @@
                         <!-- Highlights List -->
                         <div class="py-6 space-y-4 text-xs text-gray-300">
                             <div class="flex items-center justify-between py-2 border-b border-white/5">
-                                <span class="text-gray-400">Tahun Pendirian:</span>
+                                <span class="text-gray-400">{{ __('Tahun Pendirian:') }}</span>
                                 <span class="font-bold text-[#EEEEEE]">2014</span>
                             </div>
                             <div class="flex items-center justify-between py-2 border-b border-white/5">
-                                <span class="text-gray-400">Pengalaman:</span>
-                                <span class="font-bold text-[#93F514]">10+ Tahun Berkelanjutan</span>
+                                <span class="text-gray-400">{{ __('Pengalaman:') }}</span>
+                                <span class="font-bold text-[#93F514]">{{ __('10+ Tahun Berkelanjutan') }}</span>
                             </div>
                             <div class="flex items-center justify-between py-2 border-b border-white/5">
-                                <span class="text-gray-400">Fokus Utama:</span>
+                                <span class="text-gray-400">{{ __('Fokus Utama:') }}</span>
                                 <span class="font-bold text-[#EEEEEE]">Lab, HSE & Environmental</span>
                             </div>
                             {{-- <div class="flex items-center justify-between py-2 border-b border-white/5">
@@ -275,9 +274,9 @@
                             </div> --}}
                             @if(isset($totalJobsCount) && $totalJobsCount > 0)
                                 <div class="flex items-center justify-between pt-2">
-                                    <span class="text-gray-400">Peluang Karir:</span>
+                                    <span class="text-gray-400">{{ __('Peluang Karir:') }}</span>
                                     <a href="{{ route('jobs.index') }}" class="font-bold text-[#93F514] hover:underline inline-flex items-center gap-1 group">
-                                        <span>{{ $totalJobsCount }} Lowongan Terbuka</span>
+                                        <span>{{ $totalJobsCount }} {{ __('Lowongan Terbuka') }}</span>
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 shrink-0 transition-transform group-hover:translate-x-0.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                         </svg>
@@ -289,7 +288,7 @@
                         <!-- Action Button inside Card -->
                         <div class="pt-4 border-t border-[#93F514]/20">
                             <a href="{{ route('jobs.index') }}" class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#93F514] hover:bg-[#a6ff2e] text-black font-extrabold text-xs sm:text-sm tracking-wide shadow-md shadow-black/30 hover:scale-[1.02] transition-all duration-200">
-                                <span>Bergabung Bersama Kami</span>
+                                <span>{{ __('Bergabung Bersama Kami') }}</span>
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                 </svg>
@@ -310,10 +309,10 @@
                     Landasan Strategis
                 </div> --}}
                 <h2 class="reveal-on-scroll text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#EEEEEE]" data-delay="100">
-                    Visi & <span class="text-[#93F514]">Misi Kami</span>
+                    {{ __('Visi &') }} <span class="text-[#93F514]">{{ __('Misi Kami') }}</span>
                 </h2>
                 <p class="reveal-on-scroll mt-3 text-sm sm:text-base text-gray-300" data-delay="150">
-                    Arah tujuan jangka panjang dan komitmen berkesinambungan yang memandu setiap langkah operasional kami.
+                    {{ __('Arah tujuan jangka panjang dan komitmen berkesinambungan yang memandu setiap langkah operasional kami.') }}
                 </p>
             </div>
 
@@ -325,15 +324,15 @@
                     <!-- Top Badge & Context -->
                     <div class="flex items-center justify-between gap-4 mb-6">
                         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] text-xs font-bold uppercase tracking-wider shadow-sm visi-badge">
-                            <span>Visi Perusahaan</span>
+                            <span>{{ __('Visi Perusahaan') }}</span>
                         </div>
-                        <span class="text-xs text-gray-400 font-semibold tracking-wide hidden sm:inline-block">Arah & Komitmen Strategis</span>
+                        <span class="text-xs text-gray-400 font-semibold tracking-wide hidden sm:inline-block">{{ __('Arah & Komitmen Strategis') }}</span>
                     </div>
 
                     <!-- Vision Quote Statement -->
                     <blockquote class="pl-6 sm:pl-8 border-l-4 border-[#93F514] my-4">
                         <p class="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#EEEEEE] leading-snug sm:leading-relaxed tracking-tight">
-                            &ldquo;{{ $company->vision ?? 'Menjadi mitra bisnis terdepan, terpercaya, dan menjadi pilihan utama di Indonesia dalam penyediaan solusi komprehensif peralatan laboratorium, perlindungan keselamatan kerja, dan teknologi pemantauan lingkungan.' }}&rdquo;
+                            &ldquo;{{ $company->vision ? __(trim($company->vision)) : __('Menjadi mitra bisnis terdepan, terpercaya, dan menjadi pilihan utama di Indonesia dalam penyediaan solusi komprehensif peralatan laboratorium, perlindungan keselamatan kerja, dan teknologi pemantauan lingkungan.') }}&rdquo;
                         </p>
                     </blockquote>
 
@@ -347,8 +346,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h5 class="text-xs sm:text-sm font-bold text-[#EEEEEE]">Solusi Laboratorium</h5>
-                                <p class="text-[11px] text-gray-400">Presisi & Teruji Mutu</p>
+                                <h5 class="text-xs sm:text-sm font-bold text-[#EEEEEE]">{{ __('Solusi Laboratorium') }}</h5>
+                                <p class="text-[11px] text-gray-400">{{ __('Presisi & Teruji Mutu') }}</p>
                             </div>
                         </div>
 
@@ -360,8 +359,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h5 class="text-xs sm:text-sm font-bold text-[#EEEEEE]">Keselamatan Kerja (HSE)</h5>
-                                <p class="text-[11px] text-gray-400">Proteksi Standar Internasional</p>
+                                <h5 class="text-xs sm:text-sm font-bold text-[#EEEEEE]">{{ __('Keselamatan Kerja (HSE)') }}</h5>
+                                <p class="text-[11px] text-gray-400">{{ __('Proteksi Standar Internasional') }}</p>
                             </div>
                         </div>
 
@@ -373,8 +372,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h5 class="text-xs sm:text-sm font-bold text-[#EEEEEE]">Monitoring Lingkungan</h5>
-                                <p class="text-[11px] text-gray-400">Solusi Berkelanjutan</p>
+                                <h5 class="text-xs sm:text-sm font-bold text-[#EEEEEE]">{{ __('Monitoring Lingkungan') }}</h5>
+                                <p class="text-[11px] text-gray-400">{{ __('Solusi Berkelanjutan') }}</p>
                             </div>
                         </div>
                     </div>
@@ -385,16 +384,16 @@
             <div>
                 <h3 class="reveal-on-scroll text-lg font-bold text-gray-300 mb-6 flex items-center gap-2" data-delay="200">
                     {{-- <span class="w-2.5 h-2.5 rounded-full bg-[#93F514]"></span> --}}
-                    Poin Misi Berkelanjutan
+                    {{ __('Poin Misi Berkelanjutan') }}
                 </h3>
 
                 @php
                     $missionsList = $company->missions;
                     if (empty($missionsList) || !is_array($missionsList)) {
                         $missionsList = [
-                            'Menyediakan instrumen laboratorium, alat pelindung keselamatan kerja (HSE), dan sistem monitoring lingkungan berkualitas tinggi berstandar internasional.',
-                            'Memberikan layanan purna jual, kalibrasi, konsultasi teknis terpadu, dan dukungan profesional yang responsif demi kepuasan mitra bisnis.',
-                            'Membangun ekosistem kemitraan strategis yang berkelanjutan bersama industri manufaktur, institusi riset, akademisi, dan instansi pemerintah di seluruh Indonesia.',
+                            __('Menyediakan instrumen laboratorium, alat pelindung keselamatan kerja (HSE), dan sistem monitoring lingkungan berkualitas tinggi berstandar internasional.'),
+                            __('Memberikan layanan purna jual, kalibrasi, konsultasi teknis terpadu, dan dukungan profesional yang responsif demi kepuasan mitra bisnis.'),
+                            __('Membangun ekosistem kemitraan strategis yang berkelanjutan bersama industri manufaktur, institusi riset, akademisi, dan instansi pemerintah di seluruh Indonesia.'),
                         ];
                     }
                 @endphp
@@ -422,12 +421,12 @@
                                     </div>
                                 </div>
                                 <p class="text-sm text-gray-200 leading-relaxed">
-                                    {{ $mission }}
+                                    {{ __(trim($mission)) }}
                                 </p>
                             </div>
                             <div class="mt-6 pt-4 border-t border-[#93F514]/15 flex items-center gap-2 text-xs text-[#93F514] font-semibold">
                                 {{-- <span class="w-1.5 h-1.5 rounded-full bg-[#93F514]"></span> --}}
-                                <span>Misi Berkelanjutan</span>
+                                <span>{{ __('Misi Berkelanjutan') }}</span>
                             </div>
                         </div>
                     @endforeach
@@ -443,10 +442,10 @@
                     Budaya Perusahaan
                 </div> --}}
                 <h2 class="reveal-on-scroll text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#EEEEEE]" data-delay="100">
-                    Nilai Perusahaan <span class="text-[#93F514]">(MIKA)</span>
+                    {{ __('Nilai Perusahaan') }} <span class="text-[#93F514]">(MIKA)</span>
                 </h2>
                 <p class="reveal-on-scroll mt-3 text-sm sm:text-base text-gray-300" data-delay="150">
-                    Empat pilar integritas yang menjadi kompas perilaku, etika bisnis, dan budaya kerja seluruh insan PT Mitra Karya Analitika.
+                    {{ __('Empat pilar integritas yang menjadi kompas perilaku, etika bisnis, dan budaya kerja seluruh insan PT Mitra Karya Analitika.') }}
                 </p>
             </div>
 
@@ -504,13 +503,13 @@
                                     </span>
                                 </div>
                                 <span class="text-xs font-semibold uppercase tracking-widest text-gray-400 group-hover:text-[#93F514] transition-colors">
-                                    Pilar {{ $i + 1 }}
+                                    {{ __('Pilar') }} {{ $i + 1 }}
                                 </span>
                             </div>
 
                             <!-- Title & Subtitle -->
                             <h3 class="text-xl font-extrabold text-[#EEEEEE] group-hover:text-[#93F514] transition-colors">
-                                {{ $val['title'] ?? '' }}
+                                {{ __(trim($val['title'] ?? '')) }}
                             </h3>
                             <span class="inline-block text-xs font-semibold text-[#5FE6B6] mb-3 mika-subtitle">
                                 {{ $val['subtitle'] ?? '' }}
@@ -518,14 +517,14 @@
 
                             <!-- Description -->
                             <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
-                                {{ $val['description'] ?? '' }}
+                                {{ __(trim($val['description'] ?? '')) }}
                             </p>
                         </div>
 
                         <!-- Card Footer -->
                         <div class="mt-8 pt-4 border-t border-[#93F514]/15 flex items-center gap-2">
                             {{-- <span class="w-2 h-2 rounded-full bg-[#93F514]"></span> --}}
-                            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Nilai Inti MIKA</span>
+                            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{{ __('Nilai Inti MIKA') }}</span>
                         </div>
                     </div>
                 @endforeach
@@ -540,10 +539,10 @@
                     Bidang Keahlian
                 </div> --}}
                 <h2 class="reveal-on-scroll text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#EEEEEE]" data-delay="100">
-                    Unit Bisnis & <span class="text-[#93F514]">Fokus Layanan</span>
+                    {{ __('Unit Bisnis &') }} <span class="text-[#93F514]">{{ __('Fokus Layanan') }}</span>
                 </h2>
                 <p class="reveal-on-scroll mt-3 text-sm sm:text-base text-gray-300" data-delay="150">
-                    Tiga spesialisasi utama yang menjadi keunggulan komparatif kami dalam melayani berbagai sektor industri di Indonesia.
+                    {{ __('Tiga spesialisasi utama yang menjadi keunggulan komparatif kami dalam melayani berbagai sektor industri di Indonesia.') }}
                 </p>
             </div>
 
@@ -558,25 +557,25 @@
                         </div>
                         <h3 class="text-xl font-extrabold text-[#EEEEEE] mb-2">Laboratory Solutions</h3>
                         <p class="text-xs sm:text-sm text-gray-300 leading-relaxed mb-6">
-                            Penyediaan instrumen laboratorium umum dan analitika presisi tinggi untuk riset universitas, quality control (QC) industri, dan pengujian ilmiah.
+                            {{ __('Penyediaan instrumen laboratorium umum dan analitika presisi tinggi untuk riset universitas, quality control (QC) industri, dan pengujian ilmiah.') }}
                         </p>
                         <ul class="space-y-2.5 text-xs text-gray-300">
                             <li class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                <span>Alat Analitika & Spektrofotometer</span>
+                                <span>{{ __('Alat Analitika & Spektrofotometer') }}</span>
                             </li>
                             <li class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                <span>Glassware, Reagen & Chemical Supplies</span>
+                                <span>{{ __('Glassware, Reagen & Chemical Supplies') }}</span>
                             </li>
                             <li class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                <span>Jasa Kalibrasi & Pemeliharaan Rutin</span>
+                                <span>{{ __('Jasa Kalibrasi & Pemeliharaan Rutin') }}</span>
                             </li>
                         </ul>
                     </div>
                     <div class="mt-8 pt-4 border-t border-[#93F514]/15 text-xs font-semibold text-[#93F514]">
-                        Sektor Riset & Pengujian Mutu
+                        {{ __('Sektor Riset & Pengujian Mutu') }}
                     </div>
                 </div>
 
@@ -590,25 +589,25 @@
                         </div>
                         <h3 class="text-xl font-extrabold text-[#EEEEEE] mb-2">Health & Safety (HSE)</h3>
                         <p class="text-xs sm:text-sm text-gray-300 leading-relaxed mb-6">
-                            Perlindungan total bagi tenaga kerja dengan standar K3 ketat untuk industri pertambangan, manufaktur, konstruksi, dan oil & gas.
+                            {{ __('Perlindungan total bagi tenaga kerja dengan standar K3 ketat untuk industri pertambangan, manufaktur, konstruksi, dan oil & gas.') }}
                         </p>
                         <ul class="space-y-2.5 text-xs text-gray-300">
                             <li class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                <span>Alat Pelindung Diri (APD) Bersertifikat</span>
+                                <span>{{ __('Alat Pelindung Diri (APD) Bersertifikat') }}</span>
                             </li>
                             <li class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                <span>Detektor Gas Portabel & Tetap</span>
+                                <span>{{ __('Detektor Gas Portabel & Tetap') }}</span>
                             </li>
                             <li class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                <span>Perlengkapan Darurat & Safety Shower</span>
+                                <span>{{ __('Perlengkapan Darurat & Safety Shower') }}</span>
                             </li>
                         </ul>
                     </div>
                     <div class="mt-8 pt-4 border-t border-[#93F514]/15 text-xs font-semibold text-[#93F514]">
-                        Standar Keselamatan Kerja K3
+                        {{ __('Standar Keselamatan Kerja K3') }}
                     </div>
                 </div>
 
@@ -622,25 +621,25 @@
                         </div>
                         <h3 class="text-xl font-extrabold text-[#EEEEEE] mb-2">Environmental Solutions</h3>
                         <p class="text-xs sm:text-sm text-gray-300 leading-relaxed mb-6">
-                            Solusi pengawasan kualitas lingkungan untuk kepatuhan regulasi baku mutu lingkungan hidup, emisi, dan konservasi sumber daya alam.
+                            {{ __('Solusi pengawasan kualitas lingkungan untuk kepatuhan regulasi baku mutu lingkungan hidup, emisi, dan konservasi sumber daya alam.') }}
                         </p>
                         <ul class="space-y-2.5 text-xs text-gray-300">
                             <li class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                <span>Alat Uji & Sampling Kualitas Air Limbah</span>
+                                <span>{{ __('Alat Uji & Sampling Kualitas Air Limbah') }}</span>
                             </li>
                             <li class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                <span>Stasiun Pemantau Kualitas Udara Ambien</span>
+                                <span>{{ __('Stasiun Pemantau Kualitas Udara Ambien') }}</span>
                             </li>
                             <li class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                <span>Instrumen Meteorologi & Pengukuran Tanah</span>
+                                <span>{{ __('Instrumen Meteorologi & Pengukuran Tanah') }}</span>
                             </li>
                         </ul>
                     </div>
                     <div class="mt-8 pt-4 border-t border-[#93F514]/15 text-xs font-semibold text-[#93F514]">
-                        Kepatuhan Regulasi & Lingkungan
+                        {{ __('Kepatuhan Regulasi & Lingkungan') }}
                     </div>
                 </div>
             </div>
@@ -658,10 +657,10 @@
                     Hubungi & Kunjungi Kami
                 </div> --}}
                 <h2 class="reveal-on-scroll text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#EEEEEE]" data-delay="100">
-                    Informasi <span class="text-[#93F514]">Kontak & Alamat</span>
+                    {{ __('Informasi') }} <span class="text-[#93F514]">{{ __('Kontak & Alamat') }}</span>
                 </h2>
                 <p class="reveal-on-scroll mt-3 text-sm sm:text-base text-gray-300" data-delay="150">
-                    Kami siap melayani kebutuhan konsultasi, penawaran produk, dan kerjasama bisnis Anda.
+                    {{ __('Kami siap melayani kebutuhan konsultasi, penawaran produk, dan kerjasama bisnis Anda.') }}
                 </p>
             </div>
 
@@ -675,14 +674,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
-                        <h4 class="text-base font-bold text-[#EEEEEE] mb-2">Kantor Pusat</h4>
+                        <h4 class="text-base font-bold text-[#EEEEEE] mb-2">{{ __('Kantor Pusat') }}</h4>
                         <p class="text-xs text-gray-300 leading-relaxed">
                             {{ $company->formatted_address ?: 'Jl. Klipang Ruko Amsterdam No.9D, Sendangmulyo, Kec. Tembalang, Kota Semarang, Jawa Tengah 50272' }}
                         </p>
                     </div>
                     <div class="mt-6 pt-3 border-t border-[#93F514]/15">
                         <a href="https://maps.google.com/?q={{ urlencode($company->formatted_address ?: 'Jl. Klipang Ruko Amsterdam No.9D Semarang') }}" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-[#93F514] hover:underline inline-flex items-center gap-1 group">
-                            <span>Buka di Google Maps</span>
+                            <span>{{ __('Buka di Google Maps') }}</span>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 shrink-0 transition-transform group-hover:translate-x-0.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                             </svg>
@@ -698,9 +697,9 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                         </div>
-                        <h4 class="text-base font-bold text-[#EEEEEE] mb-2">Email Resmi</h4>
+                        <h4 class="text-base font-bold text-[#EEEEEE] mb-2">{{ __('Email Resmi') }}</h4>
                         <p class="text-xs text-gray-300 leading-relaxed">
-                            Kirimkan pertanyaan, inquiry penawaran harga, atau kerjasama via email resmi kami.
+                            {{ __('Kirimkan pertanyaan, inquiry penawaran harga, atau kerjasama via email resmi kami.') }}
                         </p>
                     </div>
                     <div class="mt-6 pt-3 border-t border-[#93F514]/15">
@@ -721,14 +720,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                             </svg>
                         </div>
-                        <h4 class="text-base font-bold text-[#EEEEEE] mb-2">WhatsApp Resmi</h4>
+                        <h4 class="text-base font-bold text-[#EEEEEE] mb-2">{{ __('WhatsApp Resmi') }}</h4>
                         <p class="text-xs text-gray-300 leading-relaxed">
-                            Respon cepat untuk konsultasi pengadaan barang dan layanan teknis.
+                            {{ __('Respon cepat untuk konsultasi pengadaan barang dan layanan teknis.') }}
                         </p>
                     </div>
                     <div class="mt-6 pt-3 border-t border-[#93F514]/15">
                         <a href="{{ $company->whatsapp_url ?? 'https://wa.me/6281807701210' }}" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-[#93F514] hover:underline inline-flex items-center gap-1 group">
-                            <span>Chat WhatsApp</span>
+                            <span>{{ __('Chat WhatsApp') }}</span>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 shrink-0 transition-transform group-hover:translate-x-0.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                             </svg>
@@ -744,9 +743,9 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                             </svg>
                         </div>
-                        <h4 class="text-base font-bold text-[#EEEEEE] mb-2">Website Resmi</h4>
+                        <h4 class="text-base font-bold text-[#EEEEEE] mb-2">{{ __('Website Resmi') }}</h4>
                         <p class="text-xs text-gray-300 leading-relaxed">
-                            Jelajahi portofolio produk, sertifikasi, dan katalog lengkap perusahaan kami.
+                            {{ __('Jelajahi portofolio produk, sertifikasi, dan katalog lengkap perusahaan kami.') }}
                         </p>
                     </div>
                     <div class="mt-6 pt-3 border-t border-[#93F514]/15">
@@ -771,19 +770,19 @@
                         Peluang Karir Terbuka
                     </span> --}}
                     <h2 class="text-2xl sm:text-4xl font-extrabold text-[#EEEEEE] leading-tight">
-                        Ingin Menjadi Bagian dari <span class="text-[#93F514]">Keluarga Besar MIKA?</span>
+                        {{ __('Ingin Menjadi Bagian dari') }} <span class="text-[#93F514]">{{ __('Keluarga Besar MIKA?') }}</span>
                     </h2>
                     <p class="mt-4 text-xs sm:text-base text-gray-300 leading-relaxed">
-                        Kami senantiasa mencari talenta berintegritas tinggi, profesional, dan bersemangat untuk tumbuh bersama. Temukan posisi yang selaras dengan aspirasi Anda.
+                        {{ __('Kami senantiasa mencari talenta berintegritas tinggi, profesional, dan bersemangat untuk tumbuh bersama. Temukan posisi yang selaras dengan aspirasi Anda.') }}
                     </p>
 
                     <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                         <a href="{{ route('jobs.index') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-sm shadow-md shadow-black/40 hover:scale-105 transition-all duration-200">
-                            Lihat Lowongan Kerja Aktif
+                            {{ __('Lihat Lowongan Kerja Aktif') }}
                         </a>
                         @guest
                             <a href="{{ route('register') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-black/50 hover:bg-black/70 text-[#EEEEEE] hover:text-[#93F514] border border-[#93F514]/40 font-bold text-sm transition-colors duration-200">
-                                Buat Akun Pelamar
+                                {{ __('Buat Akun Pelamar') }}
                             </a>
                         @endguest
                     </div>

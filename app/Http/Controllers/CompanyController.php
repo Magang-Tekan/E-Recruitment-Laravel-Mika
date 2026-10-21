@@ -75,6 +75,7 @@ class CompanyController extends Controller
             'postal_code' => 'nullable|string|max:20',
             'phone' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
+            'registration_passkey' => 'nullable|string|max:100',
         ]);
 
         $path = $this->uploadLogo($request->file('logo'));
@@ -99,6 +100,7 @@ class CompanyController extends Controller
             'postal_code' => $request->postal_code,
             'phone' => $request->phone,
             'email' => $request->email,
+            'registration_passkey' => $request->filled('registration_passkey') ? trim($request->input('registration_passkey')) : null,
         ]);
 
         if (!$data) {
@@ -131,6 +133,7 @@ class CompanyController extends Controller
             'postal_code' => 'sometimes|nullable|string|max:20',
             'phone' => 'sometimes|nullable|string|max:50',
             'email' => 'sometimes|nullable|email|max:255',
+            'registration_passkey' => 'sometimes|nullable|string|max:100',
         ]);
 
         if ($request->hasFile('logo')) {
@@ -163,6 +166,7 @@ class CompanyController extends Controller
             'postal_code' => $request->input('postal_code', $data->postal_code),
             'phone' => $request->input('phone', $data->phone),
             'email' => $request->input('email', $data->email),
+            'registration_passkey' => $request->has('registration_passkey') ? ($request->filled('registration_passkey') ? trim($request->input('registration_passkey')) : null) : $data->registration_passkey,
         ]);
 
         return response()->json(['message' => 'Company berhasil diperbarui', 'data' => $data]);

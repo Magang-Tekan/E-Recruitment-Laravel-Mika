@@ -79,6 +79,28 @@ new class extends Component
         <!-- Settings Dropdown -->
         <div class="hidden sm:flex sm:items-center sm:ms-6 gap-2">
 
+            <!-- Language Switcher Pill (Desktop) -->
+            @php
+                $navAppLocale = app()->getLocale();
+                $navAppUrl = request()->fullUrl();
+            @endphp
+            <div class="inline-flex items-center p-0.5 rounded-full border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-[11px] font-bold shadow-xs select-none">
+                <button type="button" 
+                   data-lang-btn="id"
+                   onclick="window.mikaSwitchLocale('id', '{{ $navAppUrl }}')"
+                   title="Bahasa Indonesia"
+                   class="px-2 py-0.5 rounded-full transition-all duration-150 cursor-pointer {{ $navAppLocale === 'id' ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black font-extrabold shadow-2xs cursor-default' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-95' }}">
+                    ID
+                </button>
+                <button type="button" 
+                   data-lang-btn="en"
+                   onclick="window.mikaSwitchLocale('en', '{{ $navAppUrl }}')"
+                   title="English"
+                   class="px-2 py-0.5 rounded-full transition-all duration-150 cursor-pointer {{ $navAppLocale === 'en' ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black font-extrabold shadow-2xs cursor-default' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-95' }}">
+                    EN
+                </button>
+            </div>
+
             <!-- Dark/Light Mode Toggle Button (Desktop) -->
             <button
                 type="button"
@@ -138,7 +160,7 @@ new class extends Component
                              x-on:profile-updated.window="if ($event.detail && 'photo' in $event.detail) photo = $event.detail.photo"
                              class="shrink-0 flex items-center justify-center">
                             <template x-if="photo">
-                                <img :src="photo" alt="{{ $displayName }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-500/20 dark:ring-[#93F514]/30 group-hover:ring-emerald-500 dark:group-hover:ring-[#93F514] transition">
+                                <img :src="photo" alt="{{ $displayName }}" referrerpolicy="no-referrer" class="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-500/20 dark:ring-[#93F514]/30 group-hover:ring-emerald-500 dark:group-hover:ring-[#93F514] transition">
                             </template>
                             <template x-if="!photo">
                                 <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-500 dark:from-[#93F514] dark:to-emerald-400 dark:text-black flex items-center justify-center text-white font-bold text-xs shadow-2xs">
@@ -181,8 +203,8 @@ new class extends Component
                             {{ __('Portal Asesmen Karyawan') }}
                         </x-dropdown-link>
                         @if((bool) $user?->is_recruiter)
-                            <x-dropdown-link :href="route('recruiter.application')" class="text-emerald-600 dark:text-[#93F514] font-bold">
-                                {{ __('Panel Review Pelamar') }}
+                            <x-dropdown-link :href="route('recruiter.dashboard')" class="text-emerald-600 dark:text-[#93F514] font-bold">
+                                {{ __('Dashboard Panel Recruiter') }}
                             </x-dropdown-link>
                         @endif
                     @endif
@@ -202,6 +224,22 @@ new class extends Component
         </div>
 
         <div class="-me-2 flex items-center sm:hidden gap-2">
+
+            <!-- Language Switcher Pill (Mobile) -->
+            <div class="inline-flex items-center p-0.5 rounded-full border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-[10px] font-bold shadow-xs select-none">
+                <button type="button" 
+                   data-lang-btn="id"
+                   onclick="window.mikaSwitchLocale('id', '{{ $navAppUrl }}')"
+                   class="px-1.5 py-0.5 rounded-full transition cursor-pointer {{ $navAppLocale === 'id' ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black font-extrabold cursor-default' : 'text-slate-500 dark:text-slate-400 active:scale-95' }}">
+                    ID
+                </button>
+                <button type="button" 
+                   data-lang-btn="en"
+                   onclick="window.mikaSwitchLocale('en', '{{ $navAppUrl }}')"
+                   class="px-1.5 py-0.5 rounded-full transition cursor-pointer {{ $navAppLocale === 'en' ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black font-extrabold cursor-default' : 'text-slate-500 dark:text-slate-400 active:scale-95' }}">
+                    EN
+                </button>
+            </div>
 
             <!-- Dark/Light Mode Toggle Button (Mobile) -->
             <button
@@ -286,7 +324,7 @@ new class extends Component
                      x-on:profile-updated.window="if ($event.detail && 'photo' in $event.detail) photo = $event.detail.photo"
                      class="shrink-0 flex items-center justify-center">
                     <template x-if="photo">
-                        <img :src="photo" alt="{{ $displayName }}" class="w-10 h-10 rounded-full object-cover ring-2 ring-emerald-500/20 dark:ring-[#93F514]/30 shrink-0">
+                        <img :src="photo" alt="{{ $displayName }}" referrerpolicy="no-referrer" class="w-10 h-10 rounded-full object-cover ring-2 ring-emerald-500/20 dark:ring-[#93F514]/30 shrink-0">
                     </template>
                     <template x-if="!photo">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 dark:from-[#93F514] dark:to-emerald-400 dark:text-black flex items-center justify-center text-white font-bold text-sm shrink-0">
@@ -321,8 +359,8 @@ new class extends Component
                         {{ __('Portal Asesmen Karyawan') }}
                     </x-responsive-nav-link>
                     @if((bool) $user?->is_recruiter)
-                        <x-responsive-nav-link :href="route('recruiter.application')" class="rounded-xl font-bold text-emerald-600 dark:text-[#93F514]">
-                            {{ __('Panel Review Pelamar') }}
+                        <x-responsive-nav-link :href="route('recruiter.dashboard')" class="rounded-xl font-bold text-emerald-600 dark:text-[#93F514]">
+                            {{ __('Dashboard Panel Recruiter') }}
                         </x-responsive-nav-link>
                     @endif
                 @endif
@@ -343,3 +381,4 @@ new class extends Component
         </div>
     </div>
 </nav>
+

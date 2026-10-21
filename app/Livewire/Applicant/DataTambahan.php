@@ -18,23 +18,33 @@ class DataTambahan extends Component
 
     // --- FORM MODAL STATE ---
     public $showModal = false;
-    public $modalType = 'skill'; // 'skill', 'certification', 'training', 'language'
+    public $modalType = 'certification'; // 'certification', 'training', 'language'
     public $isEdit = false;
     public $itemId = null;
     public $name;
     public $certificate;
     public $existing_certificate;
 
+    // Language specific fields
+    public $oral = 'baik';
+    public $written = 'baik';
+    public $conversation = 'baik';
+
     // --- DELETE MODAL STATE ---
     public $showDeleteModal = false;
     public $deleteId = null;
-    public $deleteType = null; // 'skill', 'certification', 'training', 'language'
+    public $deleteType = null; // 'certification', 'training', 'language'
 
     public function openModal($type)
     {
         $this->resetForm();
         $this->modalType = $type;
         $this->isEdit = false;
+        if ($type === 'language') {
+            $this->oral = 'baik';
+            $this->written = 'baik';
+            $this->conversation = 'baik';
+        }
         $this->showModal = true;
     }
 
@@ -51,6 +61,9 @@ class DataTambahan extends Component
             'name',
             'certificate',
             'existing_certificate',
+            'oral',
+            'written',
+            'conversation',
         ]);
         $this->resetErrorBag();
     }
@@ -69,6 +82,12 @@ class DataTambahan extends Component
         $this->name = $model->name;
         $this->existing_certificate = $model->certificate_path;
 
+        if ($type === 'language') {
+            $this->oral = $model->oral ?? 'baik';
+            $this->written = $model->written ?? 'baik';
+            $this->conversation = $model->conversation ?? 'baik';
+        }
+
         $this->isEdit = true;
         $this->showModal = true;
     }
@@ -77,10 +96,18 @@ class DataTambahan extends Component
     {
         $typeLabel = $this->getTypeLabel($this->modalType);
 
-        $this->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-        ], [
+        ];
+
+        if ($this->modalType === 'language') {
+            $rules['oral'] = 'nullable|in:baik,cukup,kurang';
+            $rules['written'] = 'nullable|in:baik,cukup,kurang';
+            $rules['conversation'] = 'nullable|in:baik,cukup,kurang';
+        }
+
+        $this->validate($rules, [
             'name.required' => "Nama {$typeLabel} wajib diisi.",
             'certificate.mimes' => 'Format file sertifikat/bukti harus PDF, JPG, JPEG, atau PNG.',
             'certificate.max' => 'Ukuran file tidak boleh melebihi 2MB.',
@@ -98,27 +125,37 @@ class DataTambahan extends Component
             $certPath = $this->certificate->store($folder, 'public');
         }
 
+        $data = [
+            'name' => $this->name,
+            'certificate_path' => $certPath,
+        ];
+
+        if ($this->modalType === 'language') {
+            $data['oral'] = $this->oral;
+            $data['written'] = $this->written;
+            $data['conversation'] = $this->conversation;
+        }
+
+        $msg = '';
+        $action = 'update';
+
         if ($this->isEdit && $this->itemId) {
             $model = $this->getModelInstance($this->modalType, $profile->id, $this->itemId);
             if ($model) {
-                $model->update([
-                    'name' => $this->name,
-                    'certificate_path' => $certPath,
-                ]);
-                session()->flash('message', "{$typeLabel} berhasil diperbarui.");
+                $model->update($data);
+                $msg = __("{$typeLabel} berhasil diperbarui.");
+                $action = 'update';
             }
         } else {
             $class = $this->getModelClass($this->modalType);
-            $class::create([
-                'profile_id' => $profile->id,
-                'name' => $this->name,
-                'certificate_path' => $certPath,
-            ]);
-            session()->flash('message', "{$typeLabel} berhasil ditambahkan.");
+            $data['profile_id'] = $profile->id;
+            $class::create($data);
+            $msg = __("{$typeLabel} berhasil ditambahkan.");
+            $action = 'create';
         }
 
         $this->closeModal();
-        $this->dispatch('profile-updated');
+        $this->dispatch('profile-updated', message: $msg, action: $action);
     }
 
     public function confirmDelete($type, $id)
@@ -137,6 +174,7 @@ class DataTambahan extends Component
 
     public function delete()
     {
+        $deletedLabel = 'Data';
         if ($this->deleteId && $this->deleteType) {
             $user = Auth::user();
             $profile = ApplicantProfile::where('user_id', $user->id)->first();
@@ -146,24 +184,22 @@ class DataTambahan extends Component
                     if ($model->certificate_path && Storage::disk('public')->exists($model->certificate_path)) {
                         Storage::disk('public')->delete($model->certificate_path);
                     }
+                    $deletedLabel = $this->getTypeLabel($this->deleteType);
                     $model->delete();
-                    $typeLabel = $this->getTypeLabel($this->deleteType);
-                    session()->flash('message', "{$typeLabel} berhasil dihapus.");
                 }
             }
         }
 
         $this->cancelDelete();
-        $this->dispatch('profile-updated');
+        $this->dispatch('profile-updated', message: __("{$deletedLabel} berhasil dihapus."), action: 'delete');
     }
 
     protected function getModelClass($type)
     {
         return match ($type) {
-            'certification' => Certification::class,
             'training' => Training::class,
             'language' => Language::class,
-            default => Skill::class,
+            default => Certification::class,
         };
     }
 
@@ -176,10 +212,9 @@ class DataTambahan extends Component
     public function getTypeLabel($type)
     {
         return match ($type) {
-            'certification' => 'Sertifikasi',
             'training' => 'Pelatihan',
-            'language' => 'Bahasa',
-            default => 'Keahlian',
+            'language' => 'Kemampuan Bahasa',
+            default => 'Sertifikasi',
         };
     }
 
@@ -188,13 +223,11 @@ class DataTambahan extends Component
         $user = Auth::user();
         $profile = ApplicantProfile::where('user_id', $user->id)->first();
 
-        $skills = $profile ? Skill::where('profile_id', $profile->id)->get() : collect();
         $certifications = $profile ? Certification::where('profile_id', $profile->id)->get() : collect();
         $trainings = $profile ? Training::where('profile_id', $profile->id)->get() : collect();
         $languages = $profile ? Language::where('profile_id', $profile->id)->get() : collect();
 
         return view('livewire.applicant.data_tambahan', [
-            'skills' => $skills,
             'certifications' => $certifications,
             'trainings' => $trainings,
             'languages' => $languages,

@@ -20,6 +20,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TestCategoryController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\TestEvaluationController;
+use App\Http\Controllers\CandidateProfilePdfController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\RoleMiddleware;
 use App\Livewire\Applicant\ApplicantOnlineTest;
@@ -38,6 +39,43 @@ Route::post('session/keep-alive', function () {
     return response()->json(['status' => 'active', 'timestamp' => time()]);
 })->middleware(['auth'])->name('session.keep_alive');
 
+// Language Switcher (Ganti Bahasa ID / EN) - High performance & anti-bug
+Route::match(['GET', 'POST'], 'lang/{locale}', function (\Illuminate\Http\Request $request, string $locale) {
+    if (!in_array($locale, ['id', 'en'], true)) {
+        $locale = 'id';
+    }
+
+    session()->put('locale', $locale);
+    session()->save();
+    \Illuminate\Support\Facades\App::setLocale($locale);
+
+    $cookie = cookie()->forever('locale', $locale, '/', null, false, false);
+
+    // Fast JSON response for AJAX / fetch switches (instant reload on client)
+    if ($request->expectsJson() || $request->ajax()) {
+        return response()->json([
+            'success' => true,
+            'locale' => $locale,
+        ])->withCookie($cookie);
+    }
+
+    // Direct return URL support (prevents missing Referer issues)
+    $returnUrl = $request->query('return') ?: $request->input('return');
+    if ($returnUrl) {
+        $appUrl = url('/');
+        if (\Illuminate\Support\Str::startsWith($returnUrl, [$appUrl, '/'])) {
+            return redirect()->to($returnUrl)->withCookie($cookie);
+        }
+    }
+
+    $referer = $request->headers->get('referer');
+    if ($referer && !str_contains($referer, '/lang/')) {
+        return redirect()->to($referer)->withCookie($cookie);
+    }
+
+    return redirect()->to(url('/'))->withCookie($cookie);
+})->name('lang.switch');
+
 // Multi-user dashboard redirect based on role
 Route::get('dashboard', function () {
     $user = auth()->user();
@@ -51,12 +89,12 @@ Route::get('dashboard', function () {
         return redirect()->route('admin.dashboard');
     }
 
-    if ($user->role_id == 2 || $roleName === 'recruiter' || (bool) $user->is_recruiter) {
-        return redirect()->route('recruiter.dashboard');
-    }
-
     if ($user->role_id == 4 || $roleName === 'employee') {
         return redirect()->route('employee.dashboard');
+    }
+
+    if ($user->role_id == 2 || $roleName === 'recruiter' || (bool) $user->is_recruiter) {
+        return redirect()->route('recruiter.dashboard');
     }
 
     // Role 3 or applicant/pelamar
@@ -79,7 +117,9 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':recruiter'])
         Route::view('dashboard', 'livewire.admin.dashboard.index')->name('dashboard');
         Route::view('applicants', 'livewire.admin.applicants.index')->name('application');
         Route::put('applicants/{id}', [JobApplicationController::class, 'update'])->name('application.update');
+        Route::get('applicants/{id}/profile-pdf', [CandidateProfilePdfController::class, 'downloadApplicantPdf'])->name('application.profile_pdf');
         Route::view('candidates', 'livewire.admin.candidates.index')->name('candidate');
+        Route::get('candidates/{id}/pdf', [CandidateProfilePdfController::class, 'downloadCandidatePdf'])->name('candidate.pdf');
         // Evaluation & Essay Grading / Evaluasi Hasil & Nilai Ujian
         Route::view('test-evaluations', 'livewire.admin.test-evaluation.index')->name('test_evaluation');
         Route::put('test-evaluations/{id}/grade', [TestEvaluationController::class, 'updateGrade'])->name('test_evaluation.grade');
@@ -91,9 +131,8 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':recruiter'])
             return redirect()->route('recruiter.dashboard');
         })->name('employee_test_evaluation');
 
-        // Interview Schedules
+        // Interview Schedules (Monitoring & evaluasi untuk Recruiter, pembuatan jadwal oleh HR/Admin)
         Route::view('interview-schedules', 'livewire.admin.interview-schedule.index')->name('interview_schedule');
-        Route::post('interview-schedules', [InterviewScheduleController::class, 'store'])->name('interview_schedule.store');
         Route::put('interview-schedules/{id}', [InterviewScheduleController::class, 'update'])->name('interview_schedule.update');
         Route::delete('interview-schedules/{id}', [InterviewScheduleController::class, 'destroy'])->name('interview_schedule.destroy');
 
@@ -111,7 +150,9 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':admin'])
         // Recruitment Management - Selection CV & Candidate View
         Route::view('applicants', 'livewire.admin.applicants.index')->name('application');
         Route::put('applicants/{id}', [JobApplicationController::class, 'update'])->name('application.update');
+        Route::get('applicants/{id}/profile-pdf', [CandidateProfilePdfController::class, 'downloadApplicantPdf'])->name('application.profile_pdf');
         Route::view('candidates', 'livewire.admin.candidates.index')->name('candidate');
+        Route::get('candidates/{id}/pdf', [CandidateProfilePdfController::class, 'downloadCandidatePdf'])->name('candidate.pdf');
 
         // Interview Schedules
         Route::view('interview-schedules', 'livewire.admin.interview-schedule.index')->name('interview_schedule');
@@ -139,6 +180,9 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':admin'])
             Route::post('roles', [RoleController::class, 'store'])->name('role.store');
             Route::put('roles/{id}', [RoleController::class, 'update'])->name('role.update');
             Route::delete('roles/{id}', [RoleController::class, 'destroy'])->name('role.destroy');
+
+            // Passkey Registrasi Karyawan
+            Route::view('passkeys', 'livewire.admin.passkey.index')->name('passkey');
 
             // Recruitment Management (Jobs)
             Route::view('jobs', 'livewire.admin.jobs.index')->name('job');

@@ -19,19 +19,19 @@
                     </span>
                 </div>
                 <p class="text-sm text-gray-400 leading-relaxed">
-                    Platform rekrutmen digital terintegrasi yang mempertemukan talenta profesional unggul dengan peluang karir terbaik di {{ isset($mainCompany) ? $mainCompany->name : 'Mitra Karya Analitika' }}.
+                    {{ __('Platform rekrutmen digital terintegrasi yang mempertemukan talenta profesional unggul dengan peluang karir terbaik di') }} {{ isset($mainCompany) ? $mainCompany->name : 'Mitra Karya Analitika' }}.
                 </p>
                 @if(isset($mainCompany) && $mainCompany->website)
                     <div>
                         <a href="{{ Str::startsWith($mainCompany->website, ['http://', 'https://']) ? $mainCompany->website : 'https://' . $mainCompany->website }}" 
                            target="_blank" 
                            rel="noopener noreferrer"
-                           title="Kunjungi Website Perusahaan"
+                           title="{{ __('Kunjungi Website Perusahaan') }}"
                            class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#050e05] border border-[#93F514]/40 text-xs font-semibold text-gray-300 hover:text-[#93F514] hover:border-[#93F514] transition footer-official-btn">
                             <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                             </svg>
-                            <span>Official Website</span>
+                            <span>{{ __('Official Website') }}</span>
                         </a>
                     </div>
                 @endif
@@ -39,16 +39,16 @@
 
             <!-- Quick Links -->
             <div class="w-full lg:w-auto">
-                <h4 class="text-sm font-bold tracking-wider uppercase text-[#93F514] mb-4">Navigasi</h4>
+                <h4 class="text-sm font-bold tracking-wider uppercase text-[#93F514] mb-4">{{ __('Navigasi') }}</h4>
                 <ul class="space-y-3 text-sm">
-                    <li><a href="{{ route('home') }}" class="hover:text-[#93F514] transition inline-block">Beranda</a></li>
-                    <li><a href="{{ route('about') }}" class="hover:text-[#93F514] transition inline-block">Tentang Kami</a></li>
-                    <li><a href="{{ route('jobs.index') }}" class="hover:text-[#93F514] transition inline-block">Cari Lowongan</a></li>
+                    <li><a href="{{ route('home') }}" class="hover:text-[#93F514] transition inline-block">{{ __('Beranda') }}</a></li>
+                    <li><a href="{{ route('about') }}" class="hover:text-[#93F514] transition inline-block">{{ __('Tentang Kami') }}</a></li>
+                    <li><a href="{{ route('jobs.index') }}" class="hover:text-[#93F514] transition inline-block">{{ __('Cari Lowongan') }}</a></li>
                     @guest
                         @if (Route::has('register'))
-                            <li><a href="{{ route('register') }}" class="hover:text-[#93F514] transition inline-block">Daftar</a></li>
+                            <li><a href="{{ route('register') }}" class="hover:text-[#93F514] transition inline-block">{{ __('Daftar') }}</a></li>
                         @endif
-                        <li><a href="{{ route('login') }}" class="hover:text-[#93F514] transition inline-block">Masuk</a></li>
+                        <li><a href="{{ route('login') }}" class="hover:text-[#93F514] transition inline-block">{{ __('Masuk') }}</a></li>
                     @else
                         @php
                             $roleId = auth()->user()->role_id;
@@ -60,9 +60,9 @@
                                 default => route('profile'),
                             };
                             $dashboardLabel = match(true) {
-                                $roleId == 1 || in_array($roleName, ['admin', 'superadmin']) || $roleId == 2 || $roleName === 'recruiter' => 'Dashboard',
-                                $roleId == 4 || $roleName === 'employee' => 'Panel Pegawai',
-                                default => 'Profil & Lamaran Saya',
+                                $roleId == 1 || in_array($roleName, ['admin', 'superadmin']) || $roleId == 2 || $roleName === 'recruiter' => __('Dashboard'),
+                                $roleId == 4 || $roleName === 'employee' => __('Panel Pegawai'),
+                                default => __('Profil & Lamaran Saya'),
                             };
                         @endphp
                         <li><a href="{{ $targetDashboard }}" class="hover:text-[#93F514] transition inline-block">{{ $dashboardLabel }}</a></li>
@@ -72,7 +72,7 @@
 
             <!-- Company Categories -->
             <div class="w-full lg:w-auto">
-                <h4 class="text-sm font-bold tracking-wider uppercase text-[#93F514] mb-4">Kategori Pekerjaan</h4>
+                <h4 class="text-sm font-bold tracking-wider uppercase text-[#93F514] mb-4">{{ __('Kategori Pekerjaan') }}</h4>
                 <ul class="space-y-3 text-sm">
                     @forelse($footerDepartments ?? [] as $fDept)
                         <li>
@@ -81,14 +81,14 @@
                             </a>
                         </li>
                     @empty
-                        <li><a href="{{ route('jobs.index') }}" class="hover:text-[#93F514] transition inline-block">Semua Lowongan</a></li>
+                        <li><a href="{{ route('jobs.index') }}" class="hover:text-[#93F514] transition inline-block">{{ __('Semua Lowongan') }}</a></li>
                     @endforelse
                 </ul>
             </div>
 
             <!-- Contact & Location -->
             <div class="w-full lg:w-auto lg:max-w-xs xl:max-w-sm">
-                <h4 class="text-sm font-bold tracking-wider uppercase text-[#93F514] mb-4">Hubungi Kami</h4>
+                <h4 class="text-sm font-bold tracking-wider uppercase text-[#93F514] mb-4">{{ __('Hubungi Kami') }}</h4>
                 @php
                     $addressParts = [];
                     if (isset($mainCompany)) {
@@ -131,10 +131,10 @@
         </div>
 
         <div class="mt-14 pt-8 border-t border-[#93F514]/20 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4">
-            <p>&copy; {{ date('Y') }} {{ isset($mainCompany) ? $mainCompany->name : 'Mitra Karya Analitika' }}. All rights reserved.</p>
+            <p>&copy; {{ date('Y') }} {{ isset($mainCompany) ? $mainCompany->name : 'Mitra Karya Analitika' }}. {{ __('All rights reserved.') }}</p>
             <div class="flex items-center gap-6">
-                <a href="#" class="hover:text-[#93F514] transition">Kebijakan Privasi</a>
-                <a href="#" class="hover:text-[#93F514] transition">Syarat & Ketentuan</a>
+                <a href="#" class="hover:text-[#93F514] transition">{{ __('Kebijakan Privasi') }}</a>
+                <a href="#" class="hover:text-[#93F514] transition">{{ __('Syarat & Ketentuan') }}</a>
             </div>
         </div>
     </div>

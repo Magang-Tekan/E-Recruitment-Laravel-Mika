@@ -12,6 +12,9 @@ class Language extends Model
     protected $fillable = [
         'profile_id',
         'name',
+        'oral',
+        'written',
+        'conversation',
         'certificate_path',
     ];
 

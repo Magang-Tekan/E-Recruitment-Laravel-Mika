@@ -20,11 +20,18 @@ class Pengalaman extends Component
     public $deleteId = null;
 
     public $company_name;
+    public $business_field;
+    public $company_address;
+    public $supervisor_name;
     public $position;
+    public $initial_position;
     public $employment_type;
     public $start_date;
     public $end_date;
     public $currently_working = false;
+    public $initial_salary;
+    public $final_salary;
+    public $benefits;
     public $description;
 
     // Minat Kerja (Applicant Job Preference) State
@@ -64,11 +71,18 @@ class Pengalaman extends Component
     {
         return [
             'company_name' => 'required|string|max:255',
+            'business_field' => 'nullable|string|max:255',
+            'company_address' => 'nullable|string|max:1000',
+            'supervisor_name' => 'nullable|string|max:255',
             'position' => 'required|string|max:255',
+            'initial_position' => 'nullable|string|max:255',
             'employment_type' => 'required|string|max:100',
             'start_date' => 'required|date',
             'end_date' => $this->currently_working ? 'nullable' : 'nullable|date|after_or_equal:start_date',
             'currently_working' => 'boolean',
+            'initial_salary' => 'nullable|numeric|min:0',
+            'final_salary' => 'nullable|numeric|min:0',
+            'benefits' => 'nullable|string|max:1000',
             'description' => 'nullable|string|max:2000',
         ];
     }
@@ -76,13 +90,13 @@ class Pengalaman extends Component
     protected function messages()
     {
         return [
-            'company_name.required' => 'Nama perusahaan / instansi wajib diisi.',
-            'position.required' => 'Posisi / jabatan wajib diisi.',
-            'employment_type.required' => 'Jenis pekerjaan wajib dipilih.',
-            'start_date.required' => 'Tanggal mulai wajib diisi.',
-            'start_date.date' => 'Format tanggal mulai tidak valid.',
-            'end_date.date' => 'Format tanggal selesai tidak valid.',
-            'end_date.after_or_equal' => 'Tanggal selesai harus setelah atau sama dengan tanggal mulai.',
+            'company_name.required' => __('Nama perusahaan / instansi wajib diisi.'),
+            'position.required' => __('Posisi / jabatan akhir wajib diisi.'),
+            'employment_type.required' => __('Jenis pekerjaan wajib dipilih.'),
+            'start_date.required' => __('Tanggal mulai wajib diisi.'),
+            'start_date.date' => __('Format tanggal mulai tidak valid.'),
+            'end_date.date' => __('Format tanggal selesai tidak valid.'),
+            'end_date.after_or_equal' => __('Tanggal selesai harus setelah atau sama dengan tanggal mulai.'),
         ];
     }
 
@@ -104,11 +118,18 @@ class Pengalaman extends Component
         $this->reset([
             'work_experience_id',
             'company_name',
+            'business_field',
+            'company_address',
+            'supervisor_name',
             'position',
+            'initial_position',
             'employment_type',
             'start_date',
             'end_date',
             'currently_working',
+            'initial_salary',
+            'final_salary',
+            'benefits',
             'description',
         ]);
         $this->resetErrorBag();
@@ -124,11 +145,18 @@ class Pengalaman extends Component
 
         $this->work_experience_id = $exp->id;
         $this->company_name = $exp->company_name;
+        $this->business_field = $exp->business_field;
+        $this->company_address = $exp->company_address;
+        $this->supervisor_name = $exp->supervisor_name;
         $this->position = $exp->position;
+        $this->initial_position = $exp->initial_position;
         $this->employment_type = $exp->employment_type;
         $this->start_date = $exp->start_date ? $exp->start_date->format('Y-m-d') : null;
         $this->end_date = $exp->end_date ? $exp->end_date->format('Y-m-d') : null;
         $this->currently_working = (bool) $exp->currently_working;
+        $this->initial_salary = $exp->initial_salary ? (float) $exp->initial_salary : null;
+        $this->final_salary = $exp->final_salary ? (float) $exp->final_salary : null;
+        $this->benefits = $exp->benefits;
         $this->description = $exp->description;
 
         $this->isEdit = true;
@@ -143,21 +171,26 @@ class Pengalaman extends Component
             $validatedData['end_date'] = null;
         }
 
+        $validatedData['initial_salary'] = $this->initial_salary ?: null;
+        $validatedData['final_salary'] = $this->final_salary ?: null;
+
         $user = Auth::user();
         $profile = ApplicantProfile::firstOrCreate(['user_id' => $user->id]);
 
         if ($this->isEdit && $this->work_experience_id) {
             $exp = WorkExperience::where('profile_id', $profile->id)->where('id', $this->work_experience_id)->firstOrFail();
             $exp->update($validatedData);
-            session()->flash('message', 'Pengalaman kerja berhasil diperbarui.');
+            $msg = __('Pengalaman kerja berhasil diperbarui.');
+            $action = 'update';
         } else {
             $validatedData['profile_id'] = $profile->id;
             WorkExperience::create($validatedData);
-            session()->flash('message', 'Pengalaman kerja berhasil ditambahkan.');
+            $msg = __('Pengalaman kerja berhasil ditambahkan.');
+            $action = 'create';
         }
 
         $this->closeModal();
-        return redirect(route('profile', ['tab' => 'pengalaman']));
+        $this->dispatch('profile-updated', message: $msg, action: $action);
     }
 
     public function savePreference()
@@ -188,8 +221,7 @@ class Pengalaman extends Component
             ]
         );
 
-        $this->dispatch('profile-updated');
-        session()->flash('preference_message', 'Minat kerja berhasil diperbarui!');
+        $this->dispatch('profile-updated', message: __('Minat kerja berhasil diperbarui!'), action: 'update');
     }
 
     public function confirmDelete($id)
@@ -211,14 +243,12 @@ class Pengalaman extends Component
             $profile = ApplicantProfile::where('user_id', $user->id)->first();
             if ($profile) {
                 WorkExperience::where('profile_id', $profile->id)->where('id', $this->deleteId)->delete();
-                session()->flash('message', 'Pengalaman kerja berhasil dihapus.');
             }
         }
 
         $this->showDeleteModal = false;
         $this->deleteId = null;
-
-        return redirect(route('profile', ['tab' => 'pengalaman']));
+        $this->dispatch('profile-updated', message: __('Pengalaman kerja berhasil dihapus.'), action: 'delete');
     }
 
     public function render()

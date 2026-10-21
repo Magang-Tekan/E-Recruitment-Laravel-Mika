@@ -83,8 +83,7 @@ class SocialMedia extends Component
             }
         }
 
-        session()->flash('message', 'Tautan media sosial berhasil diperbarui.');
-        $this->dispatch('profile-updated');
+        $this->dispatch('profile-updated', message: __('Tautan media sosial berhasil diperbarui.'), action: 'update');
     }
 
     public function render()

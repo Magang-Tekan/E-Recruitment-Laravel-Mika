@@ -36,7 +36,9 @@ class JobController extends Controller
             'position_id' => $request->position_id ?: null,
             'reviewer_id' => $request->reviewer_id ?: null,
             'title' => $request->title,
+            'title_en' => $request->input('title_en'),
             'description' => !empty($request->description) ? $request->description : '-',
+            'description_en' => $request->input('description_en'),
             'employment_type' => $request->employment_type,
             'location' => !empty($request->location) ? $request->location : 'Indonesia',
             'salary_min' => $request->salary_min,
@@ -82,7 +84,7 @@ class JobController extends Controller
         $newDesc = $request->input('description', $data->description);
         $newLoc = $request->input('location', $data->location);
 
-        $data->update([
+        $updateData = [
             'company_id' => $request->input('company_id', $data->company_id),
             'department_id' => $request->input('department_id', $data->department_id),
             'position_id' => $request->has('position_id') ? ($request->position_id ?: null) : $data->position_id,
@@ -96,7 +98,21 @@ class JobController extends Controller
             'quota' => $request->filled('quota') ? (int) $request->quota : ($data->quota ?? 1),
             'deadline' => $request->input('deadline', $data->deadline),
             'status' => $request->input('status', $data->status),
-        ]);
+        ];
+
+        if ($request->filled('title_en')) {
+            $updateData['title_en'] = $request->input('title_en');
+        } elseif ($request->filled('title') && $request->input('title') !== $data->title) {
+            $updateData['title_en'] = null; // triggers saving auto-translate hook
+        }
+
+        if ($request->filled('description_en')) {
+            $updateData['description_en'] = $request->input('description_en');
+        } elseif ($request->filled('description') && $request->input('description') !== $data->description) {
+            $updateData['description_en'] = null; // triggers saving auto-translate hook
+        }
+
+        $data->update($updateData);
 
         return redirect()->route('admin.job')->with('update', 'Lowongan pekerjaan berhasil diperbarui');
     }

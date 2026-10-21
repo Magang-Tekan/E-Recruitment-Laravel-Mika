@@ -1,6 +1,8 @@
 <?php
 
 use App\Livewire\Forms\LoginForm;
+use App\Models\Company;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -22,6 +24,20 @@ new #[Layout('layouts.guest')] class extends Component
 
         $this->redirectIntended(default: $this->form->redirectAfterLogin());
     }
+
+    public function with(): array
+    {
+        $mainCompany = Cache::remember('frontend_main_company', 86400, function () {
+            return Company::where('name', 'like', '%Mitra Karya Analitika%')
+                ->orWhere('name', 'like', '%MIKA%')
+                ->first() ?? Company::first();
+        });
+
+        return [
+            'mainCompany' => $mainCompany,
+            'logoUrl' => $mainCompany?->logo_url ?: asset('storage/logo/mikaaaa.png'),
+        ];
+    }
 }; ?>
 
 <div class="w-full max-w-5xl mx-auto">
@@ -36,7 +52,7 @@ new #[Layout('layouts.guest')] class extends Component
             <span class="w-3.5 h-3.5 rounded-full bg-[#93F514] animate-dot-4 inline-block"></span>
         </div>
         <p class="mt-2.5 text-xs font-semibold text-white tracking-wide">
-            <span class="text-[#93F514]">Memproses</span> Masuk...
+            <span class="text-[#93F514]">{{ __('Memproses') }}</span> {{ __('Masuk...') }}
         </p>
     </div>
 
@@ -51,7 +67,7 @@ new #[Layout('layouts.guest')] class extends Component
             <span class="w-3.5 h-3.5 rounded-full bg-[#93F514] animate-dot-4 inline-block"></span>
         </div>
         <p class="mt-2.5 text-xs font-semibold text-white tracking-wide">
-            Memuat Masuk Google...
+            {{ __('Memuat Masuk Google...') }}
         </p>
     </div>
 
@@ -79,32 +95,37 @@ new #[Layout('layouts.guest')] class extends Component
 
                 <!-- Top Area: Brand Logo & Tagline -->
                 <div class="relative z-10">
-                    <a href="{{ url('/') }}" class="inline-flex items-center gap-3 group">
+                    <a href="{{ url('/') }}" class="inline-flex items-center gap-3 group" title="MIKA CAREER - {{ $mainCompany->name ?? 'Mitra Karya Analitika' }}">
                         <div class="p-2 rounded-xl bg-black/40 border border-[#93F514]/30 shadow-md group-hover:scale-105 transition-transform duration-200">
-                            <img src="{{ asset('storage/logo/mikaaaa.png') }}" 
-                                 alt="Logo MIKA" 
-                                 class="h-8 w-auto object-contain rounded-lg">
+                            <img src="{{ $logoUrl }}" 
+                                 alt="{{ $mainCompany->name ?? 'Logo MIKA' }}" 
+                                 class="h-8 w-auto object-contain rounded-lg"
+                                 onerror="this.onerror=null; this.src='{{ asset('storage/logo/mikaaaa.png') }}';">
                         </div>
                         <div>
                             <span class="heading-font text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-1">
                                 MIKA <span class="text-[#93F514]">CAREER</span>
                             </span>
                             <span class="block text-[10px] text-gray-400 font-normal">
-                                Portal Rekrutmen Online
+                                {{ __('Portal Rekrutmen Online') }}
                             </span>
                         </div>
                     </a>
 
                     <!-- Slogan Heading -->
                     <div class="mt-8">
-                        {{-- <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-[#93F514]/15 text-[#93F514] border border-[#93F514]/30 mb-3">
-                            Portal Rekrutmen
-                        </span> --}}
                         <h2 class="heading-font text-2xl sm:text-3xl font-bold text-white leading-tight">
-                            One click to step into your
-                            <span class="text-[#93F514]">
-                                dream career.
-                            </span>
+                            @if (app()->getLocale() === 'en')
+                                One click to step into your
+                                <span class="text-[#93F514] block mt-0.5">
+                                    dream career.
+                                </span>
+                            @else
+                                Satu klik menuju
+                                <span class="text-[#93F514] block mt-0.5">
+                                    karier impian Anda.
+                                </span>
+                            @endif
                         </h2>
                     </div>
                 </div>
@@ -162,7 +183,7 @@ new #[Layout('layouts.guest')] class extends Component
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                         </svg>
-                        <span>Kembali ke Beranda</span>
+                        <span>{{ __('Kembali ke Beranda') }}</span>
                     </a>
                 </div>
             </div>
@@ -174,14 +195,14 @@ new #[Layout('layouts.guest')] class extends Component
                 <div class="mb-7">
                     <div class="flex items-center justify-between mb-1.5">
                         <h1 class="heading-font text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                            Selamat Datang
+                            {{ __('Selamat Datang') }}
                         </h1>
                         {{-- <span class="text-xs font-medium px-3 py-1 rounded-full bg-[#93F514]/10 text-[#93F514] border border-[#93F514]/30">
                             Masuk
                         </span> --}}
                     </div>
                     <p class="text-sm text-gray-400 font-normal">
-                        Masuk ke akun <span class="text-white font-medium">MIKA CAREER</span> untuk melanjutkan lamaran Anda.
+                        {!! __('Masuk ke akun :brand untuk melanjutkan lamaran Anda.', ['brand' => '<span class="text-white font-medium">MIKA CAREER</span>']) !!}
                     </p>
                 </div>
 
@@ -208,7 +229,7 @@ new #[Layout('layouts.guest')] class extends Component
                     $errorMessage = session('error');
                     if (! $errorMessage && request()->has('timeout')) {
                         $idleMinutes = (int) config('session.idle_timeout', 5);
-                        $errorMessage = "Sesi Anda telah berakhir karena tidak ada aktivitas selama {$idleMinutes} menit. Silakan masuk kembali.";
+                        $errorMessage = __("Sesi Anda telah berakhir karena tidak ada aktivitas selama :minutes menit. Silakan masuk kembali.", ['minutes' => $idleMinutes]);
                     }
                 @endphp
 
@@ -225,7 +246,7 @@ new #[Layout('layouts.guest')] class extends Component
                             </svg>
                             <span>{{ $errorMessage }}</span>
                         </div>
-                        <button type="button" @click="show = false" class="text-red-400/60 hover:text-red-400 text-sm leading-none focus:outline-none cursor-pointer" title="Tutup">&times;</button>
+                        <button type="button" @click="show = false" class="text-red-400/60 hover:text-red-400 text-sm leading-none focus:outline-none cursor-pointer" title="{{ __('Tutup') }}">&times;</button>
                     </div>
                 @endif
 
@@ -239,20 +260,20 @@ new #[Layout('layouts.guest')] class extends Component
                         <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
                         <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
                     </svg>
-                    <span>Masuk dengan Google</span>
+                    <span>{{ __('Masuk dengan Google') }}</span>
                 </a>
 
                 <!-- Or Divider -->
                 <div class="relative flex items-center justify-center mb-5">
                     <div class="border-t border-white/10 w-full"></div>
-                    <span class="bg-[#051406] px-3 text-[11px] text-gray-400 uppercase tracking-wider font-medium absolute">atau email</span>
+                    <span class="bg-[#051406] px-3 text-[11px] text-gray-400 uppercase tracking-wider font-medium absolute">{{ __('atau email') }}</span>
                 </div>
 
                 <form wire:submit="login" class="space-y-4 sm:space-y-5">
                     <!-- Email Address -->
                     <div>
                         <label for="email" class="block text-xs font-semibold text-gray-300 mb-1.5">
-                            Alamat Email
+                            {{ __('Alamat Email') }}
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -282,12 +303,12 @@ new #[Layout('layouts.guest')] class extends Component
                     <div x-data="{ showPassword: false }">
                         <div class="flex justify-between items-center mb-1.5">
                             <label for="password" class="block text-xs font-semibold text-gray-300">
-                                Kata Sandi
+                                {{ __('Kata Sandi') }}
                             </label>
                             @if (Route::has('password.request'))
                                 <a href="{{ route('password.request') }}" 
                                    class="text-xs text-gray-400 hover:text-[#93F514] transition">
-                                    Lupa kata sandi?
+                                    {{ __('Lupa kata sandi?') }}
                                 </a>
                             @endif
                         </div>
@@ -311,7 +332,7 @@ new #[Layout('layouts.guest')] class extends Component
 
                             <button type="button" @click="showPassword = !showPassword" 
                                     class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-[#93F514] transition focus:outline-none" 
-                                    title="Tampilkan/Sembunyikan Kata Sandi">
+                                    title="{{ __('Tampilkan/Sembunyikan Kata Sandi') }}">
                                 <svg x-show="!showPassword" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -337,7 +358,7 @@ new #[Layout('layouts.guest')] class extends Component
                                    type="checkbox" 
                                    class="w-4 h-4 rounded bg-black/50 border-white/20 text-[#93F514] focus:ring-[#93F514] focus:ring-offset-0 transition" 
                                    name="remember">
-                            <span class="ms-2 text-xs text-gray-300">Ingat saya</span>
+                            <span class="ms-2 text-xs text-gray-300">{{ __('Ingat saya') }}</span>
                         </label>
                     </div>
 
@@ -348,7 +369,7 @@ new #[Layout('layouts.guest')] class extends Component
                                 wire:loading.class="!cursor-not-allowed"
                                 class="w-full py-3 px-4 bg-[#93F514] hover:bg-[#82dc0e] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed text-black font-semibold text-sm rounded-xl shadow-lg shadow-[#93F514]/20 hover:shadow-[#93F514]/30 transition flex items-center justify-center gap-2 group cursor-pointer">
                             <span wire:loading.remove wire:target="login" class="inline-flex items-center gap-2">
-                                <span>Masuk</span>
+                                <span>{{ __('Masuk') }}</span>
                                 {{-- <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                                 </svg> --}}
@@ -358,7 +379,7 @@ new #[Layout('layouts.guest')] class extends Component
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                <span>Memproses...</span>
+                                <span>{{ __('Memproses...') }}</span>
                             </span>
                         </button>
                     </div>
@@ -367,10 +388,10 @@ new #[Layout('layouts.guest')] class extends Component
                 <!-- Divider & Register Link -->
                 <div class="mt-6 pt-5 border-t border-white/10 text-center">
                     <p class="text-xs text-gray-400">
-                        Belum punya akun?
+                        {{ __('Belum punya akun?') }}
                         <a href="{{ route('register') }}" 
                            class="font-semibold text-[#93F514] hover:underline ml-1">
-                            Daftar Sekarang
+                            {{ __('Daftar Sekarang') }}
                         </a>
                     </p>
                 </div>

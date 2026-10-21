@@ -1,10 +1,10 @@
 @extends('frontend.layouts.app')
 
-@section('title', $job->title . ' - ' . ($job->company?->name ?? 'Perusahaan') . ' | Mika Career')
+@section('title', $job->localized_title . ' - ' . ($job->company?->name ?? __('Perusahaan')) . ' | Mika Career')
 
 @section('meta')
     @php
-        $metaPlainDesc = Str::limit(strip_tags($job->description ?? 'Lowongan kerja ' . $job->title . ' di ' . ($job->company?->name ?? 'PT Mitra Karya Analitika')), 160);
+        $metaPlainDesc = Str::limit(strip_tags($job->localized_description ?? __('Lowongan kerja') . ' ' . $job->localized_title . ' ' . __('di') . ' ' . ($job->company?->name ?? 'PT Mitra Karya Analitika')), 160);
         $metaShareUrl = url()->current();
         $metaShareImage = $job->company?->logo_url 
             ? (Str::startsWith($job->company->logo_url, ['http://', 'https://']) ? $job->company->logo_url : url($job->company->logo_url)) 
@@ -13,14 +13,14 @@
     <meta name="description" content="{{ $metaPlainDesc }}">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="Mika Career">
-    <meta property="og:title" content="{{ $job->title }} - {{ $job->company?->name ?? 'PT Mitra Karya Analitika' }}">
+    <meta property="og:title" content="{{ $job->localized_title }} - {{ $job->company?->name ?? 'PT Mitra Karya Analitika' }}">
     <meta property="og:description" content="{{ $metaPlainDesc }}">
     <meta property="og:image" content="{{ $metaShareImage }}">
     <meta property="og:image:secure_url" content="{{ $metaShareImage }}">
     <meta property="og:url" content="{{ $metaShareUrl }}">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ $job->title }} - {{ $job->company?->name ?? 'PT Mitra Karya Analitika' }}">
+    <meta name="twitter:title" content="{{ $job->localized_title }} - {{ $job->company?->name ?? 'PT Mitra Karya Analitika' }}">
     <meta name="twitter:description" content="{{ $metaPlainDesc }}">
     <meta name="twitter:image" content="{{ $metaShareImage }}">
 @endsection
@@ -29,17 +29,17 @@
 @php
     $companyName = $job->company?->name ?? 'PT Mitra Karya Analitika';
     $currentShareUrl = url()->current();
-    $deadlineText = $job->deadline ? \Carbon\Carbon::parse($job->deadline)->format('d F Y') : 'Hingga kuota terpenuhi';
+    $deadlineText = $job->deadline ? \Carbon\Carbon::parse($job->deadline)->translatedFormat('d F Y') : __('Hingga kuota terpenuhi');
     
     // Pesan template WhatsApp resmi dan profesional tanpa emoji
-    $waMessage = "*INFORMASI LOWONGAN PEKERJAAN*\n\n" .
-                 "*Perusahaan*: " . $companyName . "\n" .
-                 "*Posisi*: " . $job->title . "\n" .
-                 ($job->department ? "*Departemen*: " . $job->department->name . "\n" : "") .
-                 "*Lokasi*: " . ($job->location ?? 'Indonesia') . "\n" .
-                 "*Tipe Pekerjaan*: " . ($job->employment_type ?? 'Full Time') . "\n" .
-                 "*Batas Akhir Pendaftaran*: " . $deadlineText . "\n\n" .
-                 "Informasi kualifikasi, deskripsi pekerjaan, dan pendaftaran dapat diakses melalui tautan resmi berikut:\n" .
+    $waMessage = "*" . __('INFORMASI LOWONGAN PEKERJAAN') . "*\n\n" .
+                 "*" . __('Perusahaan') . "*: " . $companyName . "\n" .
+                 "*" . __('Posisi') . "*: " . $job->localized_title . "\n" .
+                 ($job->department ? "*" . __('Departemen') . "*: " . __($job->department->name) . "\n" : "") .
+                 "*" . __('Lokasi') . "*: " . __($job->location ?? 'Indonesia') . "\n" .
+                 "*" . __('Tipe Pekerjaan') . "*: " . __($job->employment_type ?? 'Full Time') . "\n" .
+                 "*" . __('Batas Akhir Pendaftaran') . "*: " . $deadlineText . "\n\n" .
+                 __('Informasi kualifikasi, deskripsi pekerjaan, dan pendaftaran dapat diakses melalui tautan resmi berikut:') . "\n" .
                  $currentShareUrl;
                  
     $waShareUrl = "https://api.whatsapp.com/send?text=" . rawurlencode($waMessage);
@@ -48,6 +48,7 @@
     $isAdminOrRecruiter = auth()->check() && (
         auth()->user()->role_id == 1 ||
         auth()->user()->role_id == 2 ||
+        (bool) auth()->user()->is_recruiter ||
         in_array(strtolower(auth()->user()->role?->name ?? ''), [
             'admin',
             'superadmin',
@@ -64,9 +65,17 @@
          isMandatoryComplete: {{ ($isMandatoryComplete ?? false) ? 'true' : 'false' }},
          hasApplied: {{ ($hasApplied ?? false) ? 'true' : 'false' }},
          missingSections: {{ json_encode($missingMandatorySections ?? []) }},
+         sectionMap: {
+             'Data Pribadi': '{{ __('Data Pribadi') }}',
+             'Dokumen CV': '{{ __('Dokumen CV') }}',
+             'Unggah Dokumen CV': '{{ __('Unggah Dokumen CV') }}',
+             'Data Keluarga': '{{ __('Data Keluarga') }}',
+             'Pendidikan': '{{ __('Pendidikan') }}',
+             'Skill / Keahlian': '{{ __('Skill / Keahlian') }}'
+         },
          shareCopied: false,
          shareUrl: '{{ $currentShareUrl }}',
-         shareTitle: '{{ addslashes($job->title) }}',
+         shareTitle: '{{ addslashes($job->localized_title) }}',
          handleApplyClick() {
              if (this.hasApplied) return;
              if (!this.isMandatoryComplete) {
@@ -109,7 +118,7 @@
              if (navigator.share) {
                  navigator.share({
                      title: this.shareTitle,
-                     text: 'Lowongan Kerja ' + this.shareTitle + ' di {{ addslashes($companyName) }}',
+                     text: '{{ __('Lowongan Kerja') }} ' + this.shareTitle + ' {{ __('di') }} {{ addslashes($companyName) }}',
                      url: this.shareUrl
                  }).catch(() => {});
              } else {
@@ -128,13 +137,13 @@
                     </svg>
                 </div>
                 <div>
-                    <span class="font-bold text-sm block">Lamaran Berhasil Diajukan!</span>
+                    <span class="font-bold text-sm block">{{ __('Lamaran Berhasil Diajukan!') }}</span>
                     <span class="text-xs text-gray-300">{{ session('success') }}</span>
                 </div>
             </div>
             <div class="flex items-center gap-3 shrink-0">
                 <a href="{{ route('profile', ['tab' => 'riwayat']) }}" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black font-bold text-xs hover:bg-emerald-400 transition">
-                    Lihat Riwayat
+                    {{ __('Lihat Riwayat') }}
                 </a>
                 <button @click="show = false" class="text-emerald-400/80 hover:text-emerald-300">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -154,13 +163,13 @@
                     </svg>
                 </div>
                 <div>
-                    <span class="font-bold text-sm block">Informasi</span>
+                    <span class="font-bold text-sm block">{{ __('Informasi') }}</span>
                     <span class="text-xs text-gray-300">{{ session('info') }}</span>
                 </div>
             </div>
             <div class="flex items-center gap-3 shrink-0">
                 <a href="{{ route('profile', ['tab' => 'riwayat']) }}" class="px-3.5 py-1.5 rounded-xl bg-blue-500 text-white font-bold text-xs hover:bg-blue-400 transition">
-                    Riwayat Lamaran
+                    {{ __('Riwayat Lamaran') }}
                 </a>
                 <button @click="show = false" class="text-blue-400/80 hover:text-blue-300">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -180,7 +189,7 @@
                     </svg>
                 </div>
                 <div>
-                    <span class="font-bold text-sm block">Perhatian</span>
+                    <span class="font-bold text-sm block">{{ __('Perhatian') }}</span>
                     <span class="text-xs text-gray-300">{{ session('error') }}</span>
                 </div>
             </div>
@@ -194,11 +203,11 @@
 
     <!-- Breadcrumbs -->
     <nav class="flex items-center gap-2 text-xs text-gray-400 mb-8">
-        <a href="{{ route('home') }}" class="hover:text-[#93F514] transition">Beranda</a>
+        <a href="{{ route('home') }}" class="hover:text-[#93F514] transition">{{ __('Beranda') }}</a>
         <span>/</span>
-        <a href="{{ route('jobs.index') }}" class="hover:text-[#93F514] transition">Lowongan</a>
+        <a href="{{ route('jobs.index') }}" class="hover:text-[#93F514] transition">{{ __('Lowongan') }}</a>
         <span>/</span>
-        <span class="text-[#93F514] font-medium truncate max-w-xs sm:max-w-md">{{ $job->title }}</span>
+        <span class="text-[#93F514] font-medium truncate max-w-xs sm:max-w-md">{{ $job->localized_title }}</span>
     </nav>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -215,14 +224,14 @@
                         </svg>
                     </div>
                     <div class="flex-1">
-                        <h4 class="text-base font-extrabold text-rose-200">Pendaftaran Lowongan Ini Telah Ditutup</h4>
+                        <h4 class="text-base font-extrabold text-rose-200">{{ __('Pendaftaran Lowongan Ini Telah Ditutup') }}</h4>
                         <p class="text-xs sm:text-sm text-gray-300 mt-1 leading-relaxed">
                             @if ($job->is_expired)
-                                Lowongan ini telah melewati batas akhir pendaftaran pada tanggal <strong class="text-rose-300">{{ \Carbon\Carbon::parse($job->deadline)->format('d F Y') }}</strong> dan saat ini tidak lagi menerima pengajuan lamaran baru.
+                                {{ __('Lowongan ini telah melewati batas akhir pendaftaran pada tanggal') }} <strong class="text-rose-300">{{ \Carbon\Carbon::parse($job->deadline)->translatedFormat('d F Y') }}</strong> {{ __('dan saat ini tidak lagi menerima pengajuan lamaran baru.') }}
                             @elseif ($job->status === 'Closed')
-                                Lowongan ini telah resmi ditutup oleh perusahaan/perekrut sehingga proses penerimaan berkas baru telah berakhir.
+                                {{ __('Lowongan ini telah resmi ditutup oleh perusahaan/perekrut sehingga proses penerimaan berkas baru telah berakhir.') }}
                             @else
-                                Lowongan ini saat ini tidak berstatus aktif sehingga tidak menerima pengajuan lamaran baru.
+                                {{ __('Lowongan ini saat ini tidak berstatus aktif sehingga tidak menerima pengajuan lamaran baru.') }}
                             @endif
                         </p>
                     </div>
@@ -243,8 +252,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <span class="font-bold text-amber-300 block text-xs sm:text-sm">Mode Pratinjau ({{ auth()->user()->role?->name ?? 'Admin' }})</span>
-                                <span class="text-gray-300 text-[11px] sm:text-xs">Akun staf/pengelola aktif. Tombol lamaran pekerjaan dinonaktifkan untuk akun ini.</span>
+                                <span class="font-bold text-amber-300 block text-xs sm:text-sm">{{ __('Mode Pratinjau') }} ({{ auth()->user()->role?->name ?? 'Admin' }})</span>
+                                <span class="text-gray-300 text-[11px] sm:text-xs">{{ __('Akun staf/pengelola aktif. Tombol lamaran pekerjaan dinonaktifkan untuk akun ini.') }}</span>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
@@ -253,7 +262,7 @@
                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
-                                    <span>Kelola di Admin</span>
+                                    <span>{{ __('Kelola di Admin') }}</span>
                                 </a>
                             @endif
                         </div>
@@ -278,43 +287,43 @@
                             <div class="flex flex-wrap items-center gap-2">
                                 <span
                                     class="px-3 py-1 rounded-full text-xs font-semibold bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514]">
-                                    {{ $job->employment_type }}
+                                    {{ __($job->employment_type) }}
                                 </span>
                                 @if ($job->is_expired || $job->status === 'Closed')
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 border border-rose-500/40 text-rose-400">
-                                        Ditutup
+                                        {{ __('Ditutup') }}
                                     </span>
                                 @elseif ($job->days_remaining === 0)
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 border border-rose-500/40 text-rose-400 animate-pulse">
-                                        Berakhir Hari Ini!
+                                        {{ __('Berakhir Hari Ini!') }}
                                     </span>
                                 @elseif ($job->days_remaining !== null && $job->days_remaining <= 3)
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 border border-amber-500/40 text-amber-400">
-                                        Sisa {{ $job->days_remaining }} Hari
+                                        {{ __('Sisa') }} {{ $job->days_remaining }} {{ __('Hari') }}
                                     </span>
                                 @endif
                             </div>
                             <h1 class="text-2xl sm:text-3xl font-extrabold text-[#EEEEEE] mt-2 break-normal sm:break-words leading-tight">
-                                {{ $job->title }}
+                                {{ $job->localized_title }}
                             </h1>
                             <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-sm mt-2">
                                 <span class="text-[#93F514] font-semibold flex items-center gap-1.5 company-badge whitespace-nowrap sm:whitespace-normal">
-                                    <svg class="w-4 h-4 text-[#93F514]/80 company-icon shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg class="w-4 h-4 text-[#93F514] company-icon shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                     </svg>
-                                    <span>{{ $job->company?->name ?? 'Perusahaan Mitra' }}</span>
+                                    <span>{{ $job->company?->name ?? __('Perusahaan Mitra') }}</span>
                                 </span>
 
-                                <span class="text-gray-300 font-medium flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <span class="text-[#93F514] font-semibold flex items-center gap-1.5 department-badge whitespace-nowrap sm:whitespace-normal">
+                                    <svg class="w-3.5 h-3.5 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                     </svg>
-                                    <span>{{ $job->department?->name ?? 'Umum' }}</span>
+                                    <span>{{ __($job->department?->name ?? 'Umum') }}</span>
                                 </span>
 
                                 @if ($job->position)
                                     <span class="inline-flex items-center text-xs px-2.5 py-0.5 rounded-full bg-[#93F514]/10 text-[#93F514] border border-[#93F514]/30 font-medium whitespace-nowrap">
-                                        Posisi: {{ $job->position->name }}
+                                        {{ __('Posisi:') }} {{ __($job->position->name) }}
                                     </span>
                                 @endif
                             </div>
@@ -329,28 +338,28 @@
                                 <svg class="w-4 h-4 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                 </svg>
-                                <span>Pendaftaran Ditutup</span>
+                                <span>{{ __('Pendaftaran Ditutup') }}</span>
                             </div>
                         @else
                             @auth
                                 @if ($isAdminOrRecruiter)
-                                    <a href="{{ auth()->user()->role_id == 2 || strtolower(auth()->user()->role?->name ?? '') === 'recruiter' ? route('recruiter.dashboard') : route('admin.dashboard') }}"
+                                    <a href="{{ auth()->user()->isRecruiter() && !auth()->user()->isAdmin() ? route('recruiter.dashboard') : route('admin.dashboard') }}"
                                         class="admin-dashboard-btn h-11 sm:h-12 px-5 rounded-2xl bg-gray-900 hover:bg-gray-800 border border-gray-700 hover:border-[#93F514]/50 text-white font-bold text-xs sm:text-sm shadow-md inline-flex items-center justify-center gap-2 transition whitespace-nowrap">
                                         <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                                         </svg>
-                                        <span>Dashboard</span>
+                                        <span>{{ __('Dashboard') }}</span>
                                     </a>
                                 @elseif($hasApplied)
                                     <div class="flex-1 md:flex-initial h-11 sm:h-12 px-4 sm:px-5 rounded-2xl bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-sm select-none whitespace-nowrap">
                                         <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                         </svg>
-                                        <span>Sudah Dilamar</span>
+                                        <span>{{ __('Sudah Dilamar') }}</span>
                                     </div>
                                     <a href="{{ route('profile', ['tab' => 'riwayat']) }}" 
                                        class="h-11 sm:h-12 px-4 sm:px-5 rounded-2xl bg-[#051405] hover:bg-[#93F514] border border-[#93F514]/30 text-white hover:text-black text-xs sm:text-sm font-semibold shadow-md transition inline-flex items-center justify-center whitespace-nowrap">
-                                        <span>Pantau Status</span>
+                                        <span>{{ __('Pantau Status') }}</span>
                                     </a>
                                 @else
                                     <button type="button" 
@@ -359,13 +368,13 @@
                                         <svg class="w-4 h-4 text-black shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                                         </svg>
-                                        <span>Lamar Posisi Ini</span>
+                                        <span>{{ __('Lamar Posisi Ini') }}</span>
                                     </button>
                                 @endif
                             @else
                                 <a href="{{ route('login') }}"
                                     class="flex-1 md:flex-initial h-11 sm:h-12 px-6 rounded-2xl bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-sm sm:text-base shadow-md shadow-black/30 transition inline-flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98]">
-                                    <span>Masuk & Lamar</span>
+                                    <span>{{ __('Masuk & Lamar') }}</span>
                                 </a>
                             @endauth
                         @endif
@@ -376,11 +385,11 @@
                                     @click="openShare = !openShare"
                                     class="h-11 sm:h-12 px-4 sm:px-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-[#93F514]/30 hover:border-[#93F514] text-[#EEEEEE] hover:text-[#93F514] font-bold text-xs sm:text-sm transition inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm group whitespace-nowrap active:scale-[0.98]"
                                     :class="openShare ? 'border-[#93F514] text-[#93F514] bg-white/10 ring-2 ring-[#93F514]/20' : ''"
-                                    title="Bagikan Lowongan Ini">
+                                    title="{{ __('Bagikan Lowongan Ini') }}">
                                 <svg class="w-4 h-4 text-[#93F514] shrink-0 transition group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                                 </svg>
-                                <span>Bagikan</span>
+                                <span>{{ __('Bagikan') }}</span>
                                 <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-[#93F514] transition-transform duration-200 shrink-0" :class="openShare ? 'rotate-180 text-[#93F514]' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
@@ -398,7 +407,7 @@
                                  class="absolute right-0 mt-2 w-52 rounded-2xl bg-[#061506] border border-[#93F514]/30 shadow-2xl shadow-black/90 p-2 z-50 text-left backdrop-blur-xl">
                                 
                                 <div class="px-3 py-1.5 text-xs font-bold text-gray-200">
-                                    Bagikan Lowongan
+                                    {{ __('Bagikan Lowongan') }}
                                 </div>
                                 <div class="h-px bg-white/10 mx-2 my-1"></div>
 
@@ -419,10 +428,10 @@
                                                 </svg>
                                             </template>
                                         </div>
-                                        <span class="font-medium" x-text="shareCopied ? 'Tautan disalin!' : 'Salin tautan'" :class="shareCopied ? 'text-[#93F514] font-bold' : ''"></span>
+                                        <span class="font-medium" x-text="shareCopied ? '{{ __('Tautan disalin!') }}' : '{{ __('Salin tautan') }}'" :class="shareCopied ? 'text-[#93F514] font-bold' : ''"></span>
                                     </div>
                                     <template x-if="shareCopied">
-                                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#93F514]/20 text-[#93F514] font-bold">Tersalin</span>
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#93F514]/20 text-[#93F514] font-bold">{{ __('Tersalin') }}</span>
                                     </template>
                                 </button>
 
@@ -457,37 +466,37 @@
                     <!-- Info Highlights Grid -->
                     <div class="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-[#93F514]/15">
                         <div class="p-3 rounded-xl bg-[#050c05] border border-[#93F514]/20">
-                            <span class="text-[11px] text-gray-400 block">Lokasi</span>
+                            <span class="text-[11px] text-gray-400 block">{{ __('Lokasi') }}</span>
                             <span
-                                class="text-xs sm:text-sm font-bold text-[#EEEEEE] mt-0.5 block">{{ $job->location ?? 'Indonesia' }}</span>
+                                class="text-xs sm:text-sm font-bold text-[#EEEEEE] mt-0.5 block">{{ __($job->location ?? 'Indonesia') }}</span>
                         </div>
                         <div class="p-3 rounded-xl bg-[#050c05] border border-[#93F514]/20">
-                            <span class="text-[11px] text-gray-400 block">Estimasi Gaji</span>
+                            <span class="text-[11px] text-gray-400 block">{{ __('Estimasi Gaji') }}</span>
                             <span class="text-xs sm:text-sm font-bold text-[#93F514] mt-0.5 block">
                                 @if ($job->salary_min || $job->salary_max)
                                     Rp {{ number_format($job->salary_min / 1000000, 1) }} -
-                                    {{ number_format($job->salary_max / 1000000, 1) }} Juta
+                                    {{ number_format($job->salary_max / 1000000, 1) }} {{ __('Juta') }}
                                 @else
-                                    Kompetitif
+                                    {{ __('Kompetitif') }}
                                 @endif
                             </span>
                         </div>
                         <div class="p-3 rounded-xl bg-[#050c05] border border-[#93F514]/20">
-                            <span class="text-[11px] text-gray-400 block">Kuota Diterima</span>
+                            <span class="text-[11px] text-gray-400 block">{{ __('Kuota Diterima') }}</span>
                             <span class="text-xs sm:text-sm font-bold text-[#EEEEEE] mt-0.5 block">{{ $job->quota }}
-                                Orang</span>
+                                {{ __('Orang') }}</span>
                         </div>
                         <div class="p-3 rounded-xl bg-[#050c05] border {{ $job->is_expired || $job->status === 'Closed' ? 'border-rose-500/30' : ($job->days_remaining !== null && $job->days_remaining <= 3 ? 'border-amber-500/40' : 'border-[#93F514]/20') }}">
-                            <span class="text-[11px] text-gray-400 block">Batas Lamaran</span>
+                            <span class="text-[11px] text-gray-400 block">{{ __('Batas Lamaran') }}</span>
                             <span class="text-xs sm:text-sm font-bold {{ $job->is_expired || $job->status === 'Closed' ? 'text-rose-400' : 'text-[#EEEEEE]' }} mt-0.5 block">
-                                {{ $job->deadline ? \Carbon\Carbon::parse($job->deadline)->format('d M Y') : 'Hingga Terpenuhi' }}
+                                {{ $job->deadline ? \Carbon\Carbon::parse($job->deadline)->translatedFormat('d M Y') : __('Hingga Terpenuhi') }}
                             </span>
                             @if ($job->is_expired || $job->status === 'Closed')
-                                <span class="text-[10px] font-semibold text-rose-400 block mt-0.5">Sudah Ditutup</span>
+                                <span class="text-[10px] font-semibold text-rose-400 block mt-0.5">{{ __('Sudah Ditutup') }}</span>
                             @elseif ($job->days_remaining === 0)
-                                <span class="text-[10px] font-bold text-rose-400 animate-pulse block mt-0.5">Berakhir Hari Ini!</span>
+                                <span class="text-[10px] font-bold text-rose-400 animate-pulse block mt-0.5">{{ __('Berakhir Hari Ini!') }}</span>
                             @elseif ($job->days_remaining !== null && $job->days_remaining <= 3)
-                                <span class="text-[10px] font-semibold text-amber-400 block mt-0.5">Sisa {{ $job->days_remaining }} Hari</span>
+                                <span class="text-[10px] font-semibold text-amber-400 block mt-0.5">{{ __('Sisa') }} {{ $job->days_remaining }} {{ __('Hari') }}</span>
                             @endif
                         </div>
                     </div>
@@ -496,7 +505,7 @@
                 <!-- Job Description Content -->
                 <div class="reveal-on-scroll rounded-3xl bg-[#050e05] border border-[#93F514]/25 p-6 sm:p-8 space-y-6" data-delay="100">
                     @php
-                        $rawDesc = $job->description ?? '';
+                        $rawDesc = $job->localized_description ?? '';
                         $isHtml =
                             str_contains($rawDesc, '<p>') ||
                             str_contains($rawDesc, '<ul>') ||
@@ -528,7 +537,7 @@
                             <div>
                                 <h2 class="text-lg sm:text-xl font-extrabold text-[#EEEEEE] mb-3 flex items-center gap-2">
                                     <span class="w-2.5 h-2.5 rounded-full bg-[#93F514]"></span>
-                                    Deskripsi Pekerjaan
+                                    {{ __('Deskripsi Pekerjaan') }}
                                 </h2>
                                 <div class="text-sm text-gray-300 leading-relaxed whitespace-pre-line">
                                     {{ $descPart }}
@@ -541,7 +550,7 @@
                             <div class="pt-6 border-t border-[#93F514]/15">
                                 <h2 class="text-lg sm:text-xl font-extrabold text-[#EEEEEE] mb-3 flex items-center gap-2">
                                     <span class="w-2.5 h-2.5 rounded-full bg-[#93F514]"></span>
-                                    Persyaratan & Kualifikasi
+                                    {{ __('Persyaratan & Kualifikasi') }}
                                 </h2>
                                 <div class="text-sm text-gray-300 leading-relaxed whitespace-pre-line">
                                     {{ $reqPart }}
@@ -551,19 +560,19 @@
 
                         @if (!$descPart && !$reqPart)
                             <div class="text-sm text-gray-400 italic">
-                                Deskripsi detail pekerjaan belum dicantumkan.
+                                {{ __('Deskripsi detail pekerjaan belum dicantumkan.') }}
                             </div>
                         @endif
                     @endif
 
                     @if ($job->degrees->isNotEmpty())
                         <div class="pt-6 border-t border-[#93F514]/15">
-                            <h3 class="text-base font-bold text-[#EEEEEE] mb-3">Kualifikasi Pendidikan:</h3>
+                            <h3 class="text-base font-bold text-[#EEEEEE] mb-3">{{ __('Kualifikasi Pendidikan:') }}</h3>
                             <div class="flex flex-wrap gap-2">
                                 @foreach ($job->degrees as $deg)
                                     <span
                                         class="px-3 py-1.5 rounded-lg bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] text-xs font-semibold">
-                                        {{ $deg->name }}
+                                        {{ __($deg->name) }}
                                     </span>
                                 @endforeach
                             </div>
@@ -572,12 +581,12 @@
 
                     @if ($job->majors->isNotEmpty())
                         <div class="pt-6 border-t border-[#93F514]/15">
-                            <h3 class="text-base font-bold text-[#EEEEEE] mb-3">Jurusan yang Dicari:</h3>
+                            <h3 class="text-base font-bold text-[#EEEEEE] mb-3">{{ __('Jurusan yang Dicari:') }}</h3>
                             <div class="flex flex-wrap gap-2">
                                 @foreach ($job->majors as $maj)
                                     <span
                                         class="px-3 py-1.5 rounded-lg bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] text-xs font-semibold">
-                                        {{ $maj->name }}
+                                        {{ __($maj->name) }}
                                     </span>
                                 @endforeach
                             </div>
@@ -593,7 +602,7 @@
                 <!-- Company Card -->
                 <div class="rounded-3xl bg-[#050e05] border border-[#93F514]/25 p-6 space-y-4">
                     <h3 class="text-base font-bold text-[#EEEEEE]">
-                        Tentang Perusahaan
+                        {{ __('Tentang Perusahaan') }}
                     </h3>
                     <div class="flex items-center gap-3">
                         @if ($job->company_id)
@@ -618,14 +627,14 @@
                             <h4 class="font-bold text-[#EEEEEE] text-sm truncate">
                                 @if ($job->company_id)
                                     <a href="{{ route('companies.show', $job->company_id) }}" class="hover:text-[#93F514] transition">
-                                        {{ $job->company?->name ?? 'Perusahaan Mitra' }}
+                                        {{ $job->company?->name ?? __('Perusahaan Mitra') }}
                                     </a>
                                 @else
-                                    {{ $job->company?->name ?? 'Perusahaan Mitra' }}
+                                    {{ $job->company?->name ?? __('Perusahaan Mitra') }}
                                 @endif
                             </h4>
                             <span class="text-xs text-gray-400 block truncate">
-                                {{ implode(', ', array_filter([$job->company?->city, $job->company?->province])) ?: $job->company?->address ?? 'Indonesia' }}
+                                {{ implode(', ', array_filter([$job->company?->city, $job->company?->province])) ?: $job->company?->address ?? __('Indonesia') }}
                             </span>
                         </div>
                     </div>
@@ -652,7 +661,7 @@
                                 <svg class="w-4 h-4 text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                 </svg>
-                                <span>Lihat Profil Perusahaan</span>
+                                <span>{{ __('Lihat Profil Perusahaan') }}</span>
                                 <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                 </svg>
@@ -691,18 +700,18 @@
                 <!-- Other Open Jobs -->
                 @if ($relatedJobs->isNotEmpty())
                     <div class="rounded-3xl bg-[#050e05] border border-[#93F514]/25 p-6 space-y-4">
-                        <h3 class="text-base font-bold text-[#EEEEEE]">Lowongan Terkait Lainnya</h3>
+                        <h3 class="text-base font-bold text-[#EEEEEE]">{{ __('Lowongan Terkait Lainnya') }}</h3>
                         <div class="space-y-3">
                             @foreach ($relatedJobs as $rJob)
                                 <a href="{{ route('jobs.show', $rJob->id) }}"
                                     class="block p-3.5 rounded-xl bg-[#030803] border border-[#93F514]/15 hover:border-[#93F514]/50 transition">
                                     <h4 class="text-xs font-bold text-[#EEEEEE] hover:text-[#93F514] transition truncate">
-                                        {{ $rJob->title }}</h4>
+                                        {{ $rJob->localized_title }}</h4>
                                     <div class="text-[11px] flex items-center gap-1.5 mt-1">
                                         <span class="font-medium text-[#93F514]/80 related-company-name">{{ $rJob->company?->name }}</span>
                                         @if ($rJob->location)
                                             <span class="text-gray-400">•</span>
-                                            <span class="text-gray-400">{{ $rJob->location }}</span>
+                                            <span class="text-gray-400">{{ __($rJob->location) }}</span>
                                         @endif
                                     </div>
                                 </a>
@@ -757,9 +766,9 @@
                                 </div>
                                 <div>
                                     <h3 class="text-lg sm:text-xl font-extrabold text-[#EEEEEE]" id="modal-title-confirm">
-                                        Konfirmasi Lamaran
+                                        {{ __('Konfirmasi Lamaran') }}
                                     </h3>
-                                    <p class="text-xs text-gray-400 mt-0.5">Pastikan profil dan data lamaran Anda telah sesuai.</p>
+                                    <p class="text-xs text-gray-400 mt-0.5">{{ __('Pastikan profil dan data lamaran Anda telah sesuai.') }}</p>
                                 </div>
                             </div>
                             <button type="button" @click="showConfirmModal = false" class="p-1.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition">
@@ -772,20 +781,20 @@
                         <!-- Job & Applicant Summary Box (Putih Bersih di Light Mode) -->
                         <div class="confirm-summary-box p-4 rounded-2xl bg-[#040a04] border border-[#93F514]/20 space-y-3 text-xs shadow-xs">
                             <div class="flex items-center justify-between pb-2 border-b border-[#93F514]/15">
-                                <span class="text-gray-400">Posisi yang Dilamar</span>
-                                <span class="job-title-val font-bold text-[#EEEEEE]">{{ $job->title }}</span>
+                                <span class="text-gray-400">{{ __('Posisi yang Dilamar') }}</span>
+                                <span class="job-title-val font-bold text-[#EEEEEE]">{{ $job->localized_title }}</span>
                             </div>
                             <div class="flex items-center justify-between pb-2 border-b border-[#93F514]/15">
-                                <span class="text-gray-400">Perusahaan</span>
-                                <span class="company-val font-semibold text-[#93F514]">{{ $job->company?->name ?? 'Perusahaan Mitra' }}</span>
+                                <span class="text-gray-400">{{ __('Perusahaan') }}</span>
+                                <span class="company-val font-semibold text-[#93F514]">{{ $job->company?->name ?? __('Perusahaan Mitra') }}</span>
                             </div>
                             <div class="flex items-center justify-between pb-2 border-b border-[#93F514]/15">
-                                <span class="text-gray-400">Penempatan & Tipe</span>
-                                <span class="placement-val text-gray-300">{{ $job->location ?? 'Indonesia' }} ({{ $job->employment_type }})</span>
+                                <span class="text-gray-400">{{ __('Penempatan & Tipe') }}</span>
+                                <span class="placement-val text-gray-300">{{ __($job->location ?? 'Indonesia') }} ({{ __($job->employment_type) }})</span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-gray-400">Nama Pelamar</span>
-                                <span class="applicant-val font-bold text-gray-200">{{ auth()->user()?->name ?? 'Pelamar' }}</span>
+                                <span class="text-gray-400">{{ __('Nama Pelamar') }}</span>
+                                <span class="applicant-val font-bold text-gray-200">{{ auth()->user()?->name ?? __('Pelamar') }}</span>
                             </div>
                         </div>
 
@@ -795,7 +804,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                             <p class="leading-relaxed">
-                                Apakah Anda yakin ingin mengirim lamaran untuk posisi ini? Data CV dan profil Anda akan langsung diteruskan ke tim rekruter untuk proses seleksi berkas.
+                                {{ __('Apakah Anda yakin ingin mengirim lamaran untuk posisi ini? Data CV dan profil Anda akan langsung diteruskan ke tim rekruter untuk proses seleksi berkas.') }}
                             </p>
                         </div>
 
@@ -805,7 +814,7 @@
                             <button type="button" 
                                     @click="showConfirmModal = false" 
                                     class="confirm-cancel-btn px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-gray-700 text-gray-300 hover:text-white font-semibold text-xs transition">
-                                Batal
+                                {{ __('Batal') }}
                             </button>
                             <button type="submit" 
                                     :disabled="isSubmitting"
@@ -814,7 +823,7 @@
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                <span x-text="isSubmitting ? 'Mengirim Lamaran...' : 'Ya, Kirim Lamaran'"></span>
+                                <span x-text="isSubmitting ? '{{ __('Mengirim Lamaran...') }}' : '{{ __('Ya, Kirim Lamaran') }}'"></span>
                             </button>
                         </form>
                     </div>
@@ -864,9 +873,9 @@
                                 </div>
                                 <div>
                                     <h3 class="text-lg sm:text-xl font-extrabold text-[#EEEEEE]" id="modal-title-incomplete">
-                                        Data Wajib Belum Lengkap
+                                        {{ __('Data Wajib Belum Lengkap') }}
                                     </h3>
-                                    <p class="text-xs text-amber-400/90 mt-0.5">Lengkapi profil untuk dapat mengajukan lamaran.</p>
+                                    <p class="text-xs text-amber-400/90 mt-0.5">{{ __('Lengkapi data wajib profil (minimal 80%) untuk dapat mengajukan lamaran.') }}</p>
                                 </div>
                             </div>
                             <button type="button" @click="showIncompleteModal = false" class="p-1.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition">
@@ -878,19 +887,19 @@
 
                         <!-- Explanation -->
                         <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
-                            Mohon maaf, Anda belum dapat melamar pekerjaan ini karena terdapat data profil wajib yang belum diisi. Rekruter memerlukan data berikut untuk evaluasi kualifikasi Anda:
+                            {{ __('Mohon maaf, Anda belum dapat melamar pekerjaan ini karena terdapat data profil wajib yang belum diisi. Rekruter memerlukan data berikut untuk evaluasi kualifikasi Anda:') }}
                         </p>
 
                         <!-- Incomplete Section Pills List -->
                         <div class="incomplete-summary-box p-4 rounded-2xl bg-[#140c0c] border border-amber-500/20 space-y-2">
-                            <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">Bagian yang Belum Dilengkapi:</span>
+                            <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">{{ __('Bagian yang Belum Dilengkapi:') }}</span>
                             <div class="flex flex-wrap gap-2 pt-1">
                                 <template x-for="(section, idx) in missingSections" :key="idx">
                                     <span class="px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold flex items-center gap-1.5">
                                         <svg class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                                         </svg>
-                                        <span x-text="section"></span>
+                                        <span x-text="sectionMap[section] || section"></span>
                                     </span>
                                 </template>
                             </div>
@@ -901,11 +910,11 @@
                             <button type="button" 
                                     @click="showIncompleteModal = false" 
                                     class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-semibold text-xs transition">
-                                Tutup
+                                {{ __('Tutup') }}
                             </button>
                             <a href="{{ route('profile') }}" 
                                class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-600 hover:to-amber-500 text-black font-extrabold text-xs shadow-md shadow-black/30 transition text-center flex items-center justify-center gap-2">
-                                <span>Lengkapi Profil Sekarang</span>
+                                <span>{{ __('Lengkapi Profil Sekarang') }}</span>
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                                 </svg>

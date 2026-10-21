@@ -24,7 +24,15 @@ class ApplicantFamily extends Model
         'mother_last_education',
         'mother_occupation',
         'mother_company',
+        'emergency_contacts',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'emergency_contacts' => 'array',
+        ];
+    }
 
     public function applicantProfile(): BelongsTo
     {

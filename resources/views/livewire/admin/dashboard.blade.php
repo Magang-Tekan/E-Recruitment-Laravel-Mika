@@ -3,12 +3,12 @@
         $isAdmin = $isAdmin ?? !$isRecruiter;
         $candidateRoute = $isRecruiter ? route('recruiter.candidate') : route('admin.candidate');
         $applicationRoute = $isRecruiter ? route('recruiter.application') : route('admin.application');
-        $pendingReviewRoute = $isRecruiter ? route('recruiter.application', ['status' => 'Submitted']) : route('admin.application', ['status' => 'Submitted']);
+        $pendingReviewRoute = $isRecruiter ? route('recruiter.application', ['status' => 'need_review']) : route('admin.application', ['status' => 'need_review']);
     @endphp
 
     <!-- Welcome Header Card (Clean Enterprise Blueprint - Authentic & Non-AI) -->
     <div
-        class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-blue-600 dark:border-l-[#93F514] p-6 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 transition-colors">
+        class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-emerald-600 dark:border-l-[#93F514] p-6 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 transition-colors">
 
         <!-- Subtle Technical Blueprint Dot Grid (Authentic & Non-AI) -->
         <div class="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.06]"
@@ -17,7 +17,7 @@
 
         <div class="relative z-10 flex items-start sm:items-center gap-4">
             <div
-                class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-[#14203A] border border-blue-100 dark:border-[#1D2E54] text-blue-600 dark:text-[#93F514] flex items-center justify-center shrink-0 shadow-sm">
+                class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-[#93F514] flex items-center justify-center shrink-0 shadow-sm">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
@@ -142,7 +142,7 @@
 
         <!-- Card 4: Perlu Direview -->
         <a href="{{ $pendingReviewRoute }}"
-            title="Filter lamaran baru berstatus Submitted yang perlu direview dan diseleksi ({{ $pendingReview }} berkas menunggu review)"
+            title="Filter berkas lamaran yang perlu direview dan diverifikasi ({{ $pendingReview }} berkas berstatus Submitted & Partial Approved)"
             class="p-4 sm:p-5 bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] hover:border-amber-400 dark:hover:border-amber-500/50 hover:shadow-md transition-all flex items-center gap-3.5 group">
             <div
                 class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 dark:border dark:border-amber-500/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
@@ -295,7 +295,7 @@
                                         @endphp
                                         <span
                                             class="inline-flex items-center justify-center px-2 py-0.5 text-[11px] font-semibold rounded-full capitalize border {{ $badgeClass }}">
-                                            {{ $app->status }}
+                                            {{ $app->status_label ?? $app->status }}
                                         </span>
                                     </td>
                                 </tr>

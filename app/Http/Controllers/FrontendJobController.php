@@ -166,7 +166,7 @@ class FrontendJobController extends Controller
                     ->where('profile_id', $applicantProfile->id)
                     ->exists();
 
-                $isMandatoryComplete = $applicantProfile->is_mandatory_complete;
+                $isMandatoryComplete = $applicantProfile->is_mandatory_complete && $applicantProfile->completion_percentage >= 80;
                 $missingMandatorySections = $applicantProfile->missing_mandatory_sections;
             } else {
                 $missingMandatorySections = [
@@ -175,7 +175,6 @@ class FrontendJobController extends Controller
                     'Data Keluarga',
                     'Pendidikan',
                     'Skill / Keahlian',
-                    'Pengalaman Kerja'
                 ];
             }
         }

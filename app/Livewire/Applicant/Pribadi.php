@@ -32,6 +32,12 @@ class Pribadi extends Component
 
     public $npwp;
 
+    public $religion;
+
+    public $postal_code;
+
+    public $blood_type;
+
     public $about_me;
 
     public $photo;
@@ -67,8 +73,17 @@ class Pribadi extends Component
         $this->city = $profile->city;
         $this->province = $profile->province;
         $this->npwp = $profile->npwp;
+        $this->religion = $profile->religion;
+        $this->postal_code = $profile->postal_code;
+        $this->blood_type = $profile->blood_type;
         $this->about_me = $profile->about_me;
-        $this->current_photo_url = $profile->photo ? (asset('storage/'.$profile->photo).'?v='.time()) : null;
+        $photoUrl = $profile->photo_url;
+        $this->current_photo_url = null;
+        if ($photoUrl) {
+            $this->current_photo_url = \Illuminate\Support\Str::startsWith($photoUrl, ['http://', 'https://'])
+                ? $photoUrl
+                : ($photoUrl . (str_contains($photoUrl, '?') ? '&v=' : '?v=') . time());
+        }
         $this->current_cv_path = $profile->cv_file_path;
         $this->current_cv_url = $profile->cv_file_path ? asset('storage/'.$profile->cv_file_path) : null;
     }
@@ -86,6 +101,9 @@ class Pribadi extends Component
             'city' => 'nullable|string|max:100',
             'province' => 'nullable|string|max:100',
             'npwp' => 'nullable|string|max:30',
+            'religion' => 'nullable|string|max:50',
+            'postal_code' => 'nullable|string|max:10',
+            'blood_type' => 'nullable|string|in:A,B,AB,O',
             'about_me' => 'nullable|string|max:1000',
             'photo' => 'nullable|image|max:5120',
             'cv_file' => 'nullable|file|max:10240',
@@ -95,7 +113,8 @@ class Pribadi extends Component
     protected function messages()
     {
         return [
-            'nik.digits' => 'NIK harus terdiri dari 16 digit angka.',
+            'nik.digits' => __('NIK harus terdiri dari 16 digit angka.'),
+            'blood_type.in' => __('Pilihan golongan darah tidak valid.'),
         ];
     }
 
@@ -104,14 +123,14 @@ class Pribadi extends Component
         $this->validate([
             'cv_file' => 'required|file|max:10240',
         ], [
-            'cv_file.required' => 'Silakan pilih file CV.',
-            'cv_file.file' => 'File CV tidak valid.',
-            'cv_file.max' => 'Ukuran file CV maksimal 10MB.',
+            'cv_file.required' => __('Silakan pilih file CV.'),
+            'cv_file.file' => __('File CV tidak valid.'),
+            'cv_file.max' => __('Ukuran file CV maksimal 10MB.'),
         ]);
 
         $extension = strtolower($this->cv_file->getClientOriginalExtension());
         if (! in_array($extension, ['pdf', 'doc', 'docx'])) {
-            $this->addError('cv_file', 'Format file CV harus berupa PDF, DOC, atau DOCX.');
+            $this->addError('cv_file', __('Format file CV harus berupa PDF, DOC, atau DOCX.'));
             $this->cv_file = null;
             return;
         }
@@ -130,8 +149,7 @@ class Pribadi extends Component
         $this->current_cv_url = asset('storage/' . $cvPath) . '?v=' . time();
         $this->cv_file = null;
 
-        session()->flash('message', 'File CV berhasil diunggah.');
-        $this->dispatch('profile-updated', name: $this->full_name);
+        $this->dispatch('profile-updated', name: $this->full_name, message: __('File CV berhasil diunggah.'), action: 'create');
     }
 
     public function save()
@@ -142,7 +160,7 @@ class Pribadi extends Component
         $profile = ApplicantProfile::firstOrCreate(['user_id' => $user->id]);
 
         if ($this->cropped_photo_base64) {
-            if ($profile->photo && Storage::disk('public')->exists($profile->photo)) {
+            if ($profile->photo && !str_starts_with($profile->photo, 'http') && Storage::disk('public')->exists($profile->photo)) {
                 Storage::disk('public')->delete($profile->photo);
             }
 
@@ -163,7 +181,7 @@ class Pribadi extends Component
             $this->photo = null;
             $this->cropped_photo_base64 = null;
         } elseif ($this->photo) {
-            if ($profile->photo && Storage::disk('public')->exists($profile->photo)) {
+            if ($profile->photo && !str_starts_with($profile->photo, 'http') && Storage::disk('public')->exists($profile->photo)) {
                 Storage::disk('public')->delete($profile->photo);
             }
             $photoPath = $this->photo->store('applicant-photos', 'public');
@@ -205,8 +223,7 @@ class Pribadi extends Component
             $user->update($userUpdates);
         }
 
-        session()->flash('message', 'Data pribadi berhasil diperbarui.');
-        $this->dispatch('profile-updated', name: $this->full_name, photo: $this->current_photo_url);
+        $this->dispatch('profile-updated', name: $this->full_name, photo: $this->current_photo_url, message: __('Data pribadi berhasil diperbarui.'), action: 'update');
     }
 
     public function deleteCv()
@@ -220,7 +237,7 @@ class Pribadi extends Component
             $profile->update(['cv_file_path' => null]);
             $this->current_cv_path = null;
             $this->current_cv_url = null;
-            session()->flash('message', 'File CV berhasil dihapus.');
+            $this->dispatch('profile-updated', message: __('File CV berhasil dihapus.'), action: 'delete');
         }
     }
 

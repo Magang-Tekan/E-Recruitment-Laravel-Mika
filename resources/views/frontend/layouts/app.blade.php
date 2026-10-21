@@ -41,7 +41,8 @@
     @stack('meta')
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('images/mikaaaa.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/mika-favicon.png') }}?v=2">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v=2">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -300,6 +301,38 @@
             background-color: #ffffff !important;
             border-color: #e5e7eb !important;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+        }
+
+        /* Navbar Language Switcher Pill in Light Mode (Senada dengan "Realize Your Best Potential" #3C7800) */
+        html.light-mode .nav-lang-pill {
+            background-color: rgba(243, 244, 246, 0.95) !important;
+            border-color: rgba(60, 120, 0, 0.25) !important;
+            color: #4b5563 !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        }
+        html.light-mode .nav-lang-pill:hover {
+            border-color: #3C7800 !important;
+        }
+        html.light-mode .nav-lang-btn {
+            color: #64748b !important;
+        }
+        html.light-mode .nav-lang-btn:hover:not(.nav-lang-btn-active) {
+            color: #3C7800 !important;
+            background-color: rgba(60, 120, 0, 0.08) !important;
+        }
+        html.light-mode .nav-lang-btn-active {
+            background-color: #3C7800 !important;
+            color: #ffffff !important;
+            box-shadow: 0 1px 3px rgba(60, 120, 0, 0.35) !important;
+            font-weight: 800 !important;
+        }
+        html.light-mode .nav-lang-mobile-row {
+            background-color: #f9fafb !important;
+            border-color: rgba(60, 120, 0, 0.2) !important;
+            color: #374151 !important;
+        }
+        html.light-mode .nav-lang-mobile-label svg {
+            color: #3C7800 !important;
         }
 
         /* =====================================================
@@ -1879,7 +1912,8 @@
         ===================================================== */
         /* Ikon Perusahaan di header atas lowongan: ubah jadi grey */
         html.light-mode .company-icon,
-        html.light-mode .company-badge svg {
+        html.light-mode .company-badge svg,
+        html.light-mode .department-badge svg {
             color: #9CA3AF !important;
         }
 
@@ -2102,6 +2136,9 @@
 
     <!-- Session Heartbeat (Sliding Refresh saat aktif bekerja) -->
     <x-session-heartbeat />
+
+    <!-- Locale Switcher Loader (4-Dot Wave Loader identik halaman login) -->
+    <x-locale-loader />
 </body>
 
 </html>
