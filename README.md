@@ -1026,7 +1026,7 @@ MAIL_FROM_NAME="${APP_NAME}"
 
 ---
 
-## 🌐 REST API Endpoints
+## 🌐 REST API Endpoints 
 
 Aplikasi menyediakan endpoint REST API untuk integrasi data lowongan pekerjaan dengan client eksternal (misalnya Next.js / Mobile App):
 
