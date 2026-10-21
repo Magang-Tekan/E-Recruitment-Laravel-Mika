@@ -994,7 +994,7 @@ docker compose exec -T app php artisan up
 
 Untuk deployment production berikutnya, buat migration yang backward-compatible bila memungkinkan: tambahkan kolom/table lebih dahulu, deploy kode yang dapat membaca struktur lama dan baru, baru hapus struktur lama pada rilis berikutnya.
 
----
+--- 
 
 
 ## 📬 Integrasi Antrean & Notifikasi (Queue & Mail) 
