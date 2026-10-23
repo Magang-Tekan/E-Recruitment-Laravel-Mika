@@ -148,10 +148,6 @@
                 class="{{ request()->routeIs('jobs.*') ? 'text-[#93F514] font-bold' : 'text-gray-300 hover:text-[#93F514]' }} transition-all duration-200 py-1">
                 {{ __('Vacancies') }}
             </a>
-            <a href="{{ route('home') }}"
-                class="text-gray-300 hover:text-[#93F514] transition-all duration-200 py-1">
-                Test
-            </a>
         </nav>
 
         <!-- Authentication Actions & Theme Toggle -->
