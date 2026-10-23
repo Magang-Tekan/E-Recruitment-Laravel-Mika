@@ -53,6 +53,10 @@
             ? (Array.isArray(company.core_values) && company.core_values.length > 0 ? company.core_values : defaultMikaValues)
             : [];
 
+        let socialMedia = company.social_media && typeof company.social_media === 'object'
+            ? company.social_media
+            : {};
+
         this.editData = {
             id: company.id,
             role_id: company.role_id || '',
@@ -60,6 +64,14 @@
             is_mika: isMika,
             tagline: company.tagline || '',
             website: company.website || '',
+            social_media: {
+                instagram: socialMedia.instagram || '',
+                linkedin: socialMedia.linkedin || '',
+                facebook: socialMedia.facebook || '',
+                youtube: socialMedia.youtube || '',
+                tiktok: socialMedia.tiktok || '',
+                x: socialMedia.x || ''
+            },
             phone: company.phone || '',
             email: company.email || '',
             registration_passkey: company.registration_passkey || '',
@@ -114,6 +126,7 @@
         let form = e.target;
         let formData = new FormData(form);
         formData.set('missions', JSON.stringify(this.editData.missions.filter(m => m && m.trim() !== '')));
+        formData.set('social_media', JSON.stringify(this.editData.social_media || {}));
         if (this.isMikaCompany()) {
             formData.set('core_values', JSON.stringify(this.editData.core_values));
         } else {
@@ -269,11 +282,13 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     @if ($company->logo)
-                                        <img src="{{ \Illuminate\Support\Str::startsWith($company->logo, 'http') ? $company->logo : asset('storage/' . $company->logo) }}" alt="{{ $company->name }}"
-                                            class="w-10 h-10 rounded-xl object-cover border border-gray-200 dark:border-slate-700 shadow-sm shrink-0">
+                                        <div class="w-11 h-11 rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 p-1 flex items-center justify-center shadow-xs shrink-0 overflow-hidden">
+                                            <img src="{{ \Illuminate\Support\Str::startsWith($company->logo, 'http') ? $company->logo : asset('storage/' . $company->logo) }}" alt="{{ $company->name }}"
+                                                class="w-full h-full object-contain">
+                                        </div>
                                     @else
                                         <div
-                                            class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
+                                            class="w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-xs shrink-0">
                                             {{ strtoupper(substr($company->name, 0, 2)) }}
                                         </div>
                                     @endif
@@ -359,6 +374,7 @@
                                         'vision' => $company->vision,
                                         'missions' => $company->missions ?? [],
                                         'core_values' => $company->core_values ?? [],
+                                        'social_media' => $company->social_media ?? (object)[],
                                         'logo' => $company->logo ? (\Illuminate\Support\Str::startsWith($company->logo, 'http') ? $company->logo : asset('storage/' . $company->logo)) : null
                                     ]) }})"
                                         class="action-edit p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
@@ -546,6 +562,45 @@
                             @error('registration_passkey')
                                 <p class="mt-1 text-[11px] text-rose-500">{{ $message }}</p>
                             @enderror
+                        </div>
+
+                        <!-- Tautan Media Sosial Perusahaan (Opsional) -->
+                        <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-semibold text-gray-800 dark:text-slate-200 flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                    </svg>
+                                    <span>Tautan Media Sosial Perusahaan (Opsional)</span>
+                                </label>
+                                <span class="text-[10px] text-gray-400 font-normal">Tampil di Footer / Detail</span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                <div>
+                                    <span class="block text-[11px] text-gray-500 dark:text-slate-400 mb-0.5">Instagram URL</span>
+                                    <input type="url" name="social_media[instagram]" value="{{ old('social_media.instagram') }}" placeholder="https://instagram.com/..." class="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500">
+                                </div>
+                                <div>
+                                    <span class="block text-[11px] text-gray-500 dark:text-slate-400 mb-0.5">LinkedIn URL</span>
+                                    <input type="url" name="social_media[linkedin]" value="{{ old('social_media.linkedin') }}" placeholder="https://linkedin.com/company/..." class="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500">
+                                </div>
+                                <div>
+                                    <span class="block text-[11px] text-gray-500 dark:text-slate-400 mb-0.5">Facebook URL</span>
+                                    <input type="url" name="social_media[facebook]" value="{{ old('social_media.facebook') }}" placeholder="https://facebook.com/..." class="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500">
+                                </div>
+                                <div>
+                                    <span class="block text-[11px] text-gray-500 dark:text-slate-400 mb-0.5">YouTube URL</span>
+                                    <input type="url" name="social_media[youtube]" value="{{ old('social_media.youtube') }}" placeholder="https://youtube.com/@..." class="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500">
+                                </div>
+                                <div>
+                                    <span class="block text-[11px] text-gray-500 dark:text-slate-400 mb-0.5">TikTok URL</span>
+                                    <input type="url" name="social_media[tiktok]" value="{{ old('social_media.tiktok') }}" placeholder="https://tiktok.com/@..." class="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500">
+                                </div>
+                                <div>
+                                    <span class="block text-[11px] text-gray-500 dark:text-slate-400 mb-0.5">X (Twitter) URL</span>
+                                    <input type="url" name="social_media[x]" value="{{ old('social_media.x') }}" placeholder="https://x.com/..." class="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500">
+                                </div>
+                            </div>
                         </div>
 
                         <!-- City, Province, Postal Code Row -->
@@ -743,6 +798,45 @@
                                 </div>
                                 <input type="text" name="registration_passkey" id="edit_registration_passkey" x-model="editData.registration_passkey" placeholder="Kosongkan jika ingin mengikuti Master Passkey Global" class="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
                                 <p class="text-[11px] text-gray-500 dark:text-slate-400 mt-1">Kosongkan jika ingin pendaftar di perusahaan ini mengikuti <strong>Master Passkey Global</strong>. Isi jika perusahaan ini memiliki token registrasi unik tersendiri.</p>
+                            </div>
+
+                            <!-- Tautan Media Sosial Perusahaan (Opsional) -->
+                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-semibold text-gray-800 dark:text-slate-200 flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                        </svg>
+                                        <span>Tautan Media Sosial Perusahaan (Opsional)</span>
+                                    </label>
+                                    <span class="text-[10px] text-gray-400 font-normal">Tampil di Footer / Detail</span>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                    <div>
+                                        <span class="block text-[11px] text-gray-500 dark:text-slate-400 mb-0.5">Instagram URL</span>
+                                        <input type="url" x-model="editData.social_media.instagram" placeholder="https://instagram.com/..." class="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500">
+                                    </div>
+                                    <div>
+                                        <span class="block text-[11px] text-gray-500 dark:text-slate-400 mb-0.5">LinkedIn URL</span>
+                                        <input type="url" x-model="editData.social_media.linkedin" placeholder="https://linkedin.com/company/..." class="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500">
+                                    </div>
+                                    <div>
+                                        <span class="block text-[11px] text-gray-500 dark:text-slate-400 mb-0.5">Facebook URL</span>
+                                        <input type="url" x-model="editData.social_media.facebook" placeholder="https://facebook.com/..." class="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500">
+                                    </div>
+                                    <div>
+                                        <span class="block text-[11px] text-gray-500 dark:text-slate-400 mb-0.5">YouTube URL</span>
+                                        <input type="url" x-model="editData.social_media.youtube" placeholder="https://youtube.com/@..." class="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500">
+                                    </div>
+                                    <div>
+                                        <span class="block text-[11px] text-gray-500 dark:text-slate-400 mb-0.5">TikTok URL</span>
+                                        <input type="url" x-model="editData.social_media.tiktok" placeholder="https://tiktok.com/@..." class="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500">
+                                    </div>
+                                    <div>
+                                        <span class="block text-[11px] text-gray-500 dark:text-slate-400 mb-0.5">X (Twitter) URL</span>
+                                        <input type="url" x-model="editData.social_media.x" placeholder="https://x.com/..." class="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500">
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- City, Province, Postal Code -->

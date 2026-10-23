@@ -44,7 +44,10 @@ class CandidateProfilePdfController extends Controller
             'isApplicant' => false,
             'application' => null,
             'title'     => 'Profil & CV Lengkap - ' . ($profile->full_name ?? $candidate->name)
-        ])->setPaper('a4', 'portrait');
+        ])->setPaper('a4', 'portrait')->setOption([
+            'defaultFont' => 'helvetica',
+            'isRemoteEnabled' => true,
+        ]);
 
         $filename = 'Profil_' . Str::slug($profile->full_name ?? $candidate->name) . '.pdf';
 
@@ -52,7 +55,11 @@ class CandidateProfilePdfController extends Controller
             return $pdf->download($filename);
         }
 
-        return $pdf->stream($filename);
+        $response = $pdf->stream($filename);
+        $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+        return $response;
     }
 
     /**
@@ -92,7 +99,10 @@ class CandidateProfilePdfController extends Controller
             'isApplicant' => true,
             'application' => $application,
             'title'     => 'Data Pelamar - ' . ($profile->full_name ?? $candidate->name)
-        ])->setPaper('a4', 'portrait');
+        ])->setPaper('a4', 'portrait')->setOption([
+            'defaultFont' => 'helvetica',
+            'isRemoteEnabled' => true,
+        ]);
 
         $filename = 'Pelamar_' . Str::slug($profile->full_name ?? $candidate->name) . '_' . Str::slug($application->job?->title ?? 'Lamaran') . '.pdf';
 
@@ -100,7 +110,11 @@ class CandidateProfilePdfController extends Controller
             return $pdf->download($filename);
         }
 
-        return $pdf->stream($filename);
+        $response = $pdf->stream($filename);
+        $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+        return $response;
     }
 
     protected function authorizeAdminOrRecruiter()

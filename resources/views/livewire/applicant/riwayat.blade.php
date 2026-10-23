@@ -1,10 +1,7 @@
 <div class="space-y-6">
     <!-- Header Card -->
     <div
-        class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-blue-600 dark:border-l-[#93F514] p-6 md:p-7 transition-colors">
-        <div class="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]"
-            style="background-image: radial-gradient(#93F514 1px, transparent 1px); background-size: 20px 20px;">
-        </div>
+        class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-emerald-600 dark:border-l-[#93F514] p-6 md:p-7 transition-colors">
         <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
                 <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ __('Riwayat Lamaran Kerja') }}</h2>
@@ -42,11 +39,11 @@
                         default => $interview->status,
                     };
                 @endphp
-                <div class="rounded-2xl bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-blue-600 dark:border-l-[#93F514] p-4 sm:p-5 md:p-6 shadow-md transition">
+                <div class="rounded-2xl bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-emerald-600 dark:border-l-[#93F514] p-4 sm:p-5 md:p-6 shadow-md transition">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-5">
                         <div class="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
                             <!-- Calendar / Interview Icon -->
-                            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-blue-50 dark:bg-[#14203A] border border-blue-200/60 dark:border-[#1D2E54] text-blue-600 dark:text-[#93F514] flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-50 dark:bg-[#14203A] border border-emerald-200/60 dark:border-[#1D2E54] text-emerald-600 dark:text-[#93F514] flex items-center justify-center shrink-0 shadow-xs mt-0.5">
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
@@ -107,13 +104,18 @@
                                                 </svg>
                                                 <div class="min-w-0 flex-1 leading-snug">
                                                     <span class="font-semibold text-slate-800 dark:text-slate-200 break-words">{{ $interview->location }}</span>
+                                                    @if ($company && ($company->address || $company->city))
+                                                        <p class="text-[11px] text-slate-500 dark:text-[#93A5C9] mt-0.5 leading-tight">
+                                                            {{ $company->formatted_address ?: ($company->address . ($company->city ? ', ' . $company->city : '')) }}
+                                                        </p>
+                                                    @endif
                                                 </div>
                                             @endif
                                         </div>
 
-                                        @if (!$isOnline && !empty($interview->location))
+                                        @if (!$isOnline && $interview->google_maps_url)
                                             <div class="pt-1 border-t border-slate-200/60 dark:border-[#1D2E54]">
-                                                <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($interview->location) }}" 
+                                                <a href="{{ $interview->google_maps_url }}" 
                                                    target="_blank" 
                                                    rel="noopener noreferrer" 
                                                    class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-blue-100/70 hover:bg-blue-200 active:bg-blue-300 dark:bg-[#1D2E54] dark:hover:bg-[#253B6D] text-xs font-bold text-blue-700 dark:text-[#93F514] border border-blue-200/80 dark:border-blue-900/60 transition shadow-2xs active:scale-[0.99] text-center" 
@@ -491,10 +493,10 @@
                             default => $appActiveInterview->status,
                         };
                     @endphp
-                    <div class="rounded-2xl p-3.5 sm:p-4 bg-gradient-to-br from-blue-50/80 via-slate-50/60 to-white dark:from-[#14203A] dark:via-[#111B32] dark:to-[#0D1527] border border-blue-200/80 dark:border-[#1D2E54] border-l-4 border-l-blue-600 dark:border-l-[#93F514] shadow-xs space-y-3">
+                    <div class="rounded-2xl p-3.5 sm:p-4 bg-gradient-to-br from-emerald-50/80 via-slate-50/60 to-white dark:from-[#14203A] dark:via-[#111B32] dark:to-[#0D1527] border border-emerald-200/80 dark:border-[#1D2E54] border-l-4 border-l-emerald-600 dark:border-l-[#93F514] shadow-xs space-y-3">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div class="flex items-start gap-3 min-w-0 flex-1">
-                                <div class="w-9 h-9 rounded-xl bg-blue-600 dark:bg-[#93F514] text-white dark:text-black flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                                <div class="w-9 h-9 rounded-xl bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black flex items-center justify-center shrink-0 shadow-xs mt-0.5">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
@@ -534,7 +536,7 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 </svg>
-                                                <span class="break-words">{{ $appActiveInterview->location }}</span>
+                                                <span class="break-words font-medium text-slate-700 dark:text-slate-200">{{ $appActiveInterview->location }}</span>
                                             @endif
                                         </span>
                                         @if ($appActiveInterview->user)
@@ -562,6 +564,16 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                         </svg>
                                         <span>{{ __('Buka Link Meeting') }}</span>
+                                    </a>
+                                </div>
+                            @elseif (!$isOnlineInt && $appActiveInterview->google_maps_url)
+                                <div class="pt-1 sm:pt-0 shrink-0 w-full sm:w-auto">
+                                    <a href="{{ $appActiveInterview->google_maps_url }}" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white dark:bg-[#1D2E54] dark:hover:bg-[#253B6D] dark:text-[#93F514] text-xs font-bold rounded-xl shadow-xs transition active:scale-[0.99] text-center border border-blue-500 dark:border-blue-900">
+                                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        <span>{{ __('Buka di Google Maps') }}</span>
                                     </a>
                                 </div>
                             @endif
@@ -895,7 +907,17 @@
                                             <div class="text-xs text-slate-700 dark:text-slate-300 space-y-2 bg-white/70 dark:bg-[#0D1527]/70 p-3 rounded-xl border border-slate-100 dark:border-[#1D2E54]">
                                                 <div class="flex items-start gap-2">
                                                     <span class="text-slate-400 dark:text-[#93A5C9] shrink-0 font-medium min-w-[70px] sm:min-w-[80px]">{{ __('Lokasi') }}:</span>
-                                                    <span class="font-semibold text-slate-800 dark:text-white break-words flex-1">{{ $isModalOnline ? __('Online Video Meeting') : $interview->location }}</span>
+                                                    <div class="min-w-0 flex-1">
+                                                        <span class="font-semibold text-slate-800 dark:text-white break-words">{{ $isModalOnline ? __('Online Video Meeting') : $interview->location }}</span>
+                                                        @if (!$isModalOnline)
+                                                            @php $modalCompany = $selectedApplication->job->company ?? null; @endphp
+                                                            @if ($modalCompany && ($modalCompany->address || $modalCompany->city))
+                                                                <p class="text-[11px] text-slate-500 dark:text-[#93A5C9] mt-0.5 leading-tight">
+                                                                    {{ $modalCompany->formatted_address ?: ($modalCompany->address . ($modalCompany->city ? ', ' . $modalCompany->city : '')) }}
+                                                                </p>
+                                                            @endif
+                                                        @endif
+                                                    </div>
                                                 </div>
                                                 <div class="flex items-start gap-2">
                                                     <span class="text-slate-400 dark:text-[#93A5C9] shrink-0 font-medium min-w-[70px] sm:min-w-[80px]">{{ __('Pewawancara') }}:</span>
@@ -909,13 +931,23 @@
                                                 @endif
                                             </div>
 
-                                            @if ($interview->meeting_link)
+                                            @if ($isModalOnline && $interview->meeting_link)
                                                 <div class="pt-1">
                                                     <a href="{{ $interview->meeting_link }}" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-xs rounded-xl shadow-xs transition active:scale-[0.99] text-center">
                                                         <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                                         </svg>
                                                         <span>{{ __('Buka Tautan Video Meeting') }}</span>
+                                                    </a>
+                                                </div>
+                                            @elseif (!$isModalOnline && $interview->google_maps_url)
+                                                <div class="pt-1">
+                                                    <a href="{{ $interview->google_maps_url }}" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white dark:bg-[#1D2E54] dark:hover:bg-[#253B6D] dark:text-[#93F514] font-bold text-xs rounded-xl shadow-xs transition active:scale-[0.99] text-center border border-blue-500 dark:border-blue-900">
+                                                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        </svg>
+                                                        <span>{{ __('Buka di Google Maps') }}</span>
                                                     </a>
                                                 </div>
                                             @endif

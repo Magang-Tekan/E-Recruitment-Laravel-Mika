@@ -2,7 +2,7 @@
 
     <!-- Header Card Pengalaman Kerja (Clean Enterprise Blueprint) -->
     <div
-        class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-blue-600 dark:border-l-[#93F514] p-6 md:p-7 transition-colors">
+        class="relative overflow-hidden bg-white dark:bg-[#0D1527] rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54] border-l-4 border-l-emerald-600 dark:border-l-[#93F514] p-6 md:p-7 transition-colors">
         <div class="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]"
             style="background-image: radial-gradient(#93F514 1px, transparent 1px); background-size: 20px 20px;">
         </div>
@@ -60,7 +60,7 @@
                         @endif
                         @if ($item->supervisor_name)
                             <span class="text-xs text-slate-400 dark:text-slate-500">
-                                &bull; {{ __('Atasan:') }} {{ $item->supervisor_name }}
+                                &mdash; {{ __('Atasan:') }} {{ $item->supervisor_name }}
                             </span>
                         @endif
                     </p>
@@ -73,7 +73,7 @@
                                     {{ number_format($item->final_salary, 0, ',', '.') }}</span>
                             @endif
                             @if ($item->benefits)
-                                <span>&bull; {{ __('Fasilitas:') }} {{ Str::limit($item->benefits, 40) }}</span>
+                                <span>&mdash; {{ __('Fasilitas:') }} {{ Str::limit($item->benefits, 40) }}</span>
                             @endif
                         </div>
                     @endif
@@ -182,6 +182,11 @@
                 return this.departments.filter(d => d.toLowerCase().includes(this.field3Query.toLowerCase()));
             }
         }"
+            x-on:salary-updated.window="
+                if ($event.detail && $event.detail.salary) {
+                    $wire.set('expected_salary', $event.detail.salary, false);
+                }
+            "
             @click.outside="openField1 = false; openField2 = false; openField3 = false;">
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -278,16 +283,27 @@
 
                 <!-- Harapan Gaji (Rupiah) -->
                 <div>
-                    <label
-                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                        {{ __('Harapan Gaji (Rupiah)') }} <span class="text-red-500">*</span>
-                    </label>
+                    <div class="flex items-center justify-between mb-2">
+                        <label
+                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                            {{ __('Harapan Gaji (Rupiah)') }} <span class="text-red-500">*</span>
+                        </label>
+                        <span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-[#93F514]">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            {{ __('Tersinkron dengan Data Tambahan') }}
+                        </span>
+                    </div>
                     <div class="relative">
                         <span
                             class="absolute inset-y-0 left-0 flex items-center pl-4 text-sm font-semibold text-slate-500 dark:text-slate-400 pointer-events-none">Rp</span>
                         <input type="number" wire:model="expected_salary" placeholder="10.000.000"
                             class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                     </div>
+                    <p class="text-[11px] text-slate-400 dark:text-[#93A5C9] mt-1">
+                        {{ __('Nominal ini otomatis terhubung dengan pertanyaan ekspektasi gaji di Data Tambahan.') }}
+                    </p>
                     @error('expected_salary')
                         <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
                     @enderror
@@ -361,19 +377,16 @@
             <!-- Submit Button Minat Kerja -->
             <div class="flex justify-end pt-4 border-t border-slate-200/80 dark:border-[#1D2E54]">
                 <button type="submit" wire:loading.attr="disabled"
-                    class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-sm font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition duration-150 ease-in-out flex items-center gap-2 active:scale-95">
+                    class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-70 disabled:cursor-not-allowed text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs sm:text-sm font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition duration-150 ease-in-out active:scale-95 cursor-pointer">
+                    <svg wire:loading.remove wire:target="savePreference" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <svg wire:loading wire:target="savePreference" class="w-4 h-4 animate-spin shrink-0 text-white dark:text-black" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                     <span wire:loading.remove wire:target="savePreference">{{ __('Simpan Minat Kerja') }}</span>
-                    <span wire:loading wire:target="savePreference" class="flex items-center gap-2">
-                        <svg class="animate-spin h-4 w-4 text-white dark:text-black" fill="none"
-                            viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                        {{ __('Menyimpan...') }}
-                    </span>
+                    <span wire:loading wire:target="savePreference">{{ __('Menyimpan...') }}</span>
                 </button>
             </div>
         </form>
@@ -623,20 +636,17 @@
                                 {{ __('Batal') }}
                             </button>
                             <button type="submit" wire:loading.attr="disabled"
-                                class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 text-xs font-bold rounded-xl transition flex items-center gap-2 active:scale-95">
+                                class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-70 disabled:cursor-not-allowed text-white shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 text-xs font-bold rounded-xl transition active:scale-95 cursor-pointer">
+                                <svg wire:loading.remove wire:target="save" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $isEdit ? 'M5 13l4 4L19 7' : 'M12 4v16m8-8H4' }}" />
+                                </svg>
+                                <svg wire:loading wire:target="save" class="w-4 h-4 animate-spin shrink-0 text-white dark:text-black" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
                                 <span wire:loading.remove
                                     wire:target="save">{{ $isEdit ? __('Simpan Perubahan') : __('Tambah Pengalaman') }}</span>
-                                <span wire:loading wire:target="save" class="flex items-center gap-2">
-                                    <svg class="animate-spin h-4 w-4 text-white dark:text-black" fill="none"
-                                        viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10"
-                                            stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                        </path>
-                                    </svg>
-                                    {{ __('Menyimpan...') }}
-                                </span>
+                                <span wire:loading wire:target="save">{{ __('Menyimpan...') }}</span>
                             </button>
                         </div>
                     </form>

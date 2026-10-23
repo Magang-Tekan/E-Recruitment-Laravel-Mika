@@ -215,7 +215,10 @@
                     if (this.pendingTab) {
                         var tab = this.pendingTab;
                         this.pendingTab = null;
-                        this.executeTabSwitch(tab);
+                        var url = new URL(window.location.href);
+                        url.searchParams.set('tab', tab);
+                        window.location.href = url.toString();
+                        return;
                     }
                 },
 
@@ -486,10 +489,21 @@
 
         /* Badges & Pills */
         html.dark .location-badge,
-        html.dark .bg-gray-100.dark\:bg-slate-800 {
+        html.dark .bg-gray-100.dark\:bg-slate-800:not(.rounded-full):not([class*="h-1"]):not([class*="h-2"]):not(.progress-track) {
             background-color: #14203A !important;
             border: 1px solid #253966 !important;
             color: #DDE5F5 !important;
+        }
+
+        /* Progress Bar Track: Flat, Clean & Seamless (Tanpa Outline di Dark Mode & Light Mode) */
+        .progress-track,
+        html.dark .progress-track,
+        .progress-track > div,
+        html.dark .progress-track > div {
+            border: none !important;
+            border-width: 0 !important;
+            outline: none !important;
+            box-shadow: none !important;
         }
 
         html.dark .location-badge svg {
@@ -799,7 +813,7 @@
                     </div>
 
                     <!-- User Navigation / Dropdown -->
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 sm:gap-4 shrink-0">
                         <livewire:layout.navigation />
                     </div>
                 </div>
@@ -1012,9 +1026,14 @@
                             {{ __('Tinggalkan Halaman') }}
                         </button>
                         <button type="button" @click="saveAndSwitchTab()" :disabled="isSavingFromModal"
-                                class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50">
+                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-70 disabled:cursor-not-allowed text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95 cursor-pointer">
+                            <template x-if="!isSavingFromModal">
+                                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </template>
                             <template x-if="isSavingFromModal">
-                                <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 animate-spin shrink-0 text-white dark:text-black" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
@@ -1083,7 +1102,7 @@
                 if (!window.__pageReady) return;
                 window.__hasUnsavedChanges = false;
                 document.querySelectorAll('[data-form-dirty]').forEach(el => el.removeAttribute('data-form-dirty'));
-                document.querySelectorAll('[data-tab-dirty]').forEach(el => el.removeAttribute('data-tab-dirty'));
+                document.querySelectorAll('[data-tab-dirty]').forEach(el => el.removeAttribute('data-t                      rty'));
 
                 if (typeof window.showSavedToast === 'function') {
                     const msg = (e.detail && e.detail.message) ? e.detail.message : '{{ __('Perubahan data Anda telah berhasil disimpan.') }}';
@@ -1113,6 +1132,9 @@
                                     }
                                 });
 
+                                const targetTab = nav.pendingTab;
+                                const targetUrl = nav.pendingUrl;
+
                                 nav.isSavingFromModal = false;
                                 nav.showUnsavedModal = false;
                                 nav.pendingTab = null;
@@ -1126,6 +1148,12 @@
                                     window.showSavedToast('{{ __('Perubahan data Anda telah berhasil disimpan.') }}', '{{ __('Data Berhasil Diperbarui') }}', 'update');
                                 }
                                 nav.clearDirty();
+
+                                if (targetUrl) {
+                                    window.location.href = targetUrl;
+                                } else if (targetTab) {
+                                    nav.executeTabSwitch(targetTab);
+                                }
                             }, 150);
                         } else {
                             if (window.__wasFormSubmitted) {

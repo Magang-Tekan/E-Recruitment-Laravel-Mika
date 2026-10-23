@@ -7,6 +7,7 @@ use App\Models\ApplicantProfile;
 use App\Models\Department;
 use App\Models\WorkExperience;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Pengalaman extends Component
@@ -46,7 +47,8 @@ class Pengalaman extends Component
     {
         $user = Auth::user();
         if ($user && $user->applicantProfile) {
-            $pref = $user->applicantProfile->jobPreference;
+            $profile = $user->applicantProfile;
+            $pref = $profile->jobPreference;
             if ($pref) {
                 $this->interested_field_1 = $pref->interested_field_1;
                 $this->interested_field_2 = $pref->interested_field_2;
@@ -56,6 +58,27 @@ class Pengalaman extends Component
                 $this->is_willing_to_relocate = $pref->is_willing_to_relocate ? '1' : '0';
             } else {
                 $this->is_willing_to_relocate = '1';
+            }
+
+            // 🔄 Auto-Sync dari Data Tambahan jika pref belum ada tapi Data Tambahan sudah diisi
+            if (empty($this->expected_salary) && !empty($profile->other_answers['expected_salary'])) {
+                $parsed = ApplicantProfile::parseSalaryNumber($profile->other_answers['expected_salary']);
+                if ($parsed !== null && $parsed > 0) {
+                    $this->expected_salary = (int) $parsed;
+                }
+            }
+        }
+    }
+
+    #[On('salary-updated')]
+    public function syncSalaryFromEvent($salary = null, $formatted = null)
+    {
+        if ($salary !== null && $salary > 0) {
+            $this->expected_salary = (int) $salary;
+        } elseif ($formatted) {
+            $parsed = ApplicantProfile::parseSalaryNumber($formatted);
+            if ($parsed !== null && $parsed > 0) {
+                $this->expected_salary = (int) $parsed;
             }
         }
     }
@@ -221,7 +244,42 @@ class Pengalaman extends Component
             ]
         );
 
-        $this->dispatch('profile-updated', message: __('Minat kerja berhasil diperbarui!'), action: 'update');
+        // 🔄 Auto-Sync ke Data Tambahan (other_answers)
+        $otherAnswers = $profile->other_answers ?? [];
+        $needsOtherUpdate = false;
+
+        if ($this->expected_salary !== null && $this->expected_salary !== '') {
+            $formattedSalary = ApplicantProfile::formatSalaryString($this->expected_salary);
+            $existing = trim((string)($otherAnswers['expected_salary'] ?? ''));
+
+            if ($existing === '' || is_numeric($existing) || preg_match('/^Rp\s*[\d\.]+\s*$/i', $existing)) {
+                $otherAnswers['expected_salary'] = $formattedSalary;
+                $needsOtherUpdate = true;
+            } else {
+                $count = 0;
+                $replaced = preg_replace(
+                    '/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d{4,})/i',
+                    $formattedSalary,
+                    $existing,
+                    1,
+                    $count
+                );
+                if ($count > 0) {
+                    $otherAnswers['expected_salary'] = $replaced;
+                } else {
+                    $otherAnswers['expected_salary'] = $formattedSalary . ' (' . $existing . ')';
+                }
+                $needsOtherUpdate = true;
+            }
+        }
+
+        if ($needsOtherUpdate) {
+            $profile->update(['other_answers' => $otherAnswers]);
+        }
+
+        $formattedSalary = ApplicantProfile::formatSalaryString($this->expected_salary);
+        $this->dispatch('salary-updated', salary: $this->expected_salary, formatted: $formattedSalary);
+        $this->dispatch('profile-updated', message: __('Minat kerja berhasil diperbarui (dan otomatis disinkronkan ke Data Tambahan)!'), action: 'update');
     }
 
     public function confirmDelete($id)

@@ -123,13 +123,39 @@
             </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-6 text-sm">
                 <div><span class="text-slate-500 dark:text-[#93A5C9]">NIK:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->nik ?? '-' }}</span></div>
+                <div><span class="text-slate-500 dark:text-[#93A5C9]">NPWP:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->npwp ?? '-' }}</span></div>
                 <div><span class="text-slate-500 dark:text-[#93A5C9]">Jenis Kelamin:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ ucfirst($profile?->gender ?? '-') }}</span></div>
                 <div><span class="text-slate-500 dark:text-[#93A5C9]">Tempat, Tgl Lahir:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->birth_place ?? '-' }}, {{ $profile?->birth_date ? \Carbon\Carbon::parse($profile->birth_date)->isoFormat('D MMMM YYYY') : '-' }}</span></div>
                 <div><span class="text-slate-500 dark:text-[#93A5C9]">Agama:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->religion ?? '-' }}</span></div>
                 <div><span class="text-slate-500 dark:text-[#93A5C9]">Golongan Darah:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->blood_type ?? '-' }}</span></div>
-                <div><span class="text-slate-500 dark:text-[#93A5C9]">NPWP:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->npwp ?? '-' }}</span></div>
+                <div><span class="text-slate-500 dark:text-[#93A5C9]">Suku:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->ethnicity ?? '-' }}</span></div>
+                <div><span class="text-slate-500 dark:text-[#93A5C9]">Kebangsaan:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->nationality ?? '-' }}</span></div>
+                <div>
+                    <span class="text-slate-500 dark:text-[#93A5C9]">Status Pernikahan:</span> 
+                    <span class="font-semibold text-slate-900 dark:text-white capitalize">
+                        {{ $profile?->marital_status ? (ucfirst($profile->marital_status) . ($profile->marriage_date ? ' (' . \Carbon\Carbon::parse($profile->marriage_date)->isoFormat('D MMMM YYYY') . ')' : '')) : '-' }}
+                    </span>
+                </div>
+                <div><span class="text-slate-500 dark:text-[#93A5C9]">Transportasi:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->daily_transportation ?? '-' }}</span></div>
+                <div><span class="text-slate-500 dark:text-[#93A5C9]">Jarak ke Perusahaan:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->work_distance_km ? ($profile->work_distance_km . ' km') : '-' }}</span></div>
                 <div><span class="text-slate-500 dark:text-[#93A5C9]">Kode Pos:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->postal_code ?? '-' }}</span></div>
-                <div class="sm:col-span-2"><span class="text-slate-500 dark:text-[#93A5C9]">Alamat Lengkap:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->address ?? '-' }}</span></div>
+                @if($profile?->ktp_address)
+                    <div class="sm:col-span-2"><span class="text-slate-500 dark:text-[#93A5C9]">Alamat KTP:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile->ktp_address }}</span></div>
+                @endif
+                <div class="sm:col-span-2"><span class="text-slate-500 dark:text-[#93A5C9]">Alamat Domisili:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->address ?? '-' }}</span></div>
+                @if(!empty($profile?->driving_licenses) && is_array($profile->driving_licenses))
+                    @php
+                        $licStrings = [];
+                        foreach ($profile->driving_licenses as $lic) {
+                            if (!empty($lic['type']) || !empty($lic['number'])) {
+                                $licStrings[] = ($lic['type'] ?: 'SIM') . ': ' . ($lic['number'] ?: '-');
+                            }
+                        }
+                    @endphp
+                    @if(!empty($licStrings))
+                        <div class="sm:col-span-2"><span class="text-slate-500 dark:text-[#93A5C9]">Kepemilikan SIM:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ implode(' | ', $licStrings) }}</span></div>
+                    @endif
+                @endif
             </div>
         </section>
 

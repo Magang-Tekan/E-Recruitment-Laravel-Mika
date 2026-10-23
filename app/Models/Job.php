@@ -197,6 +197,58 @@ class Job extends Model
         return $this->hasMany(JobApplication::class);
     }
 
+    public function acceptedApplications()
+    {
+        return $this->hasMany(JobApplication::class)->whereIn('status', ['Accepted', 'accepted', 'hired']);
+    }
+
+    /**
+     * Accessor: Jumlah pelamar yang sudah resmi diterima (Accepted/Hired).
+     */
+    public function getAcceptedCountAttribute(): int
+    {
+        if (isset($this->attributes['accepted_applications_count'])) {
+            return (int) $this->attributes['accepted_applications_count'];
+        }
+
+        if ($this->relationLoaded('acceptedApplications')) {
+            return $this->acceptedApplications->count();
+        }
+
+        return (int) $this->acceptedApplications()->count();
+    }
+
+    /**
+     * Accessor: Sisa kuota penerimaan kandidat yang belum terpenuhi.
+     */
+    public function getRemainingQuotaAttribute(): int
+    {
+        $quota = (int) ($this->quota ?? 0);
+        return max(0, $quota - $this->accepted_count);
+    }
+
+    /**
+     * Accessor: Status apakah kuota penerimaan telah penuh.
+     */
+    public function getIsQuotaFullAttribute(): bool
+    {
+        $quota = (int) ($this->quota ?? 0);
+        return $quota > 0 && $this->accepted_count >= $quota;
+    }
+
+    /**
+     * Accessor: Persentase pemenuhan kuota (0 - 100%).
+     */
+    public function getQuotaProgressPercentageAttribute(): int
+    {
+        $quota = (int) ($this->quota ?? 0);
+        if ($quota <= 0) {
+            return 0;
+        }
+
+        return min(100, (int) round(($this->accepted_count / $quota) * 100));
+    }
+
     public function degrees()
     {
         return $this->belongsToMany(Degree::class, 'job_degrees');

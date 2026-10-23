@@ -57,6 +57,15 @@
         }
         return null;
     },
+    getDrivingLicenses(app) {
+        if (!app || !app.applicant_profile || !app.applicant_profile.driving_licenses) return [];
+        let lics = app.applicant_profile.driving_licenses;
+        if (typeof lics === 'string') {
+            try { lics = JSON.parse(lics); } catch (e) { return []; }
+        }
+        if (!Array.isArray(lics)) return [];
+        return lics.filter(l => l && (l.type || l.number));
+    },
     openDetailModal(application) {
         this.detailData = application;
         this.modalImgFailed = false;
@@ -106,6 +115,10 @@
             applicant_name: data.applicant_name || (data.applicant_profile ? data.applicant_profile.full_name : 'Pelamar'),
             applicant_email: data.applicant_email || (data.applicant_profile && data.applicant_profile.user ? data.applicant_profile.user.email : ''),
             job_title: data.job_title || (data.job ? data.job.title : 'Lowongan'),
+            job_quota: Number(data.job_quota || (data.job ? (data.job.quota || 0) : 0)),
+            job_accepted_count: Number(data.job_accepted_count !== undefined ? data.job_accepted_count : (data.job ? (data.job.accepted_count || 0) : 0)),
+            job_remaining_quota: Number(data.job_remaining_quota !== undefined ? data.job_remaining_quota : (data.job ? (data.job.remaining_quota || 0) : 0)),
+            job_is_quota_full: Boolean(data.job_is_quota_full !== undefined ? data.job_is_quota_full : (data.job ? (data.job.is_quota_full || false) : false)),
             status: initialStatus,
             initial_status: initialStatus,
             notes: initialNotes,
@@ -130,6 +143,16 @@
             send_email: true
         };
         this.showStatusModal = true;
+    },
+    isAcceptedAction() {
+        if (this.statusData.approval_mode === 'interview_admin_review') {
+            return this.statusData.decision === 'override_accepted' || 
+                   (this.statusData.decision === 'approved' && this.statusData.interview_recruiter_approval === 'approved');
+        }
+        if (this.statusData.approval_mode === 'interview_recruiter_review') {
+            return this.statusData.decision === 'approved' && this.statusData.interview_admin_approval === 'approved';
+        }
+        return this.statusData.status === 'Accepted';
     },
     setDecision(dec, targetTemplateKey = null) {
         this.statusData.decision = dec;
@@ -644,6 +667,10 @@
                             'applicant_name'     => $app->applicantProfile->full_name ?? 'Pelamar',
                             'applicant_email'    => $app->applicantProfile->user->email ?? '',
                             'job_title'          => $app->job->title ?? 'Lowongan',
+                            'job_quota'          => (int) ($app->job->quota ?? 0),
+                            'job_accepted_count' => (int) ($app->job->accepted_count ?? 0),
+                            'job_remaining_quota'=> (int) ($app->job->remaining_quota ?? 0),
+                            'job_is_quota_full'  => (bool) ($app->job->is_quota_full ?? false),
                             'status'             => $app->status ?? 'Submitted',
                             'notes'              => $app->notes ?? '',
                             'recruiter_approval' => $app->recruiter_approval ?? 'pending',
@@ -1057,6 +1084,10 @@
                                             'applicant_name'               => $app->applicantProfile->full_name ?? 'Pelamar',
                                             'applicant_email'              => $app->applicantProfile->user->email ?? '',
                                             'job_title'                    => $app->job->title ?? 'Lowongan',
+                                            'job_quota'                    => (int) ($app->job->quota ?? 0),
+                                            'job_accepted_count'           => (int) ($app->job->accepted_count ?? 0),
+                                            'job_remaining_quota'          => (int) ($app->job->remaining_quota ?? 0),
+                                            'job_is_quota_full'            => (bool) ($app->job->is_quota_full ?? false),
                                             'status'                       => $app->status ?? 'Submitted',
                                             'notes'                        => $app->notes ?? '',
                                             'recruiter_approval'           => $app->recruiter_approval ?? 'pending',
@@ -1243,6 +1274,35 @@
                                     </template>
                                 </div>
                             </div>
+
+                            <!-- Reactive Quota Status Alert -->
+                            <template x-if="statusData.job_quota > 0 && isAcceptedAction()">
+                                <div class="transition-all duration-200">
+                                    <template x-if="statusData.job_is_quota_full">
+                                        <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5 shadow-xs">
+                                            <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                            </svg>
+                                            <div class="space-y-0.5">
+                                                <span class="font-bold block text-amber-800 dark:text-amber-300">Pemberitahuan: Target Kuota Posisi Sudah Terpenuhi</span>
+                                                <p class="text-[11px] leading-relaxed text-amber-700 dark:text-amber-300/90">
+                                                    Target kuota untuk lowongan ini telah terisi penuh (<strong x-text="statusData.job_accepted_count + '/' + statusData.job_quota + ' orang'"></strong>). Menyetujui kandidat ini akan menambah penerimaan melebihi kuota awal. Keputusan tetap berada di tangan Anda.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <template x-if="!statusData.job_is_quota_full">
+                                        <div class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs flex items-center justify-between gap-2 shadow-xs">
+                                            <div class="flex items-center gap-2">
+                                                <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                <span>Status Kuota: <strong x-text="statusData.job_accepted_count + '/' + statusData.job_quota"></strong> kuota telah terisi (Sisa: <strong x-text="statusData.job_remaining_quota + ' orang'"></strong>).</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
 
                             <!-- Subtle Recruiter Feedback Note (if present) -->
                             <template x-if="(statusData.approval_mode === 'test_admin_review' && statusData.test_recruiter_notes) || (statusData.approval_mode === 'interview_admin_review' && statusData.interview_recruiter_notes) || (statusData.approval_mode === 'admin_review' && statusData.recruiter_notes)">

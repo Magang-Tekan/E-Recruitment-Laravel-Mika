@@ -63,7 +63,7 @@ new class extends Component
     get hasMixed() { return /[a-z]/.test(this.newPass || '') && /[A-Z]/.test(this.newPass || ''); }
 }">
     <header class="flex items-start gap-4 pb-5 border-b border-slate-100 dark:border-[#1D2E54]">
-        <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-[#14203A] border border-blue-200/80 dark:border-[#1D2E54] text-blue-600 dark:text-[#93F514] flex items-center justify-center shrink-0 shadow-xs">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-[#14203A] border border-emerald-200/80 dark:border-[#1D2E54] text-emerald-600 dark:text-[#93F514] flex items-center justify-center shrink-0 shadow-xs">
             @if ($hasCurrentPassword)
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -116,7 +116,7 @@ new class extends Component
                            id="update_password_current_password" 
                            name="current_password" 
                            :type="showCurrent ? 'text' : 'password'" 
-                           class="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-[#14203A] focus:border-blue-500 dark:focus:border-[#93F514] focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-[#93F514]/10 transition duration-150" 
+                           class="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-[#14203A] focus:border-emerald-500 dark:focus:border-[#93F514] focus:ring-4 focus:ring-emerald-500/10 dark:focus:ring-[#93F514]/10 transition duration-150" 
                            placeholder="{{ __('Masukkan kata sandi lama Anda') }}"
                            autocomplete="current-password" />
                     <button type="button" @click="showCurrent = !showCurrent" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
@@ -143,7 +143,7 @@ new class extends Component
                        id="update_password_password" 
                        name="password" 
                        :type="showNew ? 'text' : 'password'" 
-                       class="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-[#14203A] focus:border-blue-500 dark:focus:border-[#93F514] focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-[#93F514]/10 transition duration-150" 
+                       class="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-[#14203A] focus:border-emerald-500 dark:focus:border-[#93F514] focus:ring-4 focus:ring-emerald-500/10 dark:focus:ring-[#93F514]/10 transition duration-150" 
                        placeholder="{{ __('Minimal 8 karakter') }}"
                        autocomplete="new-password" />
                 <button type="button" @click="showNew = !showNew" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
@@ -183,7 +183,7 @@ new class extends Component
                        id="update_password_password_confirmation" 
                        name="password_confirmation" 
                        :type="showConfirm ? 'text' : 'password'" 
-                       class="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-[#14203A] focus:border-blue-500 dark:focus:border-[#93F514] focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-[#93F514]/10 transition duration-150" 
+                       class="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-[#14203A] focus:border-emerald-500 dark:focus:border-[#93F514] focus:ring-4 focus:ring-emerald-500/10 dark:focus:ring-[#93F514]/10 transition duration-150" 
                        placeholder="{{ __('Ulangi kata sandi baru') }}"
                        autocomplete="new-password" />
                 <button type="button" @click="showConfirm = !showConfirm" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
@@ -198,15 +198,16 @@ new class extends Component
         <div class="pt-3 flex items-center justify-between">
             <button type="submit" 
                     wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition-all duration-200 active:scale-[0.98] disabled:opacity-50">
-                <svg wire:loading.remove wire:target="updatePassword" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-70 disabled:cursor-not-allowed text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition-all duration-200 active:scale-95 cursor-pointer">
+                <svg wire:loading.remove wire:target="updatePassword" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
-                <svg wire:loading wire:target="updatePassword" class="w-4 h-4 animate-spin text-white dark:text-black" fill="none" viewBox="0 0 24 24">
+                <svg wire:loading wire:target="updatePassword" class="w-4 h-4 animate-spin shrink-0 text-white dark:text-black" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span>{{ $hasCurrentPassword ? __('Simpan Perubahan') : __('Simpan & Buat Kata Sandi') }}</span>
+                <span wire:loading.remove wire:target="updatePassword">{{ $hasCurrentPassword ? __('Simpan Perubahan') : __('Simpan & Buat Kata Sandi') }}</span>
+                <span wire:loading wire:target="updatePassword">{{ __('Menyimpan...') }}</span>
             </button>
 
             <x-action-message class="text-xs font-medium text-emerald-600 dark:text-[#93F514] bg-emerald-50 dark:bg-emerald-950/50 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800" on="password-updated">

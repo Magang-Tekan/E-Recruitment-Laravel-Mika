@@ -5,17 +5,14 @@
 @section('content')
     <div class="relative py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
 
-        <!-- Page Header (Clean Dark Modern Card) -->
-        <div
-            class="reveal-on-scroll relative rounded-3xl bg-gradient-to-r from-[#051c05] via-[#072907] to-[#031103] border border-[#93F514]/40 p-8 sm:p-12 mb-10 overflow-hidden shadow-2xl shadow-black/80">
-            <div class="relative z-10 max-w-2xl">
-                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#EEEEEE] leading-tight">
-                    {{ __('Jelajahi') }} <span class="text-[#93F514]">{{ __('Lowongan Pekerjaan') }}</span>
-                </h1>
-                <p class="mt-3 text-sm sm:text-base text-gray-300">
-                    {{ __('Temukan posisi yang sesuai dengan keahlian, minat, dan kualifikasi Anda. Lamar sekarang dan ikuti tahapan seleksi terintegrasi.') }}
-                </p>
-            </div>
+        <!-- Page Header -->
+        <div class="reveal-on-scroll jobs-page-header mb-8 max-w-3xl">
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#EEEEEE] tracking-tight leading-tight">
+                {{ __('Jelajahi') }} <span class="text-[#93F514]">{{ __('Lowongan Pekerjaan') }}</span>
+            </h1>
+            <p class="mt-3 text-sm sm:text-base text-gray-400 leading-relaxed">
+                {{ __('Temukan posisi yang sesuai dengan keahlian, minat, dan kualifikasi Anda. Lamar sekarang dan ikuti tahapan seleksi terintegrasi.') }}
+            </p>
         </div>
 
         <!-- Filter & Search Bar (Clean Segmented Solid Light Pill Bar, samakan dengan Beranda) -->
@@ -732,7 +729,7 @@ $showPositionBadge =
                                         d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                                 <span>{{ __('Kuota:') }} <strong
-                                        class="text-[#EEEEEE] font-bold">{{ $job->quota ?? 1 }}</strong></span>
+                                        class="text-[#EEEEEE] font-bold">{{ $job->quota ?? 1 }}</strong>@if ($job->is_quota_full) <span class="text-[10px] text-amber-400 font-semibold">({{ __('Terpenuhi') }})</span>@endif</span>
                             </div>
                             <a href="{{ route('jobs.show', $job->id) }}"
                                 class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#93F514] hover:bg-[#a6ff2e] text-black font-extrabold text-xs shadow-md shadow-black/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
@@ -897,7 +894,7 @@ $showPositionBadgeList =
                                                 d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                                         </svg>
                                         <span>{{ __('Kuota:') }} <strong
-                                                class="text-[#EEEEEE] font-bold">{{ $job->quota ?? 1 }}</strong></span>
+                                                class="text-[#EEEEEE] font-bold">{{ $job->quota ?? 1 }}</strong>@if ($job->is_quota_full) <span class="text-[10px] text-amber-400 font-semibold">({{ __('Terpenuhi') }})</span>@endif</span>
                                     </div>
                                 </div>
                             </div>
@@ -942,97 +939,6 @@ $showPositionBadgeList =
         <div class="mt-10 mb-16">
             {{ $jobs->links('frontend.components.pagination') }}
         </div>
-
-        <!-- Temukan Lowongan Berdasarkan Perusahaan (Di Bawah Menu Daftar Lowongan & Rata Tengah) -->
-        @if (isset($companies) && $companies->count() > 0)
-            <div class="pt-12 border-t border-[#93F514]/20">
-                <!-- Header Rata Tengah -->
-                <div class="text-center max-w-3xl mx-auto mb-8">
-                    {{-- <div class="inline-flex items-center gap-2 text-[#93F514] text-xs font-bold uppercase tracking-wider mb-2">
-                    <span class="w-2 h-2 rounded-full bg-[#93F514] animate-pulse"></span>
-                    <span>Perusahaan Mitra</span>
-                </div> --}}
-                    <h2 class="text-3xl sm:text-4xl font-extrabold text-[#EEEEEE]">
-                        {{ __('Temukan Lowongan Berdasarkan') }} <span class="text-[#93F514]">{{ __('Perusahaan') }}</span>
-                    </h2>
-                    <p class="mt-3 text-sm sm:text-base text-gray-300 leading-relaxed">
-                        {{ __('Pilih perusahaan mitra untuk melihat lowongan kerja dan karir yang sedang dibuka.') }}
-                    </p>
-
-                    @if (!empty($selectedCompanyIds))
-                        <div class="mt-3">
-                            <a href="{{ route('jobs.index', array_merge(request()->except('company_id', 'company_ids', 'page'))) }}"
-                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#93F514] hover:text-[#52fa4d] bg-[#93F514]/10 px-3 py-1 rounded-full border border-[#93F514]/30 transition">
-                                <span>{{ __('Tampilkan Semua Perusahaan') }}</span>
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </a>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Grid Card Perusahaan (Rata Tengah) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 justify-center">
-                    @foreach ($companies as $comp)
-                        @php
-                            $isActive = in_array((string) $comp->id, array_map('strval', $selectedCompanyIds ?? []));
-                            $jobCount = $comp->jobs_count ?? $comp->jobs()->where('status', 'Open')->count();
-                        @endphp
-                        <a href="{{ route('jobs.index', array_merge(request()->except('page', 'company_id', 'company_ids'), ['company_id' => [$comp->id]])) }}"
-                            class="group relative rounded-2xl p-5 border transition-all duration-300 flex flex-col justify-between
-                              {{ $isActive
-                                  ? 'bg-gradient-to-b from-[#0a2e0a] to-[#041404] border-[#93F514] shadow-lg shadow-black/40 ring-1 ring-[#93F514]'
-                                  : 'bg-gradient-to-b from-[#061506] to-[#030a03] border-[#93F514]/25 hover:border-[#93F514] hover:shadow-xl hover:shadow-black/60 hover:-translate-y-1' }}">
-
-                            <div class="flex items-start gap-3.5">
-                                <!-- Logo Perusahaan -->
-                                @if ($comp->logo_url)
-                                    <div
-                                        class="w-14 h-14 rounded-xl bg-white border border-[#93F514]/30 p-2 flex items-center justify-center shrink-0 overflow-hidden shadow-sm group-hover:border-[#93F514] transition-colors">
-                                        <img src="{{ $comp->logo_url }}" alt="{{ $comp->name }}"
-                                            class="w-full h-full object-contain">
-                                    </div>
-                                @else
-                                    <div
-                                        class="w-14 h-14 rounded-xl bg-white border border-[#93F514]/40 flex items-center justify-center text-gray-900 font-extrabold text-lg shrink-0 group-hover:bg-gray-100 transition-colors">
-                                        {{ strtoupper(substr($comp->name, 0, 2)) }}
-                                    </div>
-                                @endif
-
-                                <!-- Nama Perusahaan & Lokasi/Kota -->
-                                <div class="flex-1 min-w-0">
-                                    <h3
-                                        class="text-sm font-bold text-[#EEEEEE] group-hover:text-[#93F514] transition-colors truncate">
-                                        {{ $comp->name }}
-                                    </h3>
-                                    <p class="text-xs text-gray-400 mt-0.5 truncate">
-                                        {{ $comp->city ?? ($comp->province ?? __('Mitra Perusahaan')) }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Footer: Lowongan Tersedia Badge -->
-                            <div class="mt-4 pt-3 border-t border-[#93F514]/15 flex items-center justify-between">
-                                <span
-                                    class="inline-flex items-center gap-1.5 text-xs {{ $jobCount > 0 ? 'text-[#93F514] font-bold' : 'text-gray-400' }}">
-                                    <span>{{ $jobCount }} {{ __('Lowongan Tersedia') }}</span>
-                                </span>
-
-                                <span
-                                    class="text-xs text-gray-400 group-hover:text-[#93F514] group-hover:translate-x-0.5 transition-all">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </span>
-                            </div>
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-        @endif
 
     </div>
 @endsection

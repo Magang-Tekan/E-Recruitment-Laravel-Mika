@@ -40,11 +40,6 @@
             @mouseenter="stopAutoplay()"
             @mouseleave="startAutoplay()">
 
-
-
-            <!-- Subtle Grid Background Pattern -->
-            <div class="absolute inset-0 z-0 opacity-15 bg-[radial-gradient(#93F514_1px,transparent_1px)] [background-size:28px_28px] pointer-events-none"></div>
-
             <div class="relative max-w-7xl mx-auto w-full z-10">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
 
@@ -63,27 +58,21 @@
                                     class="w-full h-full relative">
 
                                     <!-- Main Large Photo (Left Background Layer) -->
-                                    <div class="absolute left-0 top-6 w-[56%] sm:w-[58%] h-[260px] sm:h-[310px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-br from-[#93F514]/50 via-white/10 to-transparent shadow-2xl shadow-black/80 group">
-                                        <div class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/20">
-                                            <img :src="slide.img1" alt="{{ __('Dokumentasi Perusahaan') }}"
-                                                class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
-                                        </div>
+                                    <div class="absolute left-0 top-6 w-[56%] sm:w-[58%] h-[260px] sm:h-[310px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl shadow-black/25 dark:shadow-black/60 group">
+                                        <img :src="slide.img1" alt="{{ __('Dokumentasi Perusahaan') }}"
+                                            class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
                                     </div>
 
                                     <!-- Top-Right Secondary Photo Layer -->
-                                    <div class="absolute right-0 top-0 w-[48%] sm:w-[50%] h-[200px] sm:h-[235px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-bl from-[#93F514]/60 via-white/15 to-transparent shadow-2xl shadow-black/90 group z-10">
-                                        <div class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/20">
-                                            <img :src="slide.img2" alt="{{ __('Dokumentasi Aktivitas') }}"
-                                                class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
-                                        </div>
+                                    <div class="absolute right-0 top-0 w-[48%] sm:w-[50%] h-[200px] sm:h-[235px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl shadow-black/30 dark:shadow-black/70 group z-10">
+                                        <img :src="slide.img2" alt="{{ __('Dokumentasi Aktivitas') }}"
+                                            class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
                                     </div>
 
                                     <!-- Bottom Center/Right Overlapping Tertiary Photo -->
-                                    <div class="absolute left-[35%] sm:left-[32%] bottom-0 w-[50%] sm:w-[52%] h-[190px] sm:h-[220px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-tr from-[#93F514]/60 via-white/15 to-transparent shadow-2xl shadow-black/95 group z-20">
-                                        <div class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/25">
-                                            <img :src="slide.img3" alt="{{ __('Dokumentasi Event') }}"
-                                                class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
-                                        </div>
+                                    <div class="absolute left-[35%] sm:left-[32%] bottom-0 w-[50%] sm:w-[52%] h-[190px] sm:h-[220px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/35 dark:shadow-black/80 group z-20">
+                                        <img :src="slide.img3" alt="{{ __('Dokumentasi Event') }}"
+                                            class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
                                     </div>
 
                                     <!-- Floating Glass Badge (Bottom Right) -->
@@ -487,6 +476,20 @@
                     @php
                         $codeLetter = $val['code'] ?? substr($val['title'] ?? 'M', 0, 1);
                         $isLetterI = ($codeLetter === 'I');
+
+                        $isEn = app()->getLocale() === 'en';
+                        $rawTitle = trim($val['title'] ?? '');
+                        $rawSub = trim($val['subtitle'] ?? '');
+
+                        if ($isEn) {
+                            // Mode Bahasa Inggris: dibolak-balik (Judul utama jadi bahasa Inggris, subtitle jadi bahasa Indonesia)
+                            $cardTitle = !empty($rawSub) ? __($rawSub) : __($rawTitle);
+                            $cardSubtitle = $rawTitle;
+                        } else {
+                            // Mode Bahasa Indonesia: Judul utama bahasa Indonesia, subtitle bahasa Inggris
+                            $cardTitle = $rawTitle;
+                            $cardSubtitle = $rawSub;
+                        }
                     @endphp
                     <div class="reveal-on-scroll group relative rounded-3xl bg-gradient-to-b from-[#061506] via-[#040e04] to-[#020602] border border-[#93F514]/30 hover:border-[#93F514] p-7 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/60 flex flex-col justify-between overflow-hidden mika-card" data-delay="{{ 150 + ($i * 75) }}">
                         <!-- Glowing letter background watermark (same font family) -->
@@ -507,13 +510,15 @@
                                 </span>
                             </div>
 
-                            <!-- Title & Subtitle -->
+                            <!-- Title & Subtitle (Flipped dynamically on EN/ID) -->
                             <h3 class="text-xl font-extrabold text-[#EEEEEE] group-hover:text-[#93F514] transition-colors">
-                                {{ __(trim($val['title'] ?? '')) }}
+                                {{ $cardTitle }}
                             </h3>
-                            <span class="inline-block text-xs font-semibold text-[#5FE6B6] mb-3 mika-subtitle">
-                                {{ $val['subtitle'] ?? '' }}
-                            </span>
+                            @if(!empty($cardSubtitle))
+                                <span class="inline-block text-xs font-semibold text-[#5FE6B6] mb-3 mika-subtitle">
+                                    {{ $cardSubtitle }}
+                                </span>
+                            @endif
 
                             <!-- Description -->
                             <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">

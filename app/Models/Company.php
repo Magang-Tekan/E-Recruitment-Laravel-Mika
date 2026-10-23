@@ -15,6 +15,7 @@ class Company extends Model
         'tagline',
         'logo',
         'website',
+        'social_media',
         'about',
         'vision',
         'missions',
@@ -31,7 +32,37 @@ class Company extends Model
     protected $casts = [
         'missions' => 'array',
         'core_values' => 'array',
+        'social_media' => 'array',
     ];
+
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('frontend_main_company');
+            \Illuminate\Support\Facades\Cache::forget('master_companies_all');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('frontend_main_company');
+            \Illuminate\Support\Facades\Cache::forget('master_companies_all');
+        });
+    }
+
+    /**
+     * Check if company has at least one valid social media link
+     */
+    public function getHasSocialMediaAttribute(): bool
+    {
+        if (empty($this->social_media) || !is_array($this->social_media)) {
+            return false;
+        }
+        foreach ($this->social_media as $url) {
+            if (!empty(trim((string)$url))) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public function role()
     {

@@ -335,9 +335,25 @@ class InterviewScheduleController extends Controller
 
             DB::commit();
 
+            $quotaNote = '';
+            if ($targetStatus === 'Accepted' && $application->job) {
+                $job = $application->job;
+                $quota = (int) ($job->quota ?? 0);
+                $acceptedCount = $job->jobApplications()->whereIn('status', ['Accepted', 'accepted', 'hired'])->count();
+
+                if ($quota > 0) {
+                    if ($acceptedCount >= $quota) {
+                        $quotaNote = " [Pemberitahuan Kuota]: Target kuota untuk lowongan '{$job->title}' kini telah terpenuhi ({$acceptedCount}/{$quota} orang). Anda dapat menutup lowongan jika rekrutmen selesai.";
+                    } else {
+                        $remaining = max(0, $quota - $acceptedCount);
+                        $quotaNote = " [Info Kuota]: {$acceptedCount} dari {$quota} kuota telah terisi (Sisa kuota: {$remaining} orang).";
+                    }
+                }
+            }
+
             $emailNote = ($emailSent ?? false) ? ' Notifikasi email resmi telah berhasil dikirim ke kandidat.' : '';
             return redirect()->route($this->getRedirectRoute())
-                ->with('update', 'Hasil wawancara dan status pelamar berhasil diperbarui.' . $emailNote);
+                ->with('update', 'Hasil wawancara dan status pelamar berhasil diperbarui.' . $quotaNote . $emailNote);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()

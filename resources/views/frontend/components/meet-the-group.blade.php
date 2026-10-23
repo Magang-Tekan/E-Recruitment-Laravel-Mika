@@ -23,8 +23,8 @@
             </p>
         </div>
 
-        <!-- Cards Grid (1 kolom di Mobile, 2 kolom di Tablet, 3 kolom di Desktop) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 relative z-10">
+        <!-- Cards Flex (Rata Tengah Dinamis saat Tambah/Kurang) -->
+        <div class="flex flex-wrap justify-center gap-6 sm:gap-8 relative z-10">
             @foreach($groupCompanies as $idx => $companyItem)
                 @php
                     // Helper URL website
@@ -47,7 +47,7 @@
                     $companyInitial = $companyItem->initial ?? strtoupper(substr($companyItem->name, 0, 2));
                 @endphp
 
-                <div class="reveal-on-scroll group relative rounded-3xl bg-gradient-to-b from-[#061506] via-[#040e04] to-[#020602] border border-[#93F514]/30 hover:border-[#93F514] p-7 sm:p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/60 flex flex-col justify-between overflow-hidden group-company-card" 
+                <div class="reveal-on-scroll group relative rounded-3xl bg-gradient-to-b from-[#061506] via-[#040e04] to-[#020602] border border-[#93F514]/30 hover:border-[#93F514] p-7 sm:p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/60 flex flex-col justify-between overflow-hidden group-company-card w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.35rem)] max-w-md" 
                      data-delay="{{ 100 + ($idx * 75) }}">
 
                     <div>
