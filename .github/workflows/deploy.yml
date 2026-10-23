@@ -111,12 +111,11 @@ jobs:
             exit 1
           fi
 
+          # Pass the exact Git revision into every Docker image so the running
+          # containers can be verified independently of mutable image tags.
+          export APP_REVISION="$EXPECTED_SHA"
           docker compose config --quiet
           docker compose build --pull
-
-          EXPECTED_APP_IMAGE="$(docker compose images -q app)"
-          EXPECTED_WEB_IMAGE="$(docker compose images -q web)"
-          EXPECTED_QUEUE_IMAGE="$(docker compose images -q queue)"
 
           if [ -n "$(docker compose ps -q app)" ]; then
             # The deployment script arrives over SSH stdin. Prevent Compose from
@@ -147,9 +146,9 @@ jobs:
           docker compose exec -T app php artisan up </dev/null
           MAINTENANCE_ENABLED=0
 
-          verify_running_image() {
+          verify_running_revision() {
             service="$1"
-            expected_image="$2"
+            expected_revision="$2"
             container_id="$(docker compose ps --status running -q "$service")"
 
             if [ -z "$container_id" ]; then
@@ -157,20 +156,18 @@ jobs:
               return 1
             fi
 
-            running_image="$(docker inspect --format '{{.Image}}' "$container_id")"
-            # `docker compose images -q` may omit the `sha256:` prefix while
-            # `docker inspect .Image` includes it. Compare normalized IDs.
-            expected_image_id="${expected_image#sha256:}"
-            running_image_id="${running_image#sha256:}"
-            if [ "$running_image_id" != "$expected_image_id" ]; then
-              echo "Deployment verification failed: $service is still using $running_image instead of $expected_image." >&2
+            running_revision="$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$container_id")"
+            if [ "$running_revision" != "$expected_revision" ]; then
+              echo "Deployment verification failed: $service is running revision ${running_revision:-unknown}, expected $expected_revision." >&2
               return 1
             fi
+
+            echo "Verified $service is running revision $running_revision."
           }
 
-          verify_running_image app "$EXPECTED_APP_IMAGE"
-          verify_running_image web "$EXPECTED_WEB_IMAGE"
-          verify_running_image queue "$EXPECTED_QUEUE_IMAGE"
+          verify_running_revision app "$EXPECTED_SHA"
+          verify_running_revision web "$EXPECTED_SHA"
+          verify_running_revision queue "$EXPECTED_SHA"
 
           # Check the response code through the Nginx container, not only that
           # the web process accepts a connection.
