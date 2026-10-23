@@ -158,7 +158,11 @@ jobs:
             fi
 
             running_image="$(docker inspect --format '{{.Image}}' "$container_id")"
-            if [ "$running_image" != "$expected_image" ]; then
+            # `docker compose images -q` may omit the `sha256:` prefix while
+            # `docker inspect .Image` includes it. Compare normalized IDs.
+            expected_image_id="${expected_image#sha256:}"
+            running_image_id="${running_image#sha256:}"
+            if [ "$running_image_id" != "$expected_image_id" ]; then
               echo "Deployment verification failed: $service is still using $running_image instead of $expected_image." >&2
               return 1
             fi
