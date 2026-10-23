@@ -66,16 +66,23 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh production-vps bash -se -- "$DEPLOY_PATH" <<'DEPLOY_SCRIPT'
+          ssh production-vps bash -se -- "$DEPLOY_PATH" "$GITHUB_SHA" <<'DEPLOY_SCRIPT'
           set -Eeuo pipefail
 
           DEPLOY_PATH="$1"
+          EXPECTED_SHA="$2"
           cd "$DEPLOY_PATH"
 
           MAINTENANCE_ENABLED=0
+          DEPLOYMENT_COMPLETED=0
           restore_application() {
             deploy_status=$?
             trap - EXIT
+
+            if [ "$DEPLOYMENT_COMPLETED" -eq 0 ] && [ "$deploy_status" -eq 0 ]; then
+              echo "Deployment script ended before reaching its completion marker." >&2
+              deploy_status=1
+            fi
 
             if [ "$MAINTENANCE_ENABLED" -eq 1 ]; then
               echo "Deployment is exiting while maintenance mode is enabled; restoring the application."
@@ -84,7 +91,7 @@ jobs:
                 docker compose up -d app || true
               fi
 
-              docker compose exec -T app php artisan up || true
+              docker compose exec -T app php artisan up </dev/null || true
             fi
 
             exit "$deploy_status"
@@ -98,11 +105,24 @@ jobs:
           git checkout main
           git pull --ff-only origin main
 
+          DEPLOYED_SHA="$(git rev-parse HEAD)"
+          if [ "$DEPLOYED_SHA" != "$EXPECTED_SHA" ]; then
+            echo "Deployment revision mismatch: expected $EXPECTED_SHA, got $DEPLOYED_SHA." >&2
+            exit 1
+          fi
+
           docker compose config --quiet
           docker compose build --pull
 
+          EXPECTED_APP_IMAGE="$(docker compose images -q app)"
+          EXPECTED_WEB_IMAGE="$(docker compose images -q web)"
+          EXPECTED_QUEUE_IMAGE="$(docker compose images -q queue)"
+
           if [ -n "$(docker compose ps -q app)" ]; then
-            if docker compose exec -T app php artisan down --retry=60; then
+            # The deployment script arrives over SSH stdin. Prevent Compose from
+            # consuming the remaining script and turning a partial deploy into a
+            # false-positive success.
+            if docker compose exec -T app php artisan down --retry=60 </dev/null; then
               MAINTENANCE_ENABLED=1
             fi
           fi
@@ -117,19 +137,40 @@ jobs:
           done
 
           # Run only migrations that have not already been applied.
-          docker compose run --rm app php artisan migrate --force
+          docker compose run --rm -T app php artisan migrate --force </dev/null
 
           docker compose up -d --remove-orphans app web queue
-          docker compose exec -T app php artisan storage:link --force
-          docker compose exec -T app php artisan optimize:clear
-          docker compose exec -T app php artisan optimize
-          docker compose exec -T app php artisan queue:restart
-          docker compose exec -T app php artisan up
+          docker compose exec -T app php artisan storage:link --force </dev/null
+          docker compose exec -T app php artisan optimize:clear </dev/null
+          docker compose exec -T app php artisan optimize </dev/null
+          docker compose exec -T app php artisan queue:restart </dev/null
+          docker compose exec -T app php artisan up </dev/null
           MAINTENANCE_ENABLED=0
+
+          verify_running_image() {
+            service="$1"
+            expected_image="$2"
+            container_id="$(docker compose ps --status running -q "$service")"
+
+            if [ -z "$container_id" ]; then
+              echo "Deployment verification failed: $service is not running." >&2
+              return 1
+            fi
+
+            running_image="$(docker inspect --format '{{.Image}}' "$container_id")"
+            if [ "$running_image" != "$expected_image" ]; then
+              echo "Deployment verification failed: $service is still using $running_image instead of $expected_image." >&2
+              return 1
+            fi
+          }
+
+          verify_running_image app "$EXPECTED_APP_IMAGE"
+          verify_running_image web "$EXPECTED_WEB_IMAGE"
+          verify_running_image queue "$EXPECTED_QUEUE_IMAGE"
 
           # Check the response code through the Nginx container, not only that
           # the web process accepts a connection.
-          HTTP_STATUS="$(docker compose exec -T app curl --silent --show-error --location --max-redirs 5 --output /dev/null --write-out '%{http_code}' http://web/)"
+          HTTP_STATUS="$(docker compose exec -T app curl --silent --show-error --location --max-redirs 5 --output /dev/null --write-out '%{http_code}' http://web/ </dev/null)"
           if [ "$HTTP_STATUS" != "200" ]; then
             echo "Production health check failed: expected HTTP 200, got ${HTTP_STATUS:-no response}." >&2
             docker compose logs --tail=100 app web db >&2 || true
@@ -137,5 +178,6 @@ jobs:
           fi
 
           docker compose ps
-          echo "Deployment completed successfully."
+          echo "Deployment completed successfully at revision $DEPLOYED_SHA."
+          DEPLOYMENT_COMPLETED=1
           DEPLOY_SCRIPT
