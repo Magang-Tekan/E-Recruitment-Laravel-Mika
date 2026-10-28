@@ -392,7 +392,7 @@
                         if (this.regencies.length === 0 && !this.loadingCities) {
                             await this.loadAllRegencies();
                         }
-                        const val = $wire.city || '';
+                        const val = $wire.ktp_city || '';
                         if (!val.trim()) {
                             this.filteredRegencies = this.regencies.slice(0, 20);
                             return;
@@ -404,20 +404,24 @@
                     },
                 
                     selectRegency(reg) {
-                        $wire.city = reg.name;
+                        $wire.ktp_city = reg.name;
                         this.showCityDropdown = false;
                 
                         if (reg.province_id) {
                             const prov = this.provinces.find(p => p.id == reg.province_id);
                             if (prov) {
-                                $wire.province = prov.name;
+                                $wire.ktp_province = prov.name;
                             }
+                        }
+                        if ($wire.is_same_address) {
+                            $wire.city = $wire.ktp_city;
+                            $wire.province = $wire.ktp_province;
                         }
                     },
                 
                     searchProv() {
                         this.showProvinceDropdown = true;
-                        const val = $wire.province || '';
+                        const val = $wire.ktp_province || '';
                         if (!val.trim()) {
                             this.filteredProvinces = this.provinces;
                             return;
@@ -427,9 +431,12 @@
                     },
                 
                     async selectProv(prov) {
-                        $wire.province = prov.name;
+                        $wire.ktp_province = prov.name;
                         this.showProvinceDropdown = false;
                         await this.fetchRegenciesForProvince(prov.id);
+                        if ($wire.is_same_address) {
+                            $wire.province = $wire.ktp_province;
+                        }
                     }
                 }"
                     @click.outside="showCityDropdown = false; showProvinceDropdown = false">
@@ -441,7 +448,7 @@
                             {{ __('Kota / Kabupaten Sesuai KTP') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <input type="text" x-model="$wire.city" @focus="searchRegency()"
+                            <input type="text" x-model="$wire.ktp_city" @focus="searchRegency()"
                                 @input="searchRegency()"
                                 placeholder="{{ __('Ketik untuk mencari Kota / Kabupaten...') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
@@ -465,7 +472,7 @@
                                 </button>
                             </template>
                         </div>
-                        @error('city')
+                        @error('ktp_city')
                             <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
                         @enderror
                     </div>
@@ -477,7 +484,7 @@
                             {{ __('Provinsi Sesuai KTP') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <input type="text" x-model="$wire.province" @focus="searchProv()"
+                            <input type="text" x-model="$wire.ktp_province" @focus="searchProv()"
                                 @input="searchProv()" placeholder="{{ __('Ketik untuk mencari Provinsi...') }}"
                                 class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
                             <div
@@ -500,7 +507,7 @@
                                 </button>
                             </template>
                         </div>
-                        @error('province')
+                        @error('ktp_province')
                             <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
                         @enderror
                     </div>
@@ -553,7 +560,7 @@
                         <label class="inline-flex items-center gap-2 cursor-pointer text-xs font-medium text-emerald-600 dark:text-[#93F514] select-none">
                             <input type="checkbox" wire:model.live="is_same_address"
                                 class="rounded border-slate-300 dark:border-[#1D2E54] text-emerald-600 focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
-                            <span>{{ __('Alamat Domisili sama dengan KTP') }}</span>
+                            <span>{{ __('Alamat & Kota Domisili sama dengan KTP') }}</span>
                         </label>
                     </div>
                     <textarea wire:model.live.debounce.300ms="ktp_address" rows="2" placeholder="{{ __('Alamat lengkap seperti yang tercantum pada KTP Anda') }}"
@@ -563,17 +570,205 @@
                     @enderror
                 </div>
 
-                <!-- Alamat Domisili Saat Ini -->
-                <div class="md:col-span-2">
-                    <label
-                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Alamat Domisili Saat Ini') }}
-                        <span class="text-red-500">*</span></label>
-                    <textarea wire:model="address" rows="2" placeholder="{{ __('Alamat lengkap tempat tinggal saat ini') }}"
-                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition"></textarea>
-                    @error('address')
-                        <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
-                    @enderror
-                </div>
+                @if($is_same_address)
+                    <div class="md:col-span-2 p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2.5">
+                        <svg class="w-4 h-4 text-emerald-600 dark:text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>{{ __('Alamat dan Kota Domisili tempat tinggal saat ini disamakan dengan data KTP.') }}</span>
+                    </div>
+                @else
+                    <!-- Section Domisili Berbeda dari KTP -->
+                    <div class="md:col-span-2 p-4 sm:p-5 rounded-2xl bg-amber-50/30 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40 space-y-4">
+                        <div class="flex items-center gap-2 pb-2 border-b border-amber-200/50 dark:border-amber-800/30 text-amber-800 dark:text-amber-300">
+                            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span class="text-xs font-bold uppercase tracking-wider">{{ __('Data Domisili Tempat Tinggal Saat Ini (Berbeda dari KTP)') }}</span>
+                        </div>
+
+                        <!-- Alamat Domisili Saat Ini -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                                {{ __('Alamat Domisili Tempat Tinggal Saat Ini') }} <span class="text-red-500">*</span>
+                            </label>
+                            <textarea wire:model="address" rows="2" placeholder="{{ __('Alamat lengkap tempat tinggal/domisili saat ini (misal: Kos/Kontrakan/Rumah)') }}"
+                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition"></textarea>
+                            @error('address')
+                                <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Autocomplete Wilayah Domisili (Kota/Kabupaten & Provinsi) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6" x-data="{
+                            provinces: [],
+                            regencies: [],
+                            filteredRegencies: [],
+                            filteredProvinces: [],
+                            showCityDropdown: false,
+                            showProvinceDropdown: false,
+                            loadingCities: false,
+
+                            async init() {
+                                try {
+                                    const provRes = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+                                    if (provRes.ok) {
+                                        this.provinces = await provRes.json();
+                                    }
+                                } catch (err) {
+                                    console.warn('Gagal memuat provinsi domisili:', err);
+                                }
+                            },
+
+                            async fetchRegenciesForProvince(provId) {
+                                try {
+                                    const res = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provId}.json`);
+                                    if (res.ok) {
+                                        const data = await res.json();
+                                        data.forEach(r => {
+                                            if (!this.regencies.some(existing => existing.id == r.id)) {
+                                                this.regencies.push(r);
+                                            }
+                                        });
+                                    }
+                                } catch (e) {}
+                            },
+
+                            async loadAllRegencies() {
+                                if (this.regencies.length > 0 || this.loadingCities) return;
+                                this.loadingCities = true;
+                                try {
+                                    if (this.provinces.length === 0) {
+                                        const provRes = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+                                        if (provRes.ok) this.provinces = await provRes.json();
+                                    }
+                                    const fetchPromises = this.provinces.map(p =>
+                                        fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${p.id}.json`)
+                                        .then(r => r.ok ? r.json() : [])
+                                        .catch(() => [])
+                                    );
+                                    const results = await Promise.all(fetchPromises);
+                                    this.regencies = results.flat();
+                                } catch (e) {
+                                    console.warn('Gagal memuat kabupaten/kota domisili:', e);
+                                } finally {
+                                    this.loadingCities = false;
+                                }
+                            },
+
+                            async searchRegency() {
+                                this.showCityDropdown = true;
+                                if (this.regencies.length === 0 && !this.loadingCities) {
+                                    await this.loadAllRegencies();
+                                }
+                                const val = $wire.city || '';
+                                if (!val.trim()) {
+                                    this.filteredRegencies = this.regencies.slice(0, 20);
+                                    return;
+                                }
+                                const q = val.toLowerCase();
+                                this.filteredRegencies = this.regencies
+                                    .filter(r => r.name.toLowerCase().includes(q))
+                                    .slice(0, 25);
+                            },
+
+                            selectRegency(reg) {
+                                $wire.city = reg.name;
+                                this.showCityDropdown = false;
+
+                                if (reg.province_id) {
+                                    const prov = this.provinces.find(p => p.id == reg.province_id);
+                                    if (prov) {
+                                        $wire.province = prov.name;
+                                    }
+                                }
+                            },
+
+                            searchProv() {
+                                this.showProvinceDropdown = true;
+                                const val = $wire.province || '';
+                                if (!val.trim()) {
+                                    this.filteredProvinces = this.provinces;
+                                    return;
+                                }
+                                const q = val.toLowerCase();
+                                this.filteredProvinces = this.provinces.filter(p => p.name.toLowerCase().includes(q));
+                            },
+
+                            async selectProv(prov) {
+                                $wire.province = prov.name;
+                                this.showProvinceDropdown = false;
+                                await this.fetchRegenciesForProvince(prov.id);
+                            }
+                        }"
+                            @click.outside="showCityDropdown = false; showProvinceDropdown = false">
+
+                            <!-- Kota / Kabupaten Domisili Dropdown -->
+                            <div class="relative">
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                                    {{ __('Kota / Kabupaten Domisili Saat Ini') }} <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="text" x-model="$wire.city" @focus="searchRegency()"
+                                        @input="searchRegency()"
+                                        placeholder="{{ __('Ketik untuk mencari Kota / Kabupaten Domisili...') }}"
+                                        class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                <div x-show="showCityDropdown && filteredRegencies.length > 0" x-transition
+                                    class="absolute z-30 w-full mt-1 bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-[#1D2E54] rounded-xl shadow-xl max-h-60 overflow-y-auto"
+                                    style="display: none;">
+                                    <template x-for="reg in filteredRegencies" :key="reg.id">
+                                        <button type="button" @click="selectRegency(reg)"
+                                            class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#14203A] hover:text-emerald-600 dark:hover:text-[#93F514] transition flex items-center justify-between border-b border-slate-100 dark:border-[#1D2E54]/50 last:border-0">
+                                            <span x-text="reg.name"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                                @error('city')
+                                    <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <!-- Provinsi Domisili Dropdown -->
+                            <div class="relative">
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                                    {{ __('Provinsi Domisili Saat Ini') }} <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="text" x-model="$wire.province" @focus="searchProv()"
+                                        @input="searchProv()" placeholder="{{ __('Ketik untuk mencari Provinsi Domisili...') }}"
+                                        class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                <div x-show="showProvinceDropdown && filteredProvinces.length > 0" x-transition
+                                    class="absolute z-30 w-full mt-1 bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-[#1D2E54] rounded-xl shadow-xl max-h-60 overflow-y-auto"
+                                    style="display: none;">
+                                    <template x-for="prov in filteredProvinces" :key="prov.id">
+                                        <button type="button" @click="selectProv(prov)"
+                                            class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#14203A] hover:text-emerald-600 dark:hover:text-[#93F514] transition flex items-center justify-between border-b border-slate-100 dark:border-[#1D2E54]/50 last:border-0">
+                                            <span x-text="prov.name"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                                @error('province')
+                                    <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
                 <!-- Kepemilikan SIM (Surat Izin Mengemudi) -->
                 <div class="md:col-span-2 p-5 bg-slate-50/80 dark:bg-[#14203A]/60 border border-slate-200/80 dark:border-[#1D2E54] rounded-2xl space-y-4">

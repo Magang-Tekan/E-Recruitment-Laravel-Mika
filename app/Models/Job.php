@@ -13,7 +13,7 @@ class Job extends Model
         'company_id', 'department_id', 'position_id', 'reviewer_id', 
         'title', 'title_en', 
         'description', 'description_en', 
-        'employment_type', 'location', 'salary_min', 'salary_max', 
+        'employment_type', 'experience_level', 'location', 'salary_min', 'salary_max', 
         'quota', 'deadline', 'status'
     ];
 

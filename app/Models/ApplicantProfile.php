@@ -11,7 +11,7 @@ class ApplicantProfile extends Model
     // Fillable disesuaikan dengan kolom di database
     protected $fillable = [
         'user_id', 'nik', 'full_name', 'gender', 'birth_place',
-        'birth_date', 'phone', 'address', 'ktp_address', 'city', 'province',
+        'birth_date', 'phone', 'address', 'ktp_address', 'ktp_city', 'ktp_province', 'city', 'province',
         'photo', 'npwp', 'child_sequence', 'total_siblings', 'marital_status',
         'marriage_date', 'ethnicity', 'nationality', 'driving_licenses',
         'daily_transportation', 'work_distance_km',
@@ -33,7 +33,58 @@ class ApplicantProfile extends Model
         ];
     }
 
-    protected $appends = ['cv_url', 'cv_file_url', 'photo_url'];
+    protected $appends = ['cv_url', 'cv_file_url', 'photo_url', 'short_city', 'short_ktp_city', 'display_city', 'display_ktp_city', 'formatted_location'];
+
+    public function getShortCityAttribute(): string
+    {
+        if (empty($this->city)) {
+            return '';
+        }
+        $clean = preg_replace('/^(KABUPATEN|KOTA|KAB\.|KOTAMADYA)\s+/i', '', trim($this->city));
+        return ucwords(strtolower(trim($clean)));
+    }
+
+    public function getShortKtpCityAttribute(): string
+    {
+        if (empty($this->ktp_city)) {
+            return '';
+        }
+        $clean = preg_replace('/^(KABUPATEN|KOTA|KAB\.|KOTAMADYA)\s+/i', '', trim($this->ktp_city));
+        return ucwords(strtolower(trim($clean)));
+    }
+
+    public function getDisplayCityAttribute(): string
+    {
+        if (empty($this->city)) {
+            return '';
+        }
+        $name = trim(ucwords(strtolower($this->city)));
+        $name = preg_replace('/^Kotamadya\s+/i', 'Kota ', $name);
+        return preg_replace('/^(Kabupaten|Kab\.?)\s+/i', 'Kab. ', $name);
+    }
+
+    public function getDisplayKtpCityAttribute(): string
+    {
+        if (empty($this->ktp_city)) {
+            return '';
+        }
+        $name = trim(ucwords(strtolower($this->ktp_city)));
+        $name = preg_replace('/^Kotamadya\s+/i', 'Kota ', $name);
+        return preg_replace('/^(Kabupaten|Kab\.?)\s+/i', 'Kab. ', $name);
+    }
+
+    public function getFormattedLocationAttribute(): string
+    {
+        $dom = $this->display_city;
+        $ktp = $this->display_ktp_city;
+        if (empty($dom)) {
+            return '';
+        }
+        if (!empty($ktp) && strcasecmp($dom, $ktp) !== 0) {
+            return "{$dom} (KTP: {$ktp})";
+        }
+        return $dom;
+    }
 
     public function getPhotoUrlAttribute(): ?string
     {

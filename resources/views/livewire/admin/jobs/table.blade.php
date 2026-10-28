@@ -142,6 +142,7 @@
         title: '{{ old('title', '') }}',
         description: '{{ old('description', '') }}',
         employment_type: '{{ old('employment_type', 'Full-time') }}',
+        experience_level: '{{ old('experience_level', 'Fresh Graduate') }}',
         location: '{{ old('location', '') }}',
         salary_min: '{{ old('salary_min', '') }}',
         salary_max: '{{ old('salary_max', '') }}',
@@ -305,6 +306,7 @@
             title: job.title || '',
             description: job.description || '',
             employment_type: job.employment_type || 'Full-time',
+            experience_level: job.experience_level || 'Fresh Graduate',
             location: job.location || '',
             salary_min: job.salary_min || '',
             salary_max: job.salary_max || '',
@@ -742,9 +744,16 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="space-y-1.5">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60">
-                                        {{ $job->employment_type }}
-                                    </span>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60">
+                                            {{ $job->employment_type }}
+                                        </span>
+                                        @if ($job->experience_level)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
+                                                {{ $job->experience_level }}
+                                            </span>
+                                        @endif
+                                    </div>
                                     <div class="text-[11px] text-gray-500 dark:text-slate-400 flex items-center gap-1.5">
                                         <svg class="w-3.5 h-3.5 text-gray-400 dark:text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -1028,7 +1037,7 @@
                                 <input type="text" name="title" id="title" value="{{ old('title') }}" required placeholder="Contoh: Senior Full Stack Developer" class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <!-- Employment Type -->
                                 <div>
                                     <label for="employment_type" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
@@ -1038,8 +1047,20 @@
                                         <option value="Full-time">Full-time</option>
                                         <option value="Part-time">Part-time</option>
                                         <option value="Contract">Contract</option>
-                                        <option value="Internship">Internship</option>
+                                        <option value="Internship">Internship / Magang</option>
                                         <option value="Freelance">Freelance</option>
+                                    </select>
+                                </div>
+
+                                <!-- Experience Level -->
+                                <div>
+                                    <label for="experience_level" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                        Tingkat Pengalaman <span class="text-rose-500">*</span>
+                                    </label>
+                                    <select name="experience_level" id="experience_level" required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                        <option value="Magang">Magang / Siswa</option>
+                                        <option value="Fresh Graduate" selected>Fresh Graduate (0-1 Tahun)</option>
+                                        <option value="Profesional">Profesional (Berpengalaman)</option>
                                     </select>
                                 </div>
 
@@ -1351,7 +1372,7 @@
                                 <input type="text" name="title" id="edit_title" x-model="editData.title" placeholder="Judul Posisi" class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <!-- Employment Type -->
                                 <div>
                                     <label for="edit_employment_type" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
@@ -1361,8 +1382,20 @@
                                         <option value="Full-time">Full-time</option>
                                         <option value="Part-time">Part-time</option>
                                         <option value="Contract">Contract</option>
-                                        <option value="Internship">Internship</option>
+                                        <option value="Internship">Internship / Magang</option>
                                         <option value="Freelance">Freelance</option>
+                                    </select>
+                                </div>
+
+                                <!-- Experience Level -->
+                                <div>
+                                    <label for="edit_experience_level" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                        Tingkat Pengalaman
+                                    </label>
+                                    <select name="experience_level" id="edit_experience_level" x-model="editData.experience_level" class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                        <option value="Magang">Magang / Siswa</option>
+                                        <option value="Fresh Graduate">Fresh Graduate (0-1 Tahun)</option>
+                                        <option value="Profesional">Profesional (Berpengalaman)</option>
                                     </select>
                                 </div>
 

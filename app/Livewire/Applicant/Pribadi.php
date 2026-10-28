@@ -26,6 +26,10 @@ class Pribadi extends Component
 
     public $ktp_address;
 
+    public $ktp_city;
+
+    public $ktp_province;
+
     public $is_same_address = false;
 
     public $address;
@@ -88,6 +92,8 @@ class Pribadi extends Component
         $this->birth_date = $profile->birth_date ? \Carbon\Carbon::parse($profile->birth_date)->format('Y-m-d') : null;
         $this->phone = $profile->phone;
         $this->ktp_address = $profile->ktp_address;
+        $this->ktp_city = $profile->ktp_city ?? $profile->city;
+        $this->ktp_province = $profile->ktp_province ?? $profile->province;
         $this->address = $profile->address;
         $this->city = $profile->city;
         $this->province = $profile->province;
@@ -110,8 +116,15 @@ class Pribadi extends Component
         $this->blood_type = $profile->blood_type;
         $this->about_me = $profile->about_me;
 
-        if (!empty($this->ktp_address) && !empty($this->address) && trim($this->ktp_address) === trim($this->address)) {
+        if (empty($profile->address) && empty($profile->city)) {
             $this->is_same_address = true;
+            $this->address = $this->ktp_address;
+            $this->city = $this->ktp_city;
+            $this->province = $this->ktp_province;
+        } elseif (!empty($this->ktp_address) && !empty($this->address) && trim($this->ktp_address) === trim($this->address) && trim($this->ktp_city ?? '') === trim($this->city ?? '')) {
+            $this->is_same_address = true;
+        } else {
+            $this->is_same_address = false;
         }
 
         $photoUrl = $profile->photo_url;
@@ -127,8 +140,10 @@ class Pribadi extends Component
 
     public function updatedIsSameAddress($value)
     {
-        if ($value && !empty($this->ktp_address)) {
+        if ($value) {
             $this->address = $this->ktp_address;
+            $this->city = $this->ktp_city;
+            $this->province = $this->ktp_province;
         }
     }
 
@@ -136,6 +151,20 @@ class Pribadi extends Component
     {
         if ($this->is_same_address) {
             $this->address = $value;
+        }
+    }
+
+    public function updatedKtpCity($value)
+    {
+        if ($this->is_same_address) {
+            $this->city = $value;
+        }
+    }
+
+    public function updatedKtpProvince($value)
+    {
+        if ($this->is_same_address) {
+            $this->province = $value;
         }
     }
 
@@ -165,6 +194,8 @@ class Pribadi extends Component
             'birth_date' => 'nullable|date',
             'phone' => 'nullable|string|max:20',
             'ktp_address' => 'nullable|string|max:500',
+            'ktp_city' => 'nullable|string|max:100',
+            'ktp_province' => 'nullable|string|max:100',
             'address' => 'nullable|string|max:500',
             'city' => 'nullable|string|max:100',
             'province' => 'nullable|string|max:100',
@@ -329,6 +360,15 @@ class Pribadi extends Component
             $this->work_distance_km = null;
         } else {
             $validatedData['work_distance_km'] = (float) $this->work_distance_km;
+        }
+
+        if ($this->is_same_address) {
+            $validatedData['address'] = $this->ktp_address;
+            $validatedData['city'] = $this->ktp_city;
+            $validatedData['province'] = $this->ktp_province;
+            $this->address = $this->ktp_address;
+            $this->city = $this->ktp_city;
+            $this->province = $this->ktp_province;
         }
 
         $profile->update($validatedData);

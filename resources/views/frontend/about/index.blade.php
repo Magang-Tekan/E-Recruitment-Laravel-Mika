@@ -1,6 +1,6 @@
 @extends('frontend.layouts.app')
 
-@section('title', __('Tentang Kami') . ' | Mika Career')
+@section('title', __('Tentang Kami') . ' - Mika Career')
 
 @section('content')
     <div class="relative overflow-hidden">
@@ -131,9 +131,9 @@
 
                         <!-- Action Buttons & Quick Nav -->
                         <div class="reveal-on-scroll pt-2 flex flex-wrap items-center gap-3.5" data-delay="250">
-                            <a href="{{ route('jobs.index') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#93F514] hover:bg-[#a6ff2e] text-black font-extrabold text-xs sm:text-sm tracking-wide shadow-md shadow-black/30 hover:scale-[1.02] transition-all duration-200">
+                            <a href="{{ route('jobs.index') }}" class="about-hero-btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-black dark:bg-[#93F514] text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-[#a6ff2e] font-extrabold text-xs sm:text-sm tracking-wide shadow-md shadow-black/25 hover:scale-[1.02] transition-all duration-200">
                                 <span>{{ __('Lihat Lowongan Karir') }}</span>
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg class="w-4 h-4 text-white dark:text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                 </svg>
                             </a>
@@ -276,9 +276,9 @@
 
                         <!-- Action Button inside Card -->
                         <div class="pt-4 border-t border-[#93F514]/20">
-                            <a href="{{ route('jobs.index') }}" class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#93F514] hover:bg-[#a6ff2e] text-black font-extrabold text-xs sm:text-sm tracking-wide shadow-md shadow-black/30 hover:scale-[1.02] transition-all duration-200">
+                            <a href="{{ route('jobs.index') }}" class="about-card-btn-primary w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-black dark:bg-[#93F514] text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-[#a6ff2e] font-extrabold text-xs sm:text-sm tracking-wide shadow-md shadow-black/25 hover:scale-[1.02] transition-all duration-200">
                                 <span>{{ __('Bergabung Bersama Kami') }}</span>
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg class="w-4 h-4 text-white dark:text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                 </svg>
                             </a>
@@ -766,31 +766,48 @@
         </section>
 
 
-        <!-- ==================== RECRUITMENT CTA BANNER ==================== -->
-        <section class="relative py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <div class="reveal-on-scroll relative rounded-3xl bg-gradient-to-r from-[#041a04] via-[#062906] to-[#031203] border border-[#93F514]/40 p-8 sm:p-14 overflow-hidden shadow-2xl shadow-black/80 text-center">
+        <!-- ==================== RECRUITMENT CTA BANNER (MATCHES HOME: WHITE IN LIGHT MODE, LIME IN DARK MODE) ==================== -->
+        <section class="reveal-on-scroll reveal-scale py-14 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="cta-banner relative rounded-3xl bg-white dark:bg-[#93F514] border border-gray-200 dark:border-black/10 p-8 sm:p-12 text-center flex flex-col items-center justify-center shadow-lg shadow-black/5 dark:shadow-xl dark:shadow-black/20 transition-colors duration-300">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black uppercase text-gray-900 dark:text-black tracking-tight leading-tight max-w-3xl">
+                    {{ __('Ingin Menjadi Bagian dari') }} {{ __('Keluarga Besar MIKA?') }}
+                </h2>
+                <p class="mt-2.5 text-xs sm:text-sm text-gray-600 dark:text-black/85 font-medium max-w-xl leading-relaxed">
+                    {{ __('Kami senantiasa mencari talenta berintegritas tinggi, profesional, dan bersemangat untuk tumbuh bersama. Temukan posisi yang selaras dengan aspirasi Anda.') }}
+                </p>
 
-                <div class="relative z-10 max-w-2xl mx-auto">
-                    {{-- <span class="inline-block px-3 py-1 rounded-full bg-[#93F514]/10 border border-[#93F514]/30 text-[#93F514] text-xs font-bold uppercase tracking-wider mb-4">
-                        Peluang Karir Terbuka
-                    </span> --}}
-                    <h2 class="text-2xl sm:text-4xl font-extrabold text-[#EEEEEE] leading-tight">
-                        {{ __('Ingin Menjadi Bagian dari') }} <span class="text-[#93F514]">{{ __('Keluarga Besar MIKA?') }}</span>
-                    </h2>
-                    <p class="mt-4 text-xs sm:text-base text-gray-300 leading-relaxed">
-                        {{ __('Kami senantiasa mencari talenta berintegritas tinggi, profesional, dan bersemangat untuk tumbuh bersama. Temukan posisi yang selaras dengan aspirasi Anda.') }}
-                    </p>
-
-                    <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <a href="{{ route('jobs.index') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-sm shadow-md shadow-black/40 hover:scale-105 transition-all duration-200">
-                            {{ __('Lihat Lowongan Kerja Aktif') }}
+                <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
+                    <a href="{{ route('jobs.index') }}"
+                        class="cta-btn-primary w-full sm:w-auto px-8 py-3 rounded-full bg-black dark:bg-black text-white dark:text-[#93F514] font-extrabold text-xs sm:text-sm shadow-md hover:bg-zinc-800 dark:hover:bg-[#151d15] transition-all duration-200 text-center">
+                        {{ __('Lihat Lowongan Kerja Aktif') }}
+                    </a>
+                    @guest
+                        <a href="{{ route('register') }}"
+                            class="cta-btn-secondary w-full sm:w-auto px-7 py-3 rounded-full border-2 border-black text-black hover:bg-black hover:text-white dark:hover:bg-black/10 dark:hover:text-black font-bold text-xs sm:text-sm transition-all duration-200 text-center">
+                            {{ __('Buat Akun Pelamar') }}
                         </a>
-                        @guest
-                            <a href="{{ route('register') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-black/50 hover:bg-black/70 text-[#EEEEEE] hover:text-[#93F514] border border-[#93F514]/40 font-bold text-sm transition-colors duration-200">
-                                {{ __('Buat Akun Pelamar') }}
-                            </a>
-                        @endguest
-                    </div>
+                    @else
+                        @php
+                            $isAdminOrRecruiter =
+                                auth()->user()->role_id == 1 ||
+                                auth()->user()->role_id == 2 ||
+                                in_array(strtolower(auth()->user()->role?->name ?? ''), [
+                                    'admin',
+                                    'superadmin',
+                                    'recruiter',
+                                ]);
+                            $dashRoute = $isAdminOrRecruiter
+                                ? (auth()->user()->role_id == 2 ||
+                                strtolower(auth()->user()->role?->name ?? '') === 'recruiter'
+                                    ? route('recruiter.dashboard')
+                                    : route('admin.dashboard'))
+                                : route('profile');
+                        @endphp
+                        <a href="{{ $dashRoute }}"
+                            class="cta-btn-secondary w-full sm:w-auto px-7 py-3 rounded-full border-2 border-black text-black hover:bg-black hover:text-white dark:hover:bg-black/10 dark:hover:text-black font-bold text-xs sm:text-sm transition-all duration-200 text-center">
+                            {{ $isAdminOrRecruiter ? __('Panel Dashboard') : __('Profil Pelamar') }}
+                        </a>
+                    @endguest
                 </div>
             </div>
         </section>

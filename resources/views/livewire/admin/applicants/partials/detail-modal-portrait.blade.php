@@ -287,7 +287,7 @@
                                 <span class="font-semibold text-gray-800 dark:text-slate-200" x-text="detailData.applicant_profile && detailData.applicant_profile.work_distance_km ? (detailData.applicant_profile.work_distance_km + ' km') : '-'"></span>
                             </div>
                             <div>
-                                <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Kota & Provinsi:</span>
+                                <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Kota Domisili:</span>
                                 <span class="font-semibold text-gray-800 dark:text-slate-200" x-text="detailData.applicant_profile ? ((detailData.applicant_profile.city || '') + (detailData.applicant_profile.province ? (', ' + detailData.applicant_profile.province) : '')) : '-'"></span>
                             </div>
                             <div>
@@ -297,11 +297,11 @@
                             <div class="sm:col-span-2 md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2.5 border-t border-gray-100 dark:border-slate-800">
                                 <div>
                                     <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Alamat Sesuai KTP:</span>
-                                    <span class="font-semibold text-gray-800 dark:text-slate-200 leading-relaxed" x-text="detailData.applicant_profile ? (detailData.applicant_profile.ktp_address || '-') : '-'"></span>
+                                    <span class="font-semibold text-gray-800 dark:text-slate-200 leading-relaxed" x-text="detailData.applicant_profile ? ((detailData.applicant_profile.ktp_address || '-') + (detailData.applicant_profile.ktp_city ? (', ' + detailData.applicant_profile.ktp_city) : '') + (detailData.applicant_profile.ktp_province ? (', ' + detailData.applicant_profile.ktp_province) : '')) : '-'"></span>
                                 </div>
                                 <div>
                                     <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Alamat Domisili Saat Ini:</span>
-                                    <span class="font-semibold text-gray-800 dark:text-slate-200 leading-relaxed" x-text="detailData.applicant_profile ? (detailData.applicant_profile.address || '-') : '-'"></span>
+                                    <span class="font-semibold text-gray-800 dark:text-slate-200 leading-relaxed" x-text="detailData.applicant_profile ? ((detailData.applicant_profile.address || '-') + (detailData.applicant_profile.city ? (', ' + detailData.applicant_profile.city) : '') + (detailData.applicant_profile.province ? (', ' + detailData.applicant_profile.province) : '')) : '-'"></span>
                                 </div>
                             </div>
                             <template x-if="getDrivingLicenses(detailData).length > 0">

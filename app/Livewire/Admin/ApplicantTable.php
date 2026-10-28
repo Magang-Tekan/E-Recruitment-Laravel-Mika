@@ -8,6 +8,8 @@ use Livewire\Attributes\Url;
 use App\Models\JobApplication;
 use App\Models\Company;
 use App\Models\Job;
+use App\Models\Degree;
+use App\Models\ApplicantProfile;
 use Illuminate\Support\Facades\DB;
 use App\Livewire\Traits\WithTableSkeleton;
 
@@ -22,6 +24,9 @@ class ApplicantTable extends Component
 
     public $jobFilter = '';
     public $companyFilter = '';
+    public $cityFilter = '';
+    public $degreeFilter = '';
+    public $universityFilter = '';
     public array $selectedStatuses = [];
     public array $selectedColumns = ['applicant', 'job', 'applied_at', 'status', 'actions'];
     public $perPage = 10;
@@ -55,6 +60,21 @@ class ApplicantTable extends Component
     public function updatingCompanyFilter()
     {
         $this->jobFilter = '';
+        $this->resetPage();
+    }
+
+    public function updatingCityFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingDegreeFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingUniversityFilter()
+    {
         $this->resetPage();
     }
 
@@ -102,9 +122,38 @@ class ApplicantTable extends Component
         $this->statusFilter = '';
         $this->jobFilter = '';
         $this->companyFilter = '';
+        $this->cityFilter = '';
+        $this->degreeFilter = '';
+        $this->universityFilter = '';
         $this->selectedStatuses = [];
         $this->sortField = 'id';
         $this->sortDirection = 'desc';
+        $this->resetPage();
+    }
+
+    public function resetProfileFilter()
+    {
+        $this->cityFilter = '';
+        $this->degreeFilter = '';
+        $this->universityFilter = '';
+        $this->resetPage();
+    }
+
+    public function clearDegreeFilter()
+    {
+        $this->degreeFilter = '';
+        $this->resetPage();
+    }
+
+    public function clearCityFilter()
+    {
+        $this->cityFilter = '';
+        $this->resetPage();
+    }
+
+    public function clearUniversityFilter()
+    {
+        $this->universityFilter = '';
         $this->resetPage();
     }
 
@@ -198,6 +247,11 @@ class ApplicantTable extends Component
                           ->orWhereRaw('LOWER(nik) LIKE ?', ['%' . $search . '%'])
                           ->orWhereHas('user', function ($uq) use ($search) {
                               $uq->whereRaw('LOWER(email) LIKE ?', ['%' . $search . '%']);
+                          })
+                          ->orWhereHas('educations', function ($eq) use ($search) {
+                              $eq->whereRaw('LOWER(school_name) LIKE ?', ['%' . $search . '%'])
+                                 ->orWhereRaw('LOWER(degree) LIKE ?', ['%' . $search . '%'])
+                                 ->orWhereRaw('LOWER(major) LIKE ?', ['%' . $search . '%']);
                           });
                   })
                   ->orWhereHas('job', function ($jq) use ($search) {
@@ -215,6 +269,37 @@ class ApplicantTable extends Component
         })
         ->when($this->jobFilter, function ($query) {
             $query->where('job_id', $this->jobFilter);
+        })
+        ->when($this->cityFilter, function ($query) {
+            $query->whereHas('applicantProfile', function ($apq) {
+                $apq->whereRaw('LOWER(city) LIKE ?', ['%' . strtolower(trim($this->cityFilter)) . '%']);
+            });
+        })
+        ->when($this->degreeFilter, function ($query) {
+            $val = trim($this->degreeFilter);
+            $query->whereHas('applicantProfile.educations', function ($eq) use ($val) {
+                $eq->where(function ($sub) use ($val) {
+                    if (is_numeric($val)) {
+                        $sub->where('degree_id', (int) $val);
+                    } else {
+                        $matchingDegreeIds = Degree::whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($val) . '%'])
+                            ->pluck('id')
+                            ->toArray();
+
+                        if (!empty($matchingDegreeIds)) {
+                            $sub->whereIn('degree_id', $matchingDegreeIds)
+                                ->orWhereRaw('LOWER(degree) LIKE ?', ['%' . strtolower($val) . '%']);
+                        } else {
+                            $sub->whereRaw('LOWER(degree) LIKE ?', ['%' . strtolower($val) . '%']);
+                        }
+                    }
+                });
+            });
+        })
+        ->when($this->universityFilter, function ($query) {
+            $query->whereHas('applicantProfile.educations', function ($eq) {
+                $eq->whereRaw('LOWER(school_name) LIKE ?', ['%' . strtolower(trim($this->universityFilter)) . '%']);
+            });
         })
         ->when(!empty($this->selectedStatuses), function ($query) {
             $query->whereIn(DB::raw('LOWER(status)'), array_map('strtolower', $this->selectedStatuses));
@@ -315,6 +400,16 @@ class ApplicantTable extends Component
             ? Job::where($jobScopeCallback)->count()
             : 0;
 
+        $degrees = Degree::orderBy('rank')->get();
+        $availableCities = ApplicantProfile::whereNotNull('city')
+            ->where('city', '!=', '')
+            ->pluck('city')
+            ->map(fn($c) => trim(ucwords(strtolower($c))))
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
         return view('livewire.admin.applicants.table', [
             'applications'          => $applications,
             'isRecruiter'           => $isRecruiterOnly,
@@ -324,14 +419,19 @@ class ApplicantTable extends Component
             'search'                => $this->search,
             'statusFilter'          => $this->statusFilter,
             'companyFilter'         => $this->companyFilter,
-            'jobFilter'        => $this->jobFilter,
-            'companies'        => $companies,
-            'jobs'             => $jobs,
-            'stats'            => $stats,
-            'selectedStatuses' => $this->selectedStatuses,
-            'selectedColumns'  => $this->selectedColumns,
-            'sortField'        => $this->sortField,
-            'sortDirection'    => $this->sortDirection,
+            'jobFilter'             => $this->jobFilter,
+            'cityFilter'            => $this->cityFilter,
+            'degreeFilter'          => $this->degreeFilter,
+            'universityFilter'      => $this->universityFilter,
+            'degrees'               => $degrees,
+            'availableCities'       => $availableCities,
+            'companies'             => $companies,
+            'jobs'                  => $jobs,
+            'stats'                 => $stats,
+            'selectedStatuses'      => $this->selectedStatuses,
+            'selectedColumns'       => $this->selectedColumns,
+            'sortField'             => $this->sortField,
+            'sortDirection'         => $this->sortDirection,
         ]);
     }
 }

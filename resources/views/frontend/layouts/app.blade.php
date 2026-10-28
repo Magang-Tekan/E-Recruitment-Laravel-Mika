@@ -182,6 +182,16 @@
             transform: none;
         }
 
+        /* Drop from Top (Jatuh dari atas dengan spring settling) */
+        .reveal-drop-from-top {
+            transform: translateY(-80px) !important;
+        }
+        .reveal-drop-from-top.is-revealed {
+            transform: translateY(0) !important;
+            transition: opacity 0.75s cubic-bezier(0.34, 1.35, 0.64, 1),
+                        transform 0.75s cubic-bezier(0.34, 1.35, 0.64, 1) !important;
+        }
+
         /* Stagger Delays for Cards & Grids */
         .reveal-on-scroll[data-delay="50"], [data-delay="50"] { transition-delay: 50ms; }
         .reveal-on-scroll[data-delay="100"], [data-delay="100"] { transition-delay: 100ms; }
@@ -193,6 +203,96 @@
         .reveal-on-scroll[data-delay="400"], [data-delay="400"] { transition-delay: 400ms; }
         .reveal-on-scroll[data-delay="500"], [data-delay="500"] { transition-delay: 500ms; }
 
+        /* ============================================================
+           3D FLIP CARD SYSTEM (Career Tracks Deck) - High-Performance Smooth
+        ============================================================ */
+        .flip-card-wrapper {
+            perspective: 1400px;
+            -webkit-perspective: 1400px;
+            transform: translateZ(0);
+            isolation: isolate;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
+            transform-origin: center center;
+            will-change: transform;
+            transition: transform 0.72s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        .flip-card-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .flip-card-wrapper:hover .flip-card-inner {
+                transform: rotateY(180deg);
+            }
+        }
+
+        .flip-card-front,
+        .flip-card-back {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 22px;
+            backface-visibility: hidden !important;
+            -webkit-backface-visibility: hidden !important;
+            -webkit-font-smoothing: subpixel-antialiased;
+            overflow: hidden;
+        }
+
+        .flip-card-front {
+            transform: rotateY(0deg) translateZ(1px);
+        }
+
+        .flip-card-back {
+            transform: rotateY(180deg) translateZ(1px);
+        }
+
+        /* Infinite Marquee Running Gallery */
+        @keyframes galleryMarquee {
+            0% {
+                transform: translate3d(0, 0, 0);
+            }
+            100% {
+                transform: translate3d(-50%, 0, 0);
+            }
+        }
+
+        .gallery-marquee-track {
+            display: flex;
+            width: max-content;
+            animation: galleryMarquee 85s linear infinite;
+            will-change: transform;
+        }
+
+        .gallery-marquee-track-reverse {
+            display: flex;
+            width: max-content;
+            animation: galleryMarquee 90s linear infinite reverse;
+            will-change: transform;
+        }
+
+        .gallery-marquee-track:hover,
+        .gallery-marquee-track-reverse:hover {
+            animation-play-state: paused;
+        }
+
+        @media (max-width: 640px) {
+            .gallery-marquee-track {
+                animation-duration: 65s;
+            }
+            .gallery-marquee-track-reverse {
+                animation-duration: 70s;
+            }
+        }
+
         /* Accessibility: respect users who prefer reduced motion */
         @media (prefers-reduced-motion: reduce) {
             .reveal-on-scroll {
@@ -200,7 +300,9 @@
                 transform: none !important;
                 transition: none !important;
             }
-            .animate-page-fade {
+            .animate-page-fade,
+            .gallery-marquee-track,
+            .gallery-marquee-track-reverse {
                 animation: none !important;
             }
         }
@@ -595,13 +697,13 @@
             color: #000000 !important;
         }
 
-        /* "Cari Lowongan" & "Pantau Status" submit button: normal hitam pekat + teks putih & icon neon, hover warna neon #93F514 + teks & icon hitam */
+        /* "Cari Lowongan" & "Pantau Status" submit button: normal hitam pekat + teks putih & icon neon, hover warna hitam pekat bukan neon di light mode */
         html.light-mode .bg-\[\#051405\],
         html.light-mode a.bg-\[\#051405\],
         html.light-mode button.bg-\[\#051405\] {
             background-color: #051405 !important;
             color: #FFFFFF !important;
-            border-color: rgba(147, 245, 20, 0.45) !important;
+            border-color: rgba(0, 0, 0, 0.20) !important;
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.20) !important;
         }
 
@@ -621,40 +723,132 @@
         html.light-mode .bg-\[\#051405\]:hover,
         html.light-mode a.bg-\[\#051405\]:hover,
         html.light-mode button.bg-\[\#051405\]:hover {
-            background-color: #93F514 !important;
-            border-color: #93F514 !important;
-            color: #000000 !important;
-            box-shadow: 0 6px 22px rgba(147, 245, 20, 0.60) !important;
+            background-color: #1F2937 !important;
+            border-color: #1F2937 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.30) !important;
         }
 
         html.light-mode .bg-\[\#051405\]:hover span,
         html.light-mode a.bg-\[\#051405\]:hover span,
         html.light-mode button.bg-\[\#051405\]:hover span,
         html.light-mode .bg-\[\#051405\]:hover svg,
+        html.light-mode .bg-\[\#051405\].group:hover svg,
+        html.light-mode button.bg-\[\#051405\]:hover svg,
         html.light-mode .bg-\[\#051405\]:hover.text-\[\#EEEEEE\],
         html.light-mode .bg-\[\#051405\]:hover.text-white,
         html.light-mode .bg-\[\#051405\]:hover.text-gray-300 {
-            color: #000000 !important;
-            stroke: #000000;
+            color: #FFFFFF !important;
+            stroke: #FFFFFF !important;
         }
 
-        /* "Daftar" button (Navbar desktop & mobile): normal hitam pekat + teks putih, hover warna neon #93F514 + teks hitam (sama seperti Cari Lowongan) */
+        /* Flip Card Back (Career Paths Deck) in Light Mode: Deep Forest Green (#16441A) with White Fonts & Neon Accents */
+        html.light-mode .flip-card-back {
+            background: linear-gradient(155deg, #1C4D1F 0%, #103613 100%) !important;
+            color: #FFFFFF !important;
+            border-color: rgba(147, 245, 20, 0.40) !important;
+            box-shadow: 0 16px 36px -8px rgba(16, 54, 19, 0.35), 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        html.light-mode .flip-card-back h4 {
+            color: #FFFFFF !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.20);
+        }
+
+        html.light-mode .flip-card-back .card-back-badge {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            border-color: rgba(255, 255, 255, 0.30) !important;
+            color: #FFFFFF !important;
+        }
+
+        html.light-mode .flip-card-back .card-back-num {
+            background-color: rgba(255, 255, 255, 0.12) !important;
+            border-color: rgba(255, 255, 255, 0.22) !important;
+            color: #FFFFFF !important;
+        }
+
+        html.light-mode .flip-card-back ul li {
+            color: #F3F4F6 !important;
+        }
+
+        html.light-mode .flip-card-back ul li span.rounded-full {
+            background-color: rgba(147, 245, 20, 0.22) !important;
+            color: #93F514 !important;
+        }
+
+        html.light-mode .flip-card-back ul li span.rounded-full svg {
+            color: #93F514 !important;
+            stroke: #93F514 !important;
+        }
+
+        html.light-mode .flip-card-back .card-back-divider {
+            border-color: rgba(255, 255, 255, 0.18) !important;
+        }
+
+        /* Flip Card CTA Button (Career Paths Deck) in Light Mode: Putih Bersih dengan Lingkaran Ikon Hijau Tua */
+        html.light-mode .flip-card-cta,
+        html.light-mode a.flip-card-cta {
+            background-color: #FFFFFF !important;
+            color: #0E2F11 !important;
+            border: 1px solid rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.10) !important;
+        }
+
+        html.light-mode .flip-card-cta:hover,
+        html.light-mode a.flip-card-cta:hover {
+            background-color: #F2F8F0 !important;
+            border-color: #FFFFFF !important;
+            box-shadow: 0 8px 26px rgba(0, 0, 0, 0.28) !important;
+        }
+
+        html.light-mode .flip-card-cta span,
+        html.light-mode a.flip-card-cta span {
+            color: #0E2F11 !important;
+            font-weight: 700 !important;
+        }
+
+        html.light-mode .flip-card-cta:hover span,
+        html.light-mode a.flip-card-cta:hover span {
+            color: #051A07 !important;
+        }
+
+        html.light-mode .flip-card-cta .flip-card-cta-icon,
+        html.light-mode a.flip-card-cta .flip-card-cta-icon,
+        html.light-mode .flip-card-cta:hover .flip-card-cta-icon,
+        html.light-mode a.flip-card-cta:hover .flip-card-cta-icon,
+        html.light-mode .flip-card-cta span.rounded-full,
+        html.light-mode a.flip-card-cta span.rounded-full {
+            background-color: #103613 !important;
+            color: #FFFFFF !important;
+        }
+
+        html.light-mode .flip-card-cta svg,
+        html.light-mode a.flip-card-cta svg,
+        html.light-mode .flip-card-cta:hover svg,
+        html.light-mode a.flip-card-cta:hover svg {
+            color: #FFFFFF !important;
+            stroke: #FFFFFF !important;
+        }
+
+        /* "Daftar" button (Navbar desktop & mobile): normal hitam pekat + teks putih, hover warna hitam pekat di light mode */
         html.light-mode .bg-\[\#061806\],
         html.light-mode .bg-\[\#061806\].text-\[\#EEEEEE\],
-        html.light-mode header a[href*="register"] {
+        html.light-mode header a[href*="register"],
+        html.light-mode .nav-register-btn {
             background-color: #061806 !important;
             color: #FFFFFF !important;
-            border-color: rgba(147, 245, 20, 0.50) !important;
+            border-color: rgba(0, 0, 0, 0.25) !important;
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.20) !important;
         }
 
         html.light-mode .bg-\[\#061806\]:hover,
         html.light-mode .bg-\[\#061806\]:hover.text-\[\#EEEEEE\],
-        html.light-mode header a[href*="register"]:hover {
-            background-color: #93F514 !important;
-            border-color: #93F514 !important;
-            color: #000000 !important;
-            box-shadow: 0 6px 22px rgba(147, 245, 20, 0.60) !important;
+        html.light-mode header a[href*="register"]:hover,
+        html.light-mode .nav-register-btn:hover {
+            background-color: #1F2937 !important;
+            border-color: #1F2937 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
         }
 
         /* =====================================================
@@ -720,8 +914,52 @@
 
         /* =====================================================
            COMPANY MITRA CARDS (Temukan Lowongan Berdasarkan Perusahaan)
-           Warna Putih Bersih (#FFFFFF)
+           High-Performance Butter-Smooth 3D 180° Flip on Hover
         ===================================================== */
+        .company-flip-wrap {
+            perspective: 1400px;
+            -webkit-perspective: 1400px;
+            transform: translateZ(0);
+            isolation: isolate;
+        }
+
+        .company-flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
+            transform-origin: center center;
+            will-change: transform;
+            transition: transform 0.72s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        .company-flip-wrap:hover .company-flip-inner,
+        .company-flip-wrap.is-flipped .company-flip-inner {
+            transform: rotateY(180deg);
+        }
+
+        .company-card-face {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden !important;
+            backface-visibility: hidden !important;
+            -webkit-font-smoothing: subpixel-antialiased;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .company-face-front {
+            transform: rotateY(0deg) translateZ(1px);
+        }
+
+        .company-face-back {
+            transform: rotateY(180deg) translateZ(1px);
+        }
+
+        html.light-mode .company-face-front,
         html.light-mode .bg-gradient-to-b.from-\[\#061506\].to-\[\#030a03\] {
             background: #FFFFFF !important;
             background-image: none !important;
@@ -729,10 +967,87 @@
             box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03) !important;
         }
 
+        html.light-mode .company-face-front:hover,
         html.light-mode .bg-gradient-to-b.from-\[\#061506\].to-\[\#030a03\]:hover {
             background: #FFFFFF !important;
             border-color: rgba(45, 107, 0, 0.50) !important;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.09), 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+        }
+
+        /* =====================================================
+           Company Card Back (Sisi Belakang) in Light Mode
+           Warna Background disamakan dengan Card Pilihan Jalur Karir:
+           Deep Forest Green (linear-gradient(155deg, #1C4D1F 0%, #103613 100%))
+           dengan font putih, counter lowongan neon lime, dan tombol pill rapi
+        ===================================================== */
+        html.light-mode .company-face-back {
+            background: linear-gradient(155deg, #1C4D1F 0%, #103613 100%) !important;
+            color: #FFFFFF !important;
+            border-color: rgba(147, 245, 20, 0.40) !important;
+            box-shadow: 0 16px 36px -8px rgba(16, 54, 19, 0.35), 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        html.light-mode .company-face-back h3 {
+            color: #FFFFFF !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.20);
+        }
+
+        html.light-mode .company-face-back p {
+            color: #E5E7EB !important;
+        }
+
+        html.light-mode .company-face-back span {
+            color: #FFFFFF !important;
+        }
+
+        html.light-mode .company-face-back .company-back-jobcount {
+            color: #93F514 !important;
+        }
+
+        /* Tombol 1: "Kunjungi website" in Light Mode (Pill Putih Bersih seperti CTA Jalur Karir) */
+        html.light-mode .company-face-back a.bg-black {
+            background-color: #FFFFFF !important;
+            color: #0E2F11 !important;
+            border: 1px solid rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+        }
+
+        html.light-mode .company-face-back a.bg-black:hover {
+            background-color: #F2F8F0 !important;
+            color: #051A07 !important;
+        }
+
+        html.light-mode .company-face-back a.bg-black span {
+            color: #0E2F11 !important;
+            font-weight: 700 !important;
+        }
+
+        html.light-mode .company-face-back a.bg-black svg {
+            color: #0E2F11 !important;
+            stroke: #0E2F11 !important;
+        }
+
+        /* Tombol 2: "Lihat lowongan" in Light Mode (Outlined Transparan Elegan) */
+        html.light-mode .company-face-back a.border-black {
+            border-color: rgba(255, 255, 255, 0.70) !important;
+            color: #FFFFFF !important;
+            background-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        html.light-mode .company-face-back a.border-black:hover {
+            background-color: rgba(255, 255, 255, 0.18) !important;
+            border-color: #FFFFFF !important;
+            color: #FFFFFF !important;
+        }
+
+        html.light-mode .company-face-back a.border-black span {
+            color: #FFFFFF !important;
+            font-weight: 700 !important;
+        }
+
+        html.light-mode .company-face-back a.border-black svg {
+            color: #FFFFFF !important;
+            stroke: #FFFFFF !important;
         }
 
         /* Active Company Card */
@@ -745,6 +1060,10 @@
 
         /* Logo box inside Company Card */
         html.light-mode .bg-gradient-to-b.from-\[\#061506\].to-\[\#030a03\] .w-14.h-14,
+        html.light-mode .bg-gradient-to-b.from-\[\#061506\].to-\[\#030a03\] .w-12.h-12,
+        html.light-mode .bg-gradient-to-b.from-\[\#061506\].to-\[\#030a03\] .w-10.h-10,
+        html.light-mode .company-face-front .w-12.h-12,
+        html.light-mode .company-face-front .w-10.h-10,
         html.light-mode .bg-gradient-to-b.from-\[\#0a2e0a\].to-\[\#041404\] .w-14.h-14 {
             background-color: #F8FAFC !important;
             border-color: rgba(0, 0, 0, 0.08) !important;
@@ -855,6 +1174,39 @@
 
         html.light-mode footer .text-\[\#93F514\] {
             color: #93F514 !important;
+        }
+
+        /* Career Track Cards: biarkan teks tetap cerah karena background card gelap */
+        html.light-mode .career-card-dark .card-pill-magang {
+            background-color: rgba(255, 255, 255, 0.12) !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+            color: #FFFFFF !important;
+        }
+
+        html.light-mode .career-card-dark .card-num-magang {
+            color: rgba(255, 255, 255, 0.75) !important;
+        }
+
+        html.light-mode .career-card-dark .card-desc-magang {
+            color: #D1D5DB !important;
+        }
+
+        html.light-mode .career-card-dark .card-pill-talent {
+            background-color: rgba(147, 245, 20, 0.15) !important;
+            border-color: rgba(147, 245, 20, 0.45) !important;
+            color: #93F514 !important;
+        }
+
+        html.light-mode .career-card-dark .card-num-talent {
+            color: #93F514 !important;
+        }
+
+        html.light-mode .career-card-dark .card-title-talent {
+            color: #93F514 !important;
+        }
+
+        html.light-mode .career-card-dark .card-desc-talent {
+            color: #D1D5DB !important;
         }
 
         /* Gradient text heading (from-[#93F514]) → gelapkan untuk header biasa */
@@ -1243,40 +1595,101 @@
 
         /* =====================================================
            CTA BANNER ("Siap Memulai Karir Baru Bersama Kami?")
-           Warna Putih Bersih (#FFFFFF)
+           Light Mode: Putih Bersih (#FFFFFF)
+           Dark Mode: Solid Lime Green (#93F514)
         ===================================================== */
-        html.light-mode .bg-gradient-to-r.from-\[\#041a04\].via-\[\#062906\].to-\[\#031203\] {
-            background: #FFFFFF !important;
-            background-image: none !important;
-            border-color: rgba(45, 107, 0, 0.20) !important;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.03) !important;
+        html.light-mode .cta-banner {
+            background-color: #FFFFFF !important;
+            border-color: rgba(0, 0, 0, 0.08) !important;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08) !important;
         }
 
-        /* CTA banner heading & text */
-        html.light-mode .bg-gradient-to-r.from-\[\#041a04\] h2.text-\[\#EEEEEE\],
-        html.light-mode .bg-gradient-to-r.from-\[\#041a04\] .text-\[\#EEEEEE\] {
-            color: #111827 !important;
+        html.light-mode .cta-banner h2 {
+            color: #0F172A !important;
         }
 
-        html.light-mode .bg-gradient-to-r.from-\[\#041a04\] p.text-gray-300,
-        html.light-mode .bg-gradient-to-r.from-\[\#041a04\] .text-gray-300 {
-            color: #4B5563 !important;
+        html.light-mode .cta-banner p {
+            color: #475569 !important;
         }
 
-        /* CTA "Daftar Akun Sekarang" button: normal hitam pekat + teks putih, hover warna neon #93F514 + teks hitam */
-        html.light-mode .bg-gradient-to-r.from-\[\#041a04\] a.bg-gradient-to-r.from-\[\#93F514\] {
-            background: #061806 !important;
-            background-image: none !important;
+        /* CTA Banner Buttons in Light Mode */
+        html.light-mode .cta-banner .cta-btn-primary {
+            background-color: #000000 !important;
             color: #FFFFFF !important;
-            border: 1px solid rgba(147, 245, 20, 0.50) !important;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.20) !important;
+            border: 1px solid #000000 !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+            font-weight: 800 !important;
         }
 
-        html.light-mode .bg-gradient-to-r.from-\[\#041a04\] a.bg-gradient-to-r.from-\[\#93F514\]:hover {
-            background: #93F514 !important;
-            border-color: #93F514 !important;
+        html.light-mode .cta-banner .cta-btn-primary:hover {
+            background-color: #1F2937 !important;
+            color: #FFFFFF !important;
+            border-color: #1F2937 !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+        }
+
+        html.light-mode .cta-banner .cta-btn-secondary {
+            background-color: transparent !important;
             color: #000000 !important;
-            box-shadow: 0 6px 22px rgba(147, 245, 20, 0.60) !important;
+            border: 2px solid #000000 !important;
+            font-weight: 700 !important;
+        }
+
+        html.light-mode .cta-banner .cta-btn-secondary:hover {
+            background-color: #000000 !important;
+            color: #FFFFFF !important;
+        }
+
+        /* About Us Action Buttons in Light Mode: Hitam Pekat dengan Teks & Icon Putih */
+        html.light-mode .about-hero-btn-primary,
+        html.light-mode .about-card-btn-primary {
+            background-color: #000000 !important;
+            color: #FFFFFF !important;
+            border: 1px solid #000000 !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+        }
+
+        html.light-mode .about-hero-btn-primary:hover,
+        html.light-mode .about-card-btn-primary:hover {
+            background-color: #1F2937 !important;
+            color: #FFFFFF !important;
+            border-color: #1F2937 !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+        }
+
+        html.light-mode .about-hero-btn-primary span,
+        html.light-mode .about-card-btn-primary span {
+            color: #FFFFFF !important;
+        }
+
+        html.light-mode .about-hero-btn-primary svg,
+        html.light-mode .about-card-btn-primary svg {
+            color: #FFFFFF !important;
+            stroke: #FFFFFF !important;
+        }
+
+        /* CTA Banner Buttons in Dark Mode (Solid Lime Green Banner) */
+        html.dark .cta-banner .cta-btn-primary {
+            background-color: #000000 !important;
+            color: #93F514 !important;
+            border: 1px solid #000000 !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+        }
+
+        html.dark .cta-banner .cta-btn-primary:hover {
+            background-color: #151d15 !important;
+            color: #93F514 !important;
+        }
+
+        html.dark .cta-banner .cta-btn-secondary {
+            background-color: transparent !important;
+            color: #000000 !important;
+            border: 2px solid #000000 !important;
+        }
+
+        html.dark .cta-banner .cta-btn-secondary:hover {
+            background-color: rgba(0, 0, 0, 0.12) !important;
+            color: #000000 !important;
         }
 
         /* Alur Pendaftaran "Daftar Akun Sekarang" button */
@@ -1323,8 +1736,8 @@
         html.light-mode .job-card-item:hover,
         html.light-mode .bg-gradient-to-r.from-\[\#061506\].via-\[\#051205\].to-\[\#030803\]:hover,
         html.light-mode .bg-gradient-to-b.from-\[\#061506\].to-\[\#030803\]:hover {
-            border-color: rgba(45, 107, 0, 0.45) !important;
-            box-shadow: 0 12px 30px -4px rgba(45, 107, 0, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.04) !important;
+            border-color: rgba(45, 107, 0, 0.35) !important;
+            box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.07), 0 4px 8px -2px rgba(0, 0, 0, 0.03) !important;
         }
 
         /* Card Text & Headings in Light Mode */
@@ -1389,19 +1802,52 @@
             border-color: rgba(0, 0, 0, 0.08) !important;
         }
 
-        /* Card Action Button in Light Mode */
+        /* Card Action Button ("Detail & Lamar") in Light Mode: Hijau Tua (#2D6B00) Tanpa Efek Glow / Cahaya */
+        html.light-mode .job-detail-btn,
+        html.light-mode a.job-detail-btn,
+        html.light-mode .job-card-item a.job-detail-btn,
+        html.light-mode .company-job-item a.job-detail-btn,
         html.light-mode .job-card-item a.bg-\[\#93F514\] {
-            background-color: #93F514 !important;
-            color: #000000 !important;
-            box-shadow: 0 3px 12px rgba(147, 245, 20, 0.35) !important;
+            background-color: #2D6B00 !important;
+            color: #FFFFFF !important;
+            border-color: #2D6B00 !important;
+            box-shadow: none !important;
+            filter: none !important;
+            text-shadow: none !important;
         }
 
+        html.light-mode .job-detail-btn span,
+        html.light-mode a.job-detail-btn span,
+        html.light-mode .job-card-item a.job-detail-btn span,
+        html.light-mode .company-job-item a.job-detail-btn span,
+        html.light-mode .job-card-item a.bg-\[\#93F514\] span {
+            color: #FFFFFF !important;
+            text-shadow: none !important;
+        }
+
+        html.light-mode .job-detail-btn svg,
+        html.light-mode a.job-detail-btn svg,
+        html.light-mode .job-card-item a.job-detail-btn svg,
+        html.light-mode .company-job-item a.job-detail-btn svg,
+        html.light-mode .job-card-item a.bg-\[\#93F514\] svg {
+            color: #FFFFFF !important;
+            stroke: #FFFFFF !important;
+            filter: none !important;
+        }
+
+        html.light-mode .job-detail-btn:hover,
+        html.light-mode a.job-detail-btn:hover,
+        html.light-mode .job-card-item a.job-detail-btn:hover,
+        html.light-mode .company-job-item a.job-detail-btn:hover,
         html.light-mode .job-card-item a.bg-\[\#93F514\]:hover {
-            background-color: #82e408 !important;
-            box-shadow: 0 4px 16px rgba(147, 245, 20, 0.50) !important;
+            background-color: #235400 !important;
+            border-color: #235400 !important;
+            color: #FFFFFF !important;
+            box-shadow: none !important;
+            filter: none !important;
         }
 
-        /* View Mode Switcher Pill in Light Mode */
+        /* View Mode Switcher Pill ("Tipe Susunan") in Light Mode: Aktif Hitam dengan Ikon Putih */
         html.light-mode .view-mode-toggle-pill {
             background-color: #FFFFFF !important;
             border-color: rgba(0, 0, 0, 0.12) !important;
@@ -1409,16 +1855,22 @@
         }
 
         html.light-mode .view-mode-toggle-pill button.text-gray-400 {
-            color: #9CA3AF !important;
+            color: #6B7280 !important;
         }
 
         html.light-mode .view-mode-toggle-pill button.text-gray-400:hover {
-            color: #2D6B00 !important;
+            color: #111827 !important;
         }
 
         html.light-mode .view-mode-toggle-pill button.bg-\[\#93F514\] {
-            background-color: #93F514 !important;
-            color: #000000 !important;
+            background-color: #000000 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+        }
+
+        html.light-mode .view-mode-toggle-pill button.bg-\[\#93F514\] svg {
+            color: #FFFFFF !important;
+            fill: #FFFFFF !important;
         }
 
         /* Section Heading in Light Mode */
@@ -1898,7 +2350,7 @@
 
         html.light-mode .company-job-item:hover {
             border-color: #2D6B00 !important;
-            box-shadow: 0 8px 24px rgba(45, 107, 0, 0.12) !important;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06) !important;
         }
 
         html.light-mode .company-job-item h3 a {

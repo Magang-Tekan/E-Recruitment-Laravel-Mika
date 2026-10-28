@@ -1,6 +1,6 @@
 @extends('frontend.layouts.app')
 
-@section('title', $job->localized_title . ' - ' . ($job->company?->name ?? __('Perusahaan')) . ' | Mika Career')
+@section('title', $job->localized_title . ' - ' . ($job->company?->name ?? __('Perusahaan')) . ' - Mika Career')
 
 @section('meta')
     @php
@@ -465,23 +465,62 @@
                 </div>
 
                     <!-- Info Highlights Grid -->
-                    <div class="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-[#93F514]/15">
+                    @php
+                        $hasSalary = ($job->salary_min && $job->salary_min > 0) || ($job->salary_max && $job->salary_max > 0);
+
+                        $formatShortSalary = function ($val) {
+                            if (!$val || $val <= 0) return '';
+                            if ($val >= 1000000) {
+                                $num = $val / 1000000;
+                                $formatted = ($num == (int) $num) ? (string) (int) $num : str_replace('.', ',', (string) round($num, 1));
+                                return $formatted . ' Jt';
+                            } elseif ($val >= 1000) {
+                                $num = $val / 1000;
+                                $formatted = ($num == (int) $num) ? (string) (int) $num : str_replace('.', ',', (string) round($num, 1));
+                                return $formatted . ' Rb';
+                            }
+                            return number_format($val, 0, ',', '.');
+                        };
+
+                        $shortSalaryText = '';
+                        $fullSalaryText = '';
+                        if ($hasSalary) {
+                            if ($job->salary_min && $job->salary_max) {
+                                $fullSalaryText = 'Rp ' . number_format($job->salary_min, 0, ',', '.') . ' – ' . number_format($job->salary_max, 0, ',', '.');
+                                if ($job->salary_min >= 1000000 && $job->salary_max >= 1000000) {
+                                    $minNum = ($job->salary_min / 1000000 == (int)($job->salary_min / 1000000))
+                                        ? (int)($job->salary_min / 1000000)
+                                        : str_replace('.', ',', (string)round($job->salary_min / 1000000, 1));
+                                    $maxNum = ($job->salary_max / 1000000 == (int)($job->salary_max / 1000000))
+                                        ? (int)($job->salary_max / 1000000)
+                                        : str_replace('.', ',', (string)round($job->salary_max / 1000000, 1));
+                                    $shortSalaryText = "Rp {$minNum} – {$maxNum} Jt";
+                                } else {
+                                    $shortSalaryText = 'Rp ' . $formatShortSalary($job->salary_min) . ' – ' . $formatShortSalary($job->salary_max);
+                                }
+                            } elseif ($job->salary_min) {
+                                $fullSalaryText = __('Mulai Rp') . ' ' . number_format($job->salary_min, 0, ',', '.');
+                                $shortSalaryText = __('Mulai Rp') . ' ' . $formatShortSalary($job->salary_min);
+                            } elseif ($job->salary_max) {
+                                $fullSalaryText = __('Hingga Rp') . ' ' . number_format($job->salary_max, 0, ',', '.');
+                                $shortSalaryText = __('Hingga Rp') . ' ' . $formatShortSalary($job->salary_max);
+                            }
+                        }
+                    @endphp
+                    <div class="mt-8 grid grid-cols-2 {{ $hasSalary ? 'sm:grid-cols-4' : 'sm:grid-cols-3' }} gap-4 pt-6 border-t border-[#93F514]/15">
                         <div class="p-3 rounded-xl bg-[#050c05] border border-[#93F514]/20">
                             <span class="text-[11px] text-gray-400 block">{{ __('Lokasi') }}</span>
                             <span
-                                class="text-xs sm:text-sm font-bold text-[#EEEEEE] mt-0.5 block">{{ __($job->location ?? 'Indonesia') }}</span>
+                                class="text-xs sm:text-sm font-bold text-[#EEEEEE] mt-0.5 block truncate" title="{{ __($job->location ?? 'Indonesia') }}">{{ __($job->location ?? 'Indonesia') }}</span>
                         </div>
-                        <div class="p-3 rounded-xl bg-[#050c05] border border-[#93F514]/20">
-                            <span class="text-[11px] text-gray-400 block">{{ __('Estimasi Gaji') }}</span>
-                            <span class="text-xs sm:text-sm font-bold text-[#93F514] mt-0.5 block">
-                                @if ($job->salary_min || $job->salary_max)
-                                    Rp {{ number_format($job->salary_min / 1000000, 1) }} -
-                                    {{ number_format($job->salary_max / 1000000, 1) }} {{ __('Juta') }}
-                                @else
-                                    {{ __('Kompetitif') }}
-                                @endif
-                            </span>
-                        </div>
+                        @if ($hasSalary)
+                            <div class="p-3 rounded-xl bg-[#050c05] border border-[#93F514]/20" title="{{ $fullSalaryText }}">
+                                <span class="text-[11px] text-gray-400 block">{{ __('Estimasi Gaji') }}</span>
+                                <span class="text-xs sm:text-sm font-bold text-[#93F514] mt-0.5 block whitespace-nowrap">
+                                    {{ $shortSalaryText }}
+                                </span>
+                            </div>
+                        @endif
                         <div class="p-3 rounded-xl bg-[#050c05] border border-[#93F514]/20">
                             <span class="text-[11px] text-gray-400 block">{{ __('Kuota Lowongan') }}</span>
                             <span class="text-xs sm:text-sm font-bold text-[#EEEEEE] mt-0.5 block">{{ $job->quota }}
@@ -492,7 +531,7 @@
                                 <span class="text-[10px] text-emerald-400 block mt-0.5">{{ __('Sisa :count slot', ['count' => $job->remaining_quota]) }}</span>
                             @endif
                         </div>
-                        <div class="p-3 rounded-xl bg-[#050c05] border {{ $job->is_expired || $job->status === 'Closed' ? 'border-rose-500/30' : ($job->days_remaining !== null && $job->days_remaining <= 3 ? 'border-amber-500/40' : 'border-[#93F514]/20') }}">
+                        <div class="p-3 rounded-xl bg-[#050c05] border {{ $job->is_expired || $job->status === 'Closed' ? 'border-rose-500/30' : ($job->days_remaining !== null && $job->days_remaining <= 3 ? 'border-amber-500/40' : 'border-[#93F514]/20') }} {{ !$hasSalary ? 'col-span-2 sm:col-span-1' : '' }}">
                             <span class="text-[11px] text-gray-400 block">{{ __('Batas Lamaran') }}</span>
                             <span class="text-xs sm:text-sm font-bold {{ $job->is_expired || $job->status === 'Closed' ? 'text-rose-400' : 'text-[#EEEEEE]' }} mt-0.5 block">
                                 {{ $job->deadline ? \Carbon\Carbon::parse($job->deadline)->translatedFormat('d M Y') : __('Hingga Terpenuhi') }}

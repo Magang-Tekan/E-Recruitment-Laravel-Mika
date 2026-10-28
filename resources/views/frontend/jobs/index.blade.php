@@ -1,6 +1,6 @@
 @extends('frontend.layouts.app')
 
-@section('title', __('Lowongan') . ' | Mika Career')
+@section('title', __('Lowongan') . ' - Mika Career')
 
 @section('content')
     <div class="relative py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -463,7 +463,8 @@
                     @if (request('search') ||
                             !empty($selectedCompanyIds) ||
                             !empty($selectedDepartmentIds) ||
-                            !empty($selectedEmploymentTypes))
+                            !empty($selectedEmploymentTypes) ||
+                            !empty($selectedExperienceLevels))
                         <a href="{{ route('jobs.index') }}" title="{{ __('Reset Filter') }}"
                             class="p-2.5 rounded-xl lg:rounded-full bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-500 transition flex items-center justify-center border border-gray-200">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -516,7 +517,8 @@
                         !empty($selectedCompanyIds) ||
                             request('search') ||
                             !empty($selectedDepartmentIds) ||
-                            !empty($selectedEmploymentTypes))
+                            !empty($selectedEmploymentTypes) ||
+                            !empty($selectedExperienceLevels))
                         <a href="{{ route('jobs.index') }}"
                             class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#93F514] hover:text-[#52fa4d] transition shrink-0 px-3 py-1.5 rounded-xl bg-[#93F514]/10 border border-[#93F514]/30 hover:bg-[#93F514]/20">
                             <span>{{ __('Reset Filter') }}</span>
@@ -631,10 +633,17 @@ $showPositionBadge =
                                         </div>
                                     </div>
                                 </div>
-                                <span
-                                    class="px-2.5 py-1 rounded-full text-xs font-bold bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] shrink-0 self-start whitespace-nowrap shadow-sm">
-                                    {{ __($job->employment_type) }}
-                                </span>
+                                <div class="flex items-center gap-1.5 flex-wrap justify-end shrink-0 self-start">
+                                    @if ($job->experience_level)
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#EEEEEE]/10 border border-white/20 text-gray-200 shadow-sm whitespace-nowrap">
+                                            {{ __($job->experience_level) }}
+                                        </span>
+                                    @endif
+                                    <span
+                                        class="px-2.5 py-1 rounded-full text-xs font-bold bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] whitespace-nowrap shadow-sm">
+                                        {{ __($job->employment_type) }}
+                                    </span>
+                                </div>
                             </div>
 
                             <!-- Job Title (Consistent 1 line with clean hover state) -->
@@ -651,8 +660,8 @@ $showPositionBadge =
                                 {{ $cleanDesc }}
                             </p>
 
-                            <!-- Details / Metadata Section (Always exactly 3 rows for uniform vertical alignment) -->
-                            <div class="mt-5 space-y-2.5 pt-4 border-t border-[#93F514]/15">
+                            <!-- Details / Metadata Section -->
+                            <div class="mt-auto space-y-2.5 pt-4 border-t border-[#93F514]/15">
                                 <!-- Location Row -->
                                 <div class="flex items-center gap-2.5 text-xs text-gray-300">
                                     <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24"
@@ -665,32 +674,30 @@ $showPositionBadge =
                                     <span class="truncate">{{ __($job->location ?? 'Indonesia') }}</span>
                                 </div>
 
-                                <!-- Salary Row (Always rendered so heights never jump) -->
-                                <div class="flex items-center gap-2.5 text-xs">
-                                    <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24"
-                                        stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    @if ($job->salary_min && $job->salary_max)
-                                        <span class="text-[#93F514] font-semibold truncate">
-                                            Rp {{ number_format($job->salary_min, 0, ',', '.') }} –
-                                            {{ number_format($job->salary_max, 0, ',', '.') }}
-                                        </span>
-                                    @elseif ($job->salary_min)
-                                        <span class="text-[#93F514] font-semibold truncate">
-                                            {{ __('Mulai Rp') }} {{ number_format($job->salary_min, 0, ',', '.') }}
-                                        </span>
-                                    @elseif ($job->salary_max)
-                                        <span class="text-[#93F514] font-semibold truncate">
-                                            {{ __('Hingga Rp') }} {{ number_format($job->salary_max, 0, ',', '.') }}
-                                        </span>
-                                    @else
-                                        <span class="text-gray-400 font-normal">
-                                            {{ __('Gaji Dirahasiakan / Kompetitif') }}
-                                        </span>
-                                    @endif
-                                </div>
+                                <!-- Salary Row (Only rendered if salary is specified) -->
+                                @if (($job->salary_min && $job->salary_min > 0) || ($job->salary_max && $job->salary_max > 0))
+                                    <div class="flex items-center gap-2.5 text-xs">
+                                        <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        @if ($job->salary_min && $job->salary_max)
+                                            <span class="text-[#93F514] font-semibold truncate">
+                                                Rp {{ number_format($job->salary_min, 0, ',', '.') }} –
+                                                {{ number_format($job->salary_max, 0, ',', '.') }}
+                                            </span>
+                                        @elseif ($job->salary_min)
+                                            <span class="text-[#93F514] font-semibold truncate">
+                                                {{ __('Mulai Rp') }} {{ number_format($job->salary_min, 0, ',', '.') }}
+                                            </span>
+                                        @elseif ($job->salary_max)
+                                            <span class="text-[#93F514] font-semibold truncate">
+                                                {{ __('Hingga Rp') }} {{ number_format($job->salary_max, 0, ',', '.') }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @endif
 
                                 <!-- Deadline Row (Always rendered so heights never jump) -->
                                 <div class="flex items-center gap-2.5 text-xs">
@@ -732,7 +739,7 @@ $showPositionBadge =
                                         class="text-[#EEEEEE] font-bold">{{ $job->quota ?? 1 }}</strong>@if ($job->is_quota_full) <span class="text-[10px] text-amber-400 font-semibold">({{ __('Terpenuhi') }})</span>@endif</span>
                             </div>
                             <a href="{{ route('jobs.show', $job->id) }}"
-                                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#93F514] hover:bg-[#a6ff2e] text-black font-extrabold text-xs shadow-md shadow-black/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
+                                class="job-detail-btn inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#93F514] hover:bg-[#a6ff2e] text-black font-extrabold text-xs shadow-md shadow-black/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
                                 <span>{{ __('Detail & Lamar') }}</span>
                                 <svg class="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5"
                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -816,6 +823,11 @@ $showPositionBadgeList =
                                             <span>{{ __('Posisi:') }} {{ __($job->position->name) }}</span>
                                         </span>
                                     @endif
+                                    @if ($job->experience_level)
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#EEEEEE]/10 border border-white/20 text-gray-200">
+                                            {{ __($job->experience_level) }}
+                                        </span>
+                                    @endif
                                     <span
                                         class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514]">
                                         {{ __($job->employment_type) }}
@@ -843,26 +855,26 @@ $showPositionBadgeList =
                                         <span>{{ __($job->location ?? 'Indonesia') }}</span>
                                     </div>
 
-                                    <div class="flex items-center gap-1.5">
-                                        <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        @if ($job->salary_min && $job->salary_max)
-                                            <span class="text-[#93F514] font-semibold">Rp
-                                                {{ number_format($job->salary_min, 0, ',', '.') }} –
-                                                {{ number_format($job->salary_max, 0, ',', '.') }}</span>
-                                        @elseif ($job->salary_min)
-                                            <span class="text-[#93F514] font-semibold">{{ __('Mulai Rp') }}
-                                                {{ number_format($job->salary_min, 0, ',', '.') }}</span>
-                                        @elseif ($job->salary_max)
-                                            <span class="text-[#93F514] font-semibold">{{ __('Hingga Rp') }}
-                                                {{ number_format($job->salary_max, 0, ',', '.') }}</span>
-                                        @else
-                                            <span class="text-gray-400 font-normal">{{ __('Gaji Dirahasiakan / Kompetitif') }}</span>
-                                        @endif
-                                    </div>
+                                    @if (($job->salary_min && $job->salary_min > 0) || ($job->salary_max && $job->salary_max > 0))
+                                        <div class="flex items-center gap-1.5">
+                                            <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            @if ($job->salary_min && $job->salary_max)
+                                                <span class="text-[#93F514] font-semibold">Rp
+                                                    {{ number_format($job->salary_min, 0, ',', '.') }} –
+                                                    {{ number_format($job->salary_max, 0, ',', '.') }}</span>
+                                            @elseif ($job->salary_min)
+                                                <span class="text-[#93F514] font-semibold">{{ __('Mulai Rp') }}
+                                                    {{ number_format($job->salary_min, 0, ',', '.') }}</span>
+                                            @elseif ($job->salary_max)
+                                                <span class="text-[#93F514] font-semibold">{{ __('Hingga Rp') }}
+                                                    {{ number_format($job->salary_max, 0, ',', '.') }}</span>
+                                            @endif
+                                        </div>
+                                    @endif
 
                                     <div class="flex items-center gap-1.5 text-xs">
                                         <svg class="w-4 h-4 {{ $job->days_remaining === 0 ? 'text-rose-400' : ($job->days_remaining !== null && $job->days_remaining <= 3 ? 'text-amber-400' : 'text-[#93F514]') }} shrink-0"
@@ -904,7 +916,7 @@ $showPositionBadgeList =
                         <div
                             class="w-full md:w-auto flex md:flex-col items-center md:items-end justify-between md:justify-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-[#93F514]/15">
                             <a href="{{ route('jobs.show', $job->id) }}"
-                                class="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#93F514] hover:bg-[#a6ff2e] text-black font-extrabold text-xs sm:text-sm shadow-md shadow-black/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-center">
+                                class="job-detail-btn w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#93F514] hover:bg-[#a6ff2e] text-black font-extrabold text-xs sm:text-sm shadow-md shadow-black/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-center">
                                 <span>{{ __('Detail & Lamar') }}</span>
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"

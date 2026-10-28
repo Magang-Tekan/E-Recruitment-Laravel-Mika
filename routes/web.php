@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AboutController;
+use App\Http\Controllers\CareerTrackController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyShowcaseController;
 use App\Http\Controllers\CvController;
@@ -201,6 +202,12 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':admin'])
             Route::post('showcases', [CompanyShowcaseController::class, 'store'])->name('showcase.store');
             Route::put('showcases/{id}', [CompanyShowcaseController::class, 'update'])->name('showcase.update');
             Route::delete('showcases/{id}', [CompanyShowcaseController::class, 'destroy'])->name('showcase.destroy');
+
+            // Data Master Jalur Karir (Career Tracks)
+            Route::view('career-tracks', 'livewire.admin.career-tracks.index')->name('career-track');
+            Route::post('career-tracks', [CareerTrackController::class, 'store'])->name('career-track.store');
+            Route::put('career-tracks/{id}', [CareerTrackController::class, 'update'])->name('career-track.update');
+            Route::delete('career-tracks/{id}', [CareerTrackController::class, 'destroy'])->name('career-track.destroy');
 
             // Data Master Department
             Route::view('departments', 'livewire.admin.department.index')->name('department');

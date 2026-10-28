@@ -47,6 +47,11 @@ class FrontendJobController extends Controller
             $selectedEmploymentTypes = $getArrayParam('employment_types');
         }
 
+        $selectedExperienceLevels = $getArrayParam('experience_level');
+        if (empty($selectedExperienceLevels)) {
+            $selectedExperienceLevels = $getArrayParam('experience_levels');
+        }
+
         $jobsQuery = Job::active()->with(['company', 'department', 'position', 'degrees', 'majors']);
 
         if ($search) {
@@ -55,6 +60,7 @@ class FrontendJobController extends Controller
                 $q->whereRaw('LOWER(title) LIKE ?', ["%{$searchLower}%"])
                   ->orWhereRaw('LOWER(location) LIKE ?', ["%{$searchLower}%"])
                   ->orWhereRaw('LOWER(employment_type) LIKE ?', ["%{$searchLower}%"])
+                  ->orWhereRaw('LOWER(experience_level) LIKE ?', ["%{$searchLower}%"])
                   ->orWhereHas('company', function ($cq) use ($searchLower) {
                       $cq->whereRaw('LOWER(name) LIKE ?', ["%{$searchLower}%"]);
                   })
@@ -99,6 +105,27 @@ class FrontendJobController extends Controller
             });
         }
 
+        if (!empty($selectedExperienceLevels)) {
+            $jobsQuery->where(function ($q) use ($selectedExperienceLevels) {
+                foreach ($selectedExperienceLevels as $lvl) {
+                    $q->orWhere(function ($subQ) use ($lvl) {
+                        $lvlLower = strtolower($lvl);
+                        if (in_array($lvlLower, ['magang', 'internship', 'intern'])) {
+                            $subQ->whereIn('experience_level', ['Magang', 'Internship'])
+                                 ->orWhere('employment_type', 'Internship')
+                                 ->orWhere('employment_type', 'Magang');
+                        } elseif (in_array($lvlLower, ['fresh graduate', 'fresh-graduate', 'fresh_graduate', 'fg'])) {
+                            $subQ->whereIn('experience_level', ['Fresh Graduate', 'Fresh-graduate']);
+                        } elseif (in_array($lvlLower, ['profesional', 'professional', 'senior', 'mid-level', 'berpengalaman'])) {
+                            $subQ->whereIn('experience_level', ['Profesional', 'Professional', 'Senior', 'Mid-Level', 'Berpengalaman']);
+                        } else {
+                            $subQ->where('experience_level', $lvl);
+                        }
+                    });
+                }
+            });
+        }
+
         $jobs = $jobsQuery->latest('id')->paginate(6)->withQueryString();
         $departments = Cache::remember('home_departments_with_jobs', 3600, function () {
             return Department::withCount(['jobs' => fn($q) => $q->active()])->get();
@@ -107,10 +134,10 @@ class FrontendJobController extends Controller
             return Company::withCount(['jobs' => fn($q) => $q->active()])->get();
         });
         $employmentTypes = [
-            'Magang' => 'Magang / Internship',
             'Full Time' => 'Full Time',
             'Part Time' => 'Part Time',
             'Contract' => 'Kontrak / Contract',
+            'Internship' => 'Magang / Internship',
             'Freelance' => 'Freelance',
             'Remote' => 'Remote'
         ];
@@ -130,6 +157,7 @@ class FrontendJobController extends Controller
             'selectedCompanyIds',
             'selectedDepartmentIds',
             'selectedEmploymentTypes',
+            'selectedExperienceLevels',
             'departmentId',
             'companyId',
             'employmentType'

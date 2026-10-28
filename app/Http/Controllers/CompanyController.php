@@ -66,6 +66,9 @@ class CompanyController extends Controller
             'name' => 'required|string|max:255',
             'tagline' => 'nullable|string|max:255',
             'logo' => 'required|image|mimes:jpeg,png,jpg,webp|max:4096',
+            'card_img1' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
+            'card_img2' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
+            'card_img3' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
             'website' => 'nullable|url|max:255',
             'about' => 'nullable|string',
             'vision' => 'nullable|string',
@@ -80,6 +83,9 @@ class CompanyController extends Controller
         ]);
 
         $path = $this->uploadLogo($request->file('logo'));
+        $cardImg1 = $request->hasFile('card_img1') ? $request->file('card_img1')->store('company-cards', 'public') : null;
+        $cardImg2 = $request->hasFile('card_img2') ? $request->file('card_img2')->store('company-cards', 'public') : null;
+        $cardImg3 = $request->hasFile('card_img3') ? $request->file('card_img3')->store('company-cards', 'public') : null;
 
         // Handle missions array / JSON
         $missions = $this->parseArrayInput($request->input('missions'));
@@ -91,6 +97,9 @@ class CompanyController extends Controller
             'name' => $request->name,
             'tagline' => $request->tagline,
             'logo' => $path,
+            'card_img1' => $cardImg1,
+            'card_img2' => $cardImg2,
+            'card_img3' => $cardImg3,
             'website' => $request->website,
             'social_media' => $socialMedia,
             'about' => $request->about,
@@ -127,6 +136,9 @@ class CompanyController extends Controller
             'name' => 'sometimes|required|string|max:255',
             'tagline' => 'sometimes|nullable|string|max:255',
             'logo' => 'sometimes|image|mimes:jpeg,png,jpg,webp|max:4096',
+            'card_img1' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
+            'card_img2' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
+            'card_img3' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
             'website' => 'sometimes|nullable|url|max:255',
             'about' => 'sometimes|nullable|string',
             'vision' => 'sometimes|nullable|string',
@@ -150,6 +162,21 @@ class CompanyController extends Controller
             $path = $data->logo;
         }
 
+        // Handle card images
+        foreach (['card_img1', 'card_img2', 'card_img3'] as $field) {
+            if ($request->hasFile($field)) {
+                if ($data->$field && !str_starts_with($data->$field, 'http') && Storage::disk('public')->exists($data->$field)) {
+                    Storage::disk('public')->delete($data->$field);
+                }
+                $data->$field = $request->file($field)->store('company-cards', 'public');
+            } elseif ($request->boolean('delete_' . $field)) {
+                if ($data->$field && !str_starts_with($data->$field, 'http') && Storage::disk('public')->exists($data->$field)) {
+                    Storage::disk('public')->delete($data->$field);
+                }
+                $data->$field = null;
+            }
+        }
+
         // Parse missions & core values if sent
         $missions = $request->has('missions') ? $this->parseArrayInput($request->input('missions')) : $data->missions;
         $coreValues = $request->has('core_values') ? $this->parseArrayInput($request->input('core_values')) : $data->core_values;
@@ -160,6 +187,9 @@ class CompanyController extends Controller
             'name' => $request->input('name', $data->name),
             'tagline' => $request->input('tagline', $data->tagline),
             'logo' => $path,
+            'card_img1' => $data->card_img1,
+            'card_img2' => $data->card_img2,
+            'card_img3' => $data->card_img3,
             'website' => $request->input('website', $data->website),
             'social_media' => $socialMedia,
             'about' => $request->input('about', $data->about),
@@ -174,6 +204,10 @@ class CompanyController extends Controller
             'email' => $request->input('email', $data->email),
             'registration_passkey' => $request->has('registration_passkey') ? ($request->filled('registration_passkey') ? trim($request->input('registration_passkey')) : null) : $data->registration_passkey,
         ]);
+
+        \Illuminate\Support\Facades\Cache::forget('home_companies_with_jobs');
+        \Illuminate\Support\Facades\Cache::forget('frontend_main_company');
+        \Illuminate\Support\Facades\Cache::forget('master_companies_all');
 
         return response()->json(['message' => 'Company berhasil diperbarui', 'data' => $data]);
     }

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Job;
+use App\Models\CareerTrack;
 use App\Models\Company;
 use App\Models\CompanyShowcase;
 use App\Models\Department;
+use App\Models\Job;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -62,9 +63,14 @@ class HomeController extends Controller
         });
 
         $companies = Cache::remember('home_companies_with_jobs', 3600, function () {
-            return Company::withCount(['jobs' => function ($q) {
+            return Company::with(['showcases' => function ($q) {
+                $q->where('is_active', true);
+            }])->withCount(['jobs' => function ($q) {
                 $q->active();
-            }])->get();
+            }])->get()->sortBy(function ($comp) {
+                $name = strtolower($comp->name);
+                return (str_contains($name, 'mitra karya analitika') || str_contains($name, 'mika')) ? 0 : 1;
+            })->values();
         });
 
         $locale = app()->getLocale();
@@ -84,6 +90,36 @@ class HomeController extends Controller
             })->values()->toArray();
         });
 
+        $careerTracks = Cache::remember('frontend_career_tracks_' . $locale, 3600, function () {
+            return CareerTrack::active()->get()->map(function ($track) {
+                return [
+                    'id' => $track->id,
+                    'num' => $track->num,
+                    'badge' => $track->localized_badge,
+                    'prefix' => $track->localized_prefix,
+                    'accent' => $track->localized_accent,
+                    'desc' => $track->localized_description,
+                    'is_dark' => (bool) $track->is_dark,
+                    'img' => $track->image_url ?: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&auto=format&fit=crop&q=80',
+                    'back_badge' => $track->localized_back_badge,
+                    'back_title' => $track->localized_back_title,
+                    'highlights' => $track->localized_highlights,
+                    'cta' => $track->localized_cta_text,
+                    'url' => $track->target_url,
+                    'experience_level' => $track->experience_level,
+                ];
+            })->values()->toArray();
+        });
+
+        $jobCountsByLevel = Cache::remember('home_job_counts_by_level', 3600, function () {
+            return Job::active()
+                ->selectRaw('experience_level, count(*) as total')
+                ->whereNotNull('experience_level')
+                ->groupBy('experience_level')
+                ->pluck('total', 'experience_level')
+                ->toArray();
+        });
+
         return view('frontend.home.index', compact(
             'featuredJobs',
             'totalJobsCount',
@@ -93,6 +129,8 @@ class HomeController extends Controller
             'departments',
             'companies',
             'showcases',
+            'careerTracks',
+            'jobCountsByLevel',
             'search',
             'location'
         ));

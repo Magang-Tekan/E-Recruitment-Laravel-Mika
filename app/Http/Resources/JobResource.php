@@ -78,7 +78,7 @@ class JobResource extends JsonResource
     /**
      * Format rentang gaji ke rupiah untuk kemudahan UI consumer.
      */
-    private function formatSalaryRange(): string
+    private function formatSalaryRange(): ?string
     {
         if ($this->salary_min && $this->salary_max) {
             return 'Rp ' . number_format($this->salary_min, 0, ',', '.') . ' - Rp ' . number_format($this->salary_max, 0, ',', '.');
@@ -88,6 +88,6 @@ class JobResource extends JsonResource
             return 'Hingga Rp ' . number_format($this->salary_max, 0, ',', '.');
         }
 
-        return 'Kompetitif';
+        return null;
     }
 }

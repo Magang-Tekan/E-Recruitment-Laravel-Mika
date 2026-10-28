@@ -140,9 +140,9 @@
                 <div><span class="text-slate-500 dark:text-[#93A5C9]">Jarak ke Perusahaan:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->work_distance_km ? ($profile->work_distance_km . ' km') : '-' }}</span></div>
                 <div><span class="text-slate-500 dark:text-[#93A5C9]">Kode Pos:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->postal_code ?? '-' }}</span></div>
                 @if($profile?->ktp_address)
-                    <div class="sm:col-span-2"><span class="text-slate-500 dark:text-[#93A5C9]">Alamat KTP:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile->ktp_address }}</span></div>
+                    <div class="sm:col-span-2"><span class="text-slate-500 dark:text-[#93A5C9]">Alamat KTP:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile->ktp_address }}{{ ($profile->ktp_city ?? $profile->city) ? ', ' . ($profile->ktp_city ?? $profile->city) : '' }}{{ ($profile->ktp_province ?? $profile->province) ? ', ' . ($profile->ktp_province ?? $profile->province) : '' }}</span></div>
                 @endif
-                <div class="sm:col-span-2"><span class="text-slate-500 dark:text-[#93A5C9]">Alamat Domisili:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->address ?? '-' }}</span></div>
+                <div class="sm:col-span-2"><span class="text-slate-500 dark:text-[#93A5C9]">Alamat Domisili:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->address ?? '-' }}{{ $profile?->city ? ', ' . $profile->city : '' }}{{ $profile?->province ? ', ' . $profile->province : '' }}</span></div>
                 @if(!empty($profile?->driving_licenses) && is_array($profile->driving_licenses))
                     @php
                         $licStrings = [];

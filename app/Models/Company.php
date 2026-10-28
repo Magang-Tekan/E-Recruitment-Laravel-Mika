@@ -14,6 +14,9 @@ class Company extends Model
         'name',
         'tagline',
         'logo',
+        'card_img1',
+        'card_img2',
+        'card_img3',
         'website',
         'social_media',
         'about',
@@ -77,6 +80,97 @@ class Company extends Model
     public function jobs()
     {
         return $this->hasMany(Job::class);
+    }
+
+    public function showcases()
+    {
+        return $this->hasMany(CompanyShowcase::class);
+    }
+
+    public function resolveImageUrl(?string $path): ?string
+    {
+        if (empty($path)) {
+            return null;
+        }
+
+        if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://', '//'])) {
+            return $path;
+        }
+
+        $cleanPath = ltrim($path, '/');
+        if (\Illuminate\Support\Str::startsWith($cleanPath, 'storage/')) {
+            $cleanPath = substr($cleanPath, 8);
+        }
+
+        $base = request()->getBasePath();
+        $prefix = $base ? rtrim($base, '/') : '';
+
+        return $prefix . '/storage/' . $cleanPath;
+    }
+
+    public function getCardImg1UrlAttribute(): ?string
+    {
+        return $this->resolveImageUrl($this->card_img1);
+    }
+
+    public function getCardImg2UrlAttribute(): ?string
+    {
+        return $this->resolveImageUrl($this->card_img2);
+    }
+
+    public function getCardImg3UrlAttribute(): ?string
+    {
+        return $this->resolveImageUrl($this->card_img3);
+    }
+
+    /**
+     * Get 1 to 3 preview images for the company card on homepage
+     */
+    public function getCardImagesAttribute(): array
+    {
+        // 1. Direct card photos uploaded in Company Profile (Highest Priority)
+        $direct = array_values(array_filter([
+            $this->card_img1_url,
+            $this->card_img2_url,
+            $this->card_img3_url,
+        ]));
+
+        if (!empty($direct)) {
+            return $direct;
+        }
+
+        // 2. Fallback to CompanyShowcase photos
+        $images = [];
+        $showcaseItems = $this->relationLoaded('showcases')
+            ? $this->showcases->where('is_active', true)
+            : $this->showcases()->where('is_active', true)->get();
+
+        foreach ($showcaseItems as $sc) {
+            if (!empty($sc->img1_url)) $images[] = $sc->img1_url;
+            if (!empty($sc->img2_url)) $images[] = $sc->img2_url;
+            if (!empty($sc->img3_url)) $images[] = $sc->img3_url;
+            if (count($images) >= 3) break;
+        }
+
+        if (!empty($images)) {
+            return array_slice($images, 0, 3);
+        }
+
+        // 3. Fallback to default company culture images
+        $pool = [
+            asset('storage/asset-compro/aniv1.jpg'),
+            asset('storage/asset-compro/aspadin1.jpg'),
+            asset('storage/asset-compro/outbond.jpg'),
+            asset('storage/asset-compro/hisfarin1.jpg'),
+            asset('storage/asset-compro/aspadin2.jpg'),
+            asset('storage/asset-compro/aniv.jpg'),
+        ];
+        $offset = (($this->id ?? 1) * 2) % count($pool);
+        for ($i = 0; $i < 3; $i++) {
+            $images[] = $pool[($offset + $i) % count($pool)];
+        }
+
+        return array_slice($images, 0, 3);
     }
 
     /**

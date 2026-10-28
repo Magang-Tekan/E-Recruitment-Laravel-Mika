@@ -388,6 +388,127 @@
 
             <!-- Action Buttons (Checklist Status & Atur Kolom) -->
             <div class="flex flex-wrap items-center gap-2 pt-1 lg:pt-0">
+                <!-- Dropdown Filter Profil (Asal Kota, Pendidikan, Kampus) -->
+                <div x-data="{ open: false }" class="relative flex-1 sm:flex-initial">
+                    @php
+                        $profileFilterCount = ($cityFilter ? 1 : 0) + ($degreeFilter ? 1 : 0) + ($universityFilter ? 1 : 0);
+                    @endphp
+                    <button @click="open = !open" 
+                            type="button" 
+                            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-800 border {{ $profileFilterCount > 0 ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50/50 dark:bg-indigo-950/30 ring-1 ring-indigo-500/20' : 'border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200' }} hover:bg-gray-50 dark:hover:bg-slate-700/80 transition focus:outline-none cursor-pointer shadow-2xs">
+                        <svg class="w-4 h-4 {{ $profileFilterCount > 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500' }} shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                        </svg>
+                        <span class="whitespace-nowrap">Filter Profil</span>
+                        @if($profileFilterCount > 0)
+                            <span class="text-xs font-black text-emerald-600 dark:text-[#93F514] shrink-0">
+                                {{ $profileFilterCount }}
+                            </span>
+                        @endif
+                        <svg class="w-3.5 h-3.5 text-gray-400 ml-0.5 shrink-0 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <div x-show="open" 
+                         @click.outside="open = false" 
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         x-cloak
+                         class="absolute left-0 sm:left-auto sm:right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-2.5rem)] rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-xl z-50 p-4 space-y-3.5">
+                        
+                        <div class="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-slate-800">
+                            <div>
+                                <span class="text-xs font-bold text-gray-900 dark:text-white block">Filter Profil Pelamar</span>
+                                <span class="text-[10px] text-gray-400 dark:text-slate-500 block">Kota, Pendidikan & Kampus</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                @if($profileFilterCount > 0)
+                                    <button type="button" 
+                                            wire:click="resetProfileFilter" 
+                                            class="text-[10px] text-rose-600 dark:text-rose-400 font-semibold hover:underline cursor-pointer">
+                                        Reset Profil
+                                    </button>
+                                @endif
+                                <button type="button" @click="open = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 cursor-pointer p-0.5 rounded-lg transition" title="Tutup">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 1. Jenjang Pendidikan -->
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-gray-700 dark:text-slate-300">
+                                Jenjang Pendidikan
+                            </label>
+                            <div class="relative">
+                                <select wire:model.live="degreeFilter" class="w-full pl-3 pr-8 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
+                                    <option value="">Semua Jenjang Pendidikan</option>
+                                    @foreach($degrees as $deg)
+                                        <option value="{{ $deg->name }}">{{ $deg->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Asal Kota / Domisili -->
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-gray-700 dark:text-slate-300">
+                                Asal Kota / Domisili
+                            </label>
+                            <div class="relative">
+                                <select wire:model.live="cityFilter" class="w-full pl-8 pr-8 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
+                                    <option value="">Semua Asal Kota</option>
+                                    @foreach($availableCities as $c)
+                                        <option value="{{ $c }}">{{ $c }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Universitas / Sekolah -->
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-gray-700 dark:text-slate-300">
+                                Universitas / Sekolah
+                            </label>
+                            <div class="relative">
+                                <input type="text" 
+                                       wire:model.live.debounce.350ms="universityFilter" 
+                                       placeholder="Ketik nama kampus / sekolah..." 
+                                       class="w-full pl-8 pr-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Multi-Checklist Status Filter Dropdown -->
                 <div x-data="{ open: false }" class="relative flex-1 sm:flex-initial">
                     <button @click="open = !open" 
@@ -398,7 +519,7 @@
                         </svg>
                         <span class="whitespace-nowrap">Checklist Status</span>
                         @if(!empty($selectedStatuses))
-                            <span class="px-1.5 py-0.5 text-[10px] font-bold bg-indigo-600 text-white rounded-full shrink-0">
+                            <span class="text-xs font-black text-emerald-600 dark:text-[#93F514] shrink-0">
                                 {{ count($selectedStatuses) }}
                             </span>
                         @endif
@@ -453,12 +574,12 @@
                 <div x-data="{ open: false }" class="relative flex-1 sm:flex-initial hidden sm:block">
                     <button @click="open = !open" 
                             type="button" 
-                            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 py-2 text-xs rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition focus:outline-none font-semibold cursor-pointer">
+                            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-2.5 text-xs rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition focus:outline-none font-semibold cursor-pointer">
                         <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
                         </svg>
                         <span class="whitespace-nowrap">Atur Kolom</span>
-                        <span class="px-1.5 py-0.5 text-[10px] font-bold bg-indigo-600 text-white rounded-full shrink-0">
+                        <span class="text-xs font-black text-emerald-600 dark:text-[#93F514] shrink-0">
                             {{ count($selectedColumns) }}
                         </span>
                         <svg class="w-3.5 h-3.5 text-indigo-400 ml-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -507,20 +628,45 @@
                     </div>
                 </div>
 
-                @if(!empty($selectedStatuses) || $statusFilter || $companyFilter || $jobFilter || $search || $sortField !== 'id')
+                @if(!empty($selectedStatuses) || $statusFilter || $companyFilter || $jobFilter || $cityFilter || $degreeFilter || $universityFilter || $search || $sortField !== 'id')
                     <button wire:click="resetAllFilters" class="w-full sm:w-auto px-3 py-2 text-xs rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition font-medium cursor-pointer text-center justify-center">
                         Reset Filter
                     </button>
                 @endif
             </div>
         </div>
+
+        <!-- Active Filter Badges/Chips (Pendidikan, Univ, Kota) -->
+        @if($cityFilter || $degreeFilter || $universityFilter)
+            <div class="flex flex-wrap items-center gap-1.5 pt-2 border-t border-gray-100 dark:border-slate-800/80">
+                <span class="text-[11px] text-gray-400 dark:text-slate-500 font-medium">Filter Profil Aktif:</span>
+                @if($degreeFilter)
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/60 shadow-2xs">
+                        <span>Pendidikan: {{ $degreeFilter }}</span>
+                        <button type="button" wire:click="clearDegreeFilter" class="hover:text-indigo-900 dark:hover:text-white ml-0.5 cursor-pointer text-xs">&times;</button>
+                    </span>
+                @endif
+                @if($universityFilter)
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/60 shadow-2xs">
+                        <span>Univ: {{ $universityFilter }}</span>
+                        <button type="button" wire:click="clearUniversityFilter" class="hover:text-indigo-900 dark:hover:text-white ml-0.5 cursor-pointer text-xs">&times;</button>
+                    </span>
+                @endif
+                @if($cityFilter)
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/60 shadow-2xs">
+                        <span>Kota: {{ $cityFilter }}</span>
+                        <button type="button" wire:click="clearCityFilter" class="hover:text-indigo-900 dark:hover:text-white ml-0.5 cursor-pointer text-xs">&times;</button>
+                    </span>
+                @endif
+            </div>
+        @endif
     </div>
 
     <!-- Data Table Section -->
     <div class="relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
         
         <!-- Livewire Loading Overlay -->
-        <div wire:loading wire:target="search, statusFilter, sortField, sortDirection, sortBy, selectedStatuses, selectedColumns, previousPage, nextPage, gotoPage" class="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-10 transition">
+        <div wire:loading wire:target="search, statusFilter, companyFilter, jobFilter, cityFilter, degreeFilter, universityFilter, resetProfileFilter, clearDegreeFilter, clearCityFilter, clearUniversityFilter, resetAllFilters, sortField, sortDirection, sortBy, selectedStatuses, selectedColumns, previousPage, nextPage, gotoPage" class="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-10 transition">
             <div class="flex items-center gap-2.5 px-4 py-2.5 bg-slate-900/90 dark:bg-slate-800/90 text-white rounded-xl shadow-xl text-xs font-semibold">
                 <svg class="animate-spin w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -629,6 +775,9 @@
                                 @endif
                                 @if($app->applicantProfile && $app->applicantProfile->nik)
                                     <span class="text-gray-400 dark:text-slate-500">• NIK: {{ $app->applicantProfile->nik }}</span>
+                                @endif
+                                @if($app->applicantProfile && $app->applicantProfile->city)
+                                    <span class="text-emerald-600 dark:text-emerald-400 font-medium">• {{ $app->applicantProfile->formatted_location }}</span>
                                 @endif
                             </div>
                             <span class="text-[10.5px] text-gray-400 dark:text-slate-500 font-medium">
@@ -854,6 +1003,25 @@
                                             <span class="text-[11px] text-gray-500 dark:text-slate-400 block mt-0.5">{{ $app->applicantProfile->user->email ?? '-' }}</span>
                                             @if($app->applicantProfile && $app->applicantProfile->phone)
                                                 <span class="text-[10.5px] text-gray-400 dark:text-slate-500 block">{{ $app->applicantProfile->phone }}</span>
+                                            @endif
+                                            @if($app->applicantProfile && $app->applicantProfile->city)
+                                                <div class="mt-1 space-y-0.5 text-[10.5px]">
+                                                    <div class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium whitespace-nowrap"
+                                                         title="Domisili: {{ $app->applicantProfile->city }}{{ $app->applicantProfile->ktp_city ? ' | KTP: ' . $app->applicantProfile->ktp_city : '' }}">
+                                                        <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        </svg>
+                                                        <span>{{ $app->applicantProfile->display_city }}</span>
+                                                    </div>
+                                                    @if($app->applicantProfile->display_ktp_city && strcasecmp($app->applicantProfile->display_city, $app->applicantProfile->display_ktp_city) !== 0)
+                                                        <div class="flex items-center gap-1 pl-3.5 text-[9.5px] text-gray-400 dark:text-slate-400 font-normal whitespace-nowrap"
+                                                             title="KTP: {{ $app->applicantProfile->ktp_city }}">
+                                                            <span class="text-gray-400 dark:text-slate-500 font-mono text-[10px] leading-none">↳</span>
+                                                            <span>KTP: {{ $app->applicantProfile->display_ktp_city }}</span>
+                                                        </div>
+                                                    @endif
+                                                </div>
                                             @endif
                                         </div>
                                     </div>

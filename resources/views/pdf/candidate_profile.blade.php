@@ -385,14 +385,14 @@
             <td class="info-label">Alamat Sesuai KTP</td>
             <td class="info-sep">:</td>
             <td class="info-value" colspan="4">
-                {{ $profile->ktp_address ?? '-' }}{{ $profile->city ? ', ' . $profile->city : '' }}{{ $profile->province ? ', ' . $profile->province : '' }}
+                {{ $profile->ktp_address ?? '-' }}{{ ($profile->ktp_city ?? $profile->city) ? ', ' . ($profile->ktp_city ?? $profile->city) : '' }}{{ ($profile->ktp_province ?? $profile->province) ? ', ' . ($profile->ktp_province ?? $profile->province) : '' }}
             </td>
         </tr>
         <tr>
             <td class="info-label">Alamat Domisili</td>
             <td class="info-sep">:</td>
             <td class="info-value" colspan="4">
-                {{ $profile->address ?? '-' }}
+                {{ $profile->address ?? '-' }}{{ $profile->city ? ', ' . $profile->city : '' }}{{ $profile->province ? ', ' . $profile->province : '' }}
             </td>
         </tr>
         <tr>

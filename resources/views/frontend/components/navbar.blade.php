@@ -124,11 +124,11 @@
                     : asset('storage/logo/mikaaaa.png');
             @endphp
             <a href="{{ route('home') }}" class="flex items-center gap-2.5 sm:gap-3 group" title="MIKA CAREER - {{ $mainCompany->name ?? 'Mitra Karya Analitika' }}">
-                <img src="{{ $navLogoUrl }}" alt="{{ $mainCompany->name ?? 'Logo MIKA' }}"
-                    class="h-10 w-auto object-contain rounded-lg group-hover:scale-105 transition-transform duration-300">
+                {{-- <img src="{{ $navLogoUrl }}" alt="{{ $mainCompany->name ?? 'Logo MIKA' }}"
+                    class="h-10 w-auto object-contain rounded-lg group-hover:scale-105 transition-transform duration-300"> --}}
                 <div>
                     <span class="text-lg sm:text-xl font-black tracking-tight text-[#EEEEEE] flex items-center gap-1">
-                        MIKA <span class="text-[#93F514]">CAREER</span>
+                        MIKA <span class="text-[#93F514]">Group</span>Career
                     </span>
                 </div>
             </a>
@@ -405,7 +405,7 @@
 
                 @if (Route::has('register'))
                     <a href="{{ route('register') }}"
-                        class="inline-flex items-center justify-center px-5 py-2 text-xs sm:text-sm font-bold text-[#EEEEEE] hover:text-black rounded-full bg-[#061806] hover:bg-[#93F514] border border-[#93F514]/50 shadow-md shadow-black/30 transition-all duration-200">
+                        class="nav-register-btn inline-flex items-center justify-center px-5 py-2 text-xs sm:text-sm font-bold text-[#EEEEEE] hover:text-black rounded-full bg-[#061806] hover:bg-[#93F514] border border-[#93F514]/50 shadow-md shadow-black/30 transition-all duration-200">
                         {{ __('Register') }}
                     </a>
                 @endif
@@ -609,7 +609,7 @@
                 </a>
                 @if (Route::has('register'))
                     <a @click="mobileMenuOpen = false" href="{{ route('register') }}"
-                        class="w-full text-center px-4 py-2.5 rounded-2xl bg-[#061806] hover:bg-[#93F514] text-[#EEEEEE] hover:text-black border border-[#93F514]/50 font-bold text-sm shadow-md shadow-black/30 transition">
+                        class="nav-register-btn w-full text-center px-4 py-2.5 rounded-2xl bg-[#061806] hover:bg-[#93F514] text-[#EEEEEE] hover:text-black border border-[#93F514]/50 font-bold text-sm shadow-md shadow-black/30 transition">
                         {{ __('Register') }}
                     </a>
                 @endif

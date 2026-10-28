@@ -11,15 +11,15 @@
                             ? $mainCompany->logo_url
                             : asset('storage/logo/mikalight.png');
                     @endphp
-                    <img src="{{ $logoUrl }}" 
+                    {{-- <img src="{{ $logoUrl }}" 
                          alt="{{ $mainCompany->name ?? 'Logo MIKA' }}" 
-                         class="h-10 w-auto object-contain rounded-lg">
+                         class="h-10 w-auto object-contain rounded-lg"> --}}
                     <span class="text-xl font-extrabold tracking-tight text-[#EEEEEE]">
-                        {{ isset($mainCompany) ? $mainCompany->name : 'MIKA CAREER' }}
+                        MIKA <span class="text-[#93F514]">Group </span>Career
                     </span>
                 </div>
                 <p class="text-sm text-gray-400 leading-relaxed">
-                    {{ __('Platform rekrutmen digital terintegrasi yang mempertemukan talenta profesional unggul dengan peluang karir terbaik di') }} {{ isset($mainCompany) ? $mainCompany->name : 'Mitra Karya Analitika' }}.
+                    {{ __('Platform rekrutmen digital terintegrasi yang mempertemukan talenta profesional unggul dengan peluang karir terbaik di') }} MIKA Group Career.
                 </p>
                 @php
                     $mainSocial = (isset($mainCompany) && is_array($mainCompany->social_media)) ? array_filter($mainCompany->social_media) : [];
@@ -163,8 +163,8 @@
                             <svg class="w-4 h-4 text-[#93F514] shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                             </svg>
-                            <a href="{{ $mainCompany->whatsapp_url ?? 'https://wa.me/' . preg_replace('/[^0-9]/', '', $mainCompany->phone) }}" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-[#93F514] transition leading-relaxed" title="{{ $mainCompany->phone }}">
-                                {{ $mainCompany->phone }}
+                            <a href="{{ $mainCompany->whatsapp_url ?? 'https://wa.me/' . preg_replace('/[^0-9]/', '', $mainCompany->phone) }}" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-[#93F514] transition leading-relaxed" title="{{ $mainCompany->phone }} (HRD)">
+                                {{ $mainCompany->phone }} (HRD)
                             </a>
                         </li>
                     @endif

@@ -1,13 +1,13 @@
 @extends('frontend.layouts.app')
 
-@section('title', __('Beranda') . ' | Mika Career')
+@section('title', __('Beranda') . ' - Mika Career')
 
 @section('content')
     <div class="relative overflow-hidden -mt-[88px] sm:-mt-[96px]">
 
         <!-- ==================== HERO SECTION (IMAGE BACKGROUND + MULTI-LAYER DARK GRADIENTS) ==================== -->
         <section
-            class="relative min-h-screen flex items-center justify-center pt-[120px] sm:pt-[128px] pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#040804]">
+            class="relative min-h-screen flex items-center justify-center pt-[120px] sm:pt-[128px] pb-10 sm:pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#040804]">
 
             <!-- Hero Background Image (Clear & Crisp) -->
             <div class="absolute inset-0 z-0">
@@ -538,303 +538,71 @@
                 </div>
 
                 <!-- Popular Searches tags -->
-                <div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs text-gray-400">
+                <div class="mt-3 sm:mt-3.5 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs text-gray-400">
                     <span class="font-bold text-[#93F514]">{{ __('Pencarian Populer:') }}</span>
                     <a href="{{ route('jobs.index', ['search' => 'Software Engineer']) }}"
-                        class="px-3 py-1 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition">Software
+                        class="px-2.5 py-0.5 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition text-[11px] sm:text-xs">Software
                         Engineer</a>
                     <a href="{{ route('jobs.index', ['search' => 'Staff']) }}"
-                        class="px-3 py-1 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition">Staff
+                        class="px-2.5 py-0.5 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition text-[11px] sm:text-xs">Staff
                         Administrasi</a>
                     <a href="{{ route('jobs.index', ['search' => 'Marketing']) }}"
-                        class="px-3 py-1 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition">Digital
+                        class="px-2.5 py-0.5 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition text-[11px] sm:text-xs">Digital
                         Marketing</a>
                     <a href="{{ route('jobs.index', ['location' => 'Remote']) }}"
-                        class="px-3 py-1 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition">Remote</a>
+                        class="px-2.5 py-0.5 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition text-[11px] sm:text-xs">Remote</a>
                 </div>
 
                 <!-- Quick Stats Summary -->
                 <div
-                    class="mt-14 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 w-full max-w-4xl border-t border-[#93F514]/20 pt-8">
-                    <div class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
+                    class="mt-4 sm:mt-5 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full max-w-3xl border-t border-[#93F514]/20 pt-4 sm:pt-4.5">
+                    <div class="reveal-on-scroll py-3 px-3.5 sm:py-3.5 sm:px-4 rounded-xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40 text-center"
                         data-delay="100">
-                        <div class="text-2xl sm:text-3xl font-black text-[#EEEEEE]">{{ $totalJobsCount ?? 0 }}+</div>
-                        <div class="text-xs text-[#93F514] font-semibold mt-1">{{ __('Lowongan Aktif') }}</div>
+                        <div class="text-xl sm:text-2xl font-black text-[#EEEEEE]">{{ $totalJobsCount ?? 0 }}+</div>
+                        <div class="text-[11px] sm:text-xs text-[#93F514] font-semibold mt-0.5">{{ __('Lowongan Aktif') }}</div>
                     </div>
-                    <div class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
+                    <div class="reveal-on-scroll py-3 px-3.5 sm:py-3.5 sm:px-4 rounded-xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40 text-center"
                         data-delay="200">
-                        <div class="text-2xl sm:text-3xl font-black text-[#EEEEEE]">{{ $companiesCount ?? 0 }}+</div>
-                        <div class="text-xs text-[#93F514] font-semibold mt-1">{{ __('Perusahaan Mitra') }}</div>
+                        <div class="text-xl sm:text-2xl font-black text-[#EEEEEE]">{{ $companiesCount ?? 0 }}+</div>
+                        <div class="text-[11px] sm:text-xs text-[#93F514] font-semibold mt-0.5">{{ __('Perusahaan Mitra') }}</div>
                     </div>
-                    <div class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
+                    <div class="reveal-on-scroll py-3 px-3.5 sm:py-3.5 sm:px-4 rounded-xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40 text-center"
                         data-delay="300">
-                        <div class="text-2xl sm:text-3xl font-black text-[#EEEEEE]">{{ $departmentsCount ?? 0 }}+</div>
-                        <div class="text-xs text-[#93F514] font-semibold mt-1">{{ __('Departemen') }}</div>
+                        <div class="text-xl sm:text-2xl font-black text-[#EEEEEE]">{{ $departmentsCount ?? 0 }}+</div>
+                        <div class="text-[11px] sm:text-xs text-[#93F514] font-semibold mt-0.5">{{ __('Departemen') }}</div>
                     </div>
-                    <div class="reveal-on-scroll p-4 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40"
+                    <div class="reveal-on-scroll py-3 px-3.5 sm:py-3.5 sm:px-4 rounded-xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40 text-center"
                         data-delay="400">
-                        <div class="text-2xl sm:text-3xl font-black text-[#EEEEEE]">{{ $totalQuotaCount ?? 0 }}+</div>
-                        <div class="text-xs text-[#93F514] font-semibold mt-1">{{ __('Total Kuota Formasi') }}</div>
+                        <div class="text-xl sm:text-2xl font-black text-[#EEEEEE]">{{ $totalQuotaCount ?? 0 }}+</div>
+                        <div class="text-[11px] sm:text-xs text-[#93F514] font-semibold mt-0.5">{{ __('Total Kuota Formasi') }}</div>
                     </div>
                 </div>
 
             </div>
         </section>
 
-        <!-- ==================== SHOWCASE / ABOUT COMPANY CAROUSEL SECTION ==================== -->
-        <section class="reveal-on-scroll relative py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden"
-            x-data="{
-                currentSlide: 0,
-                companyName: '{{ isset($mainCompany) ? $mainCompany->name : 'Mitra Karya Analitika' }}',
-                companyWebsite: '{{ isset($mainCompany) && $mainCompany->website ? (Str::startsWith($mainCompany->website, ['http://', 'https://']) ? $mainCompany->website : 'https://' . $mainCompany->website) : '' }}',
-                slides: {{ !empty($showcases) && count($showcases) > 0 ? Js::from($showcases) : '[]' }},
-                autoplayTimer: null,
-                progressTimer: null,
-                duration: 6000,
-                progress: 0,
-                isPaused: false,
-                observer: null,
-                init() {
-                    this.startAutoplay();
-                    if ('IntersectionObserver' in window) {
-                        this.observer = new IntersectionObserver((entries) => {
-                            entries.forEach(entry => {
-                                if (entry.isIntersecting) {
-                                    this.resume();
-                                } else {
-                                    this.pause();
-                                }
-                            });
-                        }, { threshold: 0.05 });
-                        this.observer.observe(this.$el);
-                    }
-                },
-                next() {
-                    this.currentSlide = (this.currentSlide + 1) % this.slides.length;
-                    this.restartAutoplay();
-                },
-                prev() {
-                    this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
-                    this.restartAutoplay();
-                },
-                goTo(index) {
-                    this.currentSlide = index;
-                    this.restartAutoplay();
-                },
-                startAutoplay() {
-                    this.isPaused = false;
-                    this.stopAutoplay();
-                    const intervalMs = 50;
-                    const step = (intervalMs / this.duration) * 100;
-                    this.progressTimer = setInterval(() => {
-                        if (!this.isPaused) {
-                            this.progress += step;
-                            if (this.progress >= 100) {
-                                this.progress = 0;
-                                this.currentSlide = (this.currentSlide + 1) % this.slides.length;
-                            }
-                        }
-                    }, intervalMs);
-                },
-                stopAutoplay() {
-                    if (this.progressTimer) clearInterval(this.progressTimer);
-                    if (this.autoplayTimer) clearInterval(this.autoplayTimer);
-                },
-                pause() {
-                    this.isPaused = true;
-                },
-                resume() {
-                    this.isPaused = false;
-                },
-                restartAutoplay() {
-                    this.progress = 0;
-                    this.startAutoplay();
-                }
-            }">
-
-            <!-- Background Decorative Patterns -->
-            <div
-                class="absolute inset-0 bg-gradient-to-b from-[#040804] via-[#051405] to-[#040804] rounded-3xl sm:rounded-[2.5rem] border border-[#93F514]/25 shadow-2xl shadow-black/80 overflow-hidden pointer-events-none">
-                <!-- Concentric Circular Background Ripples -->
-                <div
-                    class="absolute -bottom-24 -left-24 w-96 h-96 rounded-full border border-[#93F514]/15 pointer-events-none">
+        <!-- ==================== QUICK CAREER TRACKS (EDITORIAL CARD DECK) ==================== -->
+        <section class="reveal-on-scroll relative pt-8 sm:pt-12 pb-14 sm:pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
+            <!-- Header Title (Editorial Style - Light & Dark Aware) -->
+            <div class="mb-10 sm:mb-14 text-center lg:text-left flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+                <div>
+                    <span class="text-xs uppercase tracking-[0.25em] text-[#2D6B00] dark:text-[#93F514] font-extrabold block mb-2">{{ __('EXPLORE TRACKS') }}</span>
+                    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black uppercase text-gray-900 dark:text-white tracking-tight">
+                        {{ __('Pilihan Jalur Karir') }}
+                    </h2>
                 </div>
-                <div
-                    class="absolute -bottom-40 -left-40 w-[30rem] h-[30rem] rounded-full border border-[#93F514]/10 pointer-events-none">
-                </div>
-                <div
-                    class="absolute -bottom-56 -left-56 w-[40rem] h-[40rem] rounded-full border border-[#93F514]/5 pointer-events-none">
-                </div>
-
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 max-w-md font-medium leading-relaxed">
+                    {{ __('Pilih jalur karir yang sesuai dengan tahap dan tujuan profesional Anda saat ini.') }}
+                </p>
             </div>
 
-            <!-- Main Inner Container -->
-            <div class="relative z-10 p-6 sm:p-10 lg:p-14" @mouseenter="pause()" @mouseleave="resume()">
-
-                <!-- Slides Content Wrapper with consistent minimum height to prevent layout shift -->
-                <div class="relative min-h-[580px] sm:min-h-[500px] lg:min-h-[460px] flex items-center">
-                    <template x-for="(slide, index) in slides" :key="index">
-                        <div x-show="currentSlide === index" x-transition:enter="transition ease-out duration-500"
-                            x-transition:enter-start="opacity-0 translate-x-8"
-                            x-transition:enter-end="opacity-100 translate-x-0"
-                            x-transition:leave="transition ease-in duration-400 absolute inset-0"
-                            x-transition:leave-start="opacity-100 translate-x-0"
-                            x-transition:leave-end="opacity-0 -translate-x-8"
-                            class="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-
-                            <!-- Left Column: Typography & Description -->
-                            <div class="lg:col-span-5 flex flex-col justify-between h-full space-y-6">
-                                <div>
-                                    <!-- Tag / Category Header -->
-                                    <div
-                                        class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] text-xs font-bold uppercase tracking-wider mb-4">
-                                        {{-- <span class="w-2 h-2 rounded-full bg-[#93F514] animate-pulse"></span> --}}
-                                        <span x-text="slide.tag"></span>
-                                    </div>
-
-                                    <!-- Main Slide Title -->
-                                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#EEEEEE] tracking-tight leading-tight sm:leading-snug"
-                                        x-text="slide.title">
-                                    </h2>
-
-                                    <div class="w-16 h-1 bg-gradient-to-r from-[#93F514] to-transparent rounded-full my-4">
-                                    </div>
-
-                                    <!-- Slide Paragraph -->
-                                    <p class="text-sm sm:text-base text-gray-300 font-normal leading-relaxed text-justify sm:text-left"
-                                        x-text="slide.description">
-                                    </p>
-                                </div>
-
-                                <!-- Left-Bottom Controls & Actions -->
-                                <div class="pt-4 flex flex-wrap items-center gap-3">
-                                    <a href="{{ route('jobs.index') }}"
-                                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#93F514] hover:bg-[#7edc0b] text-black font-extrabold text-xs sm:text-sm tracking-wide shadow-md shadow-black/40 transition duration-200">
-                                        <span>{{ __('Lihat Lowongan') }}</span>
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                                d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                        </svg>
-                                    </a>
-
-                                    <template x-if="companyWebsite">
-                                        <a :href="companyWebsite" target="_blank" rel="noopener noreferrer"
-                                            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-[#93F514]/40 text-[#EEEEEE] hover:text-[#93F514] font-semibold text-xs sm:text-sm transition duration-200 backdrop-blur-sm">
-                                            <svg class="w-4 h-4 text-[#93F514]" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                                            </svg>
-                                            <span>{{ __('Kunjungi Website') }}</span>
-                                            <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                            </svg>
-                                        </a>
-                                    </template>
-                                </div>
-                            </div>
-
-                            <!-- Right Column: Staggered Dynamic Photo Collage & Floating Badge -->
-                            <div
-                                class="lg:col-span-7 relative flex items-center justify-center lg:justify-end py-6 lg:py-0">
-                                <div class="relative w-full max-w-[560px] h-[340px] sm:h-[390px]">
-
-                                    <!-- Main Large Photo (Left Background Layer) -->
-                                    <div
-                                        class="absolute left-0 top-6 w-[56%] sm:w-[58%] h-[260px] sm:h-[310px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl shadow-black/25 dark:shadow-black/60 group">
-                                        <img :src="slide.img1" alt="Team Collaboration"
-                                            x-on:error="$el.src = '/storage/asset-compro/aniv1.jpg'"
-                                            class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
-                                    </div>
-
-                                    <!-- Top-Right Secondary Photo Layer -->
-                                    <div
-                                        class="absolute right-0 top-0 w-[48%] sm:w-[50%] h-[200px] sm:h-[235px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl shadow-black/30 dark:shadow-black/70 group z-10">
-                                        <img :src="slide.img2 || slide.img1" alt="Professional Presentation"
-                                            x-on:error="$el.src = slide.img1 || '/storage/asset-compro/outbond.jpg'"
-                                            class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
-                                    </div>
-
-                                    <!-- Bottom Center/Right Overlapping Tertiary Photo -->
-                                    <div
-                                        class="absolute left-[35%] sm:left-[32%] bottom-0 w-[50%] sm:w-[52%] h-[190px] sm:h-[220px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/35 dark:shadow-black/80 group z-20">
-                                        <img :src="slide.img3 || slide.img1" alt="Meeting and Discussion"
-                                            x-on:error="$el.src = slide.img1 || '/storage/asset-compro/aniv.jpg'"
-                                            class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
-                                    </div>
-
-                                    <!-- Simple, Light & Modern Floating Glass Badge (Bottom Right) -->
-                                    <div
-                                        class="absolute -right-1 sm:-right-3 bottom-2 z-30 transform hover:scale-105 transition-transform">
-                                        <div
-                                            class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-[#061806]/85 border border-[#93F514]/50 shadow-lg shadow-black/60 backdrop-blur-md flex items-center gap-2.5">
-                                            {{-- <div class="w-2 h-2 rounded-full bg-[#93F514] animate-ping"></div> --}}
-                                            <div>
-                                                <div class="text-[11px] sm:text-xs font-bold tracking-wider text-[#93F514] leading-none"
-                                                    x-text="slide.badgeTitle">CAREER.</div>
-                                                <div class="text-[10px] text-gray-300 font-medium mt-0.5 leading-none"
-                                                    x-text="slide.badgeSub">Growth & Development</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-
-                        </div>
-                    </template>
-                </div>
-
-                <!-- Bottom Navigation Bar: Arrows + Live Animated Progress Indicator Lines -->
-                <div
-                    class="mt-8 pt-6 border-t border-[#93F514]/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <!-- Prev / Next Navigation Arrows -->
-                    <div class="flex items-center gap-3">
-                        <button @click="prev()" aria-label="Previous Slide"
-                            class="w-10 h-10 rounded-xl bg-[#061506] hover:bg-[#93F514] text-gray-300 hover:text-black border border-[#93F514]/40 transition-all flex items-center justify-center cursor-pointer shadow-md">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                    d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
-                        <button @click="next()" aria-label="Next Slide"
-                            class="w-10 h-10 rounded-xl bg-[#061506] hover:bg-[#93F514] text-gray-300 hover:text-black border border-[#93F514]/40 transition-all flex items-center justify-center cursor-pointer shadow-md">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                    d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
-                        <span class="text-xs text-gray-400 font-semibold ml-2">
-                            <span class="text-[#93F514] font-bold" x-text="currentSlide + 1"></span> / <span
-                                x-text="slides.length"></span>
-                        </span>
-                    </div>
-
-                    <!-- Lightweight Segmented Progress Indicator Bar with Real-time Fill Animation -->
-                    <div class="flex items-center gap-2.5 w-full sm:w-80">
-                        <template x-for="(slide, index) in slides" :key="index">
-                            <button @click="goTo(index)" :aria-label="'Go to slide ' + (index + 1)"
-                                class="h-1.5 sm:h-2 flex-1 rounded-full transition-all duration-300 cursor-pointer overflow-hidden relative bg-white/10 hover:bg-white/20">
-                                <!-- Background fill for active slide with smooth real-time progress -->
-                                <div class="h-full bg-gradient-to-r from-[#93F514] to-[#5ef558] rounded-full transition-[width] ease-linear"
-                                    :style="currentSlide === index ?
-                                        `width: ${progress}%; transition-duration: ${isPaused ? '0ms' : '50ms'};` : (
-                                            currentSlide > index ? 'width: 100%; transition-duration: 0ms;' :
-                                            'width: 0%; transition-duration: 0ms;')">
-                                </div>
-                            </button>
-                        </template>
-                    </div>
-                </div>
-
-            </div>
+            <!-- 4 Cards Deck Grid with 3D Flip Card Effect (Alpine.js & Tailwind CSS) -->
+            @include('frontend.components.career-paths-deck')
         </section>
 
         <!-- ==================== ALUR PENDAFTARAN & SELEKSI (INTERACTIVE PIPELINE) ==================== -->
         <section id="alur-pendaftaran"
-            class="reveal-on-scroll py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative border-t border-gray-200/80 dark:border-white/[0.08]"
+            class="reveal-on-scroll pt-14 sm:pt-20 pb-8 sm:pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative border-t border-gray-200/80 dark:border-white/[0.08]"
             x-data="{ activeStep: 1 }">
 
             <!-- Section Header -->
@@ -1529,91 +1297,547 @@
 
         <!-- ==================== TEMUKAN LOWONGAN BERDASARKAN PERUSAHAAN ==================== -->
         @if (isset($companies) && $companies->count() > 0)
+            @php
+                $orderedCompanies = $companies->sortBy(function ($comp) {
+                    $name = strtolower($comp->name);
+                    return (str_contains($name, 'mitra karya analitika') || str_contains($name, 'mika')) ? 0 : 1;
+                })->values();
+            @endphp
             <section id="perusahaan"
-                class="reveal-on-scroll py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative border-t border-[#93F514]/20">
+                class="reveal-on-scroll pt-8 sm:pt-10 pb-14 sm:pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative border-t border-[#93F514]/20">
                 <!-- Header Rata Tengah -->
-                <div class="text-center max-w-3xl mx-auto mb-10">
+                <div class="text-center max-w-3xl mx-auto mb-6 sm:mb-8">
                     <h2 class="text-3xl sm:text-4xl font-extrabold text-[#EEEEEE]">
                         {{ __('Temukan Lowongan Berdasarkan') }} <span class="text-[#93F514]">{{ __('Perusahaan') }}</span>
                     </h2>
-                    <p class="mt-3 text-sm sm:text-base text-gray-300 leading-relaxed">
+                    <p class="mt-2.5 text-sm sm:text-base text-gray-300 leading-relaxed">
                         {{ __('Pilih perusahaan mitra untuk melihat lowongan kerja dan karir yang sedang dibuka.') }}
                     </p>
                 </div>
 
-                <!-- Card Perusahaan (Rata Tengah Dinamis) -->
+                <!-- Card Perusahaan (Rata Tengah Dinamis dengan 3D Flip & Auto-Scroll Gambar - Ukuran Compact) -->
                 <div class="flex flex-wrap justify-center gap-4 sm:gap-5">
-                    @foreach ($companies as $comp)
+                    @foreach ($orderedCompanies as $comp)
                         @php
                             $jobCount = $comp->jobs_count ?? $comp->jobs()->where('status', 'Open')->count();
+                            $images = $comp->card_images ?? [];
                         @endphp
-                        <a href="{{ route('jobs.index', ['company_id' => [$comp->id]]) }}"
-                            class="reveal-on-scroll group relative rounded-2xl p-5 border transition-all duration-300 flex flex-col justify-between w-full sm:w-[calc(50%-10px)] md:w-[calc(33.333%-14px)] lg:w-[calc(25%-16px)] max-w-sm
-                                bg-gradient-to-b from-[#061506] to-[#030a03] border-[#93F514]/25 hover:border-[#93F514] hover:shadow-xl hover:shadow-black/60 hover:-translate-y-1"
+                        <div x-data="{
+                                flipped: false,
+                                current: 0,
+                                total: {{ count($images) }},
+                                timer: null,
+                                startSlide() {
+                                    if (this.total > 1 && !this.timer) {
+                                        this.timer = setInterval(() => {
+                                            this.current = (this.current + 1) % this.total;
+                                        }, {{ 3200 + ($loop->index % 3) * 600 }});
+                                    }
+                                },
+                                stopSlide() {
+                                    if (this.timer) {
+                                        clearInterval(this.timer);
+                                        this.timer = null;
+                                    }
+                                }
+                            }"
+                            x-init="startSlide()"
+                            @mouseenter="stopSlide()"
+                            @mouseleave="startSlide()"
+                            @click.away="flipped = false"
+                            class="reveal-on-scroll company-flip-wrap group relative w-full sm:w-[calc(50%-10px)] md:w-[285px] lg:w-[300px] max-w-[310px] h-[330px] sm:h-[345px]"
+                            :class="{ 'is-flipped': flipped }"
                             data-delay="{{ ($loop->index % 4) * 100 }}">
 
-                            <div class="flex items-start gap-3.5">
-                                <!-- Logo Perusahaan -->
-                                @if ($comp->logo_url)
-                                    <div
-                                        class="w-14 h-14 rounded-xl bg-white border border-[#93F514]/30 p-2 flex items-center justify-center shrink-0 overflow-hidden shadow-sm group-hover:border-[#93F514] transition-colors">
-                                        <img src="{{ $comp->logo_url }}" alt="{{ $comp->name }}"
-                                            class="w-full h-full object-contain">
-                                    </div>
-                                @else
-                                    <div
-                                        class="w-14 h-14 rounded-xl bg-white border border-[#93F514]/40 flex items-center justify-center text-gray-900 font-extrabold text-lg shrink-0 group-hover:bg-gray-100 transition-colors">
-                                        {{ strtoupper(substr($comp->name, 0, 2)) }}
-                                    </div>
-                                @endif
+                            <div class="company-flip-inner">
+                                <!-- ================= SISI DEPAN (FRONT - COMPACT) ================= -->
+                                <div class="company-card-face company-face-front rounded-2xl p-4 border flex flex-col justify-between
+                                            bg-gradient-to-b from-[#061506] to-[#030a03] border-[#93F514]/25 shadow-md group-hover:border-[#93F514] transition-colors cursor-pointer"
+                                     @click="if (window.innerWidth < 768) { flipped = !flipped; }">
 
-                                <!-- Nama Perusahaan & Lokasi/Kota -->
-                                <div class="flex-1 min-w-0">
-                                    <h3
-                                        class="text-sm font-bold text-[#EEEEEE] group-hover:text-[#93F514] transition-colors truncate">
-                                        {{ $comp->name }}
-                                    </h3>
-                                    <p class="text-xs text-gray-400 mt-0.5 truncate">
-                                        {{ $comp->city ?? ($comp->province ?? __('Mitra Perusahaan')) }}
-                                    </p>
+                                    <!-- Header: Logo + Nama & Lokasi Perusahaan -->
+                                    <div class="flex items-center gap-2.5">
+                                        @if ($comp->logo_url)
+                                            <div class="w-10 h-10 rounded-xl bg-white border border-[#93F514]/30 p-1.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm group-hover:border-[#93F514] transition-colors">
+                                                <img src="{{ $comp->logo_url }}" alt="{{ $comp->name }}" class="w-full h-full object-contain">
+                                            </div>
+                                        @else
+                                            <div class="w-10 h-10 rounded-xl bg-white border border-[#93F514]/40 flex items-center justify-center text-gray-900 font-black text-xs shrink-0 group-hover:bg-gray-100 transition-colors">
+                                                {{ strtoupper(substr($comp->name, 0, 2)) }}
+                                            </div>
+                                        @endif
+
+                                        <div class="flex-1 min-w-0">
+                                            <h3 class="text-xs sm:text-sm font-extrabold text-[#EEEEEE] group-hover:text-[#93F514] transition-colors tracking-tight truncate uppercase">
+                                                {{ $comp->name }}
+                                            </h3>
+                                            <p class="text-[11px] text-gray-400 truncate font-medium">
+                                                {{ $comp->city ?? ($comp->province ?? __('Mitra Perusahaan')) }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bagian Tengah: Gambar Otomatis Scroll (Tampil Utuh Tanpa Terpotong) -->
+                                    <div class="relative w-full h-36 sm:h-40 rounded-xl overflow-hidden bg-black/80 border border-white/5 my-2">
+                                        <div class="flex h-full transition-transform duration-700 ease-out"
+                                             :style="`transform: translateX(-${current * 100}%);`">
+                                            @foreach ($images as $img)
+                                                <div class="w-full h-full flex-shrink-0 relative overflow-hidden flex items-center justify-center bg-black/90">
+                                                    <!-- Background blur ambient agar sisi samping menyatu indah -->
+                                                    <img src="{{ $img }}" alt="" class="absolute inset-0 w-full h-full object-cover filter blur-md opacity-35 scale-110 pointer-events-none [transform:translateZ(0)]" aria-hidden="true">
+                                                    <!-- Foto utuh 100% tanpa terpotong (object-contain) -->
+                                                    <img src="{{ $img }}" alt="{{ $comp->name }}" class="relative z-10 max-w-full max-h-full object-contain drop-shadow-md">
+                                                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none z-20"></div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+
+                                        @if (count($images) > 1)
+                                            <div class="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-30 pointer-events-none">
+                                                @foreach ($images as $idx => $img)
+                                                    <span class="h-1 rounded-full transition-all duration-300"
+                                                          :class="current === {{ $idx }} ? 'w-4 bg-[#93F514]' : 'w-1.5 bg-white/40'"></span>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    <!-- Footer: Lowongan Tersedia Badge -->
+                                    <div class="pt-2 border-t border-[#93F514]/15 flex items-center justify-between">
+                                        <span class="inline-flex items-center gap-1 text-[11px] sm:text-xs {{ $jobCount > 0 ? 'text-[#93F514] font-bold' : 'text-gray-400' }}">
+                                            <span>{{ $jobCount }} {{ __('Lowongan Tersedia') }}</span>
+                                        </span>
+
+                                        <span class="text-xs text-gray-400 group-hover:text-[#93F514] group-hover:translate-x-0.5 transition-all">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- ================= SISI BELAKANG (BACK - COMPACT 180 DERAJAT) ================= -->
+                                <div class="company-card-face company-face-back rounded-2xl p-4 sm:p-4.5 flex flex-col justify-between bg-[#93F514] border border-[#82de0e] text-neutral-950 shadow-xl">
+                                    <!-- Informasi Perusahaan -->
+                                    <div class="flex flex-col">
+                                        <h3 class="text-xs sm:text-sm font-black text-black uppercase tracking-tight leading-snug line-clamp-1">
+                                            {{ $comp->name }}
+                                        </h3>
+                                        <p class="text-[11px] sm:text-xs text-neutral-800 mt-1 font-medium leading-relaxed line-clamp-2">
+                                            {{ $comp->city ?? 'Semarang' }}. {{ $comp->tagline ?? ($comp->about ? Str::limit(strip_tags($comp->about), 60) : __('Perusahaan mitra resmi MIKA Career.')) }}
+                                        </p>
+                                        <div class="mt-1.5">
+                                            <span class="company-back-jobcount text-[11px] sm:text-xs font-black text-black">
+                                                {{ $jobCount }} {{ __('lowongan tersedia') }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tombol Aksi (Pill Sesuai Referensi Gambar 3 - Ukuran Compact) -->
+                                    <div class="flex flex-col gap-2 mt-auto pt-2">
+                                        @if ($comp->website)
+                                            <a href="{{ $comp->website }}"
+                                               target="_blank"
+                                               rel="noopener noreferrer"
+                                               @click.stop
+                                               class="w-full py-1.5 sm:py-2 px-3 rounded-full bg-black text-[#93F514] hover:bg-neutral-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm hover:scale-[1.02] active:scale-95">
+                                                <span>{{ __('Kunjungi website') }}</span>
+                                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 17L17 7M17 7H7M17 7V17" />
+                                                </svg>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('jobs.index', ['company_id' => [$comp->id]]) }}"
+                                               @click.stop
+                                               class="w-full py-1.5 sm:py-2 px-3 rounded-full bg-black text-[#93F514] hover:bg-neutral-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm hover:scale-[1.02] active:scale-95">
+                                                <span>{{ __('Kunjungi website') }}</span>
+                                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 17L17 7M17 7H7M17 7V17" />
+                                                </svg>
+                                            </a>
+                                        @endif
+
+                                        <a href="{{ route('jobs.index', ['company_id' => [$comp->id]]) }}"
+                                           @click.stop
+                                           class="w-full py-1.5 sm:py-2 px-3 rounded-full border-2 border-black text-black hover:bg-black/10 font-black text-xs flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02] active:scale-95">
+                                            <span>{{ __('Lihat lowongan') }}</span>
+                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 17L17 7M17 7H7M17 7V17" />
+                                            </svg>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-
-                            <!-- Footer: Lowongan Tersedia Badge -->
-                            <div class="mt-4 pt-3 border-t border-[#93F514]/15 flex items-center justify-between">
-                                <span
-                                    class="inline-flex items-center gap-1.5 text-xs {{ $jobCount > 0 ? 'text-[#93F514] font-bold' : 'text-gray-400' }}">
-                                    <span>{{ $jobCount }} {{ __('Lowongan Tersedia') }}</span>
-                                </span>
-
-                                <span
-                                    class="text-xs text-gray-400 group-hover:text-[#93F514] group-hover:translate-x-0.5 transition-all">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </span>
-                            </div>
-                        </a>
+                        </div>
                     @endforeach
                 </div>
             </section>
         @endif
 
-        <!-- ==================== CALL TO ACTION BANNER ==================== -->
-        <section class="reveal-on-scroll reveal-scale py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <div
-                class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#041a04] via-[#062906] to-[#031203] border border-[#93F514]/50 p-8 sm:p-12 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8 shadow-2xl shadow-black/80">
-                <div class="max-w-xl z-10">
-                    <h2 class="text-2xl sm:text-3xl font-extrabold text-[#EEEEEE] leading-tight">
-                        {{ __('Siap Memulai Karir Baru Bersama Kami?') }}
+        <!-- ==================== PATTA-STYLE CURVED MOVING GALLERY (DYNAMIC TITLE PER PHOTO) ==================== -->
+        @php
+            $galleryItems = [];
+
+            if (!empty($showcases)) {
+                // Collect images per showcase
+                $showcaseMap = [];
+                foreach ($showcases as $sc) {
+                    $tag = $sc['tag'] ?? __('KEHIDUPAN & BUDAYA KERJA');
+                    $title = $sc['title'] ?? __('Ruang untuk Bertumbuh dan Berkembang');
+                    $desc = $sc['description'] ?? '';
+
+                    $imgs = [];
+                    if (!empty($sc['img1'])) $imgs[] = $sc['img1'];
+                    if (!empty($sc['img2'])) $imgs[] = $sc['img2'];
+                    if (!empty($sc['img3'])) $imgs[] = $sc['img3'];
+
+                    if (!empty($imgs)) {
+                        $showcaseMap[] = [
+                            'tag' => $tag,
+                            'title' => $title,
+                            'description' => $desc,
+                            'images' => $imgs,
+                        ];
+                    }
+                }
+
+                // Interleave images across showcases so consecutive cards have different titles
+                $maxImgs = 0;
+                foreach ($showcaseMap as $sm) {
+                    $maxImgs = max($maxImgs, count($sm['images']));
+                }
+
+                for ($imgIndex = 0; $imgIndex < $maxImgs; $imgIndex++) {
+                    foreach ($showcaseMap as $sm) {
+                        if (isset($sm['images'][$imgIndex])) {
+                            $galleryItems[] = [
+                                'tag' => $sm['tag'],
+                                'title' => $sm['title'],
+                                'description' => $sm['description'],
+                                'img' => $sm['images'][$imgIndex],
+                            ];
+                        }
+                    }
+                }
+            }
+
+            // Fallback items if database showcases are empty or few
+            $fallbacks = [
+                [
+                    'tag' => __('KEGIATAN & KEBERSAMAAN'),
+                    'title' => __('Outbound & Sinergi Karyawan'),
+                    'description' => __('Membangun kebersamaan, kekompakan, dan kerjasama tim yang solid melalui program employee gathering serta outbound berkala.'),
+                    'img' => asset('storage/asset-compro/outbond.jpg'),
+                ],
+                [
+                    'tag' => __('HUT PERUSAHAAN'),
+                    'title' => __('Perayaan Hari Jadi MIKA Group'),
+                    'description' => __('Merayakan setiap pencapaian dan perjalanan bertumbuh bersama seluruh keluarga besar PT Mitra Karya Analitika.'),
+                    'img' => asset('storage/asset-compro/aniv1.jpg'),
+                ],
+                [
+                    'tag' => __('EVENT & KONFERENSI'),
+                    'title' => __('Partisipasi Aktif Event HISFARIN'),
+                    'description' => __('Memperluas jejaring profesional dan memperkenalkan inovasi teknologi analitik terkini kepada mitra industri terpercaya.'),
+                    'img' => asset('storage/asset-compro/hisfarin1.jpg'),
+                ],
+                [
+                    'tag' => __('BIMBINGAN TEKNIS'),
+                    'title' => __('Workshop & Sinergi ASPADIN'),
+                    'description' => __('Menghadirkan bimbingan teknis, transfer ilmu terapan, dan inovasi IoT untuk memajukan kapabilitas industri nasional.'),
+                    'img' => asset('storage/asset-compro/aspadin1.jpg'),
+                ],
+            ];
+
+            if (empty($galleryItems)) {
+                $galleryItems = $fallbacks;
+            } elseif (count($galleryItems) < 6) {
+                $galleryItems = array_merge($galleryItems, $fallbacks);
+            }
+
+            // Ensure unique images
+            $uniqueMap = [];
+            $curvedPhotos = [];
+            foreach ($galleryItems as $item) {
+                if (!isset($uniqueMap[$item['img']])) {
+                    $uniqueMap[$item['img']] = true;
+                    $curvedPhotos[] = $item;
+                }
+            }
+
+            // Initial item for initial render
+            $initialItem = $curvedPhotos[0];
+        @endphp
+
+        @if (!empty($curvedPhotos))
+            <section class="reveal-on-scroll relative py-10 sm:py-16 overflow-hidden w-full select-none" id="curved-gallery-section">
+                <!-- Header (Changes dynamically as photos glide through the center apex) -->
+                <div id="curved-gallery-header" class="max-w-3xl mx-auto px-4 text-center mb-6 sm:mb-9 transition-all duration-300 ease-out">
+                    <span id="gallery-header-tag" class="inline-block text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-[#3b8004] dark:text-[#93F514] mb-2">
+                        {{ $initialItem['tag'] }}
+                    </span>
+                    <h2 id="gallery-header-title" class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-snug">
+                        {{ $initialItem['title'] }}
                     </h2>
-                    <p class="mt-2 text-sm text-gray-300 leading-relaxed">
-                        {{ __('Daftar akun sekarang dan ikuti seleksi online untuk posisi pekerjaan impian Anda.') }}
+                    <p id="gallery-header-desc" class="mt-2.5 sm:mt-3 text-xs sm:text-sm text-gray-600 dark:text-gray-300 max-w-xl mx-auto leading-relaxed font-normal min-h-[36px] sm:min-h-[44px]">
+                        {{ $initialItem['description'] }}
                     </p>
                 </div>
 
-                <div class="z-10 flex flex-col sm:flex-row items-center gap-3 shrink-0">
+                <!-- Arched Panoramic Curved Gallery Container -->
+                <div id="curved-gallery-viewport" class="relative w-full overflow-hidden py-6 sm:py-10 [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)] [-webkit-mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
+                    <div id="curved-gallery-track" class="flex items-center gap-4 sm:gap-6 w-max cursor-grab active:cursor-grabbing will-change-transform">
+                        {{-- First Loop of Photos --}}
+                        @foreach ($curvedPhotos as $photo)
+                            <div class="curved-gallery-card shrink-0 w-64 sm:w-80 md:w-96 aspect-[16/10] rounded-xl sm:rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 shadow-md group transition-all duration-150 cursor-pointer"
+                                 data-tag="{{ $photo['tag'] }}"
+                                 data-title="{{ $photo['title'] }}"
+                                 data-description="{{ $photo['description'] }}">
+                                <img src="{{ $photo['img'] }}" 
+                                     alt="{{ $photo['title'] }}" 
+                                     loading="lazy"
+                                     draggable="false"
+                                     class="w-full h-full object-cover object-center pointer-events-none group-hover:scale-105 transition-transform duration-500">
+                            </div>
+                        @endforeach
+
+                        {{-- Second Duplicate Loop for Infinite Wrap --}}
+                        @foreach ($curvedPhotos as $photo)
+                            <div class="curved-gallery-card shrink-0 w-64 sm:w-80 md:w-96 aspect-[16/10] rounded-xl sm:rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 shadow-md group transition-all duration-150 cursor-pointer"
+                                 aria-hidden="true"
+                                 data-tag="{{ $photo['tag'] }}"
+                                 data-title="{{ $photo['title'] }}"
+                                 data-description="{{ $photo['description'] }}">
+                                <img src="{{ $photo['img'] }}" 
+                                     alt="{{ $photo['title'] }}" 
+                                     loading="lazy"
+                                     draggable="false"
+                                     class="w-full h-full object-cover object-center pointer-events-none group-hover:scale-105 transition-transform duration-500">
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </section>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const viewport = document.getElementById('curved-gallery-viewport');
+                    const track = document.getElementById('curved-gallery-track');
+                    const header = document.getElementById('curved-gallery-header');
+                    const tagEl = document.getElementById('gallery-header-tag');
+                    const titleEl = document.getElementById('gallery-header-title');
+                    const descEl = document.getElementById('gallery-header-desc');
+
+                    if (!viewport || !track) return;
+
+                    const cards = track.querySelectorAll('.curved-gallery-card');
+                    if (!cards.length) return;
+
+                    const uniqueCount = {{ count($curvedPhotos) }};
+                    let cardWidth = cards[0].offsetWidth || 340;
+                    let cardGap = 24;
+                    let stride = cardWidth + cardGap;
+                    let halfTrackWidth = uniqueCount * stride;
+
+                    let currentOffset = 0;
+                    let autoSpeed = 0.45; // Calm, relaxed auto-scroll speed
+                    let isHovered = false;
+                    let isDragging = false;
+                    let startX = 0;
+                    let dragStartOffset = 0;
+                    let dragDeltaX = 0;
+                    let animFrameId = null;
+
+                    // Header title tracking
+                    let currentActiveTitle = "{{ addslashes($initialItem['title']) }}";
+                    let isTextTransitioning = false;
+
+                    function recalculateMetrics() {
+                        if (!cards[0]) return;
+                        cardWidth = cards[0].offsetWidth || 340;
+                        const style = window.getComputedStyle(track);
+                        cardGap = parseFloat(style.gap) || (window.innerWidth < 640 ? 16 : 24);
+                        stride = cardWidth + cardGap;
+                        halfTrackWidth = uniqueCount * stride;
+                    }
+
+                    recalculateMetrics();
+                    window.addEventListener('resize', recalculateMetrics, { passive: true });
+
+                    // Respect reduced motion
+                    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+                    function updateHeaderContent(tag, title, desc) {
+                        if (!header || !tagEl || !titleEl || !descEl) return;
+                        if (isTextTransitioning || currentActiveTitle === title) return;
+
+                        isTextTransitioning = true;
+                        currentActiveTitle = title;
+
+                        // Smooth crossfade out
+                        header.classList.add('opacity-0', '-translate-y-1.5');
+
+                        setTimeout(() => {
+                            tagEl.textContent = tag;
+                            titleEl.textContent = title;
+                            descEl.textContent = desc;
+
+                            // Smooth crossfade in
+                            header.classList.remove('opacity-0', '-translate-y-1.5');
+
+                            setTimeout(() => {
+                                isTextTransitioning = false;
+                            }, 250);
+                        }, 180);
+                    }
+
+                    function updateCardTransforms() {
+                        const viewportRect = viewport.getBoundingClientRect();
+                        const centerX = viewportRect.width / 2;
+                        const maxDist = viewportRect.width / 2;
+
+                        // Wrap currentOffset seamlessly
+                        if (halfTrackWidth > 0) {
+                            while (currentOffset <= -halfTrackWidth) {
+                                currentOffset += halfTrackWidth;
+                            }
+                            while (currentOffset > 0) {
+                                currentOffset -= halfTrackWidth;
+                            }
+                        }
+
+                        track.style.transform = `translate3d(${currentOffset}px, 0, 0)`;
+
+                        let closestCard = null;
+                        let minAbsDist = Infinity;
+
+                        // Update parabolic arch for each card
+                        for (let i = 0; i < cards.length; i++) {
+                            const card = cards[i];
+                            const cardCenterX = currentOffset + (i * stride) + (cardWidth / 2);
+                            const normDist = (cardCenterX - centerX) / (maxDist || 1);
+                            const absNormDist = Math.abs(normDist);
+
+                            // Find center card
+                            if (absNormDist < minAbsDist) {
+                                minAbsDist = absNormDist;
+                                closestCard = card;
+                            }
+
+                            // Parabola: 0 at center, drops downward towards outer edges (tuned for landscape)
+                            const translateY = Math.min(45, Math.pow(normDist, 2) * 26);
+                            // Tangent rotation: tilts inward to form the arch curve (tuned for landscape)
+                            const rotate = Math.max(-8, Math.min(8, normDist * 5));
+                            // Subtle scale for 3D depth
+                            const scale = Math.max(0.94, 1 - Math.min(0.06, absNormDist * 0.04));
+
+                            card.style.transform = `translate3d(0, ${translateY.toFixed(2)}px, 0) rotate(${rotate.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
+
+                            // Highlight center card subtly
+                            if (absNormDist < 0.28) {
+                                card.classList.add('ring-2', 'ring-[#93F514]', 'shadow-2xl');
+                            } else {
+                                card.classList.remove('ring-2', 'ring-[#93F514]', 'shadow-2xl');
+                            }
+                        }
+
+                        // Update header title based on center card
+                        if (closestCard && minAbsDist < 0.35) {
+                            const newTag = closestCard.dataset.tag;
+                            const newTitle = closestCard.dataset.title;
+                            const newDesc = closestCard.dataset.description;
+
+                            if (newTitle && newTitle !== currentActiveTitle) {
+                                updateHeaderContent(newTag, newTitle, newDesc);
+                            }
+                        }
+                    }
+
+                    function animateLoop() {
+                        if (!isDragging && !isHovered && !prefersReducedMotion) {
+                            currentOffset -= autoSpeed;
+                        }
+                        updateCardTransforms();
+                        animFrameId = requestAnimationFrame(animateLoop);
+                    }
+
+                    // Start loop
+                    animFrameId = requestAnimationFrame(animateLoop);
+
+                    // Hover to pause
+                    viewport.addEventListener('mouseenter', () => { isHovered = true; });
+                    viewport.addEventListener('mouseleave', () => { 
+                        isHovered = false; 
+                        if (isDragging) isDragging = false;
+                    });
+
+                    // Drag interactions (mouse)
+                    viewport.addEventListener('mousedown', (e) => {
+                        isDragging = true;
+                        startX = e.clientX;
+                        dragStartOffset = currentOffset;
+                        dragDeltaX = 0;
+                        e.preventDefault();
+                    });
+
+                    window.addEventListener('mousemove', (e) => {
+                        if (!isDragging) return;
+                        dragDeltaX = Math.abs(e.clientX - startX);
+                        const delta = e.clientX - startX;
+                        currentOffset = dragStartOffset + delta;
+                    });
+
+                    window.addEventListener('mouseup', () => {
+                        if (isDragging) isDragging = false;
+                    });
+
+                    // Touch interactions (mobile)
+                    viewport.addEventListener('touchstart', (e) => {
+                        if (e.touches.length === 1) {
+                            isDragging = true;
+                            startX = e.touches[0].clientX;
+                            dragStartOffset = currentOffset;
+                            dragDeltaX = 0;
+                        }
+                    }, { passive: true });
+
+                    viewport.addEventListener('touchmove', (e) => {
+                        if (!isDragging || e.touches.length !== 1) return;
+                        dragDeltaX = Math.abs(e.touches[0].clientX - startX);
+                        const delta = e.touches[0].clientX - startX;
+                        currentOffset = dragStartOffset + delta;
+                    }, { passive: true });
+
+                    viewport.addEventListener('touchend', () => {
+                        isDragging = false;
+                    });
+
+                    // Click card to center it smoothly
+                    cards.forEach((card, idx) => {
+                        card.addEventListener('click', () => {
+                            if (dragDeltaX > 8) return; // Prevent triggering click after drag
+                            const viewportRect = viewport.getBoundingClientRect();
+                            const centerX = viewportRect.width / 2;
+                            const cardLocalCenter = (idx * stride) + (cardWidth / 2);
+                            currentOffset = centerX - cardLocalCenter;
+                            updateCardTransforms();
+                        });
+                    });
+                });
+            </script>
+        @endif
+
+        <!-- ==================== CALL TO ACTION BANNER (WHITE IN LIGHT MODE, LIME IN DARK MODE) ==================== -->
+        <section class="reveal-on-scroll reveal-scale py-14 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="cta-banner relative rounded-3xl bg-white dark:bg-[#93F514] border border-gray-200 dark:border-black/10 p-8 sm:p-12 text-center flex flex-col items-center justify-center shadow-lg shadow-black/5 dark:shadow-xl dark:shadow-black/20 transition-colors duration-300">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black uppercase text-gray-900 dark:text-black tracking-tight leading-tight max-w-3xl">
+                    {{ __('SIAP MEMULAI KARIR BARU BERSAMA KAMI?') }}
+                </h2>
+                <p class="mt-2.5 text-xs sm:text-sm text-gray-600 dark:text-black/85 font-medium max-w-xl leading-relaxed">
+                    {{ __('Daftar akun sekarang dan ikuti seleksi online untuk posisi impian Anda.') }}
+                </p>
+
+                <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
                     @auth
                         @php
                             $isAdminOrRecruiter =
@@ -1632,17 +1856,21 @@
                                 : route('profile');
                         @endphp
                         <a href="{{ $dashRoute }}"
-                            class="px-8 py-3.5 rounded-full bg-gradient-to-r from-[#93F514] to-[#5ef558] hover:from-[#7edc0b] hover:to-[#43e63d] text-black font-extrabold text-sm shadow-md shadow-black/40 transition-all duration-300">
+                            class="cta-btn-primary w-full sm:w-auto px-8 py-3 rounded-full bg-black dark:bg-black text-white dark:text-[#93F514] font-extrabold text-xs sm:text-sm shadow-md hover:bg-zinc-800 dark:hover:bg-[#151d15] transition-all duration-200 text-center">
                             {{ $isAdminOrRecruiter ? __('Buka Panel Dashboard') : __('Buka Profil Pelamar') }}
+                        </a>
+                        <a href="{{ route('jobs.index') }}"
+                            class="cta-btn-secondary w-full sm:w-auto px-7 py-3 rounded-full border-2 border-black text-black hover:bg-black hover:text-white dark:hover:bg-black/10 dark:hover:text-black font-bold text-xs sm:text-sm transition-all duration-200 text-center">
+                            {{ __('Lihat Lowongan') }}
                         </a>
                     @else
                         <a href="{{ route('register') }}"
-                            class="w-full sm:w-auto px-8 py-3.5 rounded-full bg-gradient-to-r from-[#93F514] to-[#5ef558] hover:from-[#7edc0b] hover:to-[#43e63d] text-black font-extrabold text-sm shadow-md shadow-black/40 transition-all duration-300 text-center">
-                            {{ __('Daftar Akun Sekarang') }}
+                            class="cta-btn-primary w-full sm:w-auto px-8 py-3 rounded-full bg-black dark:bg-black text-white dark:text-[#93F514] font-extrabold text-xs sm:text-sm shadow-md hover:bg-zinc-800 dark:hover:bg-[#151d15] transition-all duration-200 text-center">
+                            {{ __('Daftar akun sekarang') }}
                         </a>
                         <a href="{{ route('login') }}"
-                            class="w-full sm:w-auto px-6 py-3.5 rounded-full bg-black/50 hover:bg-black/80 border border-[#93F514]/50 text-[#EEEEEE] font-semibold text-sm transition text-center">
-                            {{ __('Masuk Akun') }}
+                            class="cta-btn-secondary w-full sm:w-auto px-7 py-3 rounded-full border-2 border-black text-black hover:bg-black hover:text-white dark:hover:bg-black/10 dark:hover:text-black font-bold text-xs sm:text-sm transition-all duration-200 text-center">
+                            {{ __('Masuk akun') }}
                         </a>
                     @endauth
                 </div>

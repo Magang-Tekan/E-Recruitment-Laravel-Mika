@@ -1,6 +1,6 @@
 @extends('frontend.layouts.app')
 
-@section('title', $company->name . ($company->tagline ? ' - ' . $company->tagline : '') . ' | Mika Career')
+@section('title', $company->name . ($company->tagline ? ' - ' . $company->tagline : '') . ' - Mika Career')
 
 @section('meta')
     @php
@@ -415,7 +415,7 @@
 
                                 <div class="flex items-center gap-2.5 shrink-0">
                                     <a href="{{ route('jobs.show', $jobItem->id) }}"
-                                       class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#93F514]/10 hover:bg-[#93F514] text-[#93F514] hover:text-black border border-[#93F514]/40 hover:border-[#93F514] font-bold text-xs transition-all duration-200">
+                                       class="job-detail-btn w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#93F514]/10 hover:bg-[#93F514] text-[#93F514] hover:text-black border border-[#93F514]/40 hover:border-[#93F514] font-bold text-xs transition-all duration-200">
                                         <span>{{ __('Detail & Lamar') }}</span>
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 5l7 7-7 7" />
