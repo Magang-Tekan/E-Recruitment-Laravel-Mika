@@ -62,6 +62,7 @@
          showConfirmModal: false,
          showIncompleteModal: false,
          isSubmitting: false,
+         statementAgreed: false,
          isMandatoryComplete: {{ ($isMandatoryComplete ?? false) ? 'true' : 'false' }},
          hasApplied: {{ ($hasApplied ?? false) ? 'true' : 'false' }},
          missingSections: {{ json_encode($missingMandatorySections ?? []) }},
@@ -482,9 +483,14 @@
                             </span>
                         </div>
                         <div class="p-3 rounded-xl bg-[#050c05] border border-[#93F514]/20">
-                            <span class="text-[11px] text-gray-400 block">{{ __('Kuota Diterima') }}</span>
+                            <span class="text-[11px] text-gray-400 block">{{ __('Kuota Lowongan') }}</span>
                             <span class="text-xs sm:text-sm font-bold text-[#EEEEEE] mt-0.5 block">{{ $job->quota }}
                                 {{ __('Orang') }}</span>
+                            @if ($job->is_quota_full)
+                                <span class="text-[10px] font-semibold text-amber-400 block mt-0.5">{{ __('Kuota Terpenuhi') }}</span>
+                            @elseif ($job->accepted_count > 0)
+                                <span class="text-[10px] text-emerald-400 block mt-0.5">{{ __('Sisa :count slot', ['count' => $job->remaining_quota]) }}</span>
+                            @endif
                         </div>
                         <div class="p-3 rounded-xl bg-[#050c05] border {{ $job->is_expired || $job->status === 'Closed' ? 'border-rose-500/30' : ($job->days_remaining !== null && $job->days_remaining <= 3 ? 'border-amber-500/40' : 'border-[#93F514]/20') }}">
                             <span class="text-[11px] text-gray-400 block">{{ __('Batas Lamaran') }}</span>
@@ -759,7 +765,7 @@
                         <!-- Modal Header -->
                         <div class="flex items-start justify-between gap-4">
                             <div class="flex items-center gap-3.5">
-                                <div class="w-12 h-12 rounded-2xl bg-[#93F514]/15 border border-[#93F514]/40 flex items-center justify-center text-[#93F514] shadow-sm shrink-0">
+                                <div class="confirm-icon-box w-12 h-12 rounded-2xl bg-[#93F514]/15 border border-[#93F514]/40 flex items-center justify-center text-[#93F514] shadow-sm shrink-0">
                                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                     </svg>
@@ -768,10 +774,10 @@
                                     <h3 class="text-lg sm:text-xl font-extrabold text-[#EEEEEE]" id="modal-title-confirm">
                                         {{ __('Konfirmasi Lamaran') }}
                                     </h3>
-                                    <p class="text-xs text-gray-400 mt-0.5">{{ __('Pastikan profil dan data lamaran Anda telah sesuai.') }}</p>
+                                    <p class="confirm-subtitle text-xs text-gray-400 mt-0.5">{{ __('Pastikan profil dan data lamaran Anda telah sesuai.') }}</p>
                                 </div>
                             </div>
-                            <button type="button" @click="showConfirmModal = false" class="p-1.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition">
+                            <button type="button" @click="showConfirmModal = false" class="confirm-close-btn p-1.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition">
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
@@ -798,14 +804,26 @@
                             </div>
                         </div>
 
-                        <!-- Statement Alert -->
-                        <div class="confirm-statement-box p-3.5 rounded-xl bg-[#93F514]/10 border border-[#93F514]/30 text-gray-300 text-xs flex items-start gap-2.5">
-                            <svg class="w-4 h-4 text-[#93F514] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            <p class="leading-relaxed">
-                                {{ __('Apakah Anda yakin ingin mengirim lamaran untuk posisi ini? Data CV dan profil Anda akan langsung diteruskan ke tim rekruter untuk proses seleksi berkas.') }}
+                        <!-- Statement Alert & Digital Declaration -->
+                        <div class="confirm-statement-box p-4 rounded-2xl bg-[#040a04] border border-[#93F514]/30 text-gray-300 text-xs space-y-3">
+                            <div class="confirm-statement-title flex items-center gap-2 text-[#93F514] font-bold text-[11px] uppercase tracking-wider">
+                                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                </svg>
+                                <span>{{ __('Pernyataan Kebenaran Data Pelamar') }}</span>
+                            </div>
+
+                            <p class="confirm-statement-quote leading-relaxed italic bg-black/60 p-3.5 rounded-xl border border-white/5 text-[11.5px] text-gray-200">
+                                "{{ __('Dengan ini saya menyatakan bahwa seluruh data profil dan riwayat yang saya lampirkan dalam lamaran ini (Data Pribadi, Keluarga, Pendidikan, Pengalaman Kerja, hingga Data Tambahan) adalah') }} <strong class="confirm-statement-bold text-[#93F514] font-bold not-italic">{{ __('BENAR') }}</strong>. {{ __('Saya menyadari bahwa ketidakjujuran dapat mengakibatkan Pembatalan Lamaran atau Pemutusan Hubungan Kerja (PHK) dari Pihak Perusahaan.') }}"
                             </p>
+
+                            <label class="confirm-agree-label flex items-start gap-2.5 cursor-pointer pt-1 select-none group">
+                                <input type="checkbox" x-model="statementAgreed"
+                                    class="confirm-agree-checkbox mt-0.5 rounded border-gray-600 bg-black/60 text-[#93F514] focus:ring-[#93F514] w-4 h-4 cursor-pointer">
+                                <span class="confirm-agree-text text-xs font-semibold text-gray-200 group-hover:text-white transition">
+                                    {{ __('Saya menyetujui pernyataan di atas dan menjamin kebenaran seluruh data saya.') }} <span class="text-rose-400">*</span>
+                                </span>
+                            </label>
                         </div>
 
                         <!-- Actions Form -->
@@ -817,8 +835,8 @@
                                 {{ __('Batal') }}
                             </button>
                             <button type="submit" 
-                                    :disabled="isSubmitting"
-                                    class="confirm-submit-btn px-6 py-2.5 rounded-xl bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-xs shadow-md shadow-black/30 transition flex items-center gap-2 cursor-pointer disabled:opacity-50">
+                                    :disabled="isSubmitting || !statementAgreed"
+                                    class="confirm-submit-btn px-6 py-2.5 rounded-xl bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-xs shadow-md shadow-black/30 transition flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                                 <svg x-show="isSubmitting" class="animate-spin w-4 h-4 text-black" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

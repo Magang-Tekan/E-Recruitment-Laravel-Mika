@@ -76,7 +76,7 @@ class JobApplicationController extends Controller
             ApplicationStatusHistory::create([
                 'job_applications_id' => $application->id,
                 'status'              => 'Submitted',
-                'notes'               => 'Lamaran pekerjaan berhasil diajukan oleh pelamar.',
+                'notes'               => 'Lamaran pekerjaan berhasil diajukan dengan persetujuan pernyataan kebenaran data profil.',
                 'changed_by'          => $user->id,
                 'changed_at'          => now(),
             ]);
@@ -559,6 +559,21 @@ class JobApplicationController extends Controller
             $successMsg .= ' Notifikasi email otomatis telah berhasil dikirim ke ' . $applicantEmail . '.';
         } elseif ($newStatus === 'Partial Approved') {
             $successMsg .= ' Status saat ini Partial Approved (email belum dikirim ke pelamar sampai peninjauan akhir selesai).';
+        }
+
+        if ($newStatus === 'Accepted' && $application->job) {
+            $job = $application->job;
+            $quota = (int) ($job->quota ?? 0);
+            $acceptedCount = $job->jobApplications()->whereIn('status', ['Accepted', 'accepted', 'hired'])->count();
+
+            if ($quota > 0) {
+                if ($acceptedCount >= $quota) {
+                    $successMsg .= " [Pemberitahuan Kuota]: Target kuota untuk lowongan '{$job->title}' kini telah terpenuhi ({$acceptedCount}/{$quota} orang). Anda dapat menutup lowongan ini jika seluruh proses rekrutmen telah selesai.";
+                } else {
+                    $remaining = max(0, $quota - $acceptedCount);
+                    $successMsg .= " [Info Kuota]: {$acceptedCount} dari {$quota} kuota telah terisi (Sisa kuota: {$remaining} orang).";
+                }
+            }
         }
 
         return redirect()->route($redirectRoute)

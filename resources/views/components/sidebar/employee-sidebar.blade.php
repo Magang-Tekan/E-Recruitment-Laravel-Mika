@@ -20,10 +20,10 @@
                         class="h-8 w-auto object-contain rounded-lg group-hover:scale-105 transition-transform duration-200">
                     <div>
                         <span
-                            class="block font-bold text-lg tracking-tight text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-[#93F514] transition-colors">E-Rekrutmen</span>
+                            class="block font-bold text-lg tracking-tight text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-[#93F514] transition-colors">{{ __('E-Rekrutmen') }}</span>
                         <span
                             class="block text-[10px] font-semibold tracking-widest text-emerald-600 dark:text-[#93F514] uppercase">
-                            Portal Karyawan
+                            {{ __('Portal Karyawan') }}
                         </span>
                     </div>
                 </a>

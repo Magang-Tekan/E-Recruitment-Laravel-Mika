@@ -235,7 +235,7 @@
                     <label
                         class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Tanggal Lahir') }}
                         <span class="text-red-500">*</span></label>
-                    <input type="date" wire:model="birth_date"
+                    <input type="date" wire:model.blur="birth_date"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition cursor-pointer dark:[color-scheme:dark]">
                     @error('birth_date')
                         <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
@@ -285,6 +285,28 @@
                     @enderror
                 </div>
 
+                <!-- Suku -->
+                <div>
+                    <label
+                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Suku') }}</label>
+                    <input type="text" wire:model="ethnicity" placeholder="{{ __('Contoh: Jawa, Sunda, Batak, Minang, dll.') }}"
+                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                    @error('ethnicity')
+                        <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <!-- Kebangsaan -->
+                <div>
+                    <label
+                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Kebangsaan') }}</label>
+                    <input type="text" wire:model="nationality" placeholder="{{ __('Contoh: WNI atau Indonesia') }}"
+                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                    @error('nationality')
+                        <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                    @enderror
+                </div>
+
                 <!-- NPWP -->
                 <div>
                     <label
@@ -308,7 +330,7 @@
                     @enderror
                 </div>
 
-                <!-- Autocomplete Wilayah Domisili (Kota/Kabupaten & Provinsi) -->
+                <!-- Autocomplete Wilayah Sesuai KTP (Kota/Kabupaten & Provinsi) -->
                 <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6" x-data="{
                     provinces: [],
                     regencies: [],
@@ -416,7 +438,7 @@
                     <div class="relative">
                         <label
                             class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                            {{ __('Kota / Kabupaten Domisili') }} <span class="text-red-500">*</span>
+                            {{ __('Kota / Kabupaten Sesuai KTP') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <input type="text" x-model="$wire.city" @focus="searchRegency()"
@@ -452,7 +474,7 @@
                     <div class="relative">
                         <label
                             class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                            {{ __('Provinsi Domisili') }} <span class="text-red-500">*</span>
+                            {{ __('Provinsi Sesuai KTP') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <input type="text" x-model="$wire.province" @focus="searchProv()"
@@ -485,14 +507,169 @@
 
                 </div>
 
-                <!-- Alamat Lengkap -->
+                <!-- Status Pernikahan -->
+                <div class="md:col-span-2 p-5 bg-slate-50/80 dark:bg-[#14203A]/60 border border-slate-200/80 dark:border-[#1D2E54] rounded-2xl space-y-4">
+                    <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                        {{ __('Status Pernikahan') }} <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        @foreach([
+                            'lajang' => 'Lajang',
+                            'menikah' => 'Menikah',
+                            'janda' => 'Janda',
+                            'duda' => 'Duda',
+                        ] as $val => $label)
+                            <label class="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] cursor-pointer hover:border-emerald-500 dark:hover:border-[#93F514] transition">
+                                <input type="radio" wire:model.live="marital_status" value="{{ $val }}"
+                                    class="w-4 h-4 text-emerald-600 border-slate-300 dark:border-[#1D2E54] focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
+                                <span class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ __($label) }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('marital_status')
+                        <span class="text-xs text-red-500 block">{{ $message }}</span>
+                    @enderror
+
+                    @if($marital_status === 'menikah')
+                        <div class="pt-3 border-t border-slate-200/60 dark:border-[#1D2E54]/60 max-w-sm">
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                                {{ __('Tanggal Pernikahan') }}
+                            </label>
+                            <input type="date" wire:model.blur="marriage_date"
+                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition cursor-pointer dark:[color-scheme:dark]">
+                            @error('marriage_date')
+                                <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Alamat sesuai KTP -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                            {{ __('Alamat Sesuai KTP') }}
+                        </label>
+                        <label class="inline-flex items-center gap-2 cursor-pointer text-xs font-medium text-emerald-600 dark:text-[#93F514] select-none">
+                            <input type="checkbox" wire:model.live="is_same_address"
+                                class="rounded border-slate-300 dark:border-[#1D2E54] text-emerald-600 focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
+                            <span>{{ __('Alamat Domisili sama dengan KTP') }}</span>
+                        </label>
+                    </div>
+                    <textarea wire:model.live.debounce.300ms="ktp_address" rows="2" placeholder="{{ __('Alamat lengkap seperti yang tercantum pada KTP Anda') }}"
+                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition"></textarea>
+                    @error('ktp_address')
+                        <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <!-- Alamat Domisili Saat Ini -->
                 <div class="md:col-span-2">
                     <label
-                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Alamat Lengkap') }}
+                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Alamat Domisili Saat Ini') }}
                         <span class="text-red-500">*</span></label>
-                    <textarea wire:model="address" rows="3" placeholder="{{ __('Alamat lengkap tempat tinggal saat ini') }}"
+                    <textarea wire:model="address" rows="2" placeholder="{{ __('Alamat lengkap tempat tinggal saat ini') }}"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition"></textarea>
                     @error('address')
+                        <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <!-- Kepemilikan SIM (Surat Izin Mengemudi) -->
+                <div class="md:col-span-2 p-5 bg-slate-50/80 dark:bg-[#14203A]/60 border border-slate-200/80 dark:border-[#1D2E54] rounded-2xl space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                                {{ __('Kepemilikan SIM (Surat Izin Mengemudi)') }}
+                            </label>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                {{ __('Tersedia 2 slot SIM default sesuai form fisik, Anda dapat menambah slot jika memiliki lebih dari 2 SIM.') }}
+                            </p>
+                        </div>
+                        {{-- <button type="button" wire:click="addDrivingLicense"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-600 dark:bg-[#93F514]/10 dark:hover:bg-[#93F514]/20 dark:text-[#93F514] border border-emerald-500/20 dark:border-[#93F514]/30 transition self-start sm:self-auto">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>{{ __('Tambah SIM Lainnya') }}</span>
+                        </button> --}}
+                    </div>
+
+                    <div class="space-y-3">
+                        @foreach($driving_licenses as $index => $license)
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3 bg-white dark:bg-[#0D1527] rounded-xl border border-slate-200 dark:border-[#1D2E54]" wire:key="license-slot-{{ $index }}">
+                                <div class="w-full sm:w-48 shrink-0">
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">{{ __('Jenis SIM') }} #{{ $index + 1 }}</label>
+                                    <select wire:model="driving_licenses.{{ $index }}.type"
+                                        class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition">
+                                        <option value="">{{ __('-- Pilih Jenis SIM --') }}</option>
+                                        <option value="SIM A">{{ __('SIM A (Mobil Pribadi)') }}</option>
+                                        <option value="SIM B1">SIM B1</option>
+                                        <option value="SIM B2">SIM B2</option>
+                                        <option value="SIM C">{{ __('SIM C (Sepeda Motor)') }}</option>
+                                        <option value="SIM C1">SIM C1</option>
+                                        <option value="SIM C2">SIM C2</option>
+                                        <option value="SIM D">{{ __('SIM D (Disabilitas)') }}</option>
+                                        <option value="Lainnya">{{ __('Lainnya') }}</option>
+                                    </select>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">{{ __('Nomor SIM') }}</label>
+                                    <input type="text" wire:model="driving_licenses.{{ $index }}.number" placeholder="{{ __('Nomor kartu SIM (kosongkan jika tidak ada)') }}"
+                                        class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition">
+                                </div>
+                                @if(count($driving_licenses) > 2)
+                                    <div class="sm:self-end pt-1 sm:pt-0">
+                                        <button type="button" wire:click="removeDrivingLicense({{ $index }})"
+                                            title="{{ __('Hapus baris SIM') }}"
+                                            class="w-full sm:w-auto p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition text-xs flex items-center justify-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                            <span class="sm:hidden">{{ __('Hapus') }}</span>
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- Transportasi Sehari-hari yang Dipakai -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        {{ __('Transportasi Sehari-hari yang Dipakai') }}
+                    </label>
+                    <select wire:model="daily_transportation"
+                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                        <option value="">{{ __('-- Pilih Transportasi --') }}</option>
+                        <option value="Sepeda Motor Pribadi">{{ __('Sepeda Motor Pribadi') }}</option>
+                        <option value="Mobil Pribadi">{{ __('Mobil Pribadi') }}</option>
+                        <option value="Transportasi Umum (KRL / Kereta)">{{ __('Transportasi Umum (KRL / Kereta)') }}</option>
+                        <option value="Transportasi Umum (TransJakarta / Bus / Angkot)">{{ __('Transportasi Umum (TransJakarta / Bus / Angkot)') }}</option>
+                        <option value="Ojek Online / Taksi Online">{{ __('Ojek Online / Taksi Online') }}</option>
+                        <option value="Sepeda">{{ __('Sepeda') }}</option>
+                        <option value="Jalan Kaki">{{ __('Jalan Kaki') }}</option>
+                        <option value="Lainnya">{{ __('Lainnya') }}</option>
+                    </select>
+                    @error('daily_transportation')
+                        <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <!-- Jarak ke Tempat Kerja -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        {{ __('Jarak Rumah/Kost ke Tempat Kerja') }}
+                    </label>
+                    <div class="relative">
+                        <input type="number" step="0.1" min="0" wire:model="work_distance_km" placeholder="{{ __('Contoh: 12.5') }}"
+                            class="w-full px-4 py-2.5 pr-14 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-xs font-bold text-slate-400 dark:text-slate-500">
+                            km
+                        </div>
+                    </div>
+                    @error('work_distance_km')
                         <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
                     @enderror
                 </div>
@@ -590,18 +767,16 @@
             <!-- Submit Button -->
             <div class="flex justify-end pt-4 border-t border-slate-200/80 dark:border-[#1D2E54]">
                 <button type="submit" wire:loading.attr="disabled"
-                    class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-sm font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition duration-150 ease-in-out flex items-center gap-2 active:scale-95">
+                    class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-70 disabled:cursor-not-allowed text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs sm:text-sm font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition duration-150 ease-in-out active:scale-95 cursor-pointer">
+                    <svg wire:loading.remove wire:target="save" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <svg wire:loading wire:target="save" class="w-4 h-4 animate-spin shrink-0 text-white dark:text-black" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                     <span wire:loading.remove wire:target="save">{{ __('Simpan Perubahan') }}</span>
-                    <span wire:loading wire:target="save" class="flex items-center gap-2">
-                        <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                        {{ __('Menyimpan...') }}
-                    </span>
+                    <span wire:loading wire:target="save">{{ __('Menyimpan...') }}</span>
                 </button>
             </div>
         </form>

@@ -24,6 +24,10 @@ class Pribadi extends Component
 
     public $phone;
 
+    public $ktp_address;
+
+    public $is_same_address = false;
+
     public $address;
 
     public $city;
@@ -33,6 +37,20 @@ class Pribadi extends Component
     public $npwp;
 
     public $religion;
+
+    public $ethnicity;
+
+    public $nationality;
+
+    public $marital_status;
+
+    public $marriage_date;
+
+    public $driving_licenses = [];
+
+    public $daily_transportation;
+
+    public $work_distance_km;
 
     public $postal_code;
 
@@ -67,16 +85,35 @@ class Pribadi extends Component
         $this->full_name = $profile->full_name ?? $user->name;
         $this->gender = $profile->gender;
         $this->birth_place = $profile->birth_place;
-        $this->birth_date = $profile->birth_date;
+        $this->birth_date = $profile->birth_date ? \Carbon\Carbon::parse($profile->birth_date)->format('Y-m-d') : null;
         $this->phone = $profile->phone;
+        $this->ktp_address = $profile->ktp_address;
         $this->address = $profile->address;
         $this->city = $profile->city;
         $this->province = $profile->province;
         $this->npwp = $profile->npwp;
         $this->religion = $profile->religion;
+        $this->ethnicity = $profile->ethnicity;
+        $this->nationality = $profile->nationality;
+        $this->marital_status = $profile->marital_status;
+        $this->marriage_date = $profile->marriage_date ? \Carbon\Carbon::parse($profile->marriage_date)->format('Y-m-d') : null;
+
+        $licenses = is_array($profile->driving_licenses) ? $profile->driving_licenses : [];
+        while (count($licenses) < 2) {
+            $licenses[] = ['type' => '', 'number' => ''];
+        }
+        $this->driving_licenses = $licenses;
+
+        $this->daily_transportation = $profile->daily_transportation;
+        $this->work_distance_km = $profile->work_distance_km;
         $this->postal_code = $profile->postal_code;
         $this->blood_type = $profile->blood_type;
         $this->about_me = $profile->about_me;
+
+        if (!empty($this->ktp_address) && !empty($this->address) && trim($this->ktp_address) === trim($this->address)) {
+            $this->is_same_address = true;
+        }
+
         $photoUrl = $profile->photo_url;
         $this->current_photo_url = null;
         if ($photoUrl) {
@@ -88,6 +125,36 @@ class Pribadi extends Component
         $this->current_cv_url = $profile->cv_file_path ? asset('storage/'.$profile->cv_file_path) : null;
     }
 
+    public function updatedIsSameAddress($value)
+    {
+        if ($value && !empty($this->ktp_address)) {
+            $this->address = $this->ktp_address;
+        }
+    }
+
+    public function updatedKtpAddress($value)
+    {
+        if ($this->is_same_address) {
+            $this->address = $value;
+        }
+    }
+
+    public function addDrivingLicense()
+    {
+        $this->driving_licenses[] = ['type' => '', 'number' => ''];
+    }
+
+    public function removeDrivingLicense($index)
+    {
+        if (isset($this->driving_licenses[$index])) {
+            unset($this->driving_licenses[$index]);
+            $this->driving_licenses = array_values($this->driving_licenses);
+        }
+        while (count($this->driving_licenses) < 2) {
+            $this->driving_licenses[] = ['type' => '', 'number' => ''];
+        }
+    }
+
     protected function rules()
     {
         return [
@@ -97,11 +164,21 @@ class Pribadi extends Component
             'birth_place' => 'nullable|string|max:100',
             'birth_date' => 'nullable|date',
             'phone' => 'nullable|string|max:20',
+            'ktp_address' => 'nullable|string|max:500',
             'address' => 'nullable|string|max:500',
             'city' => 'nullable|string|max:100',
             'province' => 'nullable|string|max:100',
             'npwp' => 'nullable|string|max:30',
             'religion' => 'nullable|string|max:50',
+            'ethnicity' => 'nullable|string|max:50',
+            'nationality' => 'nullable|string|max:50',
+            'marital_status' => 'nullable|string|in:lajang,menikah,janda,duda,bercerai',
+            'marriage_date' => 'nullable|date',
+            'driving_licenses' => 'nullable|array',
+            'driving_licenses.*.type' => 'nullable|string|max:20',
+            'driving_licenses.*.number' => 'nullable|string|max:50',
+            'daily_transportation' => 'nullable|string|max:100',
+            'work_distance_km' => 'nullable|numeric|min:0|max:999.9',
             'postal_code' => 'nullable|string|max:10',
             'blood_type' => 'nullable|string|in:A,B,AB,O',
             'about_me' => 'nullable|string|max:1000',
@@ -115,6 +192,7 @@ class Pribadi extends Component
         return [
             'nik.digits' => __('NIK harus terdiri dari 16 digit angka.'),
             'blood_type.in' => __('Pilihan golongan darah tidak valid.'),
+            'work_distance_km.numeric' => __('Jarak kerja harus berupa angka.'),
         ];
     }
 
@@ -154,7 +232,20 @@ class Pribadi extends Component
 
     public function save()
     {
+        if ($this->nik) {
+            $this->nik = preg_replace('/[^0-9]/', '', $this->nik);
+        }
+
         $validatedData = $this->validate();
+
+        // Normalisasi birth_date agar berupa string Y-m-d atau null jika kosong
+        if (!empty($this->birth_date)) {
+            $validatedData['birth_date'] = \Carbon\Carbon::parse($this->birth_date)->format('Y-m-d');
+            $this->birth_date = $validatedData['birth_date'];
+        } else {
+            $validatedData['birth_date'] = null;
+            $this->birth_date = null;
+        }
 
         $user = Auth::user();
         $profile = ApplicantProfile::firstOrCreate(['user_id' => $user->id]);
@@ -206,6 +297,39 @@ class Pribadi extends Component
             }
         }
         unset($validatedData['cv_file']);
+
+        // Clean & filter SIM entries
+        $cleanLicenses = [];
+        if (is_array($this->driving_licenses)) {
+            foreach ($this->driving_licenses as $lic) {
+                $type = trim($lic['type'] ?? '');
+                $number = trim($lic['number'] ?? '');
+                if ($type !== '' || $number !== '') {
+                    $cleanLicenses[] = [
+                        'type' => $type,
+                        'number' => $number,
+                    ];
+                }
+            }
+        }
+        $validatedData['driving_licenses'] = !empty($cleanLicenses) ? $cleanLicenses : null;
+
+        // Normalisasi marriage_date
+        if (($this->marital_status ?? '') === 'menikah' && !empty($this->marriage_date)) {
+            $validatedData['marriage_date'] = \Carbon\Carbon::parse($this->marriage_date)->format('Y-m-d');
+            $this->marriage_date = $validatedData['marriage_date'];
+        } else {
+            $validatedData['marriage_date'] = null;
+            $this->marriage_date = null;
+        }
+
+        // Normalisasi work_distance_km
+        if ($this->work_distance_km === '' || $this->work_distance_km === null) {
+            $validatedData['work_distance_km'] = null;
+            $this->work_distance_km = null;
+        } else {
+            $validatedData['work_distance_km'] = (float) $this->work_distance_km;
+        }
 
         $profile->update($validatedData);
 

@@ -44,6 +44,15 @@
 
                 {{-- Header Action Buttons --}}
                 <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                    {{-- <template x-if="detailData && detailData.id">
+                        <a :href="'{{ $formActionPrefix }}' + detailData.id + '/profile-pdf'" target="_blank"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold shadow-xs transition" title="Unduh Profil Lengkap PDF">
+                            <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <span>Unduh PDF</span>
+                        </a>
+                    </template> --}}
                     {{-- Close Button --}}
                     <button @click="showDetailModal = false" class="p-1.5 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition shrink-0 cursor-pointer" title="Tutup Modal">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -255,6 +264,29 @@
                                 <span class="font-semibold text-gray-800 dark:text-slate-200" x-text="detailData.applicant_profile ? (detailData.applicant_profile.blood_type || '-') : '-'"></span>
                             </div>
                             <div>
+                                <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Suku:</span>
+                                <span class="font-semibold text-gray-800 dark:text-slate-200" x-text="detailData.applicant_profile ? (detailData.applicant_profile.ethnicity || '-') : '-'"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Kebangsaan:</span>
+                                <span class="font-semibold text-gray-800 dark:text-slate-200" x-text="detailData.applicant_profile ? (detailData.applicant_profile.nationality || '-') : '-'"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Status Pernikahan:</span>
+                                <span class="font-semibold text-gray-800 dark:text-slate-200 capitalize" 
+                                    x-text="detailData.applicant_profile && detailData.applicant_profile.marital_status 
+                                        ? (detailData.applicant_profile.marital_status + (detailData.applicant_profile.marriage_date ? (' (' + formatDate(detailData.applicant_profile.marriage_date) + ')') : '')) 
+                                        : '-'"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Transportasi Harian:</span>
+                                <span class="font-semibold text-gray-800 dark:text-slate-200" x-text="detailData.applicant_profile ? (detailData.applicant_profile.daily_transportation || '-') : '-'"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Jarak ke Tempat Kerja:</span>
+                                <span class="font-semibold text-gray-800 dark:text-slate-200" x-text="detailData.applicant_profile && detailData.applicant_profile.work_distance_km ? (detailData.applicant_profile.work_distance_km + ' km') : '-'"></span>
+                            </div>
+                            <div>
                                 <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Kota & Provinsi:</span>
                                 <span class="font-semibold text-gray-800 dark:text-slate-200" x-text="detailData.applicant_profile ? ((detailData.applicant_profile.city || '') + (detailData.applicant_profile.province ? (', ' + detailData.applicant_profile.province) : '')) : '-'"></span>
                             </div>
@@ -262,10 +294,29 @@
                                 <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Kode Pos:</span>
                                 <span class="font-semibold text-gray-800 dark:text-slate-200 font-mono" x-text="detailData.applicant_profile ? (detailData.applicant_profile.postal_code || '-') : '-'"></span>
                             </div>
-                            <div class="sm:col-span-2">
-                                <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Alamat Lengkap KTP / Domisili:</span>
-                                <span class="font-semibold text-gray-800 dark:text-slate-200" x-text="detailData.applicant_profile ? (detailData.applicant_profile.address || '-') : '-'"></span>
+                            <div class="sm:col-span-2 md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2.5 border-t border-gray-100 dark:border-slate-800">
+                                <div>
+                                    <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Alamat Sesuai KTP:</span>
+                                    <span class="font-semibold text-gray-800 dark:text-slate-200 leading-relaxed" x-text="detailData.applicant_profile ? (detailData.applicant_profile.ktp_address || '-') : '-'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Alamat Domisili Saat Ini:</span>
+                                    <span class="font-semibold text-gray-800 dark:text-slate-200 leading-relaxed" x-text="detailData.applicant_profile ? (detailData.applicant_profile.address || '-') : '-'"></span>
+                                </div>
                             </div>
+                            <template x-if="getDrivingLicenses(detailData).length > 0">
+                                <div class="sm:col-span-2 md:col-span-3 pt-2.5 border-t border-gray-100 dark:border-slate-800">
+                                    <span class="text-gray-400 dark:text-slate-500 block text-[10.5px] mb-1.5">Kepemilikan SIM (Surat Izin Mengemudi):</span>
+                                    <div class="flex flex-wrap gap-2">
+                                        <template x-for="(lic, lIdx) in getDrivingLicenses(detailData)" :key="lIdx">
+                                            <span class="px-2.5 py-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-medium text-gray-800 dark:text-slate-200 shadow-xs">
+                                                <strong class="text-emerald-600 dark:text-emerald-400" x-text="(lic.type || 'SIM') + ':'"></strong>
+                                                <span x-text="lic.number || '-'"></span>
+                                            </span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
 
                         {{-- Dokumen Berkas CV Pelamar Card --}}
@@ -301,15 +352,15 @@
                             <span class="text-[11px] text-gray-400 dark:text-slate-500 font-medium">Latar Belakang Keluarga</span>
                         </div>
 
-                        {{-- Ringkasan Status Nikah & Saudara --}}
+                        {{-- Ringkasan Susunan Saudara --}}
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                             <div class="p-3 bg-gray-50/80 dark:bg-slate-800/40 rounded-xl border border-gray-100 dark:border-slate-800 flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                 </div>
                                 <div>
-                                    <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Status Pernikahan:</span>
-                                    <span class="font-bold text-gray-900 dark:text-white capitalize" x-text="detailData.applicant_profile ? (detailData.applicant_profile.marital_status || 'Belum diisi') : '-'"></span>
+                                    <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Urutan Kelahiran:</span>
+                                    <span class="font-bold text-gray-900 dark:text-white" x-text="detailData.applicant_profile && detailData.applicant_profile.child_sequence ? ('Anak ke-' + detailData.applicant_profile.child_sequence) : '-'"></span>
                                 </div>
                             </div>
                             <div class="p-3 bg-gray-50/80 dark:bg-slate-800/40 rounded-xl border border-gray-100 dark:border-slate-800 flex items-center gap-3">
@@ -317,17 +368,51 @@
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                                 </div>
                                 <div>
-                                    <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Susunan Saudara:</span>
+                                    <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Jumlah Bersaudara:</span>
                                     <span class="font-bold text-gray-900 dark:text-white" 
-                                        x-text="detailData.applicant_profile && detailData.applicant_profile.child_sequence 
-                                            ? ('Anak ke-' + detailData.applicant_profile.child_sequence + ' dari ' + (detailData.applicant_profile.total_siblings || '-') + ' bersaudara') 
-                                            : 'Belum diisi'"></span>
+                                        x-text="detailData.applicant_profile && detailData.applicant_profile.total_siblings 
+                                            ? (detailData.applicant_profile.total_siblings + ' Bersaudara') 
+                                            : '-'"></span>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Ayah & Ibu Grid --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        {{-- Tabel Lengkap Anggota Keluarga (Jika Tersedia) --}}
+                        <template x-if="detailData.applicant_profile && detailData.applicant_profile.family && detailData.applicant_profile.family.family_members && detailData.applicant_profile.family.family_members.length > 0">
+                            <div class="overflow-x-auto rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/30">
+                                <table class="w-full text-left text-[11px] text-gray-700 dark:text-slate-300">
+                                    <thead class="bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 uppercase font-bold text-[10px]">
+                                        <tr>
+                                            <th class="py-2 px-2.5">Hubungan</th>
+                                            <th class="py-2 px-2.5">Nama</th>
+                                            <th class="py-2 px-2.5">Tgl Lahir</th>
+                                            <th class="py-2 px-2.5">Tempat Lahir</th>
+                                            <th class="py-2 px-2 text-center">Usia</th>
+                                            <th class="py-2 px-2.5">Pendidikan</th>
+                                            <th class="py-2 px-2.5">Pekerjaan</th>
+                                            <th class="py-2 px-2.5">Perusahaan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 dark:divide-slate-800">
+                                        <template x-for="(mem, mIdx) in detailData.applicant_profile.family.family_members" :key="mIdx">
+                                            <tr class="hover:bg-white dark:hover:bg-slate-800/60">
+                                                <td class="py-1.5 px-2.5 font-bold text-gray-900 dark:text-white" x-text="mem.relation || '-'"></td>
+                                                <td class="py-1.5 px-2.5 font-medium" x-text="mem.name || '-'"></td>
+                                                <td class="py-1.5 px-2.5 text-gray-500 dark:text-slate-400" x-text="mem.birth_date ? formatDate(mem.birth_date) : '-'"></td>
+                                                <td class="py-1.5 px-2.5 text-gray-500 dark:text-slate-400" x-text="mem.birth_place || '-'"></td>
+                                                <td class="py-1.5 px-2 text-center" x-text="mem.age ? (mem.age + ' Thn') : '-'"></td>
+                                                <td class="py-1.5 px-2.5" x-text="mem.education || '-'"></td>
+                                                <td class="py-1.5 px-2.5" x-text="mem.occupation || '-'"></td>
+                                                <td class="py-1.5 px-2.5 text-gray-500 dark:text-slate-400" x-text="mem.company || '-'"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
+
+                        {{-- Ayah & Ibu Grid (Fallback jika belum format tabel) --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs" x-show="!detailData.applicant_profile || !detailData.applicant_profile.family || !detailData.applicant_profile.family.family_members || detailData.applicant_profile.family.family_members.length === 0">
                             {{-- Data Ayah --}}
                             <div class="p-3.5 bg-gray-50/80 dark:bg-slate-800/40 rounded-2xl border border-gray-100 dark:border-slate-800 space-y-2">
                                 <div class="flex items-center gap-2 border-b border-gray-200/60 dark:border-slate-700/60 pb-1.5">
@@ -499,7 +584,19 @@
                                             </div>
                                             <p x-show="edu.description" class="text-gray-500 dark:text-slate-400 text-[11px] pt-0.5" x-text="edu.description"></p>
                                         </div>
-                                        <span class="text-gray-500 dark:text-slate-400 text-[10.5px] bg-white dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-gray-200/60 dark:border-slate-700 shrink-0 self-start font-mono" x-text="edu.start_year + ' - ' + (edu.end_year || 'Sekarang')"></span>
+                                        <div class="flex items-center gap-2 shrink-0 self-start">
+                                            <template x-if="edu.certificate_path">
+                                                <a :href="edu.certificate_path.startsWith('http') ? edu.certificate_path : ('{{ asset('storage') }}/' + edu.certificate_path.replace(/^\/+/, ''))"
+                                                    target="_blank"
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1 text-[10.5px] font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800 rounded-lg transition">
+                                                    <svg class="w-3 h-3 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                    </svg>
+                                                    <span>Lihat Ijazah</span>
+                                                </a>
+                                            </template>
+                                            <span class="text-gray-500 dark:text-slate-400 text-[10.5px] bg-white dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-gray-200/60 dark:border-slate-700 font-mono" x-text="edu.start_year + ' - ' + (edu.end_year || 'Sekarang')"></span>
+                                        </div>
                                     </div>
                                 </template>
                             </div>

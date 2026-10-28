@@ -84,6 +84,7 @@ class JobTable extends Component
             ->get();
 
         $jobs = Job::with(['company', 'department', 'position', 'reviewer'])
+            ->withCount(['jobApplications', 'acceptedApplications'])
             ->when($this->search, function ($query) {
                 $search = strtolower(trim($this->search));
                 $query->where(function ($q) use ($search) {

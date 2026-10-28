@@ -24,7 +24,7 @@
                         class="h-8 w-auto object-contain rounded-lg group-hover:scale-105 transition-transform duration-200">
                     <div>
                         <span
-                            class="block font-bold text-lg tracking-tight text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-[#93F514] transition-colors">E-Rekrutmen</span>
+                            class="block font-bold text-lg tracking-tight text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-[#93F514] transition-colors">{{ __('E-Rekrutmen') }}</span>
                         <span
                             class="block text-[10px] font-semibold tracking-widest text-emerald-600 dark:text-[#93F514] uppercase">
                             {{ __('Panel Pelamar') }}
@@ -220,7 +220,7 @@
 
                             </x-slot:icon>
                             {{ __('Organisasi & Prestasi') }}
-                            @if (!empty($sectionStatuses['prestasi']) || !empty($sectionStatuses['organisasi']))
+                            @if (!empty($sectionStatuses['organisasi_prestasi']) || !empty($sectionStatuses['prestasi']) || !empty($sectionStatuses['organisasi']))
                                 <x-slot:append>
                                     <svg class="w-4 h-4 text-emerald-500 dark:text-emerald-400" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
@@ -231,28 +231,7 @@
                             @endif
                         </x-sidebar.single-nav-link>
 
-                        <!-- 6. Social Media -->
-                        <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'social_media'])" tab="social_media"
-                            x-on:click.prevent="switchTab('social_media')">
-                            <x-slot:icon>
-                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                </svg>
-                            </x-slot:icon>
-                            {{ __('Social Media') }}
-                            @if (!empty($sectionStatuses['social_media']))
-                                <x-slot:append>
-                                    <svg class="w-4 h-4 text-emerald-500 dark:text-emerald-400" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                            d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </x-slot:append>
-                            @endif
-                        </x-sidebar.single-nav-link>
-
-                        <!-- 7. Data Tambahan -->
+                        <!-- 6. Data Tambahan -->
                         <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'data_tambahan'])" tab="data_tambahan"
                             x-on:click.prevent="switchTab('data_tambahan')">
                             <x-slot:icon>
@@ -263,6 +242,27 @@
                             </x-slot:icon>
                             {{ __('Data Tambahan') }}
                             @if (!empty($sectionStatuses['data_tambahan']))
+                                <x-slot:append>
+                                    <svg class="w-4 h-4 text-emerald-500 dark:text-emerald-400" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </x-slot:append>
+                            @endif
+                        </x-sidebar.single-nav-link>
+
+                        <!-- 7. Social Media -->
+                        <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'social_media'])" tab="social_media"
+                            x-on:click.prevent="switchTab('social_media')">
+                            <x-slot:icon>
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                </svg>
+                            </x-slot:icon>
+                            {{ __('Social Media') }}
+                            @if (!empty($sectionStatuses['social_media']))
                                 <x-slot:append>
                                     <svg class="w-4 h-4 text-emerald-500 dark:text-emerald-400" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">

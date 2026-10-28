@@ -22,7 +22,20 @@ class Education extends Model
         'end_year',
         'gpa',
         'description',
+        'certificate_path',
     ];
+
+    protected $appends = ['certificate_url'];
+
+    public function getCertificateUrlAttribute(): ?string
+    {
+        if (empty($this->certificate_path)) {
+            return null;
+        }
+        return \Illuminate\Support\Str::startsWith($this->certificate_path, ['http://', 'https://'])
+            ? $this->certificate_path
+            : asset('storage/' . ltrim($this->certificate_path, '/'));
+    }
 
     protected function casts(): array
     {

@@ -335,7 +335,7 @@ Karena `initial_db.sql` adalah dump dari PostgreSQL 18.3 sementara container mem
 
 ```bash
 sed '/^SET transaction_timeout = 0;/d;/^\\restrict /d;/^\\unrestrict /d' initial_db.sql > initial_db.pg16.sql
-```
+``` 
 
 Bersihkan semua object lama di schema `public`:
 

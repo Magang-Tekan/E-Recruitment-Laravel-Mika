@@ -17,6 +17,9 @@ RUN npm run build
 # ==========================================
 FROM php:8.4-fpm-alpine AS app
 
+ARG APP_REVISION=unknown
+LABEL org.opencontainers.image.revision="${APP_REVISION}"
+
 # Install official PHP extension installer helper
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 
@@ -73,6 +76,9 @@ CMD ["php-fpm"]
 # STAGE 3: Nginx Web Server
 # ==========================================
 FROM nginx:alpine AS web
+
+ARG APP_REVISION=unknown
+LABEL org.opencontainers.image.revision="${APP_REVISION}"
 
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=app /var/www/public /var/www/public

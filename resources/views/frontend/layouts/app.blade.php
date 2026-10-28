@@ -395,94 +395,162 @@
         ===================================================== */
         html.light-mode .confirm-modal-card {
             background-color: #FFFFFF !important;
-            border-color: rgba(0, 0, 0, 0.10) !important;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.20) !important;
+            border: 1px solid #E2E8F0 !important;
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
         }
 
         html.light-mode .confirm-modal-card h3 {
-            color: #111827 !important;
+            color: #0F172A !important;
         }
 
-        html.light-mode .confirm-modal-card p {
-            color: #4B5563 !important;
+        html.light-mode .confirm-subtitle,
+        html.light-mode .confirm-modal-card p.text-gray-400 {
+            color: #64748B !important;
         }
 
-        /* Summary Info Box: Putih Bersih di Light Mode */
+        html.light-mode .confirm-icon-box {
+            background-color: #ECFDF5 !important;
+            border: 1px solid #A7F3D0 !important;
+            color: #059669 !important;
+            box-shadow: 0 1px 2px rgba(5, 150, 105, 0.1) !important;
+        }
+
+        html.light-mode .confirm-icon-box svg {
+            color: #059669 !important;
+        }
+
+        html.light-mode .confirm-close-btn {
+            color: #94A3B8 !important;
+        }
+
+        html.light-mode .confirm-close-btn:hover {
+            color: #0F172A !important;
+            background-color: #F1F5F9 !important;
+        }
+
+        /* Summary Info Box: Card Putih Bersih di Light Mode */
         html.light-mode .confirm-summary-box,
         html.light-mode .bg-\[\#040a04\] {
             background-color: #FFFFFF !important;
             background: #FFFFFF !important;
-            border: 1px solid #E5E7EB !important;
+            border: 1px solid #E2E8F0 !important;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
         }
 
         html.light-mode .confirm-summary-box .border-b {
-            border-color: #F3F4F6 !important;
+            border-color: #F1F5F9 !important;
         }
 
         html.light-mode .confirm-summary-box span.text-gray-400,
         html.light-mode .confirm-summary-box span.text-gray-500 {
-            color: #6B7280 !important;
+            color: #64748B !important;
         }
 
         html.light-mode .confirm-summary-box .job-title-val {
-            color: #111827 !important;
+            color: #0F172A !important;
         }
 
         html.light-mode .confirm-summary-box .company-val {
-            color: #2D6B00 !important;
+            color: #15803D !important;
+            font-weight: 700 !important;
         }
 
         html.light-mode .confirm-summary-box .placement-val {
-            color: #374151 !important;
+            color: #334155 !important;
         }
 
         html.light-mode .confirm-summary-box .applicant-val {
-            color: #111827 !important;
+            color: #0F172A !important;
         }
 
-        /* Statement Alert Box */
+        /* Statement Alert Box (Pernyataan Kebenaran Data Pelamar) */
         html.light-mode .confirm-statement-box {
-            background-color: #F4FDE8 !important;
-            border-color: rgba(147, 245, 20, 0.5) !important;
-            color: #374151 !important;
+            background-color: #F0FDF4 !important;
+            background: #F0FDF4 !important;
+            border: 1px solid #BBF7D0 !important;
+            color: #1E293B !important;
         }
 
-        html.light-mode .confirm-statement-box svg {
-            color: #2D6B00 !important;
+        html.light-mode .confirm-statement-title {
+            color: #15803D !important;
         }
 
-        html.light-mode .confirm-statement-box p {
-            color: #374151 !important;
+        html.light-mode .confirm-statement-title svg {
+            color: #15803D !important;
+        }
+
+        /* Inner Quote Box Pernyataan: Putih Bersih & Kontras Tinggi */
+        html.light-mode .confirm-statement-quote {
+            background-color: #FFFFFF !important;
+            background: #FFFFFF !important;
+            border: 1px solid #D1FAE5 !important;
+            color: #334155 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        html.light-mode .confirm-statement-bold {
+            color: #15803D !important;
+            font-weight: 800 !important;
+        }
+
+        /* Checkbox & Label Persetujuan */
+        html.light-mode .confirm-agree-checkbox {
+            background-color: #FFFFFF !important;
+            border: 1.5px solid #94A3B8 !important;
+            accent-color: #16A34A !important;
+        }
+
+        html.light-mode .confirm-agree-checkbox:checked {
+            background-color: #16A34A !important;
+            border-color: #16A34A !important;
+        }
+
+        html.light-mode .confirm-agree-text {
+            color: #1E293B !important;
+        }
+
+        html.light-mode .confirm-agree-label:hover .confirm-agree-text {
+            color: #0F172A !important;
         }
 
         /* Batal Button */
         html.light-mode .confirm-cancel-btn {
-            background-color: #F3F4F6 !important;
-            border-color: #D1D5DB !important;
-            color: #374151 !important;
+            background-color: #F8FAFC !important;
+            border: 1px solid #CBD5E1 !important;
+            color: #475569 !important;
         }
 
         html.light-mode .confirm-cancel-btn:hover {
-            background-color: #E5E7EB !important;
-            color: #111827 !important;
+            background-color: #F1F5F9 !important;
+            color: #0F172A !important;
+            border-color: #94A3B8 !important;
         }
 
         /* Ya, Kirim Lamaran Button */
         html.light-mode .confirm-submit-btn {
             background-color: #93F514 !important;
             color: #000000 !important;
-            box-shadow: 0 4px 14px rgba(147, 245, 20, 0.40) !important;
+            border: 1px solid #84DC10 !important;
+            box-shadow: 0 4px 14px rgba(147, 245, 20, 0.35) !important;
         }
 
-        html.light-mode .confirm-submit-btn:hover {
+        html.light-mode .confirm-submit-btn:hover:not(:disabled) {
             background-color: #82DC0A !important;
             color: #000000 !important;
+            box-shadow: 0 6px 18px rgba(147, 245, 20, 0.45) !important;
         }
 
-        html.light-mode .confirm-submit-btn svg {
-            color: #000000 !important;
-            stroke: #000000 !important;
+        html.light-mode .confirm-submit-btn:disabled {
+            background-color: #F1F5F9 !important;
+            color: #94A3B8 !important;
+            border: 1px solid #E2E8F0 !important;
+            box-shadow: none !important;
+            opacity: 1 !important;
+            cursor: not-allowed !important;
+        }
+
+        html.light-mode .confirm-submit-btn:disabled svg {
+            color: #94A3B8 !important;
         }
 
         /* Incomplete Modal Card */
@@ -984,11 +1052,6 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
         }
 
-        /* Carousel dot pattern overlay → hide di light mode */
-        html.light-mode .opacity-\[0\.07\] {
-            opacity: 0.03 !important;
-        }
-
         /* Carousel ambient glow blobs → hide */
         html.light-mode .bg-\[\#93F514\]\/10.blur-\[100px\],
         html.light-mode .bg-\[\#93F514\]\/10.blur-\[90px\] {
@@ -1134,27 +1197,15 @@
         }
 
         /* =====================================================
-           PAGE HEADER BANNER (Jelajahi Lowongan Pekerjaan)
+           PAGE HEADER (Jelajahi Lowongan Pekerjaan)
         ===================================================== */
-        html.light-mode .bg-gradient-to-r.from-\[\#051c05\].via-\[\#072907\].to-\[\#031103\] {
-            background: #FFFFFF !important;
-            background-image: none !important;
-            border-color: rgba(45, 107, 0, 0.20) !important;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
-        }
-
-        /* Hide glow in Jelajahi Lowongan header */
-        html.light-mode .bg-gradient-to-r.from-\[\#051c05\].via-\[\#072907\].to-\[\#031103\] .blur-3xl {
-            opacity: 0 !important;
-        }
-
-        /* Heading text "Jelajahi" in light mode */
-        html.light-mode .bg-gradient-to-r.from-\[\#051c05\].via-\[\#072907\].to-\[\#031103\] h1.text-\[\#EEEEEE\] {
+        html.light-mode .jobs-page-header h1,
+        html.light-mode h1.text-\[\#EEEEEE\] {
             color: #111827 !important;
         }
 
-        /* Span "Lowongan Pekerjaan" in light mode -> deep emerald green #2D6B00 */
-        html.light-mode .bg-gradient-to-r.from-\[\#051c05\].via-\[\#072907\].to-\[\#031103\] h1 span {
+        html.light-mode .jobs-page-header h1 span,
+        html.light-mode h1 span.text-\[\#93F514\] {
             background: none !important;
             background-image: none !important;
             -webkit-background-clip: unset !important;
@@ -1164,8 +1215,7 @@
             font-weight: 800 !important;
         }
 
-        /* Description subtitle text */
-        html.light-mode .bg-gradient-to-r.from-\[\#051c05\].via-\[\#072907\].to-\[\#031103\] p.text-gray-300 {
+        html.light-mode .jobs-page-header p {
             color: #4B5563 !important;
         }
 

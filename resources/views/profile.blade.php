@@ -21,7 +21,7 @@
 
     <div x-on:switch-tab.window="activeTab = $event.detail">
         <x-slot name="header">
-            <h2 class="font-bold text-xl text-slate-900 dark:text-white leading-tight">
+            <h2 class="font-bold text-lg sm:text-xl text-slate-900 dark:text-white leading-tight truncate">
                 {{ $isEmployee ? __('Portal Karyawan') : ($isAdminOrRecruiter ? __('Profil Internal') : __('Profil Saya')) }}
             </h2>
         </x-slot>
@@ -64,7 +64,7 @@
                                     x-text="bannerName">{{ auth()->user()->name }}</h3>
                                 <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-0.5">{{ auth()->user()->email }}
                                     &bull; <span
-                                        class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-[#93F514]/15 dark:text-[#93F514] border border-emerald-200 dark:border-[#93F514]/30 font-semibold">{{ $roleLabel }}</span>
+                                        class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-[#93F514]/15 dark:text-[#93F514] border border-emerald-200 dark:border-[#93F514]/30 font-semibold">{{ __($roleLabel) }}</span>
                                 </p>
                             </div>
                         </div>
@@ -85,7 +85,7 @@
                             <span class="font-bold block mb-0.5">{{ __('Informasi Akun Internal') }}</span>
                             {!! __(
                                 'Akun Anda terdaftar sebagai <strong>:role</strong> untuk manajemen rekrutmen. Pengisian biodata pelamar & pelamaran lowongan dinonaktifkan untuk akun ini. Anda dapat memperbarui profil dan kata sandi di bawah ini.',
-                                ['role' => $roleLabel],
+                                ['role' => __($roleLabel)],
                             ) !!}
                         </div>
                     </div>
@@ -165,14 +165,14 @@
                         <livewire:applicant.prestasi />
                     </div>
 
-                    <!-- Tab 6: Social Media -->
-                    <div x-show="activeTab === 'social_media'" data-tab-pane="social_media" class="space-y-3" x-cloak>
-                        <livewire:applicant.social-media />
-                    </div>
-
-                    <!-- Tab 7: Data Tambahan (Keahlian / Skill) -->
+                    <!-- Tab 6: Data Tambahan -->
                     <div x-show="activeTab === 'data_tambahan'" data-tab-pane="data_tambahan" class="space-y-3" x-cloak>
                         <livewire:applicant.data-tambahan />
+                    </div>
+
+                    <!-- Tab 7: Social Media -->
+                    <div x-show="activeTab === 'social_media'" data-tab-pane="social_media" class="space-y-3" x-cloak>
+                        <livewire:applicant.social-media />
                     </div>
 
                     <!-- Tab 8: Riwayat Lamaran -->

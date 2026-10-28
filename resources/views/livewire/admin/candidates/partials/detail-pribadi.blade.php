@@ -15,21 +15,50 @@
                 ['Nomor Telepon / WhatsApp', $prof?->phone],
                 ['Jenis Kelamin', $prof?->gender],
                 ['Tempat, Tanggal Lahir', ($prof?->birth_place ?? '') . ($prof?->birth_date ? ', ' . \Carbon\Carbon::parse($prof->birth_date)->translatedFormat('d M Y') : '')],
-                ['Kota & Provinsi', ($prof?->city ?? '') . ($prof?->province ? ', ' . $prof->province : '')],
                 ['Agama', $prof?->religion],
+                ['Suku', $prof?->ethnicity],
+                ['Kebangsaan', $prof?->nationality],
                 ['Golongan Darah', $prof?->blood_type],
-                ['Status Pernikahan', $prof?->marital_status, 'capitalize'],
+                ['Status Pernikahan', $prof?->marital_status ? (ucfirst($prof->marital_status) . ($prof->marriage_date ? ' (' . \Carbon\Carbon::parse($prof->marriage_date)->translatedFormat('d M Y') . ')' : '')) : null],
+                ['Transportasi Harian', $prof?->daily_transportation],
+                ['Jarak ke Tempat Kerja', $prof?->work_distance_km ? $prof->work_distance_km . ' km' : null],
+                ['Kota & Provinsi Sesuai KTP', ($prof?->city ?? '') . ($prof?->province ? ', ' . $prof->province : '')],
                 ['Kode Pos', $prof?->postal_code],
             ] as $field)
-                <div @if($field[0] === 'Alamat Lengkap') class="sm:col-span-2" @endif>
+                <div>
                     <span class="text-slate-400 block text-[11px]">{{ $field[0] }}:</span>
                     <span class="font-semibold text-slate-200 {{ $field[2] ?? '' }}">{{ $field[1] ?: '-' }}</span>
                 </div>
             @endforeach
-            <div class="sm:col-span-2">
-                <span class="text-slate-400 block text-[11px]">Alamat Lengkap:</span>
-                <span class="font-semibold text-slate-200">{{ $prof?->address ?? '-' }}</span>
+            <div class="sm:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-700/60">
+                <div>
+                    <span class="text-slate-400 block text-[11px]">Alamat Sesuai KTP:</span>
+                    <span class="font-semibold text-slate-200">{{ $prof?->ktp_address ?? '-' }}</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-[11px]">Alamat Domisili Saat Ini:</span>
+                    <span class="font-semibold text-slate-200">{{ $prof?->address ?? '-' }}</span>
+                </div>
             </div>
+            @if(!empty($prof?->driving_licenses) && is_array($prof->driving_licenses))
+                <div class="sm:col-span-3 pt-2 border-t border-slate-700/60">
+                    <span class="text-slate-400 block text-[11px] mb-1.5">Kepemilikan SIM (Surat Izin Mengemudi):</span>
+                    <div class="flex flex-wrap gap-2">
+                        @php $hasLic = false; @endphp
+                        @foreach($prof->driving_licenses as $lic)
+                            @if(!empty($lic['type']) || !empty($lic['number']))
+                                @php $hasLic = true; @endphp
+                                <span class="px-2.5 py-1 bg-slate-900/60 border border-slate-700 rounded-lg text-xs font-medium text-slate-200">
+                                    <strong class="text-emerald-400">{{ $lic['type'] ?: 'SIM' }}:</strong> {{ $lic['number'] ?: '-' }}
+                                </span>
+                            @endif
+                        @endforeach
+                        @if(!$hasLic)
+                            <span class="text-xs text-slate-500 italic">Tidak ada SIM yang dicantumkan</span>
+                        @endif
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 

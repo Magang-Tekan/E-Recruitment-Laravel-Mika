@@ -76,6 +76,7 @@ class CompanyController extends Controller
             'phone' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
             'registration_passkey' => 'nullable|string|max:100',
+            'social_media' => 'nullable',
         ]);
 
         $path = $this->uploadLogo($request->file('logo'));
@@ -83,6 +84,7 @@ class CompanyController extends Controller
         // Handle missions array / JSON
         $missions = $this->parseArrayInput($request->input('missions'));
         $coreValues = $this->parseArrayInput($request->input('core_values'));
+        $socialMedia = $this->parseSocialMediaInput($request->input('social_media'));
 
         $data = Company::create([
             'role_id' => $request->role_id,
@@ -90,6 +92,7 @@ class CompanyController extends Controller
             'tagline' => $request->tagline,
             'logo' => $path,
             'website' => $request->website,
+            'social_media' => $socialMedia,
             'about' => $request->about,
             'vision' => $request->vision,
             'missions' => $missions,
@@ -134,6 +137,7 @@ class CompanyController extends Controller
             'phone' => 'sometimes|nullable|string|max:50',
             'email' => 'sometimes|nullable|email|max:255',
             'registration_passkey' => 'sometimes|nullable|string|max:100',
+            'social_media' => 'sometimes|nullable',
         ]);
 
         if ($request->hasFile('logo')) {
@@ -149,6 +153,7 @@ class CompanyController extends Controller
         // Parse missions & core values if sent
         $missions = $request->has('missions') ? $this->parseArrayInput($request->input('missions')) : $data->missions;
         $coreValues = $request->has('core_values') ? $this->parseArrayInput($request->input('core_values')) : $data->core_values;
+        $socialMedia = $request->has('social_media') ? $this->parseSocialMediaInput($request->input('social_media')) : $data->social_media;
 
         $data->update([
             'role_id' => $request->input('role_id', $data->role_id),
@@ -156,6 +161,7 @@ class CompanyController extends Controller
             'tagline' => $request->input('tagline', $data->tagline),
             'logo' => $path,
             'website' => $request->input('website', $data->website),
+            'social_media' => $socialMedia,
             'about' => $request->input('about', $data->about),
             'vision' => $request->input('vision', $data->vision),
             'missions' => $missions,
@@ -170,6 +176,35 @@ class CompanyController extends Controller
         ]);
 
         return response()->json(['message' => 'Company berhasil diperbarui', 'data' => $data]);
+    }
+
+    /**
+     * Helper to safely parse social media input dictionary
+     */
+    private function parseSocialMediaInput($input)
+    {
+        if (is_null($input)) {
+            return null;
+        }
+
+        if (is_string($input)) {
+            $decoded = json_decode($input, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $input = $decoded;
+            }
+        }
+
+        if (is_array($input)) {
+            $cleaned = [];
+            foreach (['instagram', 'linkedin', 'facebook', 'youtube', 'tiktok', 'x'] as $platform) {
+                if (!empty(trim((string)($input[$platform] ?? '')))) {
+                    $cleaned[$platform] = trim((string)$input[$platform]);
+                }
+            }
+            return !empty($cleaned) ? $cleaned : null;
+        }
+
+        return null;
     }
 
     /**

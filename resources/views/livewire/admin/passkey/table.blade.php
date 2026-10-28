@@ -187,10 +187,12 @@
                             <td class="px-5 py-3.5">
                                 <div class="flex items-center gap-3">
                                     @if ($comp->logo)
-                                        <img src="{{ \Illuminate\Support\Str::startsWith($comp->logo, 'http') ? $comp->logo : asset('storage/' . $comp->logo) }}" alt="{{ $comp->name }}"
-                                            class="w-9 h-9 rounded-xl object-cover border border-gray-200 dark:border-slate-700 shadow-sm shrink-0">
+                                        <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 p-1 flex items-center justify-center shadow-xs shrink-0 overflow-hidden">
+                                            <img src="{{ \Illuminate\Support\Str::startsWith($comp->logo, 'http') ? $comp->logo : asset('storage/' . $comp->logo) }}" alt="{{ $comp->name }}"
+                                                class="w-full h-full object-contain">
+                                        </div>
                                     @else
-                                        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0">
+                                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-xs shadow-xs shrink-0">
                                             {{ strtoupper(substr($comp->name, 0, 2)) }}
                                         </div>
                                     @endif

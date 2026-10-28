@@ -61,7 +61,11 @@ class HomeController extends Controller
             }])->get();
         });
 
-        $companies = Cache::remember('master_companies_all', 86400, fn() => Company::all());
+        $companies = Cache::remember('home_companies_with_jobs', 3600, function () {
+            return Company::withCount(['jobs' => function ($q) {
+                $q->active();
+            }])->get();
+        });
 
         $locale = app()->getLocale();
         $showcases = Cache::remember('frontend_company_showcases_' . $locale, 86400, function () {

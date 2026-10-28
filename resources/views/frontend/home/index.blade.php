@@ -655,11 +655,6 @@
             <!-- Background Decorative Patterns -->
             <div
                 class="absolute inset-0 bg-gradient-to-b from-[#040804] via-[#051405] to-[#040804] rounded-3xl sm:rounded-[2.5rem] border border-[#93F514]/25 shadow-2xl shadow-black/80 overflow-hidden pointer-events-none">
-                <!-- Hexagon Pattern Overlay -->
-                <div
-                    class="absolute inset-0 opacity-[0.07] bg-[radial-gradient(#93F514_1.5px,transparent_1.5px)] [background-size:24px_24px]">
-                </div>
-
                 <!-- Concentric Circular Background Ripples -->
                 <div
                     class="absolute -bottom-24 -left-24 w-96 h-96 rounded-full border border-[#93F514]/15 pointer-events-none">
@@ -748,35 +743,26 @@
 
                                     <!-- Main Large Photo (Left Background Layer) -->
                                     <div
-                                        class="absolute left-0 top-6 w-[56%] sm:w-[58%] h-[260px] sm:h-[310px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-br from-[#93F514]/50 via-white/10 to-transparent shadow-2xl shadow-black/80 group">
-                                        <div
-                                            class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/20">
-                                            <img :src="slide.img1" alt="Team Collaboration"
-                                                x-on:error="$el.src = '/storage/asset-compro/aniv1.jpg'"
-                                                class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
-                                        </div>
+                                        class="absolute left-0 top-6 w-[56%] sm:w-[58%] h-[260px] sm:h-[310px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl shadow-black/25 dark:shadow-black/60 group">
+                                        <img :src="slide.img1" alt="Team Collaboration"
+                                            x-on:error="$el.src = '/storage/asset-compro/aniv1.jpg'"
+                                            class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
                                     </div>
 
                                     <!-- Top-Right Secondary Photo Layer -->
                                     <div
-                                        class="absolute right-0 top-0 w-[48%] sm:w-[50%] h-[200px] sm:h-[235px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-bl from-[#93F514]/60 via-white/15 to-transparent shadow-2xl shadow-black/90 group z-10">
-                                        <div
-                                            class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/20">
-                                            <img :src="slide.img2 || slide.img1" alt="Professional Presentation"
-                                                x-on:error="$el.src = slide.img1 || '/storage/asset-compro/outbond.jpg'"
-                                                class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
-                                        </div>
+                                        class="absolute right-0 top-0 w-[48%] sm:w-[50%] h-[200px] sm:h-[235px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl shadow-black/30 dark:shadow-black/70 group z-10">
+                                        <img :src="slide.img2 || slide.img1" alt="Professional Presentation"
+                                            x-on:error="$el.src = slide.img1 || '/storage/asset-compro/outbond.jpg'"
+                                            class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
                                     </div>
 
                                     <!-- Bottom Center/Right Overlapping Tertiary Photo -->
                                     <div
-                                        class="absolute left-[35%] sm:left-[32%] bottom-0 w-[50%] sm:w-[52%] h-[190px] sm:h-[220px] rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-tr from-[#93F514]/60 via-white/15 to-transparent shadow-2xl shadow-black/95 group z-20">
-                                        <div
-                                            class="w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-black/40 border border-white/25">
-                                            <img :src="slide.img3 || slide.img1" alt="Meeting and Discussion"
-                                                x-on:error="$el.src = slide.img1 || '/storage/asset-compro/aniv.jpg'"
-                                                class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
-                                        </div>
+                                        class="absolute left-[35%] sm:left-[32%] bottom-0 w-[50%] sm:w-[52%] h-[190px] sm:h-[220px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/35 dark:shadow-black/80 group z-20">
+                                        <img :src="slide.img3 || slide.img1" alt="Meeting and Discussion"
+                                            x-on:error="$el.src = slide.img1 || '/storage/asset-compro/aniv.jpg'"
+                                            class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 filter brightness-95">
                                     </div>
 
                                     <!-- Simple, Light & Modern Floating Glass Badge (Bottom Right) -->
@@ -1541,40 +1527,78 @@
             </div>
         </section>
 
-        <!-- ==================== KATEGORI DEPARTEMEN ==================== -->
-        <section id="kategori"
-            class="reveal-on-scroll py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative border-t border-[#93F514]/20">
-            <div class="mb-8">
-                {{-- <div class="inline-flex items-center gap-2 text-[#93F514] text-xs font-bold uppercase tracking-widest mb-2">
-                <span class="w-2 h-2 rounded-full bg-[#93F514]"></span> Bidang Karir
-            </div> --}}
-                <h2 class="text-2xl sm:text-3xl font-extrabold text-[#EEEEEE]">{{ __('Kategori Departemen') }}</h2>
-            </div>
+        <!-- ==================== TEMUKAN LOWONGAN BERDASARKAN PERUSAHAAN ==================== -->
+        @if (isset($companies) && $companies->count() > 0)
+            <section id="perusahaan"
+                class="reveal-on-scroll py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative border-t border-[#93F514]/20">
+                <!-- Header Rata Tengah -->
+                <div class="text-center max-w-3xl mx-auto mb-10">
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-[#EEEEEE]">
+                        {{ __('Temukan Lowongan Berdasarkan') }} <span class="text-[#93F514]">{{ __('Perusahaan') }}</span>
+                    </h2>
+                    <p class="mt-3 text-sm sm:text-base text-gray-300 leading-relaxed">
+                        {{ __('Pilih perusahaan mitra untuk melihat lowongan kerja dan karir yang sedang dibuka.') }}
+                    </p>
+                </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                @forelse($departments as $dept)
-                    <a href="{{ route('jobs.index', ['department_id' => $dept->id]) }}"
-                        class="reveal-on-scroll group p-5 rounded-2xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514] hover:shadow-xl hover:shadow-black/60 transition-all duration-300 flex flex-col justify-between"
-                        data-delay="{{ ($loop->index % 4) * 100 }}">
-                        <div
-                            class="w-10 h-10 rounded-xl bg-[#93F514]/15 border border-[#93F514]/40 flex items-center justify-center text-[#93F514] group-hover:bg-[#93F514] group-hover:text-black transition-all">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                        </div>
-                        <div class="mt-4">
-                            <h3
-                                class="font-bold text-[#EEEEEE] group-hover:text-[#93F514] transition-colors text-sm sm:text-base">
-                                {{ $dept->name }}
-                            </h3>
-                        </div>
-                    </a>
-                @empty
-                    <div class="col-span-full text-xs text-gray-400">{{ __('Belum ada data departemen.') }}</div>
-                @endforelse
-            </div>
-        </section>
+                <!-- Card Perusahaan (Rata Tengah Dinamis) -->
+                <div class="flex flex-wrap justify-center gap-4 sm:gap-5">
+                    @foreach ($companies as $comp)
+                        @php
+                            $jobCount = $comp->jobs_count ?? $comp->jobs()->where('status', 'Open')->count();
+                        @endphp
+                        <a href="{{ route('jobs.index', ['company_id' => [$comp->id]]) }}"
+                            class="reveal-on-scroll group relative rounded-2xl p-5 border transition-all duration-300 flex flex-col justify-between w-full sm:w-[calc(50%-10px)] md:w-[calc(33.333%-14px)] lg:w-[calc(25%-16px)] max-w-sm
+                                bg-gradient-to-b from-[#061506] to-[#030a03] border-[#93F514]/25 hover:border-[#93F514] hover:shadow-xl hover:shadow-black/60 hover:-translate-y-1"
+                            data-delay="{{ ($loop->index % 4) * 100 }}">
+
+                            <div class="flex items-start gap-3.5">
+                                <!-- Logo Perusahaan -->
+                                @if ($comp->logo_url)
+                                    <div
+                                        class="w-14 h-14 rounded-xl bg-white border border-[#93F514]/30 p-2 flex items-center justify-center shrink-0 overflow-hidden shadow-sm group-hover:border-[#93F514] transition-colors">
+                                        <img src="{{ $comp->logo_url }}" alt="{{ $comp->name }}"
+                                            class="w-full h-full object-contain">
+                                    </div>
+                                @else
+                                    <div
+                                        class="w-14 h-14 rounded-xl bg-white border border-[#93F514]/40 flex items-center justify-center text-gray-900 font-extrabold text-lg shrink-0 group-hover:bg-gray-100 transition-colors">
+                                        {{ strtoupper(substr($comp->name, 0, 2)) }}
+                                    </div>
+                                @endif
+
+                                <!-- Nama Perusahaan & Lokasi/Kota -->
+                                <div class="flex-1 min-w-0">
+                                    <h3
+                                        class="text-sm font-bold text-[#EEEEEE] group-hover:text-[#93F514] transition-colors truncate">
+                                        {{ $comp->name }}
+                                    </h3>
+                                    <p class="text-xs text-gray-400 mt-0.5 truncate">
+                                        {{ $comp->city ?? ($comp->province ?? __('Mitra Perusahaan')) }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Footer: Lowongan Tersedia Badge -->
+                            <div class="mt-4 pt-3 border-t border-[#93F514]/15 flex items-center justify-between">
+                                <span
+                                    class="inline-flex items-center gap-1.5 text-xs {{ $jobCount > 0 ? 'text-[#93F514] font-bold' : 'text-gray-400' }}">
+                                    <span>{{ $jobCount }} {{ __('Lowongan Tersedia') }}</span>
+                                </span>
+
+                                <span
+                                    class="text-xs text-gray-400 group-hover:text-[#93F514] group-hover:translate-x-0.5 transition-all">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </span>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </section>
+        @endif
 
         <!-- ==================== CALL TO ACTION BANNER ==================== -->
         <section class="reveal-on-scroll reveal-scale py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">

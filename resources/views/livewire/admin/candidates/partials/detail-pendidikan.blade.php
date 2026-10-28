@@ -19,11 +19,11 @@
                         <span class="text-slate-300 font-medium text-[11px]">Jurusan: <span class="font-semibold">{{ $edu->major }}</span></span>
                     @endif
                     @if($edu->study_program && $edu->study_program !== $edu->major)
-                        <span class="text-slate-400 text-[11px]">•</span>
+                        <span class="text-slate-400 text-[11px]">-</span>
                         <span class="text-slate-400 text-[11px]">Prodi: <span class="font-medium">{{ $edu->study_program }}</span></span>
                     @endif
                     @if($edu->gpa)
-                        <span class="text-slate-400 text-[11px]">•</span>
+                        <span class="text-slate-400 text-[11px]">-</span>
                         <span class="text-emerald-400 font-semibold text-[11px]">IPK / Nilai: {{ $edu->gpa }}</span>
                     @endif
                 </div>
@@ -31,7 +31,12 @@
             <div class="flex items-center gap-2 shrink-0">
                 @if($edu->certificate_path)
                     <a href="{{ \Illuminate\Support\Str::startsWith($edu->certificate_path, ['http://', 'https://']) ? $edu->certificate_path : asset('storage/' . $edu->certificate_path) }}" target="_blank"
-                        class="text-[10px] text-indigo-400 hover:underline">Lihat Ijazah</a>
+                        class="px-2.5 py-1 text-[11px] font-semibold text-indigo-300 bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 rounded-lg transition inline-flex items-center gap-1">
+                        <svg class="w-3 h-3 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        <span>Lihat Ijazah</span>
+                    </a>
                 @endif
                 <span class="text-slate-400 text-[11px] font-medium bg-slate-900 px-2.5 py-1 rounded-xl border border-slate-800">
                     {{ $edu->start_year }} - {{ $edu->end_year ?: 'Sekarang' }}

@@ -79,26 +79,97 @@ new class extends Component
         <!-- Settings Dropdown -->
         <div class="hidden sm:flex sm:items-center sm:ms-6 gap-2">
 
-            <!-- Language Switcher Pill (Desktop) -->
+            <!-- Language Switcher Dropdown (Desktop) -->
             @php
                 $navAppLocale = app()->getLocale();
                 $navAppUrl = request()->fullUrl();
             @endphp
-            <div class="inline-flex items-center p-0.5 rounded-full border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-[11px] font-bold shadow-xs select-none">
+            <div class="relative" x-data="{ langOpen: false }" @click.outside="langOpen = false" @keydown.escape.window="langOpen = false">
                 <button type="button" 
-                   data-lang-btn="id"
-                   onclick="window.mikaSwitchLocale('id', '{{ $navAppUrl }}')"
-                   title="Bahasa Indonesia"
-                   class="px-2 py-0.5 rounded-full transition-all duration-150 cursor-pointer {{ $navAppLocale === 'id' ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black font-extrabold shadow-2xs cursor-default' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-95' }}">
-                    ID
+                   @click="langOpen = !langOpen"
+                   aria-haspopup="true"
+                   :aria-expanded="langOpen"
+                   title="{{ $navAppLocale === 'en' ? 'Switch Language (Current: English)' : 'Ganti Bahasa (Saat ini: Indonesia)' }}"
+                   class="inline-flex items-center gap-2 px-3 py-1.5 h-9 rounded-full border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] hover:bg-slate-50 dark:hover:bg-[#1A2A4C] text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-2xs transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:focus:ring-[#93F514]/20 group cursor-pointer">
+                    @if($navAppLocale === 'en')
+                        <svg class="w-4 h-4 rounded-full shrink-0 shadow-2xs border border-slate-200 dark:border-slate-700" viewBox="80 0 480 480" aria-hidden="true">
+                            <path fill="#012169" d="M0 0h640v480H0z"/>
+                            <path fill="#FFF" d="m75 0 244 181L562 0h78v62L400 241l240 178v61h-80L320 301 81 480H0v-60l239-178L0 64V0h75z"/>
+                            <path fill="#C8102E" d="m424 281 216 159v40L369 281h55zm-104-41 240 180H480L320 300v-60zM80 0l240 180h-80L0 45V0h80zM0 420l240-180h55L79 420H0z"/>
+                            <path fill="#FFF" d="M241 0v480h160V0H241zM0 160v160h640V160H0z"/>
+                            <path fill="#C8102E" d="M267 0v480h106V0H267zM0 187v106h640V187H0z"/>
+                        </svg>
+                        <span class="font-bold tracking-wide">EN</span>
+                    @else
+                        <svg class="w-4 h-4 rounded-full shrink-0 shadow-2xs border border-slate-200 dark:border-slate-700" viewBox="0 0 512 512" aria-hidden="true">
+                            <path fill="#e12237" d="M0 0h512v256H0z"/>
+                            <path fill="#ffffff" d="M0 256h512v256H0z"/>
+                        </svg>
+                        <span class="font-bold tracking-wide">ID</span>
+                    @endif
+                    <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform duration-200"
+                         :class="{ 'rotate-180': langOpen }"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                    </svg>
                 </button>
-                <button type="button" 
-                   data-lang-btn="en"
-                   onclick="window.mikaSwitchLocale('en', '{{ $navAppUrl }}')"
-                   title="English"
-                   class="px-2 py-0.5 rounded-full transition-all duration-150 cursor-pointer {{ $navAppLocale === 'en' ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black font-extrabold shadow-2xs cursor-default' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-95' }}">
-                    EN
-                </button>
+
+                <!-- Language Dropdown Menu -->
+                <div x-show="langOpen" 
+                     x-cloak
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                     class="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-[#0D1527] border border-slate-200/90 dark:border-[#1D2E54] shadow-xl p-1.5 z-50 focus:outline-none">
+                    
+                    <div class="px-2.5 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        {{ __('Pilih Bahasa') }}
+                    </div>
+
+                    <!-- Bahasa Indonesia -->
+                    <button type="button"
+                            data-lang-btn="id"
+                            onclick="window.mikaSwitchLocale('id', '{{ $navAppUrl }}')"
+                            class="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 cursor-pointer {{ $navAppLocale === 'id' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-[#93F514]' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#14203A]' }}">
+                        <div class="flex items-center gap-2.5">
+                            <svg class="w-4 h-4 rounded-full shrink-0 shadow-2xs border border-slate-200 dark:border-slate-700" viewBox="0 0 512 512" aria-hidden="true">
+                                <path fill="#e12237" d="M0 0h512v256H0z"/>
+                                <path fill="#ffffff" d="M0 256h512v256H0z"/>
+                            </svg>
+                            <span class="truncate">{{ __('Bahasa Indonesia') }}</span>
+                        </div>
+                        @if($navAppLocale === 'id')
+                            <svg class="w-4 h-4 text-emerald-600 dark:text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                            </svg>
+                        @endif
+                    </button>
+
+                    <!-- English -->
+                    <button type="button"
+                            data-lang-btn="en"
+                            onclick="window.mikaSwitchLocale('en', '{{ $navAppUrl }}')"
+                            class="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 cursor-pointer {{ $navAppLocale === 'en' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-[#93F514]' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#14203A]' }}">
+                        <div class="flex items-center gap-2.5">
+                            <svg class="w-4 h-4 rounded-full shrink-0 shadow-2xs border border-slate-200 dark:border-slate-700" viewBox="80 0 480 480" aria-hidden="true">
+                                <path fill="#012169" d="M0 0h640v480H0z"/>
+                                <path fill="#FFF" d="m75 0 244 181L562 0h78v62L400 241l240 178v61h-80L320 301 81 480H0v-60l239-178L0 64V0h75z"/>
+                                <path fill="#C8102E" d="m424 281 216 159v40L369 281h55zm-104-41 240 180H480L320 300v-60zM80 0l240 180h-80L0 45V0h80zM0 420l240-180h55L79 420H0z"/>
+                                <path fill="#FFF" d="M241 0v480h160V0H241zM0 160v160h640V160H0z"/>
+                                <path fill="#C8102E" d="M267 0v480h106V0H267zM0 187v106h640V187H0z"/>
+                            </svg>
+                            <span class="truncate">{{ __('English') }}</span>
+                        </div>
+                        @if($navAppLocale === 'en')
+                            <svg class="w-4 h-4 text-emerald-600 dark:text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                            </svg>
+                        @endif
+                    </button>
+                </div>
             </div>
 
             <!-- Dark/Light Mode Toggle Button (Desktop) -->
@@ -160,7 +231,9 @@ new class extends Component
                              x-on:profile-updated.window="if ($event.detail && 'photo' in $event.detail) photo = $event.detail.photo"
                              class="shrink-0 flex items-center justify-center">
                             <template x-if="photo">
-                                <img :src="photo" alt="{{ $displayName }}" referrerpolicy="no-referrer" class="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-500/20 dark:ring-[#93F514]/30 group-hover:ring-emerald-500 dark:group-hover:ring-[#93F514] transition">
+                                <img :src="photo" alt="{{ $displayName }}" referrerpolicy="no-referrer"
+                                     x-on:error="photo = null"
+                                     class="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-500/20 dark:ring-[#93F514]/30 group-hover:ring-emerald-500 dark:group-hover:ring-[#93F514] transition">
                             </template>
                             <template x-if="!photo">
                                 <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-500 dark:from-[#93F514] dark:to-emerald-400 dark:text-black flex items-center justify-center text-white font-bold text-xs shadow-2xs">
@@ -171,7 +244,7 @@ new class extends Component
 
                         <div class="text-left leading-tight max-w-[150px] truncate">
                             <span class="block text-xs font-bold text-gray-800 dark:text-gray-200 truncate" x-data="{{ json_encode(['name' => $displayName]) }}" x-text="name" x-on:profile-updated.window="if ($event.detail && $event.detail.name) name = $event.detail.name"></span>
-                            <span class="block text-[9.5px] font-semibold text-emerald-600 dark:text-[#93F514] uppercase tracking-wider">{{ $roleLabel }}</span>
+                            <span class="block text-[9.5px] font-semibold text-emerald-600 dark:text-[#93F514] uppercase tracking-wider">{{ __($roleLabel) }}</span>
                         </div>
 
                         <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200 transition-transform group-hover:translate-y-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -225,20 +298,72 @@ new class extends Component
 
         <div class="-me-2 flex items-center sm:hidden gap-2">
 
-            <!-- Language Switcher Pill (Mobile) -->
-            <div class="inline-flex items-center p-0.5 rounded-full border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-[10px] font-bold shadow-xs select-none">
+            <!-- Language Switcher Dropdown (Mobile) -->
+            <div class="relative" x-data="{ langOpenMobile: false }" @click.outside="langOpenMobile = false" @keydown.escape.window="langOpenMobile = false">
                 <button type="button" 
-                   data-lang-btn="id"
-                   onclick="window.mikaSwitchLocale('id', '{{ $navAppUrl }}')"
-                   class="px-1.5 py-0.5 rounded-full transition cursor-pointer {{ $navAppLocale === 'id' ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black font-extrabold cursor-default' : 'text-slate-500 dark:text-slate-400 active:scale-95' }}">
-                    ID
+                   @click="langOpenMobile = !langOpenMobile"
+                   aria-haspopup="true"
+                   :aria-expanded="langOpenMobile"
+                   class="inline-flex items-center gap-1.5 px-2.5 py-1 h-8 rounded-full border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition active:scale-95 cursor-pointer">
+                    @if($navAppLocale === 'en')
+                        <svg class="w-3.5 h-3.5 rounded-full shrink-0 shadow-2xs border border-slate-200 dark:border-slate-700" viewBox="80 0 480 480" aria-hidden="true">
+                            <path fill="#012169" d="M0 0h640v480H0z"/>
+                            <path fill="#FFF" d="m75 0 244 181L562 0h78v62L400 241l240 178v61h-80L320 301 81 480H0v-60l239-178L0 64V0h75z"/>
+                            <path fill="#C8102E" d="m424 281 216 159v40L369 281h55zm-104-41 240 180H480L320 300v-60zM80 0l240 180h-80L0 45V0h80zM0 420l240-180h55L79 420H0z"/>
+                            <path fill="#FFF" d="M241 0v480h160V0H241zM0 160v160h640V160H0z"/>
+                            <path fill="#C8102E" d="M267 0v480h106V0H267zM0 187v106h640V187H0z"/>
+                        </svg>
+                        <span>EN</span>
+                    @else
+                        <svg class="w-3.5 h-3.5 rounded-full shrink-0 shadow-2xs border border-slate-200 dark:border-slate-700" viewBox="0 0 512 512" aria-hidden="true">
+                            <path fill="#e12237" d="M0 0h512v256H0z"/>
+                            <path fill="#ffffff" d="M0 256h512v256H0z"/>
+                        </svg>
+                        <span>ID</span>
+                    @endif
+                    <svg class="w-3 h-3 text-slate-400 transition-transform duration-200"
+                         :class="{ 'rotate-180': langOpenMobile }"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                    </svg>
                 </button>
-                <button type="button" 
-                   data-lang-btn="en"
-                   onclick="window.mikaSwitchLocale('en', '{{ $navAppUrl }}')"
-                   class="px-1.5 py-0.5 rounded-full transition cursor-pointer {{ $navAppLocale === 'en' ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black font-extrabold cursor-default' : 'text-slate-500 dark:text-slate-400 active:scale-95' }}">
-                    EN
-                </button>
+
+                <!-- Language Dropdown Menu (Mobile) -->
+                <div x-show="langOpenMobile" 
+                     x-cloak
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                     class="absolute right-0 mt-2 w-44 rounded-2xl bg-white dark:bg-[#0D1527] border border-slate-200/90 dark:border-[#1D2E54] shadow-xl p-1.5 z-50">
+                    <div class="px-2.5 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        {{ __('Pilih Bahasa') }}
+                    </div>
+                    <button type="button"
+                            onclick="window.mikaSwitchLocale('id', '{{ $navAppUrl }}')"
+                            class="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold {{ $navAppLocale === 'id' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-[#93F514]' : 'text-slate-700 dark:text-slate-300' }}">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-3.5 h-3.5 rounded-full shrink-0 border border-slate-200 dark:border-slate-700" viewBox="0 0 512 512"><path fill="#e12237" d="M0 0h512v256H0z"/><path fill="#ffffff" d="M0 256h512v256H0z"/></svg>
+                            <span>{{ __('Bahasa Indonesia') }}</span>
+                        </div>
+                        @if($navAppLocale === 'id')
+                            <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                        @endif
+                    </button>
+                    <button type="button"
+                            onclick="window.mikaSwitchLocale('en', '{{ $navAppUrl }}')"
+                            class="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold {{ $navAppLocale === 'en' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-[#93F514]' : 'text-slate-700 dark:text-slate-300' }}">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-3.5 h-3.5 rounded-full shrink-0 border border-slate-200 dark:border-slate-700" viewBox="80 0 480 480"><path fill="#012169" d="M0 0h640v480H0z"/><path fill="#FFF" d="m75 0 244 181L562 0h78v62L400 241l240 178v61h-80L320 301 81 480H0v-60l239-178L0 64V0h75z"/><path fill="#C8102E" d="m424 281 216 159v40L369 281h55zm-104-41 240 180H480L320 300v-60zM80 0l240 180h-80L0 45V0h80zM0 420l240-180h55L79 420H0z"/><path fill="#FFF" d="M241 0v480h160V0H241zM0 160v160h640V160H0z"/><path fill="#C8102E" d="M267 0v480h106V0H267zM0 187v106h640V187H0z"/></svg>
+                            <span>{{ __('English') }}</span>
+                        </div>
+                        @if($navAppLocale === 'en')
+                            <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-[#93F514]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                        @endif
+                    </button>
+                </div>
             </div>
 
             <!-- Dark/Light Mode Toggle Button (Mobile) -->
@@ -291,15 +416,22 @@ new class extends Component
                 </svg>
             </button>
 
-            <button @click="open = ! open" class="inline-flex items-center gap-2 p-1.5 rounded-full border border-slate-200/80 dark:border-[#1D2E54] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#14203A] focus:outline-none transition" title="Toggle User Menu">
-                @if ($photoUrl)
-                    <img src="{{ $photoUrl }}" alt="{{ $displayName }}" class="w-7 h-7 rounded-full object-cover">
-                @else
-                    <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 dark:from-[#93F514] dark:to-emerald-400 dark:text-black flex items-center justify-center text-white font-bold text-xs">
-                        {{ $userInitial }}
-                    </div>
-                @endif
-                <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button @click="open = ! open" class="inline-flex items-center gap-1.5 p-1 rounded-full border border-slate-200/80 dark:border-[#1D2E54] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#14203A] focus:outline-none transition shrink-0" title="Toggle User Menu">
+                <div x-data="{{ json_encode(['photo' => $photoUrl, 'initial' => $userInitial]) }}"
+                     x-on:profile-updated.window="if ($event.detail && 'photo' in $event.detail) photo = $event.detail.photo"
+                     class="shrink-0 flex items-center justify-center">
+                    <template x-if="photo">
+                        <img :src="photo" alt="{{ $displayName }}" referrerpolicy="no-referrer"
+                             x-on:error="photo = null"
+                             class="w-7 h-7 rounded-full object-cover ring-1 ring-emerald-500/20 dark:ring-[#93F514]/30">
+                    </template>
+                    <template x-if="!photo">
+                        <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 dark:from-[#93F514] dark:to-emerald-400 dark:text-black flex items-center justify-center text-white font-bold text-xs shrink-0">
+                            <span x-text="initial"></span>
+                        </div>
+                    </template>
+                </div>
+                <svg class="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </button>
@@ -324,7 +456,9 @@ new class extends Component
                      x-on:profile-updated.window="if ($event.detail && 'photo' in $event.detail) photo = $event.detail.photo"
                      class="shrink-0 flex items-center justify-center">
                     <template x-if="photo">
-                        <img :src="photo" alt="{{ $displayName }}" referrerpolicy="no-referrer" class="w-10 h-10 rounded-full object-cover ring-2 ring-emerald-500/20 dark:ring-[#93F514]/30 shrink-0">
+                        <img :src="photo" alt="{{ $displayName }}" referrerpolicy="no-referrer"
+                             x-on:error="photo = null"
+                             class="w-10 h-10 rounded-full object-cover ring-2 ring-emerald-500/20 dark:ring-[#93F514]/30 shrink-0">
                     </template>
                     <template x-if="!photo">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 dark:from-[#93F514] dark:to-emerald-400 dark:text-black flex items-center justify-center text-white font-bold text-sm shrink-0">
@@ -336,7 +470,7 @@ new class extends Component
                     <div class="font-bold text-sm text-gray-900 dark:text-white truncate" x-data="{{ json_encode(['name' => $displayName]) }}" x-text="name" x-on:profile-updated.window="if ($event.detail && $event.detail.name) name = $event.detail.name"></div>
                     <div class="flex items-center gap-2 mt-0.5">
                         <span class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ auth()->user()->email }}</span>
-                        <span class="px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-emerald-100 dark:bg-[#93F514]/15 text-emerald-800 dark:text-[#93F514] border border-emerald-200 dark:border-[#93F514]/30 shrink-0">{{ $roleLabel }}</span>
+                        <span class="px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-emerald-100 dark:bg-[#93F514]/15 text-emerald-800 dark:text-[#93F514] border border-emerald-200 dark:border-[#93F514]/30 shrink-0">{{ __($roleLabel) }}</span>
                     </div>
                 </div>
             </div>
