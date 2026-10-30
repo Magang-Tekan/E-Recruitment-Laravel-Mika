@@ -36,16 +36,16 @@ class ApplicationStatusUpdatedMail extends Mailable
         $companyName = $this->application->job?->company?->name ?? config('app.name', 'MIKA CAREER');
 
         $statusSubjects = [
-            'Reviewed'         => "Selamat! Anda Lolos Seleksi Berkas & Lanjut Ujian - {$jobTitle}",
-            'Partial Approved' => "Update Seleksi Tahap Awal (Partial Approved) - {$jobTitle}",
-            'Shortlisted'      => "Informasi Tahap Seleksi (Shortlisted) - {$jobTitle}",
-            'Interview'        => "Undangan Wawancara Kerja - {$jobTitle}",
-            'Accepted'         => "Selamat! Anda Dinyatakan DITERIMA - {$jobTitle}",
-            'Rejected'         => "Update Hasil Seleksi Lamaran - {$jobTitle}",
-            'Submitted'        => "Konfirmasi Penerimaan Lamaran - {$jobTitle}",
+            'Reviewed'         => "Hasil Seleksi Berkas: {$jobTitle} - {$companyName}",
+            'Partial Approved' => "Pembaruan Seleksi Tahap Awal: {$jobTitle} - {$companyName}",
+            'Shortlisted'      => "Informasi Tahap Seleksi: {$jobTitle} - {$companyName}",
+            'Interview'        => "Undangan Wawancara Kerja: {$jobTitle} - {$companyName}",
+            'Accepted'         => "Pemberitahuan Penerimaan Kerja: {$jobTitle} - {$companyName}",
+            'Rejected'         => "Pemberitahuan Hasil Seleksi Lamaran: {$jobTitle} - {$companyName}",
+            'Submitted'        => "Konfirmasi Penerimaan Lamaran: {$jobTitle} - {$companyName}",
         ];
 
-        $subject = $statusSubjects[$this->status] ?? "Update Status Lamaran: {$jobTitle} ({$companyName})";
+        $subject = $statusSubjects[$this->status] ?? "Pembaruan Status Lamaran: {$jobTitle} - {$companyName}";
 
         return new Envelope(
             subject: $subject,
@@ -59,6 +59,7 @@ class ApplicationStatusUpdatedMail extends Mailable
     {
         return new Content(
             view: 'emails.application_status_updated',
+            text: 'emails.application_status_updated_plain',
         );
     }
 

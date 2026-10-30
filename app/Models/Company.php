@@ -43,11 +43,15 @@ class Company extends Model
         static::saved(function () {
             \Illuminate\Support\Facades\Cache::forget('frontend_main_company');
             \Illuminate\Support\Facades\Cache::forget('master_companies_all');
+            \Illuminate\Support\Facades\Cache::forget('home_companies_with_jobs');
+            \Illuminate\Support\Facades\Cache::forget('home_companies_count');
         });
 
         static::deleted(function () {
             \Illuminate\Support\Facades\Cache::forget('frontend_main_company');
             \Illuminate\Support\Facades\Cache::forget('master_companies_all');
+            \Illuminate\Support\Facades\Cache::forget('home_companies_with_jobs');
+            \Illuminate\Support\Facades\Cache::forget('home_companies_count');
         });
     }
 
@@ -128,49 +132,12 @@ class Company extends Model
      */
     public function getCardImagesAttribute(): array
     {
-        // 1. Direct card photos uploaded in Company Profile (Highest Priority)
-        $direct = array_values(array_filter([
+        // Direct card photos uploaded in Company Profile (card_img1, card_img2, card_img3)
+        return array_values(array_filter([
             $this->card_img1_url,
             $this->card_img2_url,
             $this->card_img3_url,
         ]));
-
-        if (!empty($direct)) {
-            return $direct;
-        }
-
-        // 2. Fallback to CompanyShowcase photos
-        $images = [];
-        $showcaseItems = $this->relationLoaded('showcases')
-            ? $this->showcases->where('is_active', true)
-            : $this->showcases()->where('is_active', true)->get();
-
-        foreach ($showcaseItems as $sc) {
-            if (!empty($sc->img1_url)) $images[] = $sc->img1_url;
-            if (!empty($sc->img2_url)) $images[] = $sc->img2_url;
-            if (!empty($sc->img3_url)) $images[] = $sc->img3_url;
-            if (count($images) >= 3) break;
-        }
-
-        if (!empty($images)) {
-            return array_slice($images, 0, 3);
-        }
-
-        // 3. Fallback to default company culture images
-        $pool = [
-            asset('storage/asset-compro/aniv1.jpg'),
-            asset('storage/asset-compro/aspadin1.jpg'),
-            asset('storage/asset-compro/outbond.jpg'),
-            asset('storage/asset-compro/hisfarin1.jpg'),
-            asset('storage/asset-compro/aspadin2.jpg'),
-            asset('storage/asset-compro/aniv.jpg'),
-        ];
-        $offset = (($this->id ?? 1) * 2) % count($pool);
-        for ($i = 0; $i < 3; $i++) {
-            $images[] = $pool[($offset + $i) % count($pool)];
-        }
-
-        return array_slice($images, 0, 3);
     }
 
     /**
@@ -190,19 +157,32 @@ class Company extends Model
     }
 
     /**
-     * Get WhatsApp link from phone number
+     * Get clean WhatsApp phone number (starts with 62)
      */
-    public function getWhatsappUrlAttribute()
+    public function getWhatsappPhoneAttribute(): ?string
     {
         if (empty($this->phone)) {
             return null;
         }
 
-        $cleanNumber = preg_replace('/[^0-9]/', '', $this->phone);
+        $cleanNumber = preg_replace('/[^0-9]/', '', (string)$this->phone);
         if (\Illuminate\Support\Str::startsWith($cleanNumber, '0')) {
-            $cleanNumber = '62' . substr($cleanNumber, 1);
+            return '62' . substr($cleanNumber, 1);
         } elseif (\Illuminate\Support\Str::startsWith($cleanNumber, '8')) {
-            $cleanNumber = '62' . $cleanNumber;
+            return '62' . $cleanNumber;
+        }
+
+        return $cleanNumber ?: null;
+    }
+
+    /**
+     * Get WhatsApp link from phone number
+     */
+    public function getWhatsappUrlAttribute(): ?string
+    {
+        $cleanNumber = $this->whatsapp_phone;
+        if (empty($cleanNumber)) {
+            return null;
         }
 
         return "https://wa.me/{$cleanNumber}";

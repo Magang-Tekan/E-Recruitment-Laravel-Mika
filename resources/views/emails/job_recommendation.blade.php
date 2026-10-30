@@ -122,20 +122,21 @@
                             Estimasi Gaji: Rp {{ number_format($job->salary_min ?: 0, 0, ',', '.') }} - Rp {{ number_format($job->salary_max ?: 0, 0, ',', '.') }}
                         </div>
                     @endif
-                    <a href="{{ url('/') }}" class="btn-apply">Lihat & Melamar Lowongan</a>
+                    <a href="{{ route('jobs.show', $job->id) }}" class="btn-apply">Lihat & Melamar Lowongan</a>
                 </div>
             @endforeach
 
             <div style="margin-top: 24px; text-align: center;">
                 <a href="{{ route('profile', ['tab' => 'pengalaman']) }}" style="font-size: 12px; color: #6b7280; text-decoration: underline;">
-                    Ubah Minat Kerja atau Status Notifikasi Anda
+                    Ubah Minat Kerja atau Berhenti Menerima Notifikasi Ini
                 </a>
             </div>
         </div>
 
         <div class="footer">
-            Email ini dikirim secara otomatis oleh Sistem E-Rekrutmen.<br>
-            © {{ date('Y') }} MIKA CAREER. All rights reserved.
+            Anda menerima email ini karena mengaktifkan notifikasi berkala rekomendasi pekerjaan ({{ $period }}).<br>
+            Email ini dikirim secara otomatis oleh Sistem E-Rekrutmen MIKA CAREER. Mohon untuk tidak membalas email ini.<br>
+            &copy; {{ date('Y') }} MIKA CAREER. Hak cipta dilindungi undang-undang.
         </div>
     </div>
 </body>

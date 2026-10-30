@@ -16,8 +16,154 @@
         </div>
 
         <!-- Filter & Search Bar (Clean Segmented Solid Light Pill Bar, samakan dengan Beranda) -->
-        <div class="reveal-on-scroll relative z-30 w-full mb-10 p-2 sm:p-2.5 rounded-2xl lg:rounded-full bg-[#EEEEEE] text-gray-800 shadow-2xl shadow-black/80 border border-white/40"
-            style="background-color: #EEEEEE !important;" data-delay="100">
+        <div class="reveal-on-scroll relative w-full mb-10 p-2 sm:p-2.5 rounded-2xl lg:rounded-full bg-[#EEEEEE] text-gray-800 shadow-2xl shadow-black/80 border border-white/40 transition-all duration-200"
+            :class="openDropdown ? 'z-[100]' : 'z-30'"
+            style="background-color: #EEEEEE !important;"
+            data-delay="100"
+            x-data="{
+                openDropdown: null,
+
+                // Perusahaan
+                companySearch: '',
+                selectedCompanies: {{ json_encode(array_map('strval', $selectedCompanyIds ?? [])) }},
+                tempCompanies: {{ json_encode(array_map('strval', $selectedCompanyIds ?? [])) }},
+                companiesMap: {
+                    @foreach ($companies as $comp)
+                        '{{ $comp->id }}': '{{ addslashes($comp->name) }}',
+                    @endforeach
+                },
+
+                // Departemen
+                departmentSearch: '',
+                selectedDepartments: {{ json_encode(array_map('strval', $selectedDepartmentIds ?? [])) }},
+                tempDepartments: {{ json_encode(array_map('strval', $selectedDepartmentIds ?? [])) }},
+                allDepartments: [
+                    @foreach ($departments as $dept)
+                        {
+                            id: '{{ $dept->id }}',
+                            company_id: '{{ $dept->company_id }}',
+                            name: '{{ addslashes(__($dept->name)) }}'
+                        },
+                    @endforeach
+                ],
+
+                // Tipe Pekerjaan
+                typeSearch: '',
+                selectedTypes: {{ json_encode($selectedEmploymentTypes ?? []) }},
+                tempTypes: {{ json_encode($selectedEmploymentTypes ?? []) }},
+                types: ['Magang', 'Full Time', 'Part Time', 'Contract', 'Freelance', 'Remote'],
+                typesMap: {
+                    'Magang': '{{ __('Magang') }}',
+                    'Full Time': '{{ __('Full Time') }}',
+                    'Part Time': '{{ __('Part Time') }}',
+                    'Contract': '{{ __('Contract') }}',
+                    'Freelance': '{{ __('Freelance') }}',
+                    'Remote': '{{ __('Remote') }}'
+                },
+
+                // Toggle Popover
+                toggleDropdown(name) {
+                    if (this.openDropdown === name) {
+                        this.openDropdown = null;
+                    } else {
+                        this.openDropdown = name;
+                        if (name === 'company') {
+                            this.tempCompanies = [...this.selectedCompanies];
+                            this.companySearch = '';
+                        } else if (name === 'department') {
+                            this.tempDepartments = [...this.selectedDepartments];
+                            this.departmentSearch = '';
+                        } else if (name === 'type') {
+                            this.tempTypes = [...this.selectedTypes];
+                            this.typeSearch = '';
+                        }
+                    }
+                },
+                closeAll() {
+                    this.openDropdown = null;
+                },
+
+                // Company Handlers
+                getCompanyDisplayText() {
+                    if (!this.selectedCompanies || this.selectedCompanies.length === 0) return '{{ __('Semua Perusahaan') }}';
+                    if (this.selectedCompanies.length === 1) {
+                        return this.companiesMap[this.selectedCompanies[0]] || '1 {{ __('Perusahaan') }}';
+                    }
+                    return this.selectedCompanies.length + ' {{ __('Perusahaan') }}';
+                },
+                applyCompany() {
+                    this.selectedCompanies = [...this.tempCompanies];
+                    this.pruneInvalidDepartments();
+                    this.openDropdown = null;
+                },
+                resetCompany() {
+                    this.tempCompanies = [];
+                    this.selectedCompanies = [];
+                    this.pruneInvalidDepartments();
+                    this.openDropdown = null;
+                },
+
+                // Department Handlers (Dinamis sesuai perusahaan yang dipilih)
+                get filteredDepartments() {
+                    let list = this.allDepartments;
+                    if (this.selectedCompanies && this.selectedCompanies.length > 0) {
+                        const selectedCompanyIds = this.selectedCompanies.map(String);
+                        list = list.filter(d => selectedCompanyIds.includes(String(d.company_id)));
+                    }
+                    if (this.departmentSearch && this.departmentSearch.trim() !== '') {
+                        const s = this.departmentSearch.toLowerCase().trim();
+                        list = list.filter(d => d.name.toLowerCase().includes(s));
+                    }
+                    return list;
+                },
+                getDepartmentDisplayText() {
+                    if (!this.selectedDepartments || this.selectedDepartments.length === 0) return '{{ __('Semua Departemen') }}';
+                    if (this.selectedDepartments.length === 1) {
+                        const found = this.allDepartments.find(d => String(d.id) === String(this.selectedDepartments[0]));
+                        return found ? found.name : '1 {{ __('Departemen') }}';
+                    }
+                    return this.selectedDepartments.length + ' {{ __('Departemen') }}';
+                },
+                applyDepartment() {
+                    this.selectedDepartments = [...this.tempDepartments];
+                    this.openDropdown = null;
+                },
+                resetDepartment() {
+                    this.tempDepartments = [];
+                    this.selectedDepartments = [];
+                    this.openDropdown = null;
+                },
+                pruneInvalidDepartments() {
+                    if (this.selectedCompanies.length > 0) {
+                        const validDeptIds = this.allDepartments
+                            .filter(d => this.selectedCompanies.map(String).includes(String(d.company_id)))
+                            .map(d => String(d.id));
+                        this.selectedDepartments = this.selectedDepartments.filter(id => validDeptIds.includes(String(id)));
+                        this.tempDepartments = this.tempDepartments.filter(id => validDeptIds.includes(String(id)));
+                    }
+                },
+
+                // Type Handlers
+                getTypeDisplayText() {
+                    if (!this.selectedTypes || this.selectedTypes.length === 0) return '{{ __('Semua Tipe Pekerjaan') }}';
+                    if (this.selectedTypes.length === 1) {
+                        return this.typesMap[this.selectedTypes[0]] || this.selectedTypes[0];
+                    }
+                    return this.selectedTypes.length + ' {{ __('Tipe Dipilih') }}';
+                },
+                applyType() {
+                    this.selectedTypes = [...this.tempTypes];
+                    this.openDropdown = null;
+                },
+                resetType() {
+                    this.tempTypes = [];
+                    this.selectedTypes = [];
+                    this.openDropdown = null;
+                }
+            }"
+            :class="openDropdown ? 'z-[100]' : 'z-30'"
+            @click.outside="closeAll()">
+
             <form action="{{ route('jobs.index') }}" method="GET"
                 class="flex flex-col lg:flex-row items-center gap-2 lg:gap-0 divide-y lg:divide-y-0 lg:divide-x divide-gray-300">
 
@@ -34,56 +180,24 @@
                         class="w-full py-2 bg-transparent text-gray-900 placeholder-gray-400 border-0 outline-none focus:outline-none focus:ring-0 focus:border-0 shadow-none text-sm font-medium">
                 </div>
 
-                <!-- Dropdown Semua Perusahaan -->
-                <div class="w-full lg:w-56 relative" :class="open ? 'z-50' : 'z-10'" x-data="{
-                    open: false,
-                    search: '',
-                    selected: {{ json_encode(array_map('strval', $selectedCompanyIds ?? [])) }},
-                    tempSelected: {{ json_encode(array_map('strval', $selectedCompanyIds ?? [])) }},
-                    companiesMap: {
-                        @foreach ($companies as $comp)
-                            '{{ $comp->id }}': '{{ addslashes($comp->name) }}', @endforeach
-                    },
-                    getDisplayText() {
-                        if (!this.selected || this.selected.length === 0) return '{{ __('Semua Perusahaan') }}';
-                        if (this.selected.length === 1) {
-                            return this.companiesMap[this.selected[0]] || '1 {{ __('Perusahaan') }}';
-                        }
-                        return this.selected.length + ' {{ __('Perusahaan') }}';
-                    },
-                    openDropdown() {
-                        this.tempSelected = [...this.selected];
-                        this.search = '';
-                        this.open = true;
-                    },
-                    reset() {
-                        this.tempSelected = [];
-                        this.selected = [];
-                        this.open = false;
-                    },
-                    apply() {
-                        this.selected = [...this.tempSelected];
-                        this.open = false;
-                    }
-                }"
-                    @click.outside="open = false">
+                <!-- Dropdown 1: Semua Perusahaan -->
+                <div class="w-full lg:w-56 relative" :class="openDropdown === 'company' ? 'z-[105]' : 'z-10'">
 
-                    <template x-for="id in selected" :key="id">
+                    <template x-for="id in selectedCompanies" :key="'c-' + id">
                         <input type="hidden" name="company_id[]" :value="id">
                     </template>
 
-                    <button type="button" @click="open ? open = false : openDropdown()"
-                        :class="selected.length > 0 ? 'text-[#93F514] font-bold' : 'text-gray-700'"
-                        class="w-full py-2.5 px-4 flex items-center justify-between text-left text-sm transition">
+                    <button type="button" @click="toggleDropdown('company')"
+                        :class="selectedCompanies.length > 0 ? 'text-[#93F514] font-bold' : 'text-gray-700'"
+                        class="w-full py-2.5 px-4 flex items-center justify-between text-left text-sm transition cursor-pointer">
                         <div class="flex items-center gap-2 truncate">
-                            <template x-if="selected.length > 0">
+                            <template x-if="selectedCompanies.length > 0">
                                 <span
                                     class="min-w-5 h-5 px-1 rounded-full bg-[#93F514] text-black font-extrabold text-xs flex items-center justify-center shrink-0 shadow-sm"
-                                    x-text="selected.length">
-                                    {{ count($selectedCompanyIds ?? []) }}
+                                    x-text="selectedCompanies.length">
                                 </span>
                             </template>
-                            <span class="truncate" x-text="getDisplayText()">
+                            <span class="truncate" x-text="getCompanyDisplayText()">
                                 @if (!empty($selectedCompanyIds))
                                     @if (count($selectedCompanyIds) === 1)
                                         {{ $companies->firstWhere('id', $selectedCompanyIds[0])?->name ?? ('1 ' . __('Perusahaan')) }}
@@ -96,20 +210,20 @@
                             </span>
                         </div>
                         <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200"
-                            :class="open ? 'rotate-180 text-[#93F514]' : (selected.length > 0 ? 'text-[#93F514]' : '')"
+                            :class="openDropdown === 'company' ? 'rotate-180 text-[#93F514]' : (selectedCompanies.length > 0 ? 'text-[#93F514]' : '')"
                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
 
-                    <!-- Popover Panel -->
-                    <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-150"
+                    <!-- Popover Panel Perusahaan -->
+                    <div x-show="openDropdown === 'company'" x-cloak x-transition:enter="transition ease-out duration-150"
                         x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                         x-transition:leave="transition ease-in duration-100"
                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                         x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-                        class="absolute top-full left-0 lg:left-auto lg:right-0 mt-2 w-80 sm:w-[460px] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50 text-gray-800 flex flex-col">
+                        class="absolute top-full left-0 lg:left-auto lg:right-0 mt-2 w-80 sm:w-[460px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-[110] text-gray-800 flex flex-col">
 
                         <!-- Search Input -->
                         <div class="relative mb-3">
@@ -119,14 +233,14 @@
                                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </div>
-                            <input type="text" x-model="search" placeholder="{{ __('Temukan perusahaan...') }}"
+                            <input type="text" x-model="companySearch" placeholder="{{ __('Temukan perusahaan...') }}"
                                 class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#93F514]/40 focus:border-[#93F514]">
                         </div>
 
                         <!-- All Option -->
                         <label
                             class="flex items-center gap-3 py-2 px-1 text-xs font-semibold text-gray-700 hover:text-black cursor-pointer border-b border-gray-100">
-                            <input type="checkbox" :checked="tempSelected.length === 0" @change="tempSelected = []"
+                            <input type="checkbox" :checked="tempCompanies.length === 0" @change="tempCompanies = []"
                                 class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer">
                             <span>{{ __('Semua Perusahaan') }}</span>
                         </label>
@@ -135,19 +249,19 @@
                         <div
                             class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                             <span>{{ __('Pilihan Perusahaan') }}</span>
-                            <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase"
-                                x-text="tempSelected.length + ' {{ __('dipilih') }}'"></span>
+                            <span x-show="tempCompanies.length > 0" class="text-[#4fa304] font-semibold lowercase"
+                                x-text="tempCompanies.length + ' {{ __('dipilih') }}'"></span>
                         </div>
 
                         <!-- 2-Column Grid List items (Compact & Scrollable) -->
-                        <div class="max-h-44 overflow-y-auto pr-1 custom-scrollbar">
+                        <div class="max-h-40 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#cbd5e1_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
                                 @if (isset($companies))
                                     @foreach ($companies as $comp)
                                         <label
                                             class="flex items-center gap-2.5 py-1.5 px-1.5 rounded-lg text-xs text-gray-600 hover:text-black hover:bg-gray-50 cursor-pointer transition"
-                                            x-show="!search || '{{ strtolower($comp->name) }}'.includes(search.toLowerCase())">
-                                            <input type="checkbox" value="{{ $comp->id }}" x-model="tempSelected"
+                                            x-show="!companySearch || '{{ strtolower(addslashes($comp->name)) }}'.includes(companySearch.toLowerCase())">
+                                            <input type="checkbox" value="{{ $comp->id }}" x-model="tempCompanies"
                                                 class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer shrink-0">
                                             <span class="truncate">{{ $comp->name }}</span>
                                         </label>
@@ -158,68 +272,36 @@
 
                         <!-- Footer Buttons (Always Visible at Bottom) -->
                         <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
-                            <button type="button" @click="reset()"
-                                class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition">
+                            <button type="button" @click="resetCompany()"
+                                class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition cursor-pointer">
                                 {{ __('Atur Ulang') }}
                             </button>
-                            <button type="button" @click="apply()"
-                                class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-md shadow-black/25 transition">
+                            <button type="button" @click="applyCompany()"
+                                class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-md shadow-black/25 transition cursor-pointer">
                                 {{ __('Pilih') }}
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Dropdown Semua Departemen / Fungsi -->
-                <div class="w-full lg:w-56 relative" :class="open ? 'z-50' : 'z-10'" x-data="{
-                    open: false,
-                    search: '',
-                    selected: {{ json_encode(array_map('strval', $selectedDepartmentIds ?? [])) }},
-                    tempSelected: {{ json_encode(array_map('strval', $selectedDepartmentIds ?? [])) }},
-                    departmentsMap: {
-                        @foreach ($departments as $dept)
-                            '{{ $dept->id }}': '{{ addslashes(__($dept->name)) }}', @endforeach
-                    },
-                    getDisplayText() {
-                        if (!this.selected || this.selected.length === 0) return '{{ __('Semua Departemen') }}';
-                        if (this.selected.length === 1) {
-                            return this.departmentsMap[this.selected[0]] || '1 {{ __('Departemen') }}';
-                        }
-                        return this.selected.length + ' {{ __('Departemen') }}';
-                    },
-                    openDropdown() {
-                        this.tempSelected = [...this.selected];
-                        this.search = '';
-                        this.open = true;
-                    },
-                    reset() {
-                        this.tempSelected = [];
-                        this.selected = [];
-                        this.open = false;
-                    },
-                    apply() {
-                        this.selected = [...this.tempSelected];
-                        this.open = false;
-                    }
-                }"
-                    @click.outside="open = false">
+                <!-- Dropdown 2: Semua Departemen / Fungsi (Dinamis Sesuai Perusahaan Terpilih) -->
+                <div class="w-full lg:w-56 relative" :class="openDropdown === 'department' ? 'z-[105]' : 'z-10'">
 
-                    <template x-for="id in selected" :key="id">
+                    <template x-for="id in selectedDepartments" :key="'d-' + id">
                         <input type="hidden" name="department_id[]" :value="id">
                     </template>
 
-                    <button type="button" @click="open ? open = false : openDropdown()"
-                        :class="selected.length > 0 ? 'text-[#93F514] font-bold' : 'text-gray-700'"
-                        class="w-full py-2.5 px-4 flex items-center justify-between text-left text-sm transition">
+                    <button type="button" @click="toggleDropdown('department')"
+                        :class="selectedDepartments.length > 0 ? 'text-[#93F514] font-bold' : 'text-gray-700'"
+                        class="w-full py-2.5 px-4 flex items-center justify-between text-left text-sm transition cursor-pointer">
                         <div class="flex items-center gap-2 truncate">
-                            <template x-if="selected.length > 0">
+                            <template x-if="selectedDepartments.length > 0">
                                 <span
                                     class="min-w-5 h-5 px-1 rounded-full bg-[#93F514] text-black font-extrabold text-xs flex items-center justify-center shrink-0 shadow-sm"
-                                    x-text="selected.length">
-                                    {{ count($selectedDepartmentIds ?? []) }}
+                                    x-text="selectedDepartments.length">
                                 </span>
                             </template>
-                            <span class="truncate" x-text="getDisplayText()">
+                            <span class="truncate" x-text="getDepartmentDisplayText()">
                                 @if (!empty($selectedDepartmentIds))
                                     @if (count($selectedDepartmentIds) === 1)
                                         {{ __($departments->firstWhere('id', $selectedDepartmentIds[0])?->name ?? ('1 ' . __('Departemen'))) }}
@@ -232,20 +314,20 @@
                             </span>
                         </div>
                         <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200"
-                            :class="open ? 'rotate-180 text-[#93F514]' : (selected.length > 0 ? 'text-[#93F514]' : '')"
+                            :class="openDropdown === 'department' ? 'rotate-180 text-[#93F514]' : (selectedDepartments.length > 0 ? 'text-[#93F514]' : '')"
                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
 
-                    <!-- Popover Panel -->
-                    <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-150"
+                    <!-- Popover Panel Departemen -->
+                    <div x-show="openDropdown === 'department'" x-cloak x-transition:enter="transition ease-out duration-150"
                         x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                         x-transition:leave="transition ease-in duration-100"
                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                         x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-                        class="absolute top-full left-0 lg:left-auto lg:right-0 mt-2 w-80 sm:w-[460px] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50 text-gray-800 flex flex-col">
+                        class="absolute top-full left-0 lg:left-auto lg:right-0 mt-2 w-80 sm:w-[460px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-[110] text-gray-800 flex flex-col">
 
                         <!-- Search Input -->
                         <div class="relative mb-3">
@@ -256,14 +338,31 @@
                                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </div>
-                            <input type="text" x-model="search" placeholder="{{ __('Temukan fungsi / departemen...') }}"
+                            <input type="text" x-model="departmentSearch" placeholder="{{ __('Temukan fungsi / departemen...') }}"
                                 class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#93F514]/40 focus:border-[#93F514]">
                         </div>
+
+                        <!-- Filter Perusahaan Aktif Indicator -->
+                        <template x-if="selectedCompanies.length > 0">
+                            <div class="mb-2.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-[11px] font-medium text-emerald-800 flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1.5 truncate">
+                                    <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                    <span class="truncate">
+                                        {{ __('Dari:') }} <span class="font-bold" x-text="getCompanyDisplayText()"></span>
+                                    </span>
+                                </div>
+                                <button type="button" @click="resetCompany()" class="text-[10px] text-emerald-700 hover:text-emerald-950 underline shrink-0 font-bold cursor-pointer">
+                                    {{ __('Lihat Semua') }}
+                                </button>
+                            </div>
+                        </template>
 
                         <!-- All Option -->
                         <label
                             class="flex items-center gap-3 py-2 px-1 text-xs font-semibold text-gray-700 hover:text-black cursor-pointer border-b border-gray-100">
-                            <input type="checkbox" :checked="tempSelected.length === 0" @change="tempSelected = []"
+                            <input type="checkbox" :checked="tempDepartments.length === 0" @change="tempDepartments = []"
                                 class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer">
                             <span>{{ __('Semua Departemen') }}</span>
                         </label>
@@ -272,96 +371,65 @@
                         <div
                             class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                             <span>{{ __('Pilihan Departemen') }}</span>
-                            <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase"
-                                x-text="tempSelected.length + ' {{ __('dipilih') }}'"></span>
+                            <span x-show="tempDepartments.length > 0" class="text-[#4fa304] font-semibold lowercase"
+                                x-text="tempDepartments.length + ' {{ __('dipilih') }}'"></span>
                         </div>
 
-                        <!-- 2-Column Grid List items (Compact & Scrollable) -->
-                        <div class="max-h-44 overflow-y-auto pr-1 custom-scrollbar">
+                        <!-- 2-Column Grid List items (Compact & Scrollable, Reaktif Terhadap Filter) -->
+                        <div class="max-h-40 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#cbd5e1_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
-                                @if (isset($departments))
-                                    @foreach ($departments as $dept)
-                                        <label
-                                            class="flex items-center gap-2.5 py-1.5 px-1.5 rounded-lg text-xs text-gray-600 hover:text-black hover:bg-gray-50 cursor-pointer transition"
-                                            x-show="!search || '{{ strtolower($dept->name) }}'.includes(search.toLowerCase())">
-                                            <input type="checkbox" value="{{ $dept->id }}" x-model="tempSelected"
-                                                class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer shrink-0">
-                                            <span class="truncate">{{ __($dept->name) }}</span>
-                                        </label>
-                                    @endforeach
-                                @endif
+                                <template x-for="dept in filteredDepartments" :key="dept.id">
+                                    <label class="flex items-center gap-2.5 py-1.5 px-1.5 rounded-lg text-xs text-gray-600 hover:text-black hover:bg-gray-50 cursor-pointer transition">
+                                        <input type="checkbox" :value="String(dept.id)" x-model="tempDepartments"
+                                            class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer shrink-0">
+                                        <span class="truncate" x-text="dept.name"></span>
+                                    </label>
+                                </template>
                             </div>
+
+                            <!-- Empty state jika tidak ada departemen untuk perusahaan terpilih -->
+                            <template x-if="filteredDepartments.length === 0">
+                                <div class="py-6 px-3 text-center text-xs text-gray-400">
+                                    <svg class="w-6 h-6 mx-auto mb-1.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>{{ __('Tidak ada departemen yang sesuai.') }}</span>
+                                </div>
+                            </template>
                         </div>
 
                         <!-- Footer Buttons (Always Visible at Bottom) -->
                         <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
-                            <button type="button" @click="reset()"
-                                class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition">
+                            <button type="button" @click="resetDepartment()"
+                                class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition cursor-pointer">
                                 {{ __('Atur Ulang') }}
                             </button>
-                            <button type="button" @click="apply()"
-                                class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-md shadow-black/25 transition">
+                            <button type="button" @click="applyDepartment()"
+                                class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-md shadow-black/25 transition cursor-pointer">
                                 {{ __('Pilih') }}
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Dropdown Semua Tipe Pekerjaan (Employment Type) -->
-                <div class="w-full lg:w-48 relative" :class="open ? 'z-50' : 'z-10'" x-data="{
-                    open: false,
-                    search: '',
-                    selected: {{ json_encode($selectedEmploymentTypes ?? []) }},
-                    tempSelected: {{ json_encode($selectedEmploymentTypes ?? []) }},
-                    types: ['Magang', 'Full Time', 'Part Time', 'Contract', 'Freelance', 'Remote'],
-                    typesMap: {
-                        'Magang': '{{ __('Magang') }}',
-                        'Full Time': '{{ __('Full Time') }}',
-                        'Part Time': '{{ __('Part Time') }}',
-                        'Contract': '{{ __('Contract') }}',
-                        'Freelance': '{{ __('Freelance') }}',
-                        'Remote': '{{ __('Remote') }}'
-                    },
-                    getDisplayText() {
-                        if (!this.selected || this.selected.length === 0) return '{{ __('Semua Tipe Pekerjaan') }}';
-                        if (this.selected.length === 1) {
-                            return this.typesMap[this.selected[0]] || this.selected[0];
-                        }
-                        return this.selected.length + ' {{ __('Tipe Dipilih') }}';
-                    },
-                    openDropdown() {
-                        this.tempSelected = [...this.selected];
-                        this.search = '';
-                        this.open = true;
-                    },
-                    reset() {
-                        this.tempSelected = [];
-                        this.selected = [];
-                        this.open = false;
-                    },
-                    apply() {
-                        this.selected = [...this.tempSelected];
-                        this.open = false;
-                    }
-                }"
-                    @click.outside="open = false">
+                <!-- Dropdown 3: Semua Tipe Pekerjaan (Employment Type) -->
+                <div class="w-full lg:w-48 relative" :class="openDropdown === 'type' ? 'z-[105]' : 'z-10'">
 
-                    <template x-for="t in selected" :key="t">
+                    <template x-for="t in selectedTypes" :key="'t-' + t">
                         <input type="hidden" name="employment_type[]" :value="t">
                     </template>
 
-                    <button type="button" @click="open ? open = false : openDropdown()"
-                        :class="selected.length > 0 ? 'text-[#93F514] font-bold' : 'text-gray-700'"
-                        class="w-full py-2.5 px-4 flex items-center justify-between text-left text-sm transition">
+                    <button type="button" @click="toggleDropdown('type')"
+                        :class="selectedTypes.length > 0 ? 'text-[#93F514] font-bold' : 'text-gray-700'"
+                        class="w-full py-2.5 px-4 flex items-center justify-between text-left text-sm transition cursor-pointer">
                         <div class="flex items-center gap-2 truncate">
-                            <template x-if="selected.length > 0">
+                            <template x-if="selectedTypes.length > 0">
                                 <span
                                     class="min-w-5 h-5 px-1 rounded-full bg-[#93F514] text-black font-extrabold text-xs flex items-center justify-center shrink-0 shadow-sm"
-                                    x-text="selected.length">
-                                    {{ count($selectedEmploymentTypes ?? []) }}
+                                    x-text="selectedTypes.length">
                                 </span>
                             </template>
-                            <span class="truncate" x-text="getDisplayText()">
+                            <span class="truncate" x-text="getTypeDisplayText()">
                                 @if (!empty($selectedEmploymentTypes))
                                     @if (count($selectedEmploymentTypes) === 1)
                                         {{ __($selectedEmploymentTypes[0]) }}
@@ -374,20 +442,20 @@
                             </span>
                         </div>
                         <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200"
-                            :class="open ? 'rotate-180 text-[#93F514]' : (selected.length > 0 ? 'text-[#93F514]' : '')"
+                            :class="openDropdown === 'type' ? 'rotate-180 text-[#93F514]' : (selectedTypes.length > 0 ? 'text-[#93F514]' : '')"
                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
 
-                    <!-- Popover Panel -->
-                    <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-150"
+                    <!-- Popover Panel Tipe Pekerjaan -->
+                    <div x-show="openDropdown === 'type'" x-cloak x-transition:enter="transition ease-out duration-150"
                         x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                         x-transition:leave="transition ease-in duration-100"
                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                         x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-                        class="absolute top-full left-0 lg:left-auto lg:right-0 mt-2 w-80 sm:w-[420px] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50 text-gray-800 flex flex-col">
+                        class="absolute top-full left-0 lg:left-auto lg:right-0 mt-2 w-80 sm:w-[420px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-[110] text-gray-800 flex flex-col">
 
                         <!-- Search Input -->
                         <div class="relative mb-3">
@@ -398,14 +466,14 @@
                                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </div>
-                            <input type="text" x-model="search" placeholder="{{ __('Temukan Tipe Pekerjaan...') }}"
+                            <input type="text" x-model="typeSearch" placeholder="{{ __('Temukan Tipe Pekerjaan...') }}"
                                 class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#93F514]/40 focus:border-[#93F514]">
                         </div>
 
                         <!-- All Option -->
                         <label
                             class="flex items-center gap-3 py-2 px-1 text-xs font-semibold text-gray-700 hover:text-black cursor-pointer border-b border-gray-100">
-                            <input type="checkbox" :checked="tempSelected.length === 0" @change="tempSelected = []"
+                            <input type="checkbox" :checked="tempTypes.length === 0" @change="tempTypes = []"
                                 class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer">
                             <span>{{ __('Semua Tipe Pekerjaan') }}</span>
                         </label>
@@ -414,20 +482,20 @@
                         <div
                             class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                             <span>{{ __('Pilihan Tipe Pekerjaan') }}</span>
-                            <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase"
-                                x-text="tempSelected.length + ' {{ __('dipilih') }}'"></span>
+                            <span x-show="tempTypes.length > 0" class="text-[#4fa304] font-semibold lowercase"
+                                x-text="tempTypes.length + ' {{ __('dipilih') }}'"></span>
                         </div>
 
                         <!-- 2-Column Grid List items (Compact & Scrollable) -->
-                        <div class="max-h-44 overflow-y-auto pr-1 custom-scrollbar">
+                        <div class="max-h-40 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#cbd5e1_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
                                 <template
-                                    x-for="type in types.filter(t => !search || t.toLowerCase().includes(search.toLowerCase()))"
+                                    x-for="type in types.filter(t => !typeSearch || t.toLowerCase().includes(typeSearch.toLowerCase()))"
                                     :key="type">
                                     <label
                                         class="flex items-center gap-2.5 py-1.5 px-1.5 rounded-lg text-xs text-gray-600 hover:text-black hover:bg-gray-50 cursor-pointer transition"
-                                        x-show="!search || type.toLowerCase().includes(search.toLowerCase())">
-                                        <input type="checkbox" :value="type" x-model="tempSelected"
+                                        x-show="!typeSearch || type.toLowerCase().includes(typeSearch.toLowerCase())">
+                                        <input type="checkbox" :value="type" x-model="tempTypes"
                                             class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer shrink-0">
                                         <span x-text="typesMap[type] || type" class="truncate"></span>
                                     </label>
@@ -437,12 +505,12 @@
 
                         <!-- Footer Buttons (Always Visible at Bottom) -->
                         <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
-                            <button type="button" @click="reset()"
-                                class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition">
+                            <button type="button" @click="resetType()"
+                                class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition cursor-pointer">
                                 {{ __('Atur Ulang') }}
                             </button>
-                            <button type="button" @click="apply()"
-                                class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-md shadow-black/25 transition">
+                            <button type="button" @click="applyType()"
+                                class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-md shadow-black/25 transition cursor-pointer">
                                 {{ __('Pilih') }}
                             </button>
                         </div>

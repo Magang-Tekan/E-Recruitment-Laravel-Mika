@@ -209,6 +209,9 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':admin'])
             Route::put('career-tracks/{id}', [CareerTrackController::class, 'update'])->name('career-track.update');
             Route::delete('career-tracks/{id}', [CareerTrackController::class, 'destroy'])->name('career-track.destroy');
 
+            // Pengaturan Hero Banner Beranda
+            Route::view('hero-settings', 'livewire.admin.hero.index')->name('hero');
+
             // Data Master Department
             Route::view('departments', 'livewire.admin.department.index')->name('department');
             Route::post('departments', [DepartmentController::class, 'store'])->name('department.store');

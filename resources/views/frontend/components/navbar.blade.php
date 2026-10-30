@@ -448,10 +448,6 @@
                 class="px-4 py-2.5 rounded-2xl {{ request()->routeIs('jobs.*') ? 'bg-[#93F514]/20 text-[#93F514] font-bold border border-[#93F514]/40' : 'text-gray-300 hover:bg-[#EEEEEE]/5 hover:text-[#93F514]' }}">
                 {{ __('Vacancies') }}
             </a>
-            <a @click="mobileMenuOpen = false" href="{{ route('home') }}"
-                class="px-4 py-2.5 rounded-2xl text-gray-300 hover:bg-[#EEEEEE]/5 hover:text-[#93F514]">
-                Test
-            </a>
         </div>
         <div class="pt-3 border-t border-[#93F514]/20 flex flex-col gap-2">
 

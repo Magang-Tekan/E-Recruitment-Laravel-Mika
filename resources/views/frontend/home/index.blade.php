@@ -7,11 +7,11 @@
 
         <!-- ==================== HERO SECTION (IMAGE BACKGROUND + MULTI-LAYER DARK GRADIENTS) ==================== -->
         <section
-            class="relative min-h-screen flex items-center justify-center pt-[120px] sm:pt-[128px] pb-10 sm:pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#040804]">
+            class="relative z-20 min-h-screen flex items-center justify-center pt-[120px] sm:pt-[128px] pb-10 sm:pb-12 px-4 sm:px-6 lg:px-8 overflow-visible bg-[#040804]">
 
             <!-- Hero Background Image (Clear & Crisp) -->
             <div class="absolute inset-0 z-0">
-                <img src="https://i.pinimg.com/736x/20/dc/f0/20dcf0cfb0122a38d938e3c3011fb0d4.jpg"
+                <img src="{{ $heroSettings['bg_image'] ?? 'https://i.pinimg.com/736x/20/dc/f0/20dcf0cfb0122a38d938e3c3011fb0d4.jpg' }}"
                     alt="Recruitment Career Background"
                     class="w-full h-full object-cover object-center filter brightness-90 contrast-105">
             </div>
@@ -21,23 +21,21 @@
             <div class="absolute inset-0 z-0 bg-black/35"></div>
             <div class="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,_transparent_40%,_#040804_95%)]"></div>
 
-
-
             <div class="relative max-w-5xl mx-auto text-center z-10 flex flex-col items-center">
 
                 <!-- Main Headline Hero with Neon #93F514 -->
                 <h1
                     class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#EEEEEE] leading-tight sm:leading-none max-w-4xl drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
-                    {{ __('Temukan Karir Impian,') }} <br>
+                    {{ $heroSettings['prefix'] ?? __('Temukan Karir Impian,') }} <br>
                     <span class="text-[#93F514]">
-                        {{ __('Wujudkan Potensi Terbaikmu') }}
+                        {{ $heroSettings['highlight'] ?? __('Wujudkan Potensi Terbaikmu') }}
                     </span>
                 </h1>
 
                 <!-- Subtitle Description / Slogan Layer -->
                 <p
                     class="mt-6 text-base sm:text-xl text-gray-200 max-w-2xl font-normal leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-                    {{ __('Bergabunglah bersama ribuan profesional bertalenta. Jelajahi lowongan kerja, ikuti tes seleksi online terintegrasi, dan raih karir masa depan sekarang.') }}
+                    {{ $heroSettings['description'] ?? __('Bergabunglah bersama ribuan profesional bertalenta. Jelajahi lowongan kerja, ikuti tes seleksi online terintegrasi, dan raih karir masa depan sekarang.') }}
                 </p>
 
                 @php
@@ -66,8 +64,154 @@
                 @endphp
 
                 <!-- Search Bar Form (Clean Segmented Solid Light Pill Bar) -->
-                <div class="w-full max-w-5xl mt-10 p-2 sm:p-2.5 rounded-2xl lg:rounded-full bg-[#EEEEEE] text-gray-800 shadow-2xl shadow-black/80 border border-white/40 relative z-30"
-                    style="background-color: #EEEEEE !important;">
+                <div class="w-full max-w-5xl mt-10 p-2 sm:p-2.5 rounded-2xl lg:rounded-full bg-[#EEEEEE] text-gray-800 shadow-2xl shadow-black/80 border border-white/40 relative transition-all duration-200"
+                    style="background-color: #EEEEEE !important;"
+                    x-data="{
+                        openDropdown: null,
+
+                        // Perusahaan
+                        companySearch: '',
+                        selectedCompanies: {{ json_encode(array_map('strval', $homeSelectedCompanies ?? [])) }},
+                        tempCompanies: {{ json_encode(array_map('strval', $homeSelectedCompanies ?? [])) }},
+                        companiesMap: {
+                            @foreach ($companies as $comp)
+                                '{{ $comp->id }}': '{{ addslashes($comp->name) }}',
+                            @endforeach
+                        },
+
+                        // Departemen
+                        departmentSearch: '',
+                        selectedDepartments: {{ json_encode(array_map('strval', $homeSelectedDepartments ?? [])) }},
+                        tempDepartments: {{ json_encode(array_map('strval', $homeSelectedDepartments ?? [])) }},
+                        allDepartments: [
+                            @foreach ($departments as $dept)
+                                {
+                                    id: '{{ $dept->id }}',
+                                    company_id: '{{ $dept->company_id }}',
+                                    name: '{{ addslashes(__($dept->name)) }}'
+                                },
+                            @endforeach
+                        ],
+
+                        // Tipe Pekerjaan
+                        typeSearch: '',
+                        selectedTypes: {{ json_encode($homeSelectedTypes ?? []) }},
+                        tempTypes: {{ json_encode($homeSelectedTypes ?? []) }},
+                        types: ['Magang', 'Full Time', 'Part Time', 'Contract', 'Freelance', 'Remote'],
+                        typesMap: {
+                            'Magang': '{{ __('Magang') }}',
+                            'Full Time': '{{ __('Full Time') }}',
+                            'Part Time': '{{ __('Part Time') }}',
+                            'Contract': '{{ __('Contract') }}',
+                            'Freelance': '{{ __('Freelance') }}',
+                            'Remote': '{{ __('Remote') }}'
+                        },
+
+                        // Toggle Popover
+                        toggleDropdown(name) {
+                            if (this.openDropdown === name) {
+                                this.openDropdown = null;
+                            } else {
+                                this.openDropdown = name;
+                                if (name === 'company') {
+                                    this.tempCompanies = [...this.selectedCompanies];
+                                    this.companySearch = '';
+                                } else if (name === 'department') {
+                                    this.tempDepartments = [...this.selectedDepartments];
+                                    this.departmentSearch = '';
+                                } else if (name === 'type') {
+                                    this.tempTypes = [...this.selectedTypes];
+                                    this.typeSearch = '';
+                                }
+                            }
+                        },
+                        closeAll() {
+                            this.openDropdown = null;
+                        },
+
+                        // Company Handlers
+                        getCompanyDisplayText() {
+                            if (!this.selectedCompanies || this.selectedCompanies.length === 0) return '{{ __('Semua Perusahaan') }}';
+                            if (this.selectedCompanies.length === 1) {
+                                return this.companiesMap[this.selectedCompanies[0]] || '1 {{ __('Perusahaan') }}';
+                            }
+                            return this.selectedCompanies.length + ' {{ __('Perusahaan') }}';
+                        },
+                        applyCompany() {
+                            this.selectedCompanies = [...this.tempCompanies];
+                            this.pruneInvalidDepartments();
+                            this.openDropdown = null;
+                        },
+                        resetCompany() {
+                            this.tempCompanies = [];
+                            this.selectedCompanies = [];
+                            this.pruneInvalidDepartments();
+                            this.openDropdown = null;
+                        },
+
+                        // Department Handlers (Dinamis sesuai perusahaan yang dipilih)
+                        get filteredDepartments() {
+                            let list = this.allDepartments;
+                            // Filter berdasarkan perusahaan terpilih
+                            if (this.selectedCompanies && this.selectedCompanies.length > 0) {
+                                const selectedCompanyIds = this.selectedCompanies.map(String);
+                                list = list.filter(d => selectedCompanyIds.includes(String(d.company_id)));
+                            }
+                            // Filter berdasarkan input pencarian nama departemen
+                            if (this.departmentSearch && this.departmentSearch.trim() !== '') {
+                                const s = this.departmentSearch.toLowerCase().trim();
+                                list = list.filter(d => d.name.toLowerCase().includes(s));
+                            }
+                            return list;
+                        },
+                        getDepartmentDisplayText() {
+                            if (!this.selectedDepartments || this.selectedDepartments.length === 0) return '{{ __('Semua Departemen') }}';
+                            if (this.selectedDepartments.length === 1) {
+                                const found = this.allDepartments.find(d => String(d.id) === String(this.selectedDepartments[0]));
+                                return found ? found.name : '1 {{ __('Departemen') }}';
+                            }
+                            return this.selectedDepartments.length + ' {{ __('Departemen') }}';
+                        },
+                        applyDepartment() {
+                            this.selectedDepartments = [...this.tempDepartments];
+                            this.openDropdown = null;
+                        },
+                        resetDepartment() {
+                            this.tempDepartments = [];
+                            this.selectedDepartments = [];
+                            this.openDropdown = null;
+                        },
+                        pruneInvalidDepartments() {
+                            if (this.selectedCompanies.length > 0) {
+                                const validDeptIds = this.allDepartments
+                                    .filter(d => this.selectedCompanies.map(String).includes(String(d.company_id)))
+                                    .map(d => String(d.id));
+                                this.selectedDepartments = this.selectedDepartments.filter(id => validDeptIds.includes(String(id)));
+                                this.tempDepartments = this.tempDepartments.filter(id => validDeptIds.includes(String(id)));
+                            }
+                        },
+
+                        // Type Handlers
+                        getTypeDisplayText() {
+                            if (!this.selectedTypes || this.selectedTypes.length === 0) return '{{ __('Semua Tipe Pekerjaan') }}';
+                            if (this.selectedTypes.length === 1) {
+                                return this.typesMap[this.selectedTypes[0]] || this.selectedTypes[0];
+                            }
+                            return this.selectedTypes.length + ' {{ __('Tipe Dipilih') }}';
+                        },
+                        applyType() {
+                            this.selectedTypes = [...this.tempTypes];
+                            this.openDropdown = null;
+                        },
+                        resetType() {
+                            this.tempTypes = [];
+                            this.selectedTypes = [];
+                            this.openDropdown = null;
+                        }
+                    }"
+                    :class="openDropdown ? 'z-[100]' : 'z-30'"
+                    @click.outside="closeAll()">
+
                     <form action="{{ route('jobs.index') }}" method="GET"
                         class="flex flex-col lg:flex-row items-center gap-2 lg:gap-0 divide-y lg:divide-y-0 lg:divide-x divide-gray-300">
 
@@ -85,56 +229,24 @@
                                 class="w-full py-2 bg-transparent text-gray-900 placeholder-gray-400 border-0 outline-none focus:outline-none focus:ring-0 focus:border-0 shadow-none text-sm font-medium">
                         </div>
 
-                        <!-- Dropdown Semua Perusahaan -->
-                        <div class="w-full lg:w-56 relative" :class="open ? 'z-50' : 'z-10'" x-data="{
-                            open: false,
-                            search: '',
-                            selected: {{ json_encode(array_map('strval', $homeSelectedCompanies ?? [])) }},
-                            tempSelected: {{ json_encode(array_map('strval', $homeSelectedCompanies ?? [])) }},
-                            companiesMap: {
-                                @foreach ($companies as $comp)
-                                    '{{ $comp->id }}': '{{ addslashes($comp->name) }}', @endforeach
-                            },
-                            getDisplayText() {
-                                if (!this.selected || this.selected.length === 0) return '{{ __('Semua Perusahaan') }}';
-                                if (this.selected.length === 1) {
-                                    return this.companiesMap[this.selected[0]] || '1 {{ __('Perusahaan') }}';
-                                }
-                                return this.selected.length + ' {{ __('Perusahaan') }}';
-                            },
-                            openDropdown() {
-                                this.tempSelected = [...this.selected];
-                                this.search = '';
-                                this.open = true;
-                            },
-                            reset() {
-                                this.tempSelected = [];
-                                this.selected = [];
-                                this.open = false;
-                            },
-                            apply() {
-                                this.selected = [...this.tempSelected];
-                                this.open = false;
-                            }
-                        }"
-                            @click.outside="open = false">
+                        <!-- Dropdown 1: Semua Perusahaan -->
+                        <div class="w-full lg:w-56 relative" :class="openDropdown === 'company' ? 'z-[105]' : 'z-10'">
 
-                            <template x-for="id in selected" :key="id">
+                            <template x-for="id in selectedCompanies" :key="'c-' + id">
                                 <input type="hidden" name="company_id[]" :value="id">
                             </template>
 
-                            <button type="button" @click="open ? open = false : openDropdown()"
-                                :class="selected.length > 0 ? 'text-[#93F514] font-bold' : 'text-gray-700'"
-                                class="w-full py-2.5 px-4 flex items-center justify-between text-left text-sm transition">
+                            <button type="button" @click="toggleDropdown('company')"
+                                :class="selectedCompanies.length > 0 ? 'text-[#93F514] font-bold' : 'text-gray-700'"
+                                class="w-full py-2.5 px-4 flex items-center justify-between text-left text-sm transition cursor-pointer">
                                 <div class="flex items-center gap-2 truncate">
-                                    <template x-if="selected.length > 0">
+                                    <template x-if="selectedCompanies.length > 0">
                                         <span
                                             class="min-w-5 h-5 px-1 rounded-full bg-[#93F514] text-black font-extrabold text-xs flex items-center justify-center shrink-0 shadow-sm"
-                                            x-text="selected.length">
-                                            {{ count($homeSelectedCompanies ?? []) }}
+                                            x-text="selectedCompanies.length">
                                         </span>
                                     </template>
-                                    <span class="truncate" x-text="getDisplayText()">
+                                    <span class="truncate" x-text="getCompanyDisplayText()">
                                         @if (!empty($homeSelectedCompanies))
                                             @if (count($homeSelectedCompanies) === 1)
                                                 {{ $companies->firstWhere('id', $homeSelectedCompanies[0])?->name ?? '1 ' . __('Perusahaan') }}
@@ -147,21 +259,21 @@
                                     </span>
                                 </div>
                                 <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200"
-                                    :class="open ? 'rotate-180 text-[#93F514]' : (selected.length > 0 ? 'text-[#93F514]' : '')"
+                                    :class="openDropdown === 'company' ? 'rotate-180 text-[#93F514]' : (selectedCompanies.length > 0 ? 'text-[#93F514]' : '')"
                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
 
-                            <!-- Popover Panel -->
-                            <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-150"
+                            <!-- Popover Panel Perusahaan -->
+                            <div x-show="openDropdown === 'company'" x-cloak x-transition:enter="transition ease-out duration-150"
                                 x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                                 x-transition:leave="transition ease-in duration-100"
                                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                                 x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-                                class="absolute top-full left-0 lg:left-auto lg:right-0 mt-2 w-80 sm:w-[460px] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50 text-gray-800 flex flex-col">
+                                class="absolute top-full left-0 lg:left-auto lg:right-0 mt-2 w-80 sm:w-[460px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-[110] text-gray-800 flex flex-col">
 
                                 <!-- Search Input -->
                                 <div class="relative mb-3">
@@ -172,14 +284,14 @@
                                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
-                                    <input type="text" x-model="search" placeholder="{{ __('Temukan perusahaan...') }}"
+                                    <input type="text" x-model="companySearch" placeholder="{{ __('Temukan perusahaan...') }}"
                                         class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#93F514]/40 focus:border-[#93F514]">
                                 </div>
 
                                 <!-- All Option -->
                                 <label
                                     class="flex items-center gap-3 py-2 px-1 text-xs font-semibold text-gray-700 hover:text-black cursor-pointer border-b border-gray-100">
-                                    <input type="checkbox" :checked="tempSelected.length === 0" @change="tempSelected = []"
+                                    <input type="checkbox" :checked="tempCompanies.length === 0" @change="tempCompanies = []"
                                         class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer">
                                     <span>{{ __('Semua Perusahaan') }}</span>
                                 </label>
@@ -188,20 +300,20 @@
                                 <div
                                     class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                                     <span>{{ __('Pilihan Perusahaan') }}</span>
-                                    <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase"
-                                        x-text="tempSelected.length + ' {{ __('dipilih') }}'"></span>
+                                    <span x-show="tempCompanies.length > 0" class="text-[#4fa304] font-semibold lowercase"
+                                        x-text="tempCompanies.length + ' {{ __('dipilih') }}'"></span>
                                 </div>
 
                                 <!-- 2-Column Grid List items (Compact & Scrollable) -->
-                                <div class="max-h-44 overflow-y-auto pr-1 custom-scrollbar">
+                                <div class="max-h-40 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#cbd5e1_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
                                         @if (isset($companies))
                                             @foreach ($companies as $comp)
                                                 <label
                                                     class="flex items-center gap-2.5 py-1.5 px-1.5 rounded-lg text-xs text-gray-600 hover:text-black hover:bg-gray-50 cursor-pointer transition"
-                                                    x-show="!search || '{{ strtolower($comp->name) }}'.includes(search.toLowerCase())">
+                                                    x-show="!companySearch || '{{ strtolower(addslashes($comp->name)) }}'.includes(companySearch.toLowerCase())">
                                                     <input type="checkbox" value="{{ $comp->id }}"
-                                                        x-model="tempSelected"
+                                                        x-model="tempCompanies"
                                                         class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer shrink-0">
                                                     <span class="truncate">{{ $comp->name }}</span>
                                                 </label>
@@ -212,68 +324,36 @@
 
                                 <!-- Footer Buttons (Always Visible at Bottom) -->
                                 <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
-                                    <button type="button" @click="reset()"
-                                        class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition">
+                                    <button type="button" @click="resetCompany()"
+                                        class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition cursor-pointer">
                                         {{ __('Atur Ulang') }}
                                     </button>
-                                    <button type="button" @click="apply()"
-                                        class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-sm transition">
+                                    <button type="button" @click="applyCompany()"
+                                        class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-sm transition cursor-pointer">
                                         {{ __('Pilih') }}
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Dropdown Semua Departemen / Fungsi -->
-                        <div class="w-full lg:w-56 relative" :class="open ? 'z-50' : 'z-10'" x-data="{
-                            open: false,
-                            search: '',
-                            selected: {{ json_encode(array_map('strval', $homeSelectedDepartments ?? [])) }},
-                            tempSelected: {{ json_encode(array_map('strval', $homeSelectedDepartments ?? [])) }},
-                            departmentsMap: {
-                                @foreach ($departments as $dept)
-                                    '{{ $dept->id }}': '{{ addslashes(__($dept->name)) }}', @endforeach
-                            },
-                            getDisplayText() {
-                                if (!this.selected || this.selected.length === 0) return '{{ __('Semua Departemen') }}';
-                                if (this.selected.length === 1) {
-                                    return this.departmentsMap[this.selected[0]] || '1 {{ __('Departemen') }}';
-                                }
-                                return this.selected.length + ' {{ __('Departemen') }}';
-                            },
-                            openDropdown() {
-                                this.tempSelected = [...this.selected];
-                                this.search = '';
-                                this.open = true;
-                            },
-                            reset() {
-                                this.tempSelected = [];
-                                this.selected = [];
-                                this.open = false;
-                            },
-                            apply() {
-                                this.selected = [...this.tempSelected];
-                                this.open = false;
-                            }
-                        }"
-                            @click.outside="open = false">
+                        <!-- Dropdown 2: Semua Departemen / Fungsi (Dinamis Sesuai Perusahaan Terpilih) -->
+                        <div class="w-full lg:w-56 relative" :class="openDropdown === 'department' ? 'z-[105]' : 'z-10'">
 
-                            <template x-for="id in selected" :key="id">
+                            <template x-for="id in selectedDepartments" :key="'d-' + id">
                                 <input type="hidden" name="department_id[]" :value="id">
                             </template>
 
-                            <button type="button" @click="open ? open = false : openDropdown()"
-                                :class="selected.length > 0 ? 'text-[#93F514] font-bold' : 'text-gray-700'"
-                                class="w-full py-2.5 px-4 flex items-center justify-between text-left text-sm transition">
+                            <button type="button" @click="toggleDropdown('department')"
+                                :class="selectedDepartments.length > 0 ? 'text-[#93F514] font-bold' : 'text-gray-700'"
+                                class="w-full py-2.5 px-4 flex items-center justify-between text-left text-sm transition cursor-pointer">
                                 <div class="flex items-center gap-2 truncate">
-                                    <template x-if="selected.length > 0">
+                                    <template x-if="selectedDepartments.length > 0">
                                         <span
                                             class="min-w-5 h-5 px-1 rounded-full bg-[#93F514] text-black font-extrabold text-xs flex items-center justify-center shrink-0 shadow-sm"
-                                            x-text="selected.length">
-                                            {{ count($homeSelectedDepartments ?? []) }}
+                                            x-text="selectedDepartments.length">
                                         </span>
                                     </template>
-                                    <span class="truncate" x-text="getDisplayText()">
+                                    <span class="truncate" x-text="getDepartmentDisplayText()">
                                         @if (!empty($homeSelectedDepartments))
                                             @if (count($homeSelectedDepartments) === 1)
                                                 {{ __($departments->firstWhere('id', $homeSelectedDepartments[0])?->name ?? '1 ' . __('Departemen')) }}
@@ -286,21 +366,21 @@
                                     </span>
                                 </div>
                                 <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200"
-                                    :class="open ? 'rotate-180 text-[#93F514]' : (selected.length > 0 ? 'text-[#93F514]' : '')"
+                                    :class="openDropdown === 'department' ? 'rotate-180 text-[#93F514]' : (selectedDepartments.length > 0 ? 'text-[#93F514]' : '')"
                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
 
-                            <!-- Popover Panel -->
-                            <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-150"
+                            <!-- Popover Panel Departemen -->
+                            <div x-show="openDropdown === 'department'" x-cloak x-transition:enter="transition ease-out duration-150"
                                 x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                                 x-transition:leave="transition ease-in duration-100"
                                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                                 x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-                                class="absolute top-full left-0 lg:left-auto lg:right-0 mt-2 w-80 sm:w-[460px] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50 text-gray-800 flex flex-col">
+                                class="absolute top-full left-0 lg:left-auto lg:right-0 mt-2 w-80 sm:w-[460px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-[110] text-gray-800 flex flex-col">
 
                                 <!-- Search Input -->
                                 <div class="relative mb-3">
@@ -311,16 +391,33 @@
                                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
-                                    <input type="text" x-model="search"
+                                    <input type="text" x-model="departmentSearch"
                                         placeholder="{{ __('Temukan fungsi / departemen...') }}"
                                         class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#93F514]/40 focus:border-[#93F514]">
                                 </div>
 
+                                <!-- Filter Perusahaan Aktif Indicator -->
+                                <template x-if="selectedCompanies.length > 0">
+                                    <div class="mb-2.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-[11px] font-medium text-emerald-800 flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-1.5 truncate">
+                                            <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                            </svg>
+                                            <span class="truncate">
+                                                {{ __('Dari:') }} <span class="font-bold" x-text="getCompanyDisplayText()"></span>
+                                            </span>
+                                        </div>
+                                        <button type="button" @click="resetCompany()" class="text-[10px] text-emerald-700 hover:text-emerald-950 underline shrink-0 font-bold cursor-pointer">
+                                            {{ __('Lihat Semua') }}
+                                        </button>
+                                    </div>
+                                </template>
+
                                 <!-- All Option -->
                                 <label
                                     class="flex items-center gap-3 py-2 px-1 text-xs font-semibold text-gray-700 hover:text-black cursor-pointer border-b border-gray-100">
-                                    <input type="checkbox" :checked="tempSelected.length === 0"
-                                        @change="tempSelected = []"
+                                    <input type="checkbox" :checked="tempDepartments.length === 0"
+                                        @change="tempDepartments = []"
                                         class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer">
                                     <span>{{ __('Semua Departemen') }}</span>
                                 </label>
@@ -329,97 +426,66 @@
                                 <div
                                     class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                                     <span>{{ __('Pilihan Departemen') }}</span>
-                                    <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase"
-                                        x-text="tempSelected.length + ' {{ __('dipilih') }}'"></span>
+                                    <span x-show="tempDepartments.length > 0" class="text-[#4fa304] font-semibold lowercase"
+                                        x-text="tempDepartments.length + ' {{ __('dipilih') }}'"></span>
                                 </div>
 
-                                <!-- 2-Column Grid List items (Compact & Scrollable) -->
-                                <div class="max-h-44 overflow-y-auto pr-1 custom-scrollbar">
+                                <!-- 2-Column Grid List items (Compact & Scrollable, Reaktif Terhadap Filter) -->
+                                <div class="max-h-40 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#cbd5e1_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
-                                        @if (isset($departments))
-                                            @foreach ($departments as $dept)
-                                                <label
-                                                    class="flex items-center gap-2.5 py-1.5 px-1.5 rounded-lg text-xs text-gray-600 hover:text-black hover:bg-gray-50 cursor-pointer transition"
-                                                    x-show="!search || '{{ strtolower($dept->name) }}'.includes(search.toLowerCase())">
-                                                    <input type="checkbox" value="{{ $dept->id }}"
-                                                        x-model="tempSelected"
-                                                        class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer shrink-0">
-                                                    <span class="truncate">{{ __($dept->name) }}</span>
-                                                </label>
-                                            @endforeach
-                                        @endif
+                                        <template x-for="dept in filteredDepartments" :key="dept.id">
+                                            <label class="flex items-center gap-2.5 py-1.5 px-1.5 rounded-lg text-xs text-gray-600 hover:text-black hover:bg-gray-50 cursor-pointer transition">
+                                                <input type="checkbox" :value="String(dept.id)"
+                                                    x-model="tempDepartments"
+                                                    class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer shrink-0">
+                                                <span class="truncate" x-text="dept.name"></span>
+                                            </label>
+                                        </template>
                                     </div>
+
+                                    <!-- Empty state jika tidak ada departemen untuk perusahaan terpilih -->
+                                    <template x-if="filteredDepartments.length === 0">
+                                        <div class="py-6 px-3 text-center text-xs text-gray-400">
+                                            <svg class="w-6 h-6 mx-auto mb-1.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span>{{ __('Tidak ada departemen yang sesuai.') }}</span>
+                                        </div>
+                                    </template>
                                 </div>
 
                                 <!-- Footer Buttons (Always Visible at Bottom) -->
                                 <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
-                                    <button type="button" @click="reset()"
-                                        class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition">
+                                    <button type="button" @click="resetDepartment()"
+                                        class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition cursor-pointer">
                                         {{ __('Atur Ulang') }}
                                     </button>
-                                    <button type="button" @click="apply()"
-                                        class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-sm transition">
+                                    <button type="button" @click="applyDepartment()"
+                                        class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-sm transition cursor-pointer">
                                         {{ __('Pilih') }}
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Dropdown Semua Tipe (Employment Type) -->
-                        <div class="w-full lg:w-48 relative" :class="open ? 'z-50' : 'z-10'" x-data="{
-                            open: false,
-                            search: '',
-                            selected: {{ json_encode($homeSelectedTypes ?? []) }},
-                            tempSelected: {{ json_encode($homeSelectedTypes ?? []) }},
-                            types: ['Magang', 'Full Time', 'Part Time', 'Contract', 'Freelance', 'Remote'],
-                            typesMap: {
-                                'Magang': '{{ __('Magang') }}',
-                                'Full Time': '{{ __('Full Time') }}',
-                                'Part Time': '{{ __('Part Time') }}',
-                                'Contract': '{{ __('Contract') }}',
-                                'Freelance': '{{ __('Freelance') }}',
-                                'Remote': '{{ __('Remote') }}'
-                            },
-                            getDisplayText() {
-                                if (!this.selected || this.selected.length === 0) return '{{ __('Semua Tipe Pekerjaan') }}';
-                                if (this.selected.length === 1) {
-                                    return this.typesMap[this.selected[0]] || this.selected[0];
-                                }
-                                return this.selected.length + ' {{ __('Tipe Dipilih') }}';
-                            },
-                            openDropdown() {
-                                this.tempSelected = [...this.selected];
-                                this.search = '';
-                                this.open = true;
-                            },
-                            reset() {
-                                this.tempSelected = [];
-                                this.selected = [];
-                                this.open = false;
-                            },
-                            apply() {
-                                this.selected = [...this.tempSelected];
-                                this.open = false;
-                            }
-                        }"
-                            @click.outside="open = false">
+                        <!-- Dropdown 3: Semua Tipe (Employment Type) -->
+                        <div class="w-full lg:w-48 relative" :class="openDropdown === 'type' ? 'z-[105]' : 'z-10'">
 
-                            <template x-for="t in selected" :key="t">
+                            <template x-for="t in selectedTypes" :key="'t-' + t">
                                 <input type="hidden" name="employment_type[]" :value="t">
                             </template>
 
-                            <button type="button" @click="open ? open = false : openDropdown()"
-                                :class="selected.length > 0 ? 'text-[#93F514] font-bold' : 'text-gray-700'"
-                                class="w-full py-2.5 px-4 flex items-center justify-between text-left text-sm transition">
+                            <button type="button" @click="toggleDropdown('type')"
+                                :class="selectedTypes.length > 0 ? 'text-[#93F514] font-bold' : 'text-gray-700'"
+                                class="w-full py-2.5 px-4 flex items-center justify-between text-left text-sm transition cursor-pointer">
                                 <div class="flex items-center gap-2 truncate">
-                                    <template x-if="selected.length > 0">
+                                    <template x-if="selectedTypes.length > 0">
                                         <span
                                             class="min-w-5 h-5 px-1 rounded-full bg-[#93F514] text-black font-extrabold text-xs flex items-center justify-center shrink-0 shadow-sm"
-                                            x-text="selected.length">
-                                            {{ count($homeSelectedTypes ?? []) }}
+                                            x-text="selectedTypes.length">
                                         </span>
                                     </template>
-                                    <span class="truncate" x-text="getDisplayText()">
+                                    <span class="truncate" x-text="getTypeDisplayText()">
                                         @if (!empty($homeSelectedTypes))
                                             @if (count($homeSelectedTypes) === 1)
                                                 {{ __($homeSelectedTypes[0]) }}
@@ -432,21 +498,21 @@
                                     </span>
                                 </div>
                                 <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200"
-                                    :class="open ? 'rotate-180 text-[#93F514]' : (selected.length > 0 ? 'text-[#93F514]' : '')"
+                                    :class="openDropdown === 'type' ? 'rotate-180 text-[#93F514]' : (selectedTypes.length > 0 ? 'text-[#93F514]' : '')"
                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
 
-                            <!-- Popover Panel -->
-                            <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-150"
+                            <!-- Popover Panel Tipe Pekerjaan -->
+                            <div x-show="openDropdown === 'type'" x-cloak x-transition:enter="transition ease-out duration-150"
                                 x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                                 x-transition:leave="transition ease-in duration-100"
                                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                                 x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-                                class="absolute top-full left-0 lg:left-auto lg:right-0 mt-2 w-80 sm:w-[420px] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50 text-gray-800 flex flex-col">
+                                class="absolute top-full left-0 lg:left-auto lg:right-0 mt-2 w-80 sm:w-[420px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-[110] text-gray-800 flex flex-col">
 
                                 <!-- Search Input -->
                                 <div class="relative mb-3">
@@ -457,7 +523,7 @@
                                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
-                                    <input type="text" x-model="search"
+                                    <input type="text" x-model="typeSearch"
                                         placeholder="{{ __('Temukan Tipe Pekerjaan...') }}"
                                         class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#93F514]/40 focus:border-[#93F514]">
                                 </div>
@@ -465,8 +531,8 @@
                                 <!-- All Option -->
                                 <label
                                     class="flex items-center gap-3 py-2 px-1 text-xs font-semibold text-gray-700 hover:text-black cursor-pointer border-b border-gray-100">
-                                    <input type="checkbox" :checked="tempSelected.length === 0"
-                                        @change="tempSelected = []"
+                                    <input type="checkbox" :checked="tempTypes.length === 0"
+                                        @change="tempTypes = []"
                                         class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer">
                                     <span>{{ __('Semua Tipe Pekerjaan') }}</span>
                                 </label>
@@ -475,20 +541,19 @@
                                 <div
                                     class="mt-3 mb-1.5 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                                     <span>{{ __('Pilihan Tipe Pekerjaan') }}</span>
-                                    <span x-show="tempSelected.length > 0" class="text-[#4fa304] font-semibold lowercase"
-                                        x-text="tempSelected.length + ' {{ __('dipilih') }}'"></span>
+                                    <span x-show="tempTypes.length > 0" class="text-[#4fa304] font-semibold lowercase"
+                                        x-text="tempTypes.length + ' {{ __('dipilih') }}'"></span>
                                 </div>
 
                                 <!-- 2-Column Grid List items (Compact & Scrollable) -->
-                                <div class="max-h-44 overflow-y-auto pr-1 custom-scrollbar">
+                                <div class="max-h-40 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#cbd5e1_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
                                         <template
-                                            x-for="type in types.filter(t => !search || t.toLowerCase().includes(search.toLowerCase()))"
+                                            x-for="type in types.filter(t => !typeSearch || t.toLowerCase().includes(typeSearch.toLowerCase()))"
                                             :key="type">
                                             <label
-                                                class="flex items-center gap-2.5 py-1.5 px-1.5 rounded-lg text-xs text-gray-600 hover:text-black hover:bg-gray-50 cursor-pointer transition"
-                                                x-show="!search || type.toLowerCase().includes(search.toLowerCase())">
-                                                <input type="checkbox" :value="type" x-model="tempSelected"
+                                                class="flex items-center gap-2.5 py-1.5 px-1.5 rounded-lg text-xs text-gray-600 hover:text-black hover:bg-gray-50 cursor-pointer transition">
+                                                <input type="checkbox" :value="type" x-model="tempTypes"
                                                     class="w-4 h-4 rounded border-gray-300 text-[#93F514] focus:ring-[#93F514] cursor-pointer shrink-0">
                                                 <span x-text="typesMap[type] || type" class="truncate"></span>
                                             </label>
@@ -498,12 +563,12 @@
 
                                 <!-- Footer Buttons (Always Visible at Bottom) -->
                                 <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
-                                    <button type="button" @click="reset()"
-                                        class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition">
+                                    <button type="button" @click="resetType()"
+                                        class="text-xs font-semibold text-gray-500 hover:text-[#93F514] transition cursor-pointer">
                                         {{ __('Atur Ulang') }}
                                     </button>
-                                    <button type="button" @click="apply()"
-                                        class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-sm transition">
+                                    <button type="button" @click="applyType()"
+                                        class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-sm transition cursor-pointer">
                                         {{ __('Pilih') }}
                                     </button>
                                 </div>
@@ -538,7 +603,7 @@
                 </div>
 
                 <!-- Popular Searches tags -->
-                <div class="mt-3 sm:mt-3.5 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs text-gray-400">
+                <div class="mt-3 sm:mt-3.5 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs text-gray-400 relative z-10">
                     <span class="font-bold text-[#93F514]">{{ __('Pencarian Populer:') }}</span>
                     <a href="{{ route('jobs.index', ['search' => 'Software Engineer']) }}"
                         class="px-2.5 py-0.5 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition text-[11px] sm:text-xs">Software
@@ -555,7 +620,7 @@
 
                 <!-- Quick Stats Summary -->
                 <div
-                    class="mt-4 sm:mt-5 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full max-w-3xl border-t border-[#93F514]/20 pt-4 sm:pt-4.5">
+                    class="mt-4 sm:mt-5 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full max-w-3xl border-t border-[#93F514]/20 pt-4 sm:pt-4.5 relative z-10">
                     <div class="reveal-on-scroll py-3 px-3.5 sm:py-3.5 sm:px-4 rounded-xl bg-gradient-to-b from-[#061506] to-[#040804] border border-[#93F514]/30 hover:border-[#93F514]/60 transition shadow-lg shadow-black/40 text-center"
                         data-delay="100">
                         <div class="text-xl sm:text-2xl font-black text-[#EEEEEE]">{{ $totalJobsCount ?? 0 }}+</div>
@@ -1302,6 +1367,11 @@
                     $name = strtolower($comp->name);
                     return (str_contains($name, 'mitra karya analitika') || str_contains($name, 'mika')) ? 0 : 1;
                 })->values();
+
+                // Deteksi apakah ada setidaknya satu perusahaan yang memiliki foto
+                $hasAnyPhotos = $orderedCompanies->contains(function ($comp) {
+                    return !empty($comp->card_images);
+                });
             @endphp
             <section id="perusahaan"
                 class="reveal-on-scroll pt-8 sm:pt-10 pb-14 sm:pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative border-t border-[#93F514]/20">
@@ -1315,162 +1385,175 @@
                     </p>
                 </div>
 
-                <!-- Card Perusahaan (Rata Tengah Dinamis dengan 3D Flip & Auto-Scroll Gambar - Ukuran Compact) -->
-                <div class="flex flex-wrap justify-center gap-4 sm:gap-5">
-                    @foreach ($orderedCompanies as $comp)
-                        @php
-                            $jobCount = $comp->jobs_count ?? $comp->jobs()->where('status', 'Open')->count();
-                            $images = $comp->card_images ?? [];
-                        @endphp
-                        <div x-data="{
-                                flipped: false,
-                                current: 0,
-                                total: {{ count($images) }},
-                                timer: null,
-                                startSlide() {
-                                    if (this.total > 1 && !this.timer) {
-                                        this.timer = setInterval(() => {
-                                            this.current = (this.current + 1) % this.total;
-                                        }, {{ 3200 + ($loop->index % 3) * 600 }});
-                                    }
-                                },
-                                stopSlide() {
-                                    if (this.timer) {
-                                        clearInterval(this.timer);
-                                        this.timer = null;
-                                    }
-                                }
-                            }"
-                            x-init="startSlide()"
-                            @mouseenter="stopSlide()"
-                            @mouseleave="startSlide()"
-                            @click.away="flipped = false"
-                            class="reveal-on-scroll company-flip-wrap group relative w-full sm:w-[calc(50%-10px)] md:w-[285px] lg:w-[300px] max-w-[310px] h-[330px] sm:h-[345px]"
-                            :class="{ 'is-flipped': flipped }"
-                            data-delay="{{ ($loop->index % 4) * 100 }}">
+                @if (!$hasAnyPhotos)
+                    <!-- KONDISI 1: SEMUA PERUSAHAAN TANPA FOTO (TAMPILAN COMPACT SESUAI GAMBAR 2) -->
+                    <div class="flex flex-wrap justify-center gap-4 sm:gap-5">
+                        @foreach ($orderedCompanies as $comp)
+                            @php
+                                $jobCount = $comp->jobs_count ?? $comp->jobs()->where('status', 'Open')->count();
+                            @endphp
+                            <a href="{{ route('jobs.index', ['company_id' => [$comp->id]]) }}"
+                                class="company-card reveal-on-scroll group relative rounded-2xl p-4 sm:p-5 border transition-all duration-300 flex flex-col justify-between w-full sm:w-[calc(50%-10px)] md:w-[calc(33.333%-14px)] lg:w-[calc(25%-16px)] max-w-sm
+                                       bg-gradient-to-b from-[#061506] to-[#030a03] border-[#93F514]/25 shadow-md hover:border-[#93F514] hover:shadow-xl hover:shadow-[#93F514]/15 hover:-translate-y-1 block text-left"
+                                data-delay="{{ ($loop->index % 4) * 100 }}">
 
-                            <div class="company-flip-inner">
-                                <!-- ================= SISI DEPAN (FRONT - COMPACT) ================= -->
-                                <div class="company-card-face company-face-front rounded-2xl p-4 border flex flex-col justify-between
-                                            bg-gradient-to-b from-[#061506] to-[#030a03] border-[#93F514]/25 shadow-md group-hover:border-[#93F514] transition-colors cursor-pointer"
-                                     @click="if (window.innerWidth < 768) { flipped = !flipped; }">
-
-                                    <!-- Header: Logo + Nama & Lokasi Perusahaan -->
-                                    <div class="flex items-center gap-2.5">
-                                        @if ($comp->logo_url)
-                                            <div class="w-10 h-10 rounded-xl bg-white border border-[#93F514]/30 p-1.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm group-hover:border-[#93F514] transition-colors">
-                                                <img src="{{ $comp->logo_url }}" alt="{{ $comp->name }}" class="w-full h-full object-contain">
-                                            </div>
-                                        @else
-                                            <div class="w-10 h-10 rounded-xl bg-white border border-[#93F514]/40 flex items-center justify-center text-gray-900 font-black text-xs shrink-0 group-hover:bg-gray-100 transition-colors">
-                                                {{ strtoupper(substr($comp->name, 0, 2)) }}
-                                            </div>
-                                        @endif
-
-                                        <div class="flex-1 min-w-0">
-                                            <h3 class="text-xs sm:text-sm font-extrabold text-[#EEEEEE] group-hover:text-[#93F514] transition-colors tracking-tight truncate uppercase">
-                                                {{ $comp->name }}
-                                            </h3>
-                                            <p class="text-[11px] text-gray-400 truncate font-medium">
-                                                {{ $comp->city ?? ($comp->province ?? __('Mitra Perusahaan')) }}
-                                            </p>
+                                <!-- Header: Logo + Nama + Lokasi Perusahaan -->
+                                <div class="flex items-start gap-3.5">
+                                    @if ($comp->logo_url)
+                                        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white border border-[#93F514]/30 p-1.5 sm:p-2 flex items-center justify-center shrink-0 overflow-hidden shadow-sm group-hover:border-[#93F514] transition-colors">
+                                            <img src="{{ $comp->logo_url }}" alt="{{ $comp->name }}" class="w-full h-full object-contain">
                                         </div>
-                                    </div>
+                                    @else
+                                        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white border border-[#93F514]/40 flex items-center justify-center text-gray-900 font-extrabold text-base sm:text-lg shrink-0 group-hover:bg-gray-100 transition-colors">
+                                            {{ strtoupper(substr($comp->name, 0, 2)) }}
+                                        </div>
+                                    @endif
 
-                                    <!-- Bagian Tengah: Gambar Otomatis Scroll (Tampil Utuh Tanpa Terpotong) -->
-                                    <div class="relative w-full h-36 sm:h-40 rounded-xl overflow-hidden bg-black/80 border border-white/5 my-2">
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-xs sm:text-sm font-bold text-[#EEEEEE] group-hover:text-[#93F514] transition-colors truncate uppercase tracking-tight">
+                                            {{ $comp->name }}
+                                        </h3>
+                                        <p class="text-[11px] sm:text-xs text-gray-400 mt-0.5 truncate font-medium">
+                                            {{ $comp->city ?? ($comp->province ?? __('Mitra Perusahaan')) }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Footer: Lowongan Tersedia Badge -->
+                                <div class="mt-4 pt-3 border-t border-[#93F514]/15 flex items-center justify-between">
+                                    <span class="inline-flex items-center gap-1.5 text-xs {{ $jobCount > 0 ? 'text-[#93F514] font-bold' : 'text-gray-400' }}">
+                                        <span>{{ $jobCount }} {{ __('Lowongan Tersedia') }}</span>
+                                    </span>
+
+                                    <span class="text-xs text-gray-400 group-hover:text-[#93F514] group-hover:translate-x-1 transition-all">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </span>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                @else
+                    <!-- KONDISI 2: HYBRID / DENGAN FOTO (TAMPILAN TINGGI SERAGAM & ELEGAN SESUAI GAMBAR 1) -->
+                    <div class="flex flex-wrap justify-center gap-3.5 sm:gap-4.5">
+                        @foreach ($orderedCompanies as $comp)
+                            @php
+                                $jobCount = $comp->jobs_count ?? $comp->jobs()->where('status', 'Open')->count();
+                                $images = $comp->card_images ?? [];
+                                $hasPhotos = !empty($images);
+                            @endphp
+                            <a href="{{ route('jobs.index', ['company_id' => [$comp->id]]) }}"
+                               x-data="{
+                                    current: 0,
+                                    total: {{ count($images) }},
+                                    timer: null,
+                                    startSlide() {
+                                        if (this.total > 1 && !this.timer) {
+                                            this.timer = setInterval(() => {
+                                                this.current = (this.current + 1) % this.total;
+                                            }, {{ 3200 + ($loop->index % 3) * 600 }});
+                                        }
+                                    },
+                                    stopSlide() {
+                                        if (this.timer) {
+                                            clearInterval(this.timer);
+                                            this.timer = null;
+                                        }
+                                    }
+                               }"
+                               x-init="startSlide()"
+                               @mouseenter="stopSlide()"
+                               @mouseleave="startSlide()"
+                               class="company-card reveal-on-scroll group relative w-full sm:w-[calc(50%-10px)] md:w-[245px] lg:w-[260px] max-w-[270px] h-[280px] sm:h-[295px] rounded-2xl p-3 sm:p-3.5 border flex flex-col justify-between bg-gradient-to-b from-[#061506] to-[#030a03] border-[#93F514]/25 shadow-md hover:border-[#93F514] hover:-translate-y-1.5 hover:shadow-xl hover:shadow-[#93F514]/15 transition-all duration-300 cursor-pointer block text-left"
+                               data-delay="{{ ($loop->index % 4) * 100 }}">
+
+                                <!-- Header: Logo + Nama & Lokasi Perusahaan -->
+                                <div class="flex items-center gap-2">
+                                    @if ($comp->logo_url)
+                                        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-[#93F514]/30 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-sm group-hover:border-[#93F514] transition-colors">
+                                            <img src="{{ $comp->logo_url }}" alt="{{ $comp->name }}" class="w-full h-full object-contain">
+                                        </div>
+                                    @else
+                                        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-[#93F514]/40 flex items-center justify-center text-gray-900 font-black text-[10px] shrink-0 group-hover:bg-gray-100 transition-colors">
+                                            {{ strtoupper(substr($comp->name, 0, 2)) }}
+                                        </div>
+                                    @endif
+
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-xs sm:text-[13px] font-extrabold text-[#EEEEEE] group-hover:text-[#93F514] transition-colors tracking-tight truncate uppercase">
+                                            {{ $comp->name }}
+                                        </h3>
+                                        <p class="text-[10px] sm:text-[11px] text-gray-400 truncate font-medium">
+                                            {{ $comp->city ?? ($comp->province ?? __('Mitra Perusahaan')) }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Bagian Tengah: Foto Slider ATAU Kartu Identitas Elegan jika Belum Ada Foto (Hybrid) -->
+                                @if ($hasPhotos)
+                                    <!-- Jika Perusahaan Memiliki Foto: Slider Otomatis (Canvas PUTIH Bersih di Dark & Light Mode agar Teks/Logo Gelap Selalu Terbaca) -->
+                                    <div class="company-card-img-wrap relative w-full h-28 sm:h-32 rounded-xl overflow-hidden bg-white border border-gray-200/90 dark:border-white/10 my-1.5 shadow-sm">
                                         <div class="flex h-full transition-transform duration-700 ease-out"
                                              :style="`transform: translateX(-${current * 100}%);`">
                                             @foreach ($images as $img)
-                                                <div class="w-full h-full flex-shrink-0 relative overflow-hidden flex items-center justify-center bg-black/90">
-                                                    <!-- Background blur ambient agar sisi samping menyatu indah -->
-                                                    <img src="{{ $img }}" alt="" class="absolute inset-0 w-full h-full object-cover filter blur-md opacity-35 scale-110 pointer-events-none [transform:translateZ(0)]" aria-hidden="true">
-                                                    <!-- Foto utuh 100% tanpa terpotong (object-contain) -->
-                                                    <img src="{{ $img }}" alt="{{ $comp->name }}" class="relative z-10 max-w-full max-h-full object-contain drop-shadow-md">
-                                                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none z-20"></div>
+                                                <div class="company-card-img-slide w-full h-full flex-shrink-0 relative overflow-hidden flex items-center justify-center bg-white p-2">
+                                                    <!-- Foto / Logo utuh tanpa crop di atas canvas putih bersih -->
+                                                    <img src="{{ $img }}" alt="{{ $comp->name }}" class="relative z-10 max-w-full max-h-full object-contain drop-shadow-sm">
                                                 </div>
                                             @endforeach
                                         </div>
 
                                         @if (count($images) > 1)
-                                            <div class="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-30 pointer-events-none">
+                                            <div class="absolute bottom-1.5 left-0 right-0 flex justify-center gap-1 z-30 pointer-events-none">
                                                 @foreach ($images as $idx => $img)
                                                     <span class="h-1 rounded-full transition-all duration-300"
-                                                          :class="current === {{ $idx }} ? 'w-4 bg-[#93F514]' : 'w-1.5 bg-white/40'"></span>
+                                                          :class="current === {{ $idx }} ? 'w-3 bg-[#168038]' : 'w-1 bg-gray-300'"></span>
                                                 @endforeach
                                             </div>
                                         @endif
                                     </div>
+                                @else
+                                    <!-- Jika Perusahaan Belum Memiliki Foto (Hybrid): Kartu Identitas & Tagline Elegan Bersih di Light Mode -->
+                                    <div class="company-card-tagline-box relative w-full h-28 sm:h-32 rounded-xl overflow-hidden bg-gradient-to-br from-[#F4FAF2] to-[#EBF6E8] dark:from-[#061506] dark:via-[#092009]/60 dark:to-[#020802] border border-emerald-600/15 dark:border-[#93F514]/15 my-1.5 flex flex-col items-center justify-center p-3 text-center group-hover:border-emerald-600/40 dark:group-hover:border-[#93F514]/40 transition-colors shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-none">
+                                        <div class="relative z-10 flex flex-col items-center justify-center h-full gap-1.5">
+                                            @if (!empty($comp->tagline))
+                                                <p class="text-[11px] sm:text-xs text-gray-900 dark:text-gray-300 italic font-semibold line-clamp-2 px-1 leading-snug">
+                                                    “{{ $comp->tagline }}”
+                                                </p>
+                                            @else
+                                                <span class="tagline-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-700/10 dark:bg-[#93F514]/10 border border-emerald-700/20 dark:border-[#93F514]/20 text-[10px] font-bold text-emerald-800 dark:text-[#93F514] tracking-wide">
+                                                    {{ __('Mitra Resmi MIKA') }}
+                                                </span>
+                                                <p class="tagline-subtext text-[10px] sm:text-[11px] text-gray-600 dark:text-gray-400 font-medium truncate max-w-[190px]">
+                                                    {{ $comp->city ?? __('Jaringan Karir') }}
+                                                </p>
+                                            @endif
 
-                                    <!-- Footer: Lowongan Tersedia Badge -->
-                                    <div class="pt-2 border-t border-[#93F514]/15 flex items-center justify-between">
-                                        <span class="inline-flex items-center gap-1 text-[11px] sm:text-xs {{ $jobCount > 0 ? 'text-[#93F514] font-bold' : 'text-gray-400' }}">
-                                            <span>{{ $jobCount }} {{ __('Lowongan Tersedia') }}</span>
-                                        </span>
-
-                                        <span class="text-xs text-gray-400 group-hover:text-[#93F514] group-hover:translate-x-0.5 transition-all">
-                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- ================= SISI BELAKANG (BACK - COMPACT 180 DERAJAT) ================= -->
-                                <div class="company-card-face company-face-back rounded-2xl p-4 sm:p-4.5 flex flex-col justify-between bg-[#93F514] border border-[#82de0e] text-neutral-950 shadow-xl">
-                                    <!-- Informasi Perusahaan -->
-                                    <div class="flex flex-col">
-                                        <h3 class="text-xs sm:text-sm font-black text-black uppercase tracking-tight leading-snug line-clamp-1">
-                                            {{ $comp->name }}
-                                        </h3>
-                                        <p class="text-[11px] sm:text-xs text-neutral-800 mt-1 font-medium leading-relaxed line-clamp-2">
-                                            {{ $comp->city ?? 'Semarang' }}. {{ $comp->tagline ?? ($comp->about ? Str::limit(strip_tags($comp->about), 60) : __('Perusahaan mitra resmi MIKA Career.')) }}
-                                        </p>
-                                        <div class="mt-1.5">
-                                            <span class="company-back-jobcount text-[11px] sm:text-xs font-black text-black">
-                                                {{ $jobCount }} {{ __('lowongan tersedia') }}
+                                            <span class="profile-link text-[9px] uppercase tracking-wider text-emerald-700 dark:text-gray-400 group-hover:text-emerald-900 dark:group-hover:text-[#93F514] font-extrabold transition-colors inline-flex items-center gap-0.5 mt-0.5">
+                                                <span>{{ __('Lihat Profil') }}</span>
+                                                <span aria-hidden="true">&rarr;</span>
                                             </span>
                                         </div>
                                     </div>
+                                @endif
 
-                                    <!-- Tombol Aksi (Pill Sesuai Referensi Gambar 3 - Ukuran Compact) -->
-                                    <div class="flex flex-col gap-2 mt-auto pt-2">
-                                        @if ($comp->website)
-                                            <a href="{{ $comp->website }}"
-                                               target="_blank"
-                                               rel="noopener noreferrer"
-                                               @click.stop
-                                               class="w-full py-1.5 sm:py-2 px-3 rounded-full bg-black text-[#93F514] hover:bg-neutral-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm hover:scale-[1.02] active:scale-95">
-                                                <span>{{ __('Kunjungi website') }}</span>
-                                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 17L17 7M17 7H7M17 7V17" />
-                                                </svg>
-                                            </a>
-                                        @else
-                                            <a href="{{ route('jobs.index', ['company_id' => [$comp->id]]) }}"
-                                               @click.stop
-                                               class="w-full py-1.5 sm:py-2 px-3 rounded-full bg-black text-[#93F514] hover:bg-neutral-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm hover:scale-[1.02] active:scale-95">
-                                                <span>{{ __('Kunjungi website') }}</span>
-                                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 17L17 7M17 7H7M17 7V17" />
-                                                </svg>
-                                            </a>
-                                        @endif
+                                <!-- Footer: Lowongan Tersedia Badge -->
+                                <div class="pt-1.5 border-t border-[#93F514]/15 flex items-center justify-between">
+                                    <span class="inline-flex items-center gap-1 text-[11px] {{ $jobCount > 0 ? 'text-[#93F514] font-bold' : 'text-gray-400' }}">
+                                        <span>{{ $jobCount }} {{ __('Lowongan Tersedia') }}</span>
+                                    </span>
 
-                                        <a href="{{ route('jobs.index', ['company_id' => [$comp->id]]) }}"
-                                           @click.stop
-                                           class="w-full py-1.5 sm:py-2 px-3 rounded-full border-2 border-black text-black hover:bg-black/10 font-black text-xs flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02] active:scale-95">
-                                            <span>{{ __('Lihat lowongan') }}</span>
-                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 17L17 7M17 7H7M17 7V17" />
-                                            </svg>
-                                        </a>
-                                    </div>
+                                    <span class="text-xs text-gray-400 group-hover:text-[#93F514] group-hover:translate-x-1 transition-all">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </span>
                                 </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
             </section>
         @endif
 

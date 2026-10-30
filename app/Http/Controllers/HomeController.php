@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\CompanyShowcase;
 use App\Models\Department;
 use App\Models\Job;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -120,6 +121,36 @@ class HomeController extends Controller
                 ->toArray();
         });
 
+        $heroSettings = Cache::remember('frontend_hero_settings_' . $locale, 86400, function () use ($locale) {
+            $isEn = ($locale === 'en');
+
+            $prefix = Setting::get($isEn ? 'hero_title_prefix_en' : 'hero_title_prefix')
+                ?: ($isEn ? Setting::get('hero_title_prefix') : null)
+                ?: ($isEn ? 'Find Your Dream Career,' : 'Temukan Karir Impian,');
+
+            $highlight = Setting::get($isEn ? 'hero_title_highlight_en' : 'hero_title_highlight')
+                ?: ($isEn ? Setting::get('hero_title_highlight') : null)
+                ?: ($isEn ? 'Realize Your Best Potential' : 'Wujudkan Potensi Terbaikmu');
+
+            $description = Setting::get($isEn ? 'hero_description_en' : 'hero_description')
+                ?: ($isEn ? Setting::get('hero_description') : null)
+                ?: ($isEn
+                    ? 'Join thousands of talented professionals. Explore job openings, take integrated online tests, and achieve your future career now.'
+                    : 'Bergabunglah bersama ribuan profesional bertalenta. Jelajahi lowongan kerja, ikuti tes seleksi online terintegrasi, dan raih karir masa depan sekarang.');
+
+            $bgImage = Setting::get('hero_background_image') ?: 'https://i.pinimg.com/736x/20/dc/f0/20dcf0cfb0122a38d938e3c3011fb0d4.jpg';
+            if (!str_starts_with($bgImage, 'http://') && !str_starts_with($bgImage, 'https://')) {
+                $bgImage = asset('storage/' . $bgImage);
+            }
+
+            return [
+                'prefix' => $prefix,
+                'highlight' => $highlight,
+                'description' => $description,
+                'bg_image' => $bgImage,
+            ];
+        });
+
         return view('frontend.home.index', compact(
             'featuredJobs',
             'totalJobsCount',
@@ -131,6 +162,7 @@ class HomeController extends Controller
             'showcases',
             'careerTracks',
             'jobCountsByLevel',
+            'heroSettings',
             'search',
             'location'
         ));

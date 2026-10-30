@@ -53,6 +53,7 @@
 
     <!-- Styles & Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
     <!-- Tailwind CSS CDN Fallback for instant styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -60,8 +61,6 @@
             darkMode: 'class'
         };
     </script>
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
         :root {
@@ -914,52 +913,9 @@
 
         /* =====================================================
            COMPANY MITRA CARDS (Temukan Lowongan Berdasarkan Perusahaan)
-           High-Performance Butter-Smooth 3D 180° Flip on Hover
+           Clean Compact Static Card (No 3D Flip)
         ===================================================== */
-        .company-flip-wrap {
-            perspective: 1400px;
-            -webkit-perspective: 1400px;
-            transform: translateZ(0);
-            isolation: isolate;
-        }
-
-        .company-flip-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-            -webkit-transform-style: preserve-3d;
-            transform-origin: center center;
-            will-change: transform;
-            transition: transform 0.72s cubic-bezier(0.4, 0.0, 0.2, 1);
-        }
-
-        .company-flip-wrap:hover .company-flip-inner,
-        .company-flip-wrap.is-flipped .company-flip-inner {
-            transform: rotateY(180deg);
-        }
-
-        .company-card-face {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            -webkit-backface-visibility: hidden !important;
-            backface-visibility: hidden !important;
-            -webkit-font-smoothing: subpixel-antialiased;
-            border-radius: 1rem;
-            overflow: hidden;
-        }
-
-        .company-face-front {
-            transform: rotateY(0deg) translateZ(1px);
-        }
-
-        .company-face-back {
-            transform: rotateY(180deg) translateZ(1px);
-        }
-
-        html.light-mode .company-face-front,
+        html.light-mode .company-card,
         html.light-mode .bg-gradient-to-b.from-\[\#061506\].to-\[\#030a03\] {
             background: #FFFFFF !important;
             background-image: none !important;
@@ -967,77 +923,11 @@
             box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03) !important;
         }
 
-        html.light-mode .company-face-front:hover,
+        html.light-mode .company-card:hover,
         html.light-mode .bg-gradient-to-b.from-\[\#061506\].to-\[\#030a03\]:hover {
             background: #FFFFFF !important;
             border-color: rgba(45, 107, 0, 0.50) !important;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.09), 0 2px 6px rgba(0, 0, 0, 0.04) !important;
-        }
-
-        /* =====================================================
-           Company Card Back (Sisi Belakang) in Light Mode
-           Warna Background disamakan dengan Card Pilihan Jalur Karir:
-           Deep Forest Green (linear-gradient(155deg, #1C4D1F 0%, #103613 100%))
-           dengan font putih, counter lowongan neon lime, dan tombol pill rapi
-        ===================================================== */
-        html.light-mode .company-face-back {
-            background: linear-gradient(155deg, #1C4D1F 0%, #103613 100%) !important;
-            color: #FFFFFF !important;
-            border-color: rgba(147, 245, 20, 0.40) !important;
-            box-shadow: 0 16px 36px -8px rgba(16, 54, 19, 0.35), 0 6px 16px rgba(0, 0, 0, 0.12) !important;
-        }
-
-        html.light-mode .company-face-back h3 {
-            color: #FFFFFF !important;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.20);
-        }
-
-        html.light-mode .company-face-back p {
-            color: #E5E7EB !important;
-        }
-
-        html.light-mode .company-face-back span {
-            color: #FFFFFF !important;
-        }
-
-        html.light-mode .company-face-back .company-back-jobcount {
-            color: #93F514 !important;
-        }
-
-        /* Tombol 1: "Kunjungi website" in Light Mode (Pill Putih Bersih seperti CTA Jalur Karir) */
-        html.light-mode .company-face-back a.bg-black {
-            background-color: #FFFFFF !important;
-            color: #0E2F11 !important;
-            border: 1px solid rgba(255, 255, 255, 0.95) !important;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
-        }
-
-        html.light-mode .company-face-back a.bg-black:hover {
-            background-color: #F2F8F0 !important;
-            color: #051A07 !important;
-        }
-
-        html.light-mode .company-face-back a.bg-black span {
-            color: #0E2F11 !important;
-            font-weight: 700 !important;
-        }
-
-        html.light-mode .company-face-back a.bg-black svg {
-            color: #0E2F11 !important;
-            stroke: #0E2F11 !important;
-        }
-
-        /* Tombol 2: "Lihat lowongan" in Light Mode (Outlined Transparan Elegan) */
-        html.light-mode .company-face-back a.border-black {
-            border-color: rgba(255, 255, 255, 0.70) !important;
-            color: #FFFFFF !important;
-            background-color: rgba(255, 255, 255, 0.08) !important;
-        }
-
-        html.light-mode .company-face-back a.border-black:hover {
-            background-color: rgba(255, 255, 255, 0.18) !important;
-            border-color: #FFFFFF !important;
-            color: #FFFFFF !important;
         }
 
         html.light-mode .company-face-back a.border-black span {
@@ -1062,12 +952,65 @@
         html.light-mode .bg-gradient-to-b.from-\[\#061506\].to-\[\#030a03\] .w-14.h-14,
         html.light-mode .bg-gradient-to-b.from-\[\#061506\].to-\[\#030a03\] .w-12.h-12,
         html.light-mode .bg-gradient-to-b.from-\[\#061506\].to-\[\#030a03\] .w-10.h-10,
+        html.light-mode .bg-gradient-to-b.from-\[\#061506\].to-\[\#030a03\] .w-8.h-8,
         html.light-mode .company-face-front .w-12.h-12,
         html.light-mode .company-face-front .w-10.h-10,
         html.light-mode .bg-gradient-to-b.from-\[\#0a2e0a\].to-\[\#041404\] .w-14.h-14 {
             background-color: #F8FAFC !important;
             border-color: rgba(0, 0, 0, 0.08) !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+        }
+
+        /* Company Card Image Slider (Background PUTIH Bersih di Light Mode) */
+        html.light-mode .company-card-img-wrap,
+        html.light-mode .company-card-img-slide {
+            background: #FFFFFF !important;
+            background-color: #FFFFFF !important;
+            border-color: rgba(0, 0, 0, 0.08) !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03) !important;
+        }
+
+        html.light-mode .company-card-img-wrap .ambient-blur,
+        html.light-mode .company-card-img-wrap .dark-overlay {
+            display: none !important;
+            opacity: 0 !important;
+        }
+
+        /* Company Card Tagline / Identity Box (Light Mode Elegan & Bersih) */
+        html.light-mode .company-card-tagline-box {
+            background: #F4FAF2 !important;
+            background-image: linear-gradient(135deg, #F4FAF2 0%, #EBF6E8 100%) !important;
+            border-color: rgba(45, 107, 0, 0.18) !important;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+        }
+
+        html.light-mode .company-card-tagline-box:hover {
+            border-color: rgba(45, 107, 0, 0.40) !important;
+        }
+
+        html.light-mode .company-card-tagline-box p {
+            color: #111827 !important;
+            font-weight: 600 !important;
+        }
+
+        html.light-mode .company-card-tagline-box .tagline-badge {
+            background-color: rgba(22, 128, 56, 0.10) !important;
+            border-color: rgba(22, 128, 56, 0.22) !important;
+            color: #166534 !important;
+            font-weight: 700 !important;
+        }
+
+        html.light-mode .company-card-tagline-box .tagline-subtext {
+            color: #4B5563 !important;
+        }
+
+        html.light-mode .company-card-tagline-box .profile-link {
+            color: #166534 !important;
+            font-weight: 800 !important;
+        }
+
+        html.light-mode .company-card:hover .company-card-tagline-box .profile-link {
+            color: #0F4922 !important;
         }
 
         /* Company Card Texts */
@@ -2641,6 +2584,27 @@
 
     <!-- Locale Switcher Loader (4-Dot Wave Loader identik halaman login) -->
     <x-locale-loader />
+
+    <!-- Mika Assistant Recruitment Chatbot -->
+    <livewire:frontend.chatbot-widget />
+
+    <!-- Recruitment Fraud Warning Disclaimer Modal (Only on Home Page) -->
+    @if (request()->routeIs('home'))
+        @include('frontend.components.recruitment-warning-modal')
+    @endif
+
+    @livewireScripts
+    <script>
+        // Auto-bypass Ngrok free warning page on Livewire AJAX requests
+        document.addEventListener('livewire:init', () => {
+            if (window.Livewire && Livewire.hook) {
+                Livewire.hook('request', ({ options }) => {
+                    options.headers = options.headers || {};
+                    options.headers['ngrok-skip-browser-warning'] = 'true';
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

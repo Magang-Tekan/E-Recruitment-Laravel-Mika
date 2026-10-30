@@ -8,6 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\Headers;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 
@@ -34,8 +35,25 @@ class JobRecommendationMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $appName = config('app.name', 'MIKA CAREER');
+
         return new Envelope(
-            subject: "Rekomendasi Lowongan Kerja {$this->period} Sesuai Minat Anda",
+            subject: "Rekomendasi Lowongan Kerja ({$this->period}) - {$appName}",
+        );
+    }
+
+    /**
+     * Get the message headers.
+     */
+    public function headers(): Headers
+    {
+        $unsubscribeUrl = route('profile', ['tab' => 'pengalaman']);
+
+        return new Headers(
+            text: [
+                'List-Unsubscribe' => "<{$unsubscribeUrl}>",
+                'List-Unsubscribe-Post' => 'List-Unsubscribe=One-Click',
+            ],
         );
     }
 
@@ -46,6 +64,7 @@ class JobRecommendationMail extends Mailable
     {
         return new Content(
             view: 'emails.job_recommendation',
+            text: 'emails.job_recommendation_plain',
         );
     }
 

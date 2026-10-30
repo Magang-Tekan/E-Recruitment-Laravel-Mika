@@ -237,7 +237,7 @@
                 'border_color' => '#2563eb',
                 'bg_color'     => '#eff6ff',
                 'title'        => 'Pemberitahuan: Lolos Seleksi Berkas & Undangan Ujian Online',
-                'desc'         => 'Berdasarkan hasil penelaahan kualifikasi terhadap berkas lamaran yang Anda ajukan, kami menyampaikan bahwa berkas Anda resmi dinyatakan <strong style="color: #1d4ed8;">LOLOS SELEKSI BERKAS</strong>. Anda kami undang untuk melanjutkan ke tahapan <strong style="color: #1d4ed8;">Ujian Seleksi Online</strong>.',
+                'desc'         => 'Berdasarkan hasil penelaahan kualifikasi terhadap berkas lamaran yang Anda ajukan, kami menyampaikan bahwa berkas Anda resmi dinyatakan <strong style="color: #1d4ed8;">Lolos Seleksi Berkas</strong>. Anda kami undang untuk melanjutkan ke tahapan <strong style="color: #1d4ed8;">Ujian Seleksi Online</strong>.',
                 'btn_text'     => 'Masuk ke Portal & Mulai Ujian',
                 'btn_url'      => route('profile', ['tab' => 'riwayat']),
                 'has_exam'     => true,
@@ -246,7 +246,7 @@
                 'border_color' => '#0284c7',
                 'bg_color'     => '#f0f9ff',
                 'title'        => 'Pemberitahuan: Lolos Tahap Evaluasi (Shortlisted)',
-                'desc'         => 'Hasil evaluasi dan penilaian tes Anda telah kami tinjau. Profil Anda dinyatakan memenuhi standar kompetensi dan resmi masuk ke dalam daftar <strong style="color: #0369a1;">KANDIDAT TERPILIH (SHORTLISTED)</strong> untuk proses seleksi lebih lanjut.',
+                'desc'         => 'Hasil evaluasi dan penilaian tes Anda telah kami tinjau. Profil Anda dinyatakan memenuhi standar kompetensi dan resmi masuk ke dalam daftar <strong style="color: #0369a1;">Kandidat Terpilih (Shortlisted)</strong> untuk proses seleksi lebih lanjut.',
                 'btn_text'     => 'Buka Riwayat Lamaran',
                 'btn_url'      => route('profile', ['tab' => 'riwayat']),
                 'has_exam'     => false,
@@ -255,7 +255,7 @@
                 'border_color' => '#6366f1',
                 'bg_color'     => '#eef2ff',
                 'title'        => 'Undangan Tahap Wawancara Kerja',
-                'desc'         => 'Kami mengundang Anda untuk mengikuti tahapan <strong style="color: #4338ca;">WAWANCARA KERJA (INTERVIEW)</strong> bersama tim rekruter. Detail mengenai waktu pelaksanaan dan media pertemuan telah kami sematkan pada akun Anda.',
+                'desc'         => 'Kami mengundang Anda untuk mengikuti tahapan <strong style="color: #4338ca;">Wawancara Kerja (Interview)</strong> bersama tim rekruter. Detail mengenai waktu pelaksanaan dan media pertemuan telah kami sematkan pada akun Anda.',
                 'btn_text'     => 'Lihat Jadwal Wawancara',
                 'btn_url'      => route('profile', ['tab' => 'riwayat']),
                 'has_exam'     => false,
@@ -264,7 +264,7 @@
                 'border_color' => '#16a34a',
                 'bg_color'     => '#f0fdf4',
                 'title'        => 'Pemberitahuan Penerimaan Kerja (Accepted)',
-                'desc'         => 'Dengan senang hati kami sampaikan bahwa Anda resmi dinyatakan <strong style="color: #15803d;">DITERIMA BEKERJA (ACCEPTED)</strong> untuk bergabung bersama <strong>' . $companyName . '</strong>. Tim Human Resources akan segera menghubungi Anda untuk koordinasi penawaran resmi (offering) serta administrasi onboarding.',
+                'desc'         => 'Dengan senang hati kami sampaikan bahwa Anda resmi dinyatakan <strong style="color: #15803d;">Diterima Bekerja (Accepted)</strong> untuk bergabung bersama <strong>' . $companyName . '</strong>. Tim Human Resources akan segera menghubungi Anda untuk koordinasi penawaran resmi (offering) serta administrasi onboarding.',
                 'btn_text'     => 'Akses Akun Pelamar',
                 'btn_url'      => route('profile', ['tab' => 'riwayat']),
                 'has_exam'     => false,
@@ -273,7 +273,7 @@
                 'border_color' => '#dc2626',
                 'bg_color'     => '#fef2f2',
                 'title'        => 'Informasi Perkembangan Seleksi Lamaran',
-                'desc'         => 'Setelah melalui proses pertimbangan yang mendalam terhadap seluruh berkas kandidat yang masuk, saat ini kualifikasi Anda <strong style="color: #b91c1c;">BELUM SESUAI</strong> dengan kebutuhan posisi ini. Kami sangat mengapresiasi waktu dan minat yang telah Anda berikan, serta akan tetap menyimpan profil Anda untuk peluang yang sesuai di masa mendatang.',
+                'desc'         => 'Setelah melalui proses pertimbangan yang mendalam terhadap seluruh berkas kandidat yang masuk, saat ini kualifikasi Anda <strong style="color: #b91c1c;">belum sesuai</strong> dengan kebutuhan posisi ini. Kami sangat mengapresiasi waktu dan minat yang telah Anda berikan, serta akan tetap menyimpan profil Anda untuk peluang yang sesuai di masa mendatang.',
                 'btn_text'     => 'Lihat Lowongan Lainnya',
                 'btn_url'      => route('jobs.index'),
                 'has_exam'     => false,
@@ -386,8 +386,8 @@
 
             <!-- Footer -->
             <div class="footer">
-                <strong>Pemberitahuan:</strong> Seluruh proses seleksi dan penerimaan karyawan di <strong>{{ $companyName }}</strong> sama sekali <strong>TIDAK DIPUNGUT BIAYA APAPUN</strong> (Gratis). Harap waspada dan berhati-hati terhadap segala bentuk penipuan yang mengatasnamakan perusahaan atau meminta pembayaran tiket/akomodasi.<br><br>
-                Email ini dikirimkan secara otomatis melalui Sistem E-Recruitment {{ $companyName }}. Mohon untuk tidak membalas email ini secara langsung.<br>
+                <strong>Pemberitahuan:</strong> Seluruh proses seleksi dan penerimaan karyawan di <strong>{{ $companyName }}</strong> sama sekali <strong>tidak dipungut biaya apapun</strong> (Gratis). Harap waspada dan berhati-hati terhadap segala bentuk penipuan yang mengatasnamakan perusahaan atau meminta pembayaran tiket/akomodasi.<br><br>
+                Email notifikasi resmi ini dikirimkan secara otomatis oleh Sistem E-Recruitment {{ $companyName }} terkait proses lamaran Anda. Mohon untuk tidak membalas email ini secara langsung.<br>
                 &copy; {{ date('Y') }} {{ $companyName }}. Hak cipta dilindungi undang-undang.
             </div>
         </div>

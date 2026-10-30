@@ -52,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
         class_exists(\App\Models\TestCategory::class);
 
         if (!app()->runningInConsole()) {
-            if (request()->isSecure() || request()->header('X-Forwarded-Proto') === 'https' || str_contains(config('app.url'), 'https://')) {
+            if (request()->isSecure() || request()->header('X-Forwarded-Proto') === 'https' || str_contains(config('app.url'), 'https://') || str_contains(request()->header('host', ''), 'ngrok')) {
                 URL::forceScheme('https');
             }
         } elseif (str_contains(config('app.url'), 'https://')) {
