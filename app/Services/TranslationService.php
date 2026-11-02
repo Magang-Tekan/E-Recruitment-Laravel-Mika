@@ -119,12 +119,12 @@ class TranslationService
     }
 
     /**
-     * Terjemahkan via MyMemory API dengan chunking cerdas untuk teks > 450 karakter
+     * Terjemahkan via MyMemory API dengan chunking cerdas untuk teks panjang
      * (MyMemory membatasi query maksimal 500 karakter).
      */
     private static function translateViaMyMemory(string $text, string $target, string $source): ?string
     {
-        $chunks = self::chunkText($text, 450);
+        $chunks = self::chunkText($text, 380);
         $translatedChunks = [];
 
         foreach ($chunks as $chunk) {
@@ -134,11 +134,18 @@ class TranslationService
                 continue;
             }
 
+            $params = [
+                'q' => $chunkTrimmed,
+                'langpair' => $source . '|' . $target,
+            ];
+
+            $email = config('mail.from.address');
+            if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $params['de'] = $email;
+            }
+
             $response = Http::timeout(6)
-                ->get('https://api.mymemory.translated.net/get', [
-                    'q' => $chunkTrimmed,
-                    'langpair' => $source . '|' . $target,
-                ]);
+                ->get('https://api.mymemory.translated.net/get', $params);
 
             if (!$response->successful()) {
                 return null;
@@ -153,8 +160,9 @@ class TranslationService
             $rawText = $response->json('responseData.translatedText');
             if (
                 empty($rawText) ||
+                !is_string($rawText) ||
                 str_starts_with($rawText, 'MYMEMORY WARNING') ||
-                str_contains($rawText, 'QUERY LENGTH LIMIT EXCEEDED') ||
+                str_contains($rawText, 'QUERY LENGTH LIMIT') ||
                 str_contains($rawText, 'MYMEMORY')
             ) {
                 return null;
@@ -171,17 +179,24 @@ class TranslationService
     /**
      * Pecah teks panjang menjadi potongan-potongan <= maxLength karakter agar tidak melebihi limit API.
      */
-    private static function chunkText(string $text, int $maxLength = 450): array
+    private static function chunkText(string $text, int $maxLength = 380): array
     {
         if (mb_strlen($text) <= $maxLength) {
             return [$text];
         }
 
-        $lines = explode("\n", $text);
+        // Pisahkan penutup tag HTML dengan newline agar pemotongan tidak merusak struktur tag
+        $normalized = preg_replace('/(<\/(?:p|li|div|h[1-6])>|<br\s*\/?>)/i', "$1\n", $text);
+        $lines = explode("\n", $normalized);
         $chunks = [];
         $current = '';
 
         foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+
             if (mb_strlen($current . "\n" . $line) > $maxLength && $current !== '') {
                 $chunks[] = trim($current);
                 $current = $line;

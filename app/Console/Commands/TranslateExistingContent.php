@@ -49,19 +49,27 @@ class TranslateExistingContent extends Command
             $changed = false;
 
             // Terjemahkan Judul
-            if (($force || empty($job->title_en)) && !empty($job->title)) {
+            $isTitleInvalid = !empty($job->title_en) && (str_contains($job->title_en, 'QUERY LENGTH LIMIT') || str_contains($job->title_en, 'MYMEMORY'));
+            if (($force || empty($job->title_en) || $isTitleInvalid) && !empty($job->title)) {
                 $translatedTitle = TranslationService::translate($job->title, 'en', 'id');
-                if (!empty($translatedTitle)) {
+                if (!empty($translatedTitle) && !str_contains($translatedTitle, 'QUERY LENGTH LIMIT') && !str_contains($translatedTitle, 'MYMEMORY')) {
                     $job->title_en = $translatedTitle;
+                    $changed = true;
+                } elseif ($isTitleInvalid) {
+                    $job->title_en = null;
                     $changed = true;
                 }
             }
 
             // Terjemahkan Deskripsi
-            if (($force || empty($job->description_en)) && !empty($job->description)) {
+            $isDescInvalid = !empty($job->description_en) && (str_contains($job->description_en, 'QUERY LENGTH LIMIT') || str_contains($job->description_en, 'MYMEMORY'));
+            if (($force || empty($job->description_en) || $isDescInvalid) && !empty($job->description)) {
                 $translatedDesc = TranslationService::translate($job->description, 'en', 'id');
-                if (!empty($translatedDesc)) {
+                if (!empty($translatedDesc) && !str_contains($translatedDesc, 'QUERY LENGTH LIMIT') && !str_contains($translatedDesc, 'MYMEMORY')) {
                     $job->description_en = $translatedDesc;
+                    $changed = true;
+                } elseif ($isDescInvalid) {
+                    $job->description_en = null;
                     $changed = true;
                 }
             }

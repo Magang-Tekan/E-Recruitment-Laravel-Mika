@@ -68,12 +68,12 @@ class CompanyShowcase extends Model
     public function getLocalizedTitleAttribute(): string
     {
         if (app()->getLocale() === 'en') {
-            if (!empty($this->title_en)) {
+            if (!empty($this->title_en) && !str_contains($this->title_en, 'QUERY LENGTH LIMIT') && !str_contains($this->title_en, 'MYMEMORY')) {
                 return $this->title_en;
             }
             if (!empty($this->title)) {
                 $translated = \App\Services\TranslationService::translate($this->title);
-                if (!empty($translated)) {
+                if (!empty($translated) && !str_contains($translated, 'QUERY LENGTH LIMIT') && !str_contains($translated, 'MYMEMORY')) {
                     return $translated;
                 }
             }
@@ -84,12 +84,12 @@ class CompanyShowcase extends Model
     public function getLocalizedDescriptionAttribute(): ?string
     {
         if (app()->getLocale() === 'en') {
-            if (!empty($this->description_en)) {
+            if (!empty($this->description_en) && !str_contains($this->description_en, 'QUERY LENGTH LIMIT') && !str_contains($this->description_en, 'MYMEMORY')) {
                 return $this->description_en;
             }
             if (!empty($this->description)) {
                 $translated = \App\Services\TranslationService::translate($this->description);
-                if (!empty($translated)) {
+                if (!empty($translated) && !str_contains($translated, 'QUERY LENGTH LIMIT') && !str_contains($translated, 'MYMEMORY')) {
                     return $translated;
                 }
             }
@@ -100,12 +100,12 @@ class CompanyShowcase extends Model
     public function getLocalizedTagAttribute(): ?string
     {
         if (app()->getLocale() === 'en') {
-            if (!empty($this->tag_en)) {
+            if (!empty($this->tag_en) && !str_contains($this->tag_en, 'QUERY LENGTH LIMIT') && !str_contains($this->tag_en, 'MYMEMORY')) {
                 return $this->tag_en;
             }
             if (!empty($this->tag)) {
                 $translated = \App\Services\TranslationService::translate($this->tag);
-                if (!empty($translated)) {
+                if (!empty($translated) && !str_contains($translated, 'QUERY LENGTH LIMIT') && !str_contains($translated, 'MYMEMORY')) {
                     return $translated;
                 }
             }
@@ -116,7 +116,7 @@ class CompanyShowcase extends Model
     public function getLocalizedBadgeTitleAttribute(): ?string
     {
         if (app()->getLocale() === 'en') {
-            if (!empty($this->badge_title_en)) {
+            if (!empty($this->badge_title_en) && !str_contains($this->badge_title_en, 'QUERY LENGTH LIMIT') && !str_contains($this->badge_title_en, 'MYMEMORY')) {
                 return $this->badge_title_en;
             }
             if (!empty($this->badge_title)) {

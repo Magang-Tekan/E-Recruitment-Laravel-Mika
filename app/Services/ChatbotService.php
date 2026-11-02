@@ -187,7 +187,6 @@ class ChatbotService
             ? "Hello! I am Mika Assistant. You can ask me about open vacancies, how to apply, or required qualifications. How may I assist you today?"
             : "Halo! Saya Mika Assistant. Anda dapat menanyakan lowongan yang sedang buka, cara melamar, atau kualifikasi yang dibutuhkan. Ada yang bisa saya bantu?";
     }
-    }
 
     /**
      * Send prompt with grounded database context to Gemini API.

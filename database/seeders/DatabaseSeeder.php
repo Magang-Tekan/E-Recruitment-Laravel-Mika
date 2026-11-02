@@ -135,6 +135,9 @@ class DatabaseSeeder extends Seeder
 
         // 9. Seed Company Showcase / Kegiatan Perusahaan
         $this->call(CompanyShowcaseSeeder::class);
+
+        // 10. Seed Career Tracks (Pilihan Jalur Karir)
+        $this->call(CareerTrackSeeder::class);
     }
 }
 

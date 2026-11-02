@@ -114,7 +114,7 @@ class CareerTrack extends Model
 
     public function getLocalizedDescriptionAttribute(): ?string
     {
-        if (app()->getLocale() === 'en' && !empty($this->description_en)) {
+        if (app()->getLocale() === 'en' && !empty($this->description_en) && !str_contains($this->description_en, 'QUERY LENGTH LIMIT') && !str_contains($this->description_en, 'MYMEMORY')) {
             return $this->description_en;
         }
         return $this->description ? __($this->description) : null;

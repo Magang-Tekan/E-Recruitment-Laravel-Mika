@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Job;
+use Illuminate\Support\Facades\DB;
 
 class JobController extends Controller
 {
@@ -121,20 +122,33 @@ class JobController extends Controller
         return redirect()->route('admin.job')->with('update', 'Lowongan pekerjaan berhasil diperbarui');
     }
 
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
         $data = Job::findOrFail($id);
 
-        // Proteksi: Cegah hapus jika lowongan sudah memiliki pelamar terdaftar
+        // Proteksi: Cek apakah lowongan sudah memiliki pelamar terdaftar
         $applicationCount = $data->jobApplications()->count();
-        if ($applicationCount > 0) {
+        if ($applicationCount > 0 && !$request->boolean('force')) {
             return redirect()->route('admin.job')
-                ->with('error', "Lowongan pekerjaan tidak dapat dihapus karena sudah memiliki {$applicationCount} pelamar terdaftar beserta riwayat evaluasinya.");
+                ->with('error', "Lowongan '{$data->title}' tidak dapat dihapus karena sudah memiliki {$applicationCount} pelamar terdaftar. Silakan centang opsi konfirmasi Hapus Paksa jika yakin ingin menghapus beserta seluruh data pelamar, atau ubah status lowongan menjadi 'Closed'.");
         }
 
-        if (!$data->delete()) {
-            return redirect()->route('admin.job')->with('error', 'Lowongan pekerjaan gagal dihapus');
-        }
+        DB::transaction(function () use ($data, $applicationCount, $request) {
+            // Hapus riwayat lamaran jika force delete diizinkan
+            if ($applicationCount > 0 && $request->boolean('force')) {
+                $data->jobApplications()->delete();
+            }
+
+            // Lepaskan pivot relations (pendidikan, jurusan, tes)
+            $data->degrees()->detach();
+            $data->majors()->detach();
+            $data->tests()->detach();
+
+            // Null-kan relasi direct test jika ada agar tidak kena constraint
+            \App\Models\Test::where('job_id', $data->id)->update(['job_id' => null]);
+
+            $data->delete();
+        });
 
         return redirect()->route('admin.job')->with('delete', 'Lowongan pekerjaan berhasil dihapus');
     }

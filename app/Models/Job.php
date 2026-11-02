@@ -20,14 +20,24 @@ class Job extends Model
     protected static function booted(): void
     {
         static::saving(function ($job) {
-            // Auto translate title to English if title_en is empty
-            if (empty($job->title_en) && !empty($job->title)) {
-                $job->title_en = \App\Services\TranslationService::translate($job->title);
+            $isTitleInvalid = !empty($job->title_en) && (str_contains($job->title_en, 'QUERY LENGTH LIMIT') || str_contains($job->title_en, 'MYMEMORY'));
+            if ((empty($job->title_en) || $isTitleInvalid) && !empty($job->title)) {
+                $transTitle = \App\Services\TranslationService::translate($job->title);
+                if (!empty($transTitle) && !str_contains($transTitle, 'QUERY LENGTH LIMIT') && !str_contains($transTitle, 'MYMEMORY')) {
+                    $job->title_en = $transTitle;
+                } elseif ($isTitleInvalid) {
+                    $job->title_en = null;
+                }
             }
 
-            // Auto translate description to English if description_en is empty
-            if (empty($job->description_en) && !empty($job->description)) {
-                $job->description_en = \App\Services\TranslationService::translate($job->description);
+            $isDescInvalid = !empty($job->description_en) && (str_contains($job->description_en, 'QUERY LENGTH LIMIT') || str_contains($job->description_en, 'MYMEMORY'));
+            if ((empty($job->description_en) || $isDescInvalid) && !empty($job->description)) {
+                $transDesc = \App\Services\TranslationService::translate($job->description);
+                if (!empty($transDesc) && !str_contains($transDesc, 'QUERY LENGTH LIMIT') && !str_contains($transDesc, 'MYMEMORY')) {
+                    $job->description_en = $transDesc;
+                } elseif ($isDescInvalid) {
+                    $job->description_en = null;
+                }
             }
         });
     }
@@ -38,12 +48,12 @@ class Job extends Model
     public function getLocalizedTitleAttribute(): string
     {
         if (app()->getLocale() === 'en') {
-            if (!empty($this->title_en)) {
+            if (!empty($this->title_en) && !str_contains($this->title_en, 'QUERY LENGTH LIMIT') && !str_contains($this->title_en, 'MYMEMORY')) {
                 return $this->title_en;
             }
             if (!empty($this->title)) {
                 $translated = \App\Services\TranslationService::translate($this->title);
-                if (!empty($translated)) {
+                if (!empty($translated) && !str_contains($translated, 'QUERY LENGTH LIMIT') && !str_contains($translated, 'MYMEMORY')) {
                     return $translated;
                 }
             }
@@ -57,12 +67,12 @@ class Job extends Model
     public function getLocalizedDescriptionAttribute(): ?string
     {
         if (app()->getLocale() === 'en') {
-            if (!empty($this->description_en)) {
+            if (!empty($this->description_en) && !str_contains($this->description_en, 'QUERY LENGTH LIMIT') && !str_contains($this->description_en, 'MYMEMORY')) {
                 return $this->description_en;
             }
             if (!empty($this->description)) {
                 $translated = \App\Services\TranslationService::translate($this->description);
-                if (!empty($translated)) {
+                if (!empty($translated) && !str_contains($translated, 'QUERY LENGTH LIMIT') && !str_contains($translated, 'MYMEMORY')) {
                     return $translated;
                 }
             }

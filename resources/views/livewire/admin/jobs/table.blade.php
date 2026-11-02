@@ -153,7 +153,9 @@
     },
     deleteData: {
         id: '',
-        title: ''
+        title: '',
+        applications_count: 0,
+        force: false
     },
     onPositionSelect(event, isEdit = false) {
         let select = event.target;
@@ -323,7 +325,9 @@
     openDeleteModal(job) {
         this.deleteData = {
             id: job.id,
-            title: job.title
+            title: job.title,
+            applications_count: job.applications_count || 0,
+            force: false
         };
         this.showDeleteModal = true;
     },
@@ -836,12 +840,12 @@
                             </td>
                             <td class="px-6 py-4 text-right whitespace-nowrap">
                                 <div class="flex items-center justify-end gap-1.5">
-                                    <button @click="openEditModal({{ json_encode($job) }})" class="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors" title="Edit">
+                                    <button @click="openEditModal(@js($job))" class="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors" title="Edit">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
-                                    <button @click="openDeleteModal({{ json_encode($job) }})" class="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors" title="Hapus">
+                                    <button @click="openDeleteModal({ id: {{ $job->id }}, title: @js($job->title), applications_count: {{ (int) ($job->job_applications_count ?? 0) }} })" class="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors" title="Hapus">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
@@ -1279,7 +1283,7 @@
                         </button>
                     </div>
 
-                    <form :action="'/admin/jobs/' + editData.id" method="POST" id="editJobForm" 
+                    <form :action="'{{ url('admin/jobs') }}/' + editData.id" method="POST" id="editJobForm" 
                           @keydown.enter="if (editStep === 1 && $event.target.tagName !== 'TEXTAREA') { $event.preventDefault(); goToEditStep2(); }" 
                           @submit="
                               let descVal = '';
@@ -1581,21 +1585,43 @@
                         </div>
                     </div>
 
-                    <div class="mt-4">
+                    <div class="mt-4 space-y-3">
                         <p class="text-xs text-gray-600 dark:text-slate-300">
                             Apakah Anda yakin ingin menghapus data lowongan <strong class="text-gray-900 dark:text-white font-semibold" x-text="deleteData.title"></strong>?
                         </p>
+
+                        <!-- Peringatan jika lowongan sudah memiliki pelamar terdaftar -->
+                        <div x-show="deleteData.applications_count > 0" class="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-amber-800 dark:text-amber-300 text-xs space-y-2.5">
+                            <div class="flex items-start gap-2">
+                                <svg class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <div class="leading-relaxed">
+                                    <span class="font-bold">Perhatian:</span> Lowongan ini sudah memiliki <strong class="font-extrabold text-amber-900 dark:text-amber-200" x-text="deleteData.applications_count"></strong> pelamar terdaftar beserta riwayat evaluasinya.
+                                </div>
+                            </div>
+                            <label class="flex items-start gap-2 pt-2 border-t border-amber-200/60 dark:border-amber-900/40 cursor-pointer select-none">
+                                <input type="checkbox" name="force" value="1" x-model="deleteData.force" class="mt-0.5 rounded border-amber-300 text-rose-600 focus:ring-rose-500">
+                                <span class="text-[11px] font-semibold text-rose-700 dark:text-rose-400 leading-tight">
+                                    Saya mengerti risikonya dan ingin menghapus lowongan ini secara permanen beserta seluruh data riwayat pelamarnya (Hapus Paksa).
+                                </span>
+                            </label>
+                        </div>
                     </div>
 
-                    <form :action="'/admin/jobs/' + deleteData.id" method="POST" class="mt-6 flex items-center justify-end gap-3">
+                    <form :action="'{{ url('admin/jobs') }}/' + deleteData.id" method="POST" class="mt-6 flex items-center justify-end gap-3">
                         @csrf
                         @method('DELETE')
+                        <input type="hidden" name="force" :value="deleteData.force ? '1' : '0'">
 
                         <button type="button" @click="showDeleteModal = false" class="px-4 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition">
                             Batal
                         </button>
-                        <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-md shadow-rose-500/20 transition">
-                            Hapus Lowongan
+                        <button type="submit" 
+                                :disabled="deleteData.applications_count > 0 && !deleteData.force"
+                                :class="deleteData.applications_count > 0 && !deleteData.force ? 'opacity-50 cursor-not-allowed bg-rose-400' : 'bg-rose-600 hover:bg-rose-500 cursor-pointer shadow-md shadow-rose-500/20'"
+                                class="px-4 py-2 text-xs font-semibold text-white rounded-xl transition flex items-center gap-1.5">
+                            <span x-text="deleteData.applications_count > 0 ? 'Hapus Paksa Lowongan' : 'Hapus Lowongan'"></span>
                         </button>
                     </form>
                 </div>
