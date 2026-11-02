@@ -61,6 +61,7 @@ class JobApplication extends Model
             'interview'                       => __('Wawancara'),
             'accepted', 'hired'               => __('Diterima'),
             'rejected'                        => __('Ditolak'),
+            'withdrawn', 'dibatalkan'         => __('Dibatalkan'),
             'partial approved'                => __('Partial Approved'),
             default                           => $this->status ? __($this->status) : __('Diajukan'),
         };

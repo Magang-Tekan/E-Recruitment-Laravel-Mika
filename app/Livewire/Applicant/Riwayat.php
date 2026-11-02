@@ -14,11 +14,84 @@ class Riwayat extends Component
     public $statusFilter = 'all';
     public $selectedApplicationId = null;
     public $showDetailModal = false;
+    public $showWithdrawModal = false;
+    public $withdrawId = null;
+    public $withdrawJobTitle = '';
+    public $withdrawReason = '';
 
     #[On('application-updated')]
     public function refreshList()
     {
         // Refresh component
+    }
+
+    public function openWithdrawModal($id)
+    {
+        $user = Auth::user();
+        if (!$user || !$user->applicantProfile) return;
+
+        $application = JobApplication::with('job')
+            ->where('profile_id', $user->applicantProfile->id)
+            ->find($id);
+
+        if ($application) {
+            $this->withdrawId = $application->id;
+            $this->withdrawJobTitle = $application->job?->title ?? '';
+            $this->withdrawReason = '';
+            $this->showWithdrawModal = true;
+        }
+    }
+
+    public function closeWithdrawModal()
+    {
+        $this->showWithdrawModal = false;
+        $this->withdrawId = null;
+        $this->withdrawJobTitle = '';
+        $this->withdrawReason = '';
+    }
+
+    public function confirmWithdraw()
+    {
+        $user = Auth::user();
+        if (!$user || !$user->applicantProfile) return;
+
+        $application = JobApplication::with('job')
+            ->where('profile_id', $user->applicantProfile->id)
+            ->where('id', $this->withdrawId)
+            ->first();
+
+        if (!$application) {
+            session()->flash('error', __('Data lamaran tidak ditemukan.'));
+            $this->closeWithdrawModal();
+            return;
+        }
+
+        // Hanya boleh dibatalkan jika masih Submitted / pending / applied
+        if (!in_array(strtolower($application->status), ['submitted', 'pending', 'applied'])) {
+            session()->flash('error', __('Lamaran ini tidak dapat dibatalkan karena sudah masuk ke tahapan seleksi oleh tim rekrutmen.'));
+            $this->closeWithdrawModal();
+            return;
+        }
+
+        $reason = trim($this->withdrawReason) ?: __('Salah memilih posisi lowongan pekerjaan');
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($application, $user, $reason) {
+            $application->update([
+                'status' => 'Withdrawn',
+                'notes'  => 'Dibatalkan oleh Pelamar. Alasan: ' . $reason,
+            ]);
+
+            \App\Models\ApplicationStatusHistory::create([
+                'job_applications_id' => $application->id,
+                'status'              => 'Withdrawn',
+                'notes'               => 'Lamaran dibatalkan oleh pelamar sendiri. Alasan: ' . $reason,
+                'changed_by'          => $user->id,
+                'changed_at'          => now(),
+            ]);
+        });
+
+        session()->flash('withdraw_success', __('Lamaran untuk posisi :title berhasil dibatalkan.', ['title' => $application->job?->title ?? '']));
+        $this->closeWithdrawModal();
     }
 
     public function openDetail($id)
@@ -69,7 +142,7 @@ class Riwayat extends Component
             $stats['total'] = (clone $baseQuery)->count();
             $stats['process'] = (clone $baseQuery)->whereIn('status', ['Submitted', 'Reviewed', 'Shortlisted', 'Interview', 'applied', 'pending', 'screening'])->count();
             $stats['accepted'] = (clone $baseQuery)->whereIn('status', ['Accepted', 'accepted'])->count();
-            $stats['rejected'] = (clone $baseQuery)->whereIn('status', ['Rejected', 'rejected'])->count();
+            $stats['rejected'] = (clone $baseQuery)->whereIn('status', ['Rejected', 'rejected', 'Withdrawn', 'withdrawn', 'dibatalkan'])->count();
 
             $query = JobApplication::with([
                 'job.company', 
@@ -104,6 +177,8 @@ class Riwayat extends Component
                     'wawancara'    => 'Interview',
                     'diterima'     => 'Accepted',
                     'ditolak'      => 'Rejected',
+                    'dibatalkan'   => 'Withdrawn',
+                    'withdrawn'    => 'Withdrawn',
                 ];
                 if (isset($indoMap[strtolower($statusVal)])) {
                     $statusVal = $indoMap[strtolower($statusVal)];

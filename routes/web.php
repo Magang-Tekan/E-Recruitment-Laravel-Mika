@@ -118,6 +118,7 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':recruiter'])
         Route::view('dashboard', 'livewire.admin.dashboard.index')->name('dashboard');
         Route::view('applicants', 'livewire.admin.applicants.index')->name('application');
         Route::put('applicants/{id}', [JobApplicationController::class, 'update'])->name('application.update');
+        Route::delete('applicants/{id}', [JobApplicationController::class, 'destroy'])->name('application.destroy');
         Route::get('applicants/{id}/profile-pdf', [CandidateProfilePdfController::class, 'downloadApplicantPdf'])->name('application.profile_pdf');
         Route::view('candidates', 'livewire.admin.candidates.index')->name('candidate');
         Route::get('candidates/{id}/pdf', [CandidateProfilePdfController::class, 'downloadCandidatePdf'])->name('candidate.pdf');
@@ -151,6 +152,7 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':admin'])
         // Recruitment Management - Selection CV & Candidate View
         Route::view('applicants', 'livewire.admin.applicants.index')->name('application');
         Route::put('applicants/{id}', [JobApplicationController::class, 'update'])->name('application.update');
+        Route::delete('applicants/{id}', [JobApplicationController::class, 'destroy'])->name('application.destroy');
         Route::get('applicants/{id}/profile-pdf', [CandidateProfilePdfController::class, 'downloadApplicantPdf'])->name('application.profile_pdf');
         Route::view('candidates', 'livewire.admin.candidates.index')->name('candidate');
         Route::get('candidates/{id}/pdf', [CandidateProfilePdfController::class, 'downloadCandidatePdf'])->name('candidate.pdf');

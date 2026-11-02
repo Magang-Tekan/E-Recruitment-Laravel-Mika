@@ -192,6 +192,7 @@ class FrontendJobController extends Controller
             if ($applicantProfile) {
                 $hasApplied = JobApplication::where('job_id', $job->id)
                     ->where('profile_id', $applicantProfile->id)
+                    ->whereNotIn('status', ['Withdrawn', 'withdrawn', 'dibatalkan'])
                     ->exists();
 
                 $isMandatoryComplete = $applicantProfile->is_mandatory_complete && $applicantProfile->completion_percentage >= 80;

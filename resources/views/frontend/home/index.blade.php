@@ -1648,8 +1648,28 @@
                 }
             }
 
+            // Acak urutan foto galeri agar variatif dan dinamis setiap kunjungan
+            if (!empty($curvedPhotos)) {
+                shuffle($curvedPhotos);
+
+                // Upayakan agar foto bersebelahan tidak memiliki judul acara yang sama persis
+                $totalPhotos = count($curvedPhotos);
+                for ($i = 0; $i < $totalPhotos - 1; $i++) {
+                    if ($curvedPhotos[$i]['title'] === $curvedPhotos[$i + 1]['title']) {
+                        for ($j = $i + 2; $j < $totalPhotos; $j++) {
+                            if ($curvedPhotos[$j]['title'] !== $curvedPhotos[$i]['title']) {
+                                $temp = $curvedPhotos[$i + 1];
+                                $curvedPhotos[$i + 1] = $curvedPhotos[$j];
+                                $curvedPhotos[$j] = $temp;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             // Initial item for initial render
-            $initialItem = $curvedPhotos[0];
+            $initialItem = !empty($curvedPhotos) ? $curvedPhotos[0] : null;
         @endphp
 
         @if (!empty($curvedPhotos))

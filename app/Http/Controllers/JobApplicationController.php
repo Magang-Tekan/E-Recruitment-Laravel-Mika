@@ -51,12 +51,12 @@ class JobApplicationController extends Controller
                 ->with('error', 'Lowongan pekerjaan ini sudah ditutup atau tidak menerima lamaran baru.');
         }
 
-        // Cek apakah sudah pernah melamar lowongan ini
-        $alreadyApplied = JobApplication::where('job_id', $job->id)
+        // Cek apakah sudah pernah melamar lowongan ini (kecuali jika sebelumnya dibatalkan / Withdrawn)
+        $existingApp = JobApplication::where('job_id', $job->id)
             ->where('profile_id', $applicantProfile->id)
-            ->exists();
+            ->first();
 
-        if ($alreadyApplied) {
+        if ($existingApp && !in_array(strtolower($existingApp->status), ['withdrawn', 'dibatalkan'])) {
             return redirect()->route('jobs.show', $id)
                 ->with('error', 'Anda sudah pernah mengajukan lamaran untuk lowongan pekerjaan ini.');
         }
@@ -64,22 +64,40 @@ class JobApplicationController extends Controller
         try {
             \Illuminate\Support\Facades\DB::beginTransaction();
 
-            $application = JobApplication::create([
-                'job_id'     => $job->id,
-                'profile_id' => $applicantProfile->id,
-                'status'     => 'Submitted',
-                'applied_at' => now(),
-                'notes'      => null,
-            ]);
+            if ($existingApp) {
+                // Aktifkan kembali lamaran yang sebelumnya pernah dibatalkan
+                $existingApp->update([
+                    'status'     => 'Submitted',
+                    'applied_at' => now(),
+                    'notes'      => 'Diajukan kembali setelah sebelumnya dibatalkan.',
+                ]);
+                $application = $existingApp;
 
-            // Catat history status awal
-            ApplicationStatusHistory::create([
-                'job_applications_id' => $application->id,
-                'status'              => 'Submitted',
-                'notes'               => 'Lamaran pekerjaan berhasil diajukan dengan persetujuan pernyataan kebenaran data profil.',
-                'changed_by'          => $user->id,
-                'changed_at'          => now(),
-            ]);
+                ApplicationStatusHistory::create([
+                    'job_applications_id' => $application->id,
+                    'status'              => 'Submitted',
+                    'notes'               => 'Lamaran pekerjaan berhasil diajukan kembali oleh pelamar.',
+                    'changed_by'          => $user->id,
+                    'changed_at'          => now(),
+                ]);
+            } else {
+                $application = JobApplication::create([
+                    'job_id'     => $job->id,
+                    'profile_id' => $applicantProfile->id,
+                    'status'     => 'Submitted',
+                    'applied_at' => now(),
+                    'notes'      => null,
+                ]);
+
+                // Catat history status awal
+                ApplicationStatusHistory::create([
+                    'job_applications_id' => $application->id,
+                    'status'              => 'Submitted',
+                    'notes'               => 'Lamaran pekerjaan berhasil diajukan dengan persetujuan pernyataan kebenaran data profil.',
+                    'changed_by'          => $user->id,
+                    'changed_at'          => now(),
+                ]);
+            }
 
             \Illuminate\Support\Facades\DB::commit();
 
@@ -578,5 +596,35 @@ class JobApplicationController extends Controller
 
         return redirect()->route($redirectRoute)
             ->with('update', $successMsg);
+    }
+
+    /**
+     * Delete job application and clean up its related data (Admin / Recruiter)
+     */
+    public function destroy(Request $request, string $id)
+    {
+        $application = JobApplication::with(['job', 'applicantProfile.user'])->findOrFail($id);
+
+        $applicantName = $application->applicantProfile?->full_name ?? ($application->applicantProfile?->user?->name ?? 'Pelamar');
+        $jobTitle = $application->job?->title ?? 'Lowongan';
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($application) {
+            // Hapus jadwal interview terkait
+            $application->interviewSchedules()->delete();
+
+            // Hapus riwayat log status
+            $application->statusHistories()->delete();
+
+            // Hapus attempt tes pelamar terkait lamaran ini
+            foreach ($application->testAttempts as $attempt) {
+                $attempt->answers()->delete();
+                $attempt->delete();
+            }
+
+            // Hapus data lamaran
+            $application->delete();
+        });
+
+        return redirect()->back()->with('delete', "Data lamaran {$applicantName} untuk posisi {$jobTitle} berhasil dihapus.");
     }
 }

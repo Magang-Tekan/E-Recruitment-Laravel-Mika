@@ -2353,9 +2353,12 @@
         }
 
         /* =====================================================
-           JOB DETAIL (SHOW PAGE) - LIGHT MODE
+           JOB DETAIL (SHOW PAGE) - ICONS
         ===================================================== */
-        /* Ikon Perusahaan di header atas lowongan: ubah jadi grey */
+        /* Ikon Perusahaan & Departemen di header atas lowongan: ubah jadi grey pada Dark Mode & Light Mode */
+        .company-icon,
+        .company-badge svg,
+        .department-badge svg,
         html.light-mode .company-icon,
         html.light-mode .company-badge svg,
         html.light-mode .department-badge svg {

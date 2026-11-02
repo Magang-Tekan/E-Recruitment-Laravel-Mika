@@ -7,6 +7,12 @@
 <div class="space-y-6" x-data="{ 
     showDetailModal: false,
     showStatusModal: false,
+    showDeleteModal: false,
+    deleteData: {
+        id: '',
+        candidate_name: '',
+        job_title: ''
+    },
     isSubmittingStatus: false,
     detailData: {},
     activeDetailTab: 'pribadi',
@@ -71,6 +77,14 @@
         this.modalImgFailed = false;
         this.activeDetailTab = 'pribadi';
         this.showDetailModal = true;
+    },
+    openDeleteModal(data) {
+        this.deleteData = {
+            id: data.id,
+            candidate_name: data.applicant_name || (data.applicant_profile ? data.applicant_profile.full_name : 'Pelamar'),
+            job_title: data.job_title || (data.job ? data.job.title : 'Lowongan')
+        };
+        this.showDeleteModal = true;
     },
     openStatusModal(data) {
         const initialStatus = data.status || 'Submitted';
@@ -257,6 +271,22 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span class="text-xs font-semibold">{{ session('update') }}</span>
+            </div>
+            <button @click="show = false" class="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-200">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    @endif
+
+    @if (session('delete'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)" x-transition class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span class="text-xs font-semibold">{{ session('delete') }}</span>
             </div>
             <button @click="show = false" class="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-200">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1280,6 +1310,17 @@
                                             </svg>
                                             <span>Proses</span>
                                         </button>
+
+                                        <!-- Delete Application Button -->
+                                        <button @click="openDeleteModal({{ \Illuminate\Support\Js::from([
+                                            'id'             => $app->id,
+                                            'applicant_name' => $app->applicantProfile->full_name ?? 'Pelamar',
+                                            'job_title'      => $app->job->title ?? 'Lowongan',
+                                        ]) }})" class="p-1.5 rounded-xl text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors border border-transparent hover:border-rose-200 dark:hover:border-rose-900/50 cursor-pointer" title="Hapus Data Lamaran">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
                                     </div>
                                 </td>
                             @endif
@@ -2015,5 +2056,70 @@
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div x-show="showDeleteModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title-delete" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
+            <div x-show="showDeleteModal" 
+                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
+                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" 
+                @click="showDeleteModal = false" class="fixed inset-0 transition-opacity bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm"></div>
+
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div x-show="showDeleteModal" 
+                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                @keydown.escape.window="showDeleteModal = false"
+                class="inline-block align-bottom sm:align-middle bg-white dark:bg-slate-900 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-md w-full border border-gray-200 dark:border-slate-800">
+                
+                <div class="p-6">
+                    <div class="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-slate-800">
+                        <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white" id="modal-title-delete">
+                                Hapus Data Lamaran?
+                            </h3>
+                            <p class="text-xs text-gray-500 dark:text-slate-400">
+                                Tindakan ini tidak dapat dibatalkan.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form :action="'{{ $formActionPrefix }}' + deleteData.id" method="POST" class="mt-4 space-y-4">
+                        @csrf
+                        @method('DELETE')
+
+                        <p class="text-xs text-gray-600 dark:text-slate-300 leading-relaxed">
+                            Apakah Anda yakin ingin menghapus data lamaran dari kandidat <strong class="text-gray-900 dark:text-white" x-text="deleteData.candidate_name"></strong> untuk posisi <strong class="text-indigo-600 dark:text-indigo-400" x-text="deleteData.job_title"></strong>?
+                        </p>
+                        <p class="text-[11px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 p-2.5 rounded-xl border border-amber-200 dark:border-amber-800/60">
+                            Perhatian: Seluruh riwayat seleksi, jadwal interview, dan jawaban tes terkait lamaran ini akan ikut terhapus dari sistem.
+                        </p>
+
+                        <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100 dark:border-slate-800">
+                            <button type="button" @click="showDeleteModal = false" class="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 active:scale-95 rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                <span>Ya, Hapus Lamaran</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
