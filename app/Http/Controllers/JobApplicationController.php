@@ -206,7 +206,7 @@ class JobApplicationController extends Controller
         $defaultTemplates = [
             'Reviewed'         => 'Selamat! Anda lolos seleksi berkas administrasi. Silakan lanjut kerjakan ujian online yang tersedia pada menu Riwayat Lamaran.',
             'Partial Approved' => 'Lamaran Anda telah disetujui pada salah satu tahap verifikasi (Partial Approved) dan sedang dalam proses peninjauan akhir.',
-            'Shortlisted'      => 'Selamat! Anda dinyatakan lolos seluruh tahap seleksi berkas dan masuk ke dalam daftar kandidat terpilih (Shortlisted). Kami akan segera menginformasikan jadwal wawancara.',
+            'Shortlisted'      => 'Selamat! Anda dinyatakan lolos tahap seleksi ujian online dan masuk ke dalam daftar kandidat terpilih (Shortlisted). Tim HR kami akan segera menginformasikan jadwal tahap wawancara.',
             'Interview'        => 'Anda diundang untuk mengikuti tahap wawancara. Silakan periksa jadwal dan informasi meeting yang tertera.',
             'Accepted'         => 'Selamat! Anda dinyatakan DITERIMA untuk bergabung bersama kami. Tim HR akan segera menghubungi Anda terkait proses offering dan onboarding.',
             'Rejected'         => 'Terima kasih atas partisipasi Anda. Saat ini kualifikasi Anda belum sesuai dengan kriteria yang kami butuhkan. Tetap semangat dan sukses untuk kesempatan berikutnya.',
@@ -467,25 +467,46 @@ class JobApplicationController extends Controller
 
             $newStatus = $request->input('status', $application->status);
 
-            // Auto-sync approval flags if admin directly sets Reviewed, Shortlisted, Accepted or Rejected
+            // Auto-sync approval flags if admin directly sets Reviewed, Shortlisted, Interview, Accepted or Rejected
             if ($newStatus === 'Reviewed') {
                 $application->admin_approval = 'approved';
                 $application->admin_approved_at = now();
                 $application->admin_id = $user->id;
+                $historyNotes = "[Ubah Status Bebas: Lolos Berkas (Reviewed)]." . ($notes ? " Catatan: {$notes}" : "");
             } elseif ($newStatus === 'Shortlisted') {
                 $application->admin_approval = 'approved';
-                $application->admin_approved_at = now();
-                $application->admin_id = $user->id;
+                $application->admin_approved_at = $application->admin_approved_at ?: now();
+                $application->admin_id = $application->admin_id ?: $user->id;
                 $application->test_admin_approval = 'approved';
                 $application->test_admin_approved_at = now();
                 $application->test_admin_id = $user->id;
+                if ($application->test_recruiter_approval !== 'approved') {
+                    $application->test_recruiter_approval = 'approved';
+                    $application->test_recruiter_notes = $application->test_recruiter_notes ?: '[Disetujui via Ubah Status Bebas]';
+                    $application->test_recruiter_approved_at = $application->test_recruiter_approved_at ?: now();
+                }
+                $historyNotes = "[Ubah Status Bebas: Lolos Ujian (Shortlisted)]." . ($notes ? " Catatan: {$notes}" : "");
+            } elseif ($newStatus === 'Interview') {
+                // Pastikan tahap berkas & ujian otomatis tersinkronisasi jika dilompatkan ke Wawancara
+                $application->admin_approval = 'approved';
+                $application->admin_approved_at = $application->admin_approved_at ?: now();
+                $application->admin_id = $application->admin_id ?: $user->id;
+                $application->test_admin_approval = 'approved';
+                $application->test_admin_approved_at = $application->test_admin_approved_at ?: now();
+                $application->test_admin_id = $application->test_admin_id ?: $user->id;
+                if ($application->test_recruiter_approval !== 'approved') {
+                    $application->test_recruiter_approval = 'approved';
+                    $application->test_recruiter_notes = $application->test_recruiter_notes ?: '[Disetujui via Ubah Status Bebas]';
+                    $application->test_recruiter_approved_at = $application->test_recruiter_approved_at ?: now();
+                }
+                $historyNotes = "[Ubah Status Bebas: Wawancara (Interview)]." . ($notes ? " Catatan: {$notes}" : "");
             } elseif ($newStatus === 'Accepted') {
                 $application->admin_approval = 'approved';
-                $application->admin_approved_at = now();
-                $application->admin_id = $user->id;
+                $application->admin_approved_at = $application->admin_approved_at ?: now();
+                $application->admin_id = $application->admin_id ?: $user->id;
                 $application->test_admin_approval = 'approved';
-                $application->test_admin_approved_at = now();
-                $application->test_admin_id = $user->id;
+                $application->test_admin_approved_at = $application->test_admin_approved_at ?: now();
+                $application->test_admin_id = $application->test_admin_id ?: $user->id;
                 $application->interview_admin_approval = 'approved';
                 $application->interview_admin_approved_at = now();
                 $application->interview_admin_id = $user->id;
@@ -494,6 +515,7 @@ class JobApplicationController extends Controller
                     $application->interview_recruiter_notes = $application->interview_recruiter_notes ?: '[Bypassed by Admin Override]';
                     $application->interview_recruiter_approved_at = $application->interview_recruiter_approved_at ?: now();
                 }
+                $historyNotes = "[Ubah Status Bebas: Diterima Resmi (Accepted)]." . ($notes ? " Catatan: {$notes}" : "");
             } elseif ($newStatus === 'Rejected') {
                 $application->admin_approval = 'rejected';
                 $application->admin_approved_at = now();
@@ -507,11 +529,15 @@ class JobApplicationController extends Controller
                     $application->test_admin_approved_at = now();
                     $application->test_admin_id = $user->id;
                 }
+                $historyNotes = "[Ubah Status Bebas: Ditolak (Rejected)]." . ($notes ? " Catatan: {$notes}" : "");
+            } elseif ($newStatus === 'Submitted') {
+                $historyNotes = "[Ubah Status Bebas: Dikembalikan ke Diajukan (Submitted)]." . ($notes ? " Catatan: {$notes}" : "");
             }
 
             if (empty(trim($notes ?? ''))) {
                 $notes = $defaultTemplates[$newStatus] ?? $application->notes;
             }
+            $customSuccessMsg = 'Status lamaran berhasil diperbarui menjadi ' . ($newStatus === 'Shortlisted' ? 'Lolos Ujian (Shortlisted)' : $newStatus) . '.';
         }
 
         $application->status = $newStatus;

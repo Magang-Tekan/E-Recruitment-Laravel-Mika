@@ -224,8 +224,8 @@ class ApplicantProfile extends Model
             'keluarga' => $this->relationLoaded('family') ? (bool) $this->family : ($this->family()->exists() || ! empty($this->child_sequence)),
             'pendidikan' => ($this->relationLoaded('educations') ? $this->educations->isNotEmpty() : $this->educations()->exists())
                 || ($this->relationLoaded('certifications') ? $this->certifications->isNotEmpty() : $this->certifications()->exists())
-                || ($this->relationLoaded('trainings') ? $this->trainings->isNotEmpty() : $this->trainings()->exists())
-                || ($this->relationLoaded('languages') ? $this->languages->isNotEmpty() : $this->languages()->exists()),
+                || ($this->relationLoaded('trainings') ? $this->trainings->isNotEmpty() : $this->trainings()->exists()),
+            'bahasa' => $this->relationLoaded('languages') ? $this->languages->isNotEmpty() : $this->languages()->exists(),
             'skill' => $this->relationLoaded('skills') ? $this->skills->isNotEmpty() : $this->skills()->exists(),
             'pengalaman' => $this->relationLoaded('workExperiences') ? $this->workExperiences->isNotEmpty() : $this->workExperiences()->exists(),
             'organisasi' => $this->relationLoaded('organizations') ? $this->organizations->isNotEmpty() : $this->organizations()->exists(),
@@ -310,7 +310,9 @@ class ApplicantProfile extends Model
             && ! empty($statuses['cv'])
             && ! empty($statuses['keluarga'])
             && ! empty($statuses['pendidikan'])
-            && ! empty($statuses['skill']);
+            && ! empty($statuses['bahasa'])
+            && ! empty($statuses['skill'])
+            && ! empty($statuses['data_tambahan']);
     }
 
     /**
@@ -320,11 +322,13 @@ class ApplicantProfile extends Model
     {
         $statuses = $this->section_statuses;
         $mandatoryWeights = [
-            'pribadi' => 20,
-            'cv' => 20,
-            'keluarga' => 15,
-            'pendidikan' => 15,
-            'skill' => 10,
+            'pribadi'       => 15,
+            'cv'            => 15,
+            'keluarga'      => 10,
+            'pendidikan'    => 15,
+            'bahasa'        => 5,
+            'skill'         => 10,
+            'data_tambahan' => 10,
         ];
 
         $total = 0;
@@ -343,7 +347,7 @@ class ApplicantProfile extends Model
     public function getMandatoryCompletedCountAttribute(): int
     {
         $statuses = $this->section_statuses;
-        $mandatoryKeys = ['pribadi', 'cv', 'keluarga', 'pendidikan', 'skill'];
+        $mandatoryKeys = ['pribadi', 'cv', 'keluarga', 'pendidikan', 'bahasa', 'skill', 'data_tambahan'];
         
         $completedCount = 0;
         foreach ($mandatoryKeys as $key) {
@@ -362,11 +366,13 @@ class ApplicantProfile extends Model
     {
         $statuses = $this->section_statuses;
         $labels = [
-            'pribadi' => __('Data Pribadi'),
-            'cv' => __('Unggah Dokumen CV'),
-            'keluarga' => __('Data Keluarga'),
-            'pendidikan' => __('Pendidikan'),
-            'skill' => __('Skill / Keahlian'),
+            'pribadi'       => __('Data Pribadi'),
+            'cv'            => __('Unggah Dokumen CV'),
+            'keluarga'      => __('Data Keluarga'),
+            'pendidikan'    => __('Riwayat Pendidikan'),
+            'bahasa'        => __('Kemampuan Berbahasa'),
+            'skill'         => __('Kemampuan Teknis & Komputer'),
+            'data_tambahan' => __('Data Tambahan'),
         ];
 
         $missing = [];
@@ -428,16 +434,17 @@ class ApplicantProfile extends Model
         $statuses = $this->section_statuses;
         $weights = [
             // Data Wajib (80% total)
-            'pribadi' => 20,
-            'cv' => 20,
-            'keluarga' => 15,
-            'pendidikan' => 15,
-            'skill' => 10,
+            'pribadi'             => 15,
+            'cv'                  => 15,
+            'keluarga'            => 10,
+            'pendidikan'          => 15,
+            'bahasa'              => 5,
+            'skill'               => 10,
+            'data_tambahan'       => 10,
             // Data Pelengkap (20% total)
-            'pengalaman' => 5,
-            'organisasi_prestasi' => 8,
-            'data_tambahan' => 4,
-            'social_media' => 3,
+            'pengalaman'          => 10,
+            'organisasi_prestasi' => 7,
+            'social_media'        => 3,
         ];
 
         $totalPercentage = 0;

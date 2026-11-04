@@ -73,18 +73,23 @@
                     </div>
 
                     <!-- Profile Completeness Progress Bar Card -->
+                    @php
+                        $displayPercentage = $isMandatoryComplete ? $completionPercentage : $mandatoryPercentage;
+                        $barColorClass = $isMandatoryComplete ? 'bg-emerald-500 dark:bg-[#93F514]' : 'bg-amber-500 dark:bg-amber-400';
+                        $textColorClass = $isMandatoryComplete ? 'text-emerald-600 dark:text-[#93F514]' : 'text-amber-600 dark:text-amber-400';
+                    @endphp
                     <div class="px-1 mb-3">
                         <div
                             class="p-3 bg-slate-50 dark:bg-[#14203A] border border-slate-200/80 dark:border-[#1D2E54] rounded-xl shadow-2xs">
                             <div
                                 class="flex items-center justify-between text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                <span>{{ __('Kelengkapan Profil') }}</span>
+                                <span>{{ $isMandatoryComplete ? __('Kelengkapan Profil') : __('Kelengkapan Data Wajib') }}</span>
                                 <span
-                                    class="text-emerald-600 dark:text-[#93F514] font-extrabold">{{ $completionPercentage }}%</span>
+                                    class="{{ $textColorClass }} font-extrabold">{{ $displayPercentage }}%</span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-[#0D1527] rounded-full h-2 overflow-hidden mb-2">
-                                <div class="bg-emerald-500 dark:bg-[#93F514] h-2 rounded-full transition-all duration-500"
-                                    style="width: {{ $completionPercentage }}%"></div>
+                                <div class="{{ $barColorClass }} h-2 rounded-full transition-all duration-500"
+                                    style="width: {{ $displayPercentage }}%"></div>
                             </div>
                             <div class="text-[10px] font-medium leading-snug">
                                 @if ($completionPercentage == 100)
@@ -176,7 +181,7 @@
                                 </svg>
                             </x-slot:icon>
                             {{ __('Pendidikan') }}
-                            @if (!empty($sectionStatuses['pendidikan']))
+                            @if (!empty($sectionStatuses['pendidikan']) && !empty($sectionStatuses['bahasa']) && !empty($sectionStatuses['skill']))
                                 <x-slot:append>
                                     <svg class="w-4 h-4 text-emerald-500 dark:text-emerald-400" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
@@ -208,30 +213,7 @@
                             @endif
                         </x-sidebar.single-nav-link>
 
-                        <!-- 4. Organisasi & Prestasi -->
-                        <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'prestasi'])" tab="prestasi"
-                            x-on:click.prevent="switchTab('prestasi')">
-                            <x-slot:icon>
-                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
-                                </svg>
-
-                            </x-slot:icon>
-                            {{ __('Organisasi & Prestasi') }}
-                            @if (!empty($sectionStatuses['organisasi_prestasi']) || !empty($sectionStatuses['prestasi']) || !empty($sectionStatuses['organisasi']))
-                                <x-slot:append>
-                                    <svg class="w-4 h-4 text-emerald-500 dark:text-emerald-400" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                            d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </x-slot:append>
-                            @endif
-                        </x-sidebar.single-nav-link>
-
-                        <!-- 6. Data Tambahan -->
+                        <!-- 4. Data Tambahan -->
                         <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'data_tambahan'])" tab="data_tambahan"
                             x-on:click.prevent="switchTab('data_tambahan')">
                             <x-slot:icon>
@@ -252,7 +234,29 @@
                             @endif
                         </x-sidebar.single-nav-link>
 
-                        <!-- 7. Social Media -->
+                        <!-- 5. Organisasi & Prestasi -->
+                        <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'prestasi'])" tab="prestasi"
+                            x-on:click.prevent="switchTab('prestasi')">
+                            <x-slot:icon>
+                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+                                </svg>
+                            </x-slot:icon>
+                            {{ __('Organisasi & Prestasi') }}
+                            @if (!empty($sectionStatuses['organisasi_prestasi']) || !empty($sectionStatuses['prestasi']) || !empty($sectionStatuses['organisasi']))
+                                <x-slot:append>
+                                    <svg class="w-4 h-4 text-emerald-500 dark:text-emerald-400" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </x-slot:append>
+                            @endif
+                        </x-sidebar.single-nav-link>
+
+                        <!-- 6. Social Media -->
                         <x-sidebar.single-nav-link :href="route('profile', ['tab' => 'social_media'])" tab="social_media"
                             x-on:click.prevent="switchTab('social_media')">
                             <x-slot:icon>

@@ -72,7 +72,11 @@
              'Unggah Dokumen CV': '{{ __('Unggah Dokumen CV') }}',
              'Data Keluarga': '{{ __('Data Keluarga') }}',
              'Pendidikan': '{{ __('Pendidikan') }}',
-             'Skill / Keahlian': '{{ __('Skill / Keahlian') }}'
+             'Riwayat Pendidikan': '{{ __('Riwayat Pendidikan') }}',
+             'Kemampuan Berbahasa': '{{ __('Kemampuan Berbahasa') }}',
+             'Skill / Keahlian': '{{ __('Skill / Keahlian') }}',
+             'Kemampuan Teknis & Komputer': '{{ __('Kemampuan Teknis & Komputer') }}',
+             'Data Tambahan': '{{ __('Data Tambahan') }}'
          },
          shareCopied: false,
          shareUrl: '{{ $currentShareUrl }}',

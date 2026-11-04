@@ -19,7 +19,7 @@
     statusTemplates: {
         'Reviewed': 'Selamat! Anda lolos seleksi berkas administrasi. Silakan lanjut kerjakan ujian online yang tersedia pada menu Riwayat Lamaran.',
         'Partial Approved': 'Lamaran Anda telah disetujui pada salah satu tahap verifikasi (Partial Approved) dan sedang dalam proses peninjauan akhir.',
-        'Shortlisted': 'Selamat! Anda dinyatakan lolos seluruh tahap seleksi berkas (Double Approved) dan masuk ke dalam daftar kandidat terpilih (Shortlisted). Kami akan segera menginformasikan jadwal wawancara.',
+        'Shortlisted': 'Selamat! Anda dinyatakan lolos tahap seleksi ujian online dan masuk ke dalam daftar kandidat terpilih (Shortlisted). Tim HR kami akan segera menginformasikan jadwal tahap wawancara.',
         'Interview': 'Anda diundang untuk mengikuti tahap wawancara. Silakan periksa jadwal dan informasi meeting yang tertera.',
         'Accepted': 'Selamat! Anda dinyatakan DITERIMA untuk bergabung bersama kami. Tim HR akan segera menghubungi Anda terkait proses offering dan onboarding.',
         'Rejected': 'Terima kasih atas partisipasi Anda. Saat ini kualifikasi Anda belum sesuai dengan kriteria yang kami butuhkan. Tetap semangat dan sukses untuk kesempatan berikutnya.',
@@ -88,11 +88,14 @@
     },
     openStatusModal(data) {
         const initialStatus = data.status || 'Submitted';
-        let initialNotes = data.notes || '';
+        let initialNotes = (data.notes || '').trim();
 
-        // Jika catatan masih kosong, otomatis berikan template sesuai status awal
-        if (!initialNotes && this.statusTemplates[initialStatus]) {
-            initialNotes = this.statusTemplates[initialStatus];
+        // Jika catatan kosong atau masih berupa template dari tahapan sebelumnya, sinkronkan dengan status saat ini
+        const isPreviousTemplate = Object.values(this.statusTemplates).some(t => t.trim() === initialNotes);
+        if (!initialNotes || isPreviousTemplate) {
+            if (this.statusTemplates[initialStatus]) {
+                initialNotes = this.statusTemplates[initialStatus];
+            }
         }
 
         const isRecruiterOnly = {{ ($isRecruiter && !$isAdmin) ? 'true' : 'false' }};
@@ -233,6 +236,7 @@
         return 'Simpan Perubahan Status';
     },
     onStatusChange(newStatus) {
+        this.statusData.status = newStatus;
         const currentNotes = (this.statusData.notes || '').trim();
         const isExistingTemplate = Object.values(this.statusTemplates).some(t => t.trim() === currentNotes);
 
@@ -240,6 +244,18 @@
         if (!currentNotes || isExistingTemplate) {
             if (this.statusTemplates[newStatus]) {
                 this.statusData.notes = this.statusTemplates[newStatus];
+            }
+        }
+    },
+    switchToDirectMode() {
+        this.statusData.approval_mode = 'direct';
+        const currentNotes = (this.statusData.notes || '').trim();
+        const isExistingTemplate = Object.values(this.statusTemplates).some(t => t.trim() === currentNotes);
+
+        // Pastikan catatan tersinkronisasi saat masuk ke Ubah Status Bebas
+        if (!currentNotes || isExistingTemplate) {
+            if (this.statusTemplates[this.statusData.status]) {
+                this.statusData.notes = this.statusTemplates[this.statusData.status];
             }
         }
     },
@@ -850,12 +866,24 @@
                             'job_accepted_count' => (int) ($app->job->accepted_count ?? 0),
                             'job_remaining_quota'=> (int) ($app->job->remaining_quota ?? 0),
                             'job_is_quota_full'  => (bool) ($app->job->is_quota_full ?? false),
-                            'status'             => $app->status ?? 'Submitted',
-                            'notes'              => $app->notes ?? '',
-                            'recruiter_approval' => $app->recruiter_approval ?? 'pending',
-                            'recruiter_notes'    => $app->recruiter_notes ?? '',
-                            'admin_approval'     => $app->admin_approval ?? 'pending',
-                            'admin_notes'        => $app->admin_notes ?? '',
+                            'status'                       => $app->status ?? 'Submitted',
+                            'notes'                        => $app->notes ?? '',
+                            'recruiter_approval'           => $app->recruiter_approval ?? 'pending',
+                            'recruiter_notes'              => $app->recruiter_notes ?? '',
+                            'admin_approval'               => $app->admin_approval ?? 'pending',
+                            'admin_notes'                  => $app->admin_notes ?? '',
+                            'test_recruiter_approval'      => $app->test_recruiter_approval ?? 'pending',
+                            'test_recruiter_notes'         => $app->test_recruiter_notes ?? '',
+                            'test_recruiter'               => $app->testRecruiter ? ['name' => $app->testRecruiter->name] : null,
+                            'test_admin_approval'          => $app->test_admin_approval ?? 'pending',
+                            'test_admin_notes'             => $app->test_admin_notes ?? '',
+                            'test_admin'                   => $app->testAdmin ? ['name' => $app->testAdmin->name] : null,
+                            'interview_recruiter_approval' => $app->interview_recruiter_approval ?? 'pending',
+                            'interview_recruiter_notes'    => $app->interview_recruiter_notes ?? '',
+                            'interview_recruiter'          => $app->interviewRecruiter ? ['name' => $app->interviewRecruiter->name] : null,
+                            'interview_admin_approval'     => $app->interview_admin_approval ?? 'pending',
+                            'interview_admin_notes'        => $app->interview_admin_notes ?? '',
+                            'interview_admin'              => $app->interviewAdmin ? ['name' => $app->interviewAdmin->name] : null,
                         ]) }})" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-white bg-emerald-600 hover:bg-emerald-500 transition shadow-sm text-xs font-semibold cursor-pointer">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -1563,7 +1591,7 @@
                                         </button>
                                     </template>
                                     <button type="button" 
-                                        @click="statusData.approval_mode = 'direct'"
+                                        @click="switchToDirectMode()"
                                         :class="statusData.approval_mode === 'direct' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm font-bold' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'"
                                         class="flex-1 py-1.5 px-3 rounded-lg transition text-center flex items-center justify-center gap-1.5 cursor-pointer">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1955,14 +1983,21 @@
                                         <label for="status_select" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                                             Status Lamaran <span class="text-rose-500">*</span>
                                         </label>
-                                        <select name="status" id="status_select" x-model="statusData.status" @change="onStatusChange($event.target.value)" :disabled="statusData.approval_mode !== 'direct'" class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition cursor-pointer">
-                                            <option value="Submitted">Diajukan</option>
-                                            <option value="Reviewed">Lolos Berkas</option>
-                                            <option value="Partial Approved">Partial Approved</option>
-                                            <option value="Shortlisted">Lolos Ujian</option>
-                                            <option value="Interview">Wawancara</option>
-                                            <option value="Accepted">Diterima</option>
-                                            <option value="Rejected">Ditolak</option>
+                                        <select name="status" id="status_select" x-model="statusData.status" @change="onStatusChange($event.target.value)" :disabled="statusData.approval_mode !== 'direct'" class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition cursor-pointer font-medium">
+                                            <optgroup label="Tahap 1: Seleksi Berkas">
+                                                <option value="Submitted">Diajukan (Submitted)</option>
+                                                <option value="Reviewed">Lolos Berkas (Reviewed)</option>
+                                            </optgroup>
+                                            <optgroup label="Tahap 2: Evaluasi Ujian">
+                                                <option value="Shortlisted">Lolos Ujian (Shortlisted)</option>
+                                            </optgroup>
+                                            <optgroup label="Tahap 3: Wawancara">
+                                                <option value="Interview">Wawancara (Interview)</option>
+                                            </optgroup>
+                                            <optgroup label="Keputusan Akhir">
+                                                <option value="Accepted">Diterima Resmi (Accepted)</option>
+                                                <option value="Rejected">Ditolak (Rejected)</option>
+                                            </optgroup>
                                         </select>
                                     </div>
 
@@ -1971,23 +2006,40 @@
                                             Template Cepat Pesan:
                                         </label>
                                         <div class="flex flex-wrap gap-1.5">
-                                            <button type="button" @click="applyTemplate('Reviewed')" class="px-2 py-1 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-800/80 rounded-lg text-[10px] font-semibold text-amber-800 dark:text-amber-300 transition cursor-pointer">
+                                            <button type="button" @click="applyTemplate('Reviewed')" 
+                                                :class="statusData.status === 'Reviewed' ? 'bg-amber-100 text-amber-900 border-amber-400 dark:bg-amber-900/80 dark:text-amber-200 ring-1 ring-amber-400 font-bold' : 'bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 border-amber-200 dark:border-amber-800/80 text-amber-800 dark:text-amber-300 font-medium'"
+                                                class="px-2 py-1 border rounded-lg text-[10px] transition cursor-pointer">
                                                 Lolos Berkas
                                             </button>
-                                            <button type="button" @click="applyTemplate('Shortlisted')" class="px-2 py-1 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800/80 rounded-lg text-[10px] font-semibold text-indigo-700 dark:text-indigo-300 transition cursor-pointer">
+                                            <button type="button" @click="applyTemplate('Shortlisted')" 
+                                                :class="statusData.status === 'Shortlisted' ? 'bg-indigo-100 text-indigo-900 border-indigo-400 dark:bg-indigo-900/80 dark:text-indigo-200 ring-1 ring-indigo-400 font-bold' : 'bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border-indigo-200 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 font-medium'"
+                                                class="px-2 py-1 border rounded-lg text-[10px] transition cursor-pointer">
                                                 Lolos Ujian
                                             </button>
-                                            <button type="button" @click="applyTemplate('Interview')" class="px-2 py-1 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800/80 rounded-lg text-[10px] font-semibold text-blue-700 dark:text-blue-300 transition cursor-pointer">
+                                            <button type="button" @click="applyTemplate('Interview')" 
+                                                :class="statusData.status === 'Interview' ? 'bg-blue-100 text-blue-900 border-blue-400 dark:bg-blue-900/80 dark:text-blue-200 ring-1 ring-blue-400 font-bold' : 'bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 border-blue-200 dark:border-blue-800/80 text-blue-700 dark:text-blue-300 font-medium'"
+                                                class="px-2 py-1 border rounded-lg text-[10px] transition cursor-pointer">
                                                 Wawancara
                                             </button>
-                                            <button type="button" @click="applyTemplate('Accepted')" class="px-2 py-1 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/80 rounded-lg text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 transition cursor-pointer">
+                                            <button type="button" @click="applyTemplate('Accepted')" 
+                                                :class="statusData.status === 'Accepted' ? 'bg-emerald-100 text-emerald-900 border-emerald-400 dark:bg-emerald-900/80 dark:text-emerald-200 ring-1 ring-emerald-400 font-bold' : 'bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300 font-medium'"
+                                                class="px-2 py-1 border rounded-lg text-[10px] transition cursor-pointer">
                                                 Diterima
                                             </button>
-                                            <button type="button" @click="applyTemplate('Rejected')" class="px-2 py-1 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800/80 rounded-lg text-[10px] font-semibold text-rose-700 dark:text-rose-300 transition cursor-pointer">
+                                            <button type="button" @click="applyTemplate('Rejected')" 
+                                                :class="statusData.status === 'Rejected' ? 'bg-rose-100 text-rose-900 border-rose-400 dark:bg-rose-900/80 dark:text-rose-200 ring-1 ring-rose-400 font-bold' : 'bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border-rose-200 dark:border-rose-800/80 text-rose-700 dark:text-rose-300 font-medium'"
+                                                class="px-2 py-1 border rounded-lg text-[10px] transition cursor-pointer">
                                                 Ditolak
                                             </button>
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="px-2.5 py-1.5 rounded-lg bg-indigo-50/60 dark:bg-slate-800/60 border border-indigo-100/80 dark:border-slate-700/60 text-[10.5px] text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 shrink-0 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Hak Akses Penuh Admin: Pesan untuk pelamar di bawah otomatis diselaraskan dengan status yang dipilih.</span>
                                 </div>
                             </div>
 

@@ -159,18 +159,18 @@
                         <livewire:applicant.pengalaman />
                     </div>
 
-                    <!-- Tab 4 & 5: Organisasi & Prestasi -->
+                    <!-- Tab 4: Data Tambahan -->
+                    <div x-show="activeTab === 'data_tambahan'" data-tab-pane="data_tambahan" class="space-y-3" x-cloak>
+                        <livewire:applicant.data-tambahan />
+                    </div>
+
+                    <!-- Tab 5: Organisasi & Prestasi -->
                     <div x-show="activeTab === 'prestasi' || activeTab === 'organisasi' || activeTab === 'organisasi_prestasi'"
                         data-tab-pane="prestasi organisasi" class="space-y-3" x-cloak>
                         <livewire:applicant.prestasi />
                     </div>
 
-                    <!-- Tab 6: Data Tambahan -->
-                    <div x-show="activeTab === 'data_tambahan'" data-tab-pane="data_tambahan" class="space-y-3" x-cloak>
-                        <livewire:applicant.data-tambahan />
-                    </div>
-
-                    <!-- Tab 7: Social Media -->
+                    <!-- Tab 6: Social Media -->
                     <div x-show="activeTab === 'social_media'" data-tab-pane="social_media" class="space-y-3" x-cloak>
                         <livewire:applicant.social-media />
                     </div>

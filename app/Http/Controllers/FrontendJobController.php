@@ -202,8 +202,10 @@ class FrontendJobController extends Controller
                     'Data Pribadi',
                     'Dokumen CV',
                     'Data Keluarga',
-                    'Pendidikan',
-                    'Skill / Keahlian',
+                    'Riwayat Pendidikan',
+                    'Kemampuan Berbahasa',
+                    'Kemampuan Teknis & Komputer',
+                    'Data Tambahan',
                 ];
             }
         }

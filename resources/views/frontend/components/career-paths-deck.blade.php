@@ -177,10 +177,17 @@
                         </div>
 
                         <!-- CTA Button with Intuitive Hover Affordance -->
+                        @php
+                            $cardUrl = (!empty($track['custom_url']))
+                                ? $track['url']
+                                : ((!empty($track['experience_level']))
+                                    ? $track['url']
+                                    : (auth()->check() ? route('profile') : route('login', ['redirect' => route('profile')])));
+                        @endphp
                         <div class="card-back-divider pt-3 border-t border-white/15 dark:border-black/15">
-                            <a href="{{ $track['url'] }}"
+                            <a href="{{ $cardUrl }}"
                                @click.stop
-                               @if(Str::startsWith($track['url'], ['http://', 'https://']) && !Str::contains($track['url'], request()->getHost()))
+                               @if(Str::startsWith($cardUrl, ['http://', 'https://']) && !Str::contains($cardUrl, request()->getHost()))
                                    target="_blank" rel="noopener noreferrer"
                                @endif
                                class="flip-card-cta w-full py-2.5 pl-4 pr-2 rounded-full bg-white dark:bg-[#051405] text-[#0E2F11] dark:text-white hover:bg-emerald-50/90 dark:hover:bg-black hover:shadow-xl active:scale-[0.99] border border-white/90 dark:border-white/20 font-bold text-xs flex items-center justify-between transition-all duration-200 group/cta shadow-lg shadow-black/20 cursor-pointer">
