@@ -30,9 +30,9 @@ class EmployeeTestController extends Controller
             DB::beginTransaction();
 
             $selectedQuestions = $request->input('selected_questions', []);
-            $totalQuestions = count($selectedQuestions) > 0 
-                ? count($selectedQuestions) 
-                : (int) $request->total_questions;
+            $totalQuestions = $request->filled('total_questions') && (int) $request->total_questions > 0
+                ? (int) $request->total_questions
+                : count($selectedQuestions);
 
             // Handle department_ids (multi-select) or legacy single department_id
             $departmentIds = $request->input('department_ids', []);
@@ -104,9 +104,9 @@ class EmployeeTestController extends Controller
             DB::beginTransaction();
 
             $selectedQuestions = $request->input('selected_questions', []);
-            $totalQuestions = count($selectedQuestions) > 0 
-                ? count($selectedQuestions) 
-                : (int) $request->total_questions;
+            $totalQuestions = $request->filled('total_questions') && (int) $request->total_questions > 0
+                ? (int) $request->total_questions
+                : count($selectedQuestions);
 
             // Handle department_ids (multi-select) or legacy single department_id
             $departmentIds = $request->input('department_ids', []);

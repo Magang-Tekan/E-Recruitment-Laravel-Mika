@@ -81,7 +81,8 @@
             points: q.points || 1,
             image_path: q.image_path || null,
             image_url: q.image_path ? '{{ asset("storage") }}/' + q.image_path : null,
-            options: q.options || []
+            options: q.options || [],
+            metadata: q.metadata || {}
         };
         this.showDetailModal = true;
     },
@@ -415,6 +416,13 @@
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 border border-gray-200 dark:border-slate-700">
                                     {{ $q->category->name ?? '-' }}
                                 </span>
+                                @if (!empty($q->metadata['sub_category']))
+                                    <div class="mt-1">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                            {{ $q->metadata['sub_category'] }}
+                                        </span>
+                                    </div>
+                                @endif
                             </td>
                             <td class="px-6 py-4">
                                 @if ($q->question_type === 'multiple_choice')
@@ -804,6 +812,9 @@
                     <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-slate-800">
                         <div class="flex items-center gap-2">
                             <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800" x-text="detailData.category_name"></span>
+                            <template x-if="detailData.metadata && detailData.metadata.sub_category">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800" x-text="detailData.metadata.sub_category"></span>
+                            </template>
                             <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" x-text="detailData.points + ' Poin'"></span>
                         </div>
                         <button @click="showDetailModal = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
@@ -904,6 +915,18 @@
                         </div>
                     </template>
 
+                    <template x-if="detailData.metadata && detailData.metadata.explanation">
+                        <div class="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-xs space-y-1">
+                            <h4 class="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                                💡 Pembahasan / Cara Hitung:
+                            </h4>
+                            <p class="text-emerald-900 dark:text-emerald-200 whitespace-pre-line leading-relaxed" x-text="detailData.metadata.explanation"></p>
+                            <template x-if="detailData.metadata.reference">
+                                <p class="pt-1 text-[11px] text-emerald-700 dark:text-emerald-400 font-medium" x-text="'Rujukan: ' + detailData.metadata.reference"></p>
+                            </template>
+                        </div>
+                    </template>
+
                     <div class="pt-4 border-t border-gray-100 dark:border-slate-800 flex justify-end">
                         <button type="button" @click="showDetailModal = false" class="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition">
                             Tutup
@@ -985,22 +1008,65 @@
                         </button>
                     </div>
 
-                    <!-- Template download info box -->
-                    <div class="p-4 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-xs text-indigo-900 dark:text-indigo-200 space-y-2">
+                    <!-- Template download info box (Dua Pilihan Jelas & Seimbang) -->
+                    <div class="space-y-2">
                         <div class="flex items-center justify-between">
-                            <span class="font-bold flex items-center gap-1.5">
-                                💡 Format File Excel
+                            <span class="text-xs font-bold text-gray-700 dark:text-slate-300 flex items-center gap-1.5">
+                                💡 Unduh Template Format Excel
                             </span>
-                            <a href="{{ route('admin.question_bank.download_template') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition shadow-sm">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                                Download Template
+                            <span class="text-[11px] text-gray-400 dark:text-slate-500">Pilih salah satu format:</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- Template Standar / Umum -->
+                            <a href="{{ route('admin.question_bank.download_template') }}" 
+                               class="group relative flex flex-col justify-between p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 hover:bg-white dark:bg-slate-800/60 dark:hover:bg-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition">
+                                <div class="space-y-1.5">
+                                    <div class="flex items-center justify-between">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
+                                            Standar
+                                        </span>
+                                        <span class="text-[10px] text-gray-400 font-mono">.xlsx</span>
+                                    </div>
+                                    <h4 class="text-xs font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
+                                        Template Umum
+                                    </h4>
+                                    <p class="text-[11px] text-gray-500 dark:text-slate-400 leading-normal">
+                                        Format dasar pilihan ganda & DISC (Kategori, Soal, Opsi A-E, Jawaban).
+                                    </p>
+                                </div>
+                                <div class="pt-2.5 mt-2 border-t border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                                    <span class="text-[11px]">Download File</span>
+                                    <svg class="w-4 h-4 group-hover:translate-y-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                </div>
+                            </a>
+
+                            <!-- Template Lengkap / FAT (Dengan Sub-Kategori) -->
+                            <a href="{{ route('admin.question_bank.download_fat_template') }}" 
+                               class="group relative flex flex-col justify-between p-3.5 rounded-xl border border-emerald-300/80 dark:border-emerald-500/40 bg-emerald-50/40 hover:bg-white dark:bg-emerald-950/20 dark:hover:bg-slate-800 hover:border-emerald-500 dark:hover:border-emerald-400 hover:shadow-md transition">
+                                <div class="space-y-1.5">
+                                    <div class="flex items-center justify-between">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                                            Lengkap / FAT
+                                        </span>
+                                        <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">.xlsx</span>
+                                    </div>
+                                    <h4 class="text-xs font-bold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">
+                                        Template Sub-Kategori
+                                    </h4>
+                                    <p class="text-[11px] text-gray-500 dark:text-slate-400 leading-normal">
+                                        Format lengkap dengan sub-kategori <span class="italic text-gray-400 dark:text-slate-500">(opsional)</span>, pembahasan & lampiran.
+                                    </p>
+                                </div>
+                                <div class="pt-2.5 mt-2 border-t border-emerald-200/80 dark:border-slate-700/60 flex items-center justify-between text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                    <span class="text-[11px]">Download File</span>
+                                    <svg class="w-4 h-4 group-hover:translate-y-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                </div>
                             </a>
                         </div>
-                        <p class="text-[11px] text-indigo-700 dark:text-indigo-300 leading-relaxed">
-                            Gunakan template Excel resmi agar format kolom sesuai (Kategori, Soal, Tipe Soal, Poin, Opsi A - D, Kunci Jawaban).
-                        </p>
                     </div>
 
                     <form action="{{ route('admin.question_bank.import') }}" method="POST" enctype="multipart/form-data" class="space-y-4">

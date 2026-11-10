@@ -118,6 +118,7 @@ class EmployeeTestEvaluationTable extends Component
             'test.category',
             'test.department',
             'answers.question.options',
+            'answers.question.subCategory',
             'answers.option',
             'answers.reviewer',
             'discTestResult.discProfile',

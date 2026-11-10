@@ -19,6 +19,7 @@ use App\Http\Controllers\PositionController;
 use App\Http\Controllers\QuestionBankController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TestCategoryController;
+use App\Http\Controllers\TestSubCategoryController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\TestEvaluationController;
 use App\Http\Controllers\CandidateProfilePdfController;
@@ -127,6 +128,7 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':recruiter'])
         Route::put('test-evaluations/{id}/grade', [TestEvaluationController::class, 'updateGrade'])->name('test_evaluation.grade');
         Route::get('test-evaluations/{id}/disc-pdf', [TestEvaluationController::class, 'downloadDiscPdf'])->name('test_evaluation.disc_pdf');
         Route::get('test-evaluations/{id}/papi-pdf', [TestEvaluationController::class, 'downloadPapiPdf'])->name('test_evaluation.papi_pdf');
+        Route::get('test-evaluations/{id}/result-pdf', [TestEvaluationController::class, 'downloadResultPdf'])->name('test_evaluation.result_pdf');
 
         // Employee Assessment Results (Khusus Admin - Recruiter dialihkan ke dashboard)
         Route::get('employee-test-evaluations', function () {
@@ -244,11 +246,18 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':admin'])
             Route::put('test-categories/{id}', [TestCategoryController::class, 'update'])->name('test_category.update');
             Route::delete('test-categories/{id}', [TestCategoryController::class, 'destroy'])->name('test_category.destroy');
 
+            // Data Master Test Sub-Category / Sub-Kategori Soal
+            Route::view('test-sub-categories', 'livewire.admin.test-sub-category.index')->name('test_sub_category');
+            Route::post('test-sub-categories', [TestSubCategoryController::class, 'store'])->name('test_sub_category.store');
+            Route::put('test-sub-categories/{id}', [TestSubCategoryController::class, 'update'])->name('test_sub_category.update');
+            Route::delete('test-sub-categories/{id}', [TestSubCategoryController::class, 'destroy'])->name('test_sub_category.destroy');
+
             // Data Master Question Bank / Bank Soal
             Route::view('question-banks', 'livewire.admin.question-bank.index')->name('question_bank');
             Route::post('question-banks', [QuestionBankController::class, 'store'])->name('question_bank.store');
             Route::post('question-banks/import', [QuestionBankController::class, 'import'])->name('question_bank.import');
             Route::get('question-banks/download-template', [QuestionBankController::class, 'downloadTemplate'])->name('question_bank.download_template');
+            Route::get('question-banks/download-fat-template', [QuestionBankController::class, 'downloadFatTemplate'])->name('question_bank.download_fat_template');
             Route::put('question-banks/{id}', [QuestionBankController::class, 'update'])->name('question_bank.update');
             Route::delete('question-banks/{id}', [QuestionBankController::class, 'destroy'])->name('question_bank.destroy');
 
@@ -263,6 +272,7 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':admin'])
             Route::put('test-evaluations/{id}/grade', [TestEvaluationController::class, 'updateGrade'])->name('test_evaluation.grade');
             Route::get('test-evaluations/{id}/disc-pdf', [TestEvaluationController::class, 'downloadDiscPdf'])->name('test_evaluation.disc_pdf');
             Route::get('test-evaluations/{id}/papi-pdf', [TestEvaluationController::class, 'downloadPapiPdf'])->name('test_evaluation.papi_pdf');
+            Route::get('test-evaluations/{id}/result-pdf', [TestEvaluationController::class, 'downloadResultPdf'])->name('test_evaluation.result_pdf');
         });
     });
 
@@ -277,6 +287,10 @@ Route::get('test-evaluations/{id}/disc-pdf', [TestEvaluationController::class, '
 Route::get('test-evaluations/{id}/papi-pdf', [TestEvaluationController::class, 'downloadPapiPdf'])
     ->middleware(['auth'])
     ->name('test_evaluation.papi_pdf');
+
+Route::get('test-evaluations/{id}/result-pdf', [TestEvaluationController::class, 'downloadResultPdf'])
+    ->middleware(['auth'])
+    ->name('test_evaluation.result_pdf');
 
 Route::get('employee/test/{testId}', EmployeeOnlineTest::class)
     ->middleware(['auth'])

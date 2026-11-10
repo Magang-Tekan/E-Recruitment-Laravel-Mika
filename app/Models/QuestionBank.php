@@ -11,6 +11,7 @@ class QuestionBank extends Model
 {
     protected $fillable = [
         'category_id',
+        'sub_category_id',
         'question',
         'question_type',
         'metadata',
@@ -25,6 +26,11 @@ class QuestionBank extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(TestCategory::class, 'category_id');
+    }
+
+    public function subCategory(): BelongsTo
+    {
+        return $this->belongsTo(TestSubCategory::class, 'sub_category_id');
     }
 
     public function options(): HasMany

@@ -91,6 +91,7 @@
             test_admin_name: adminName,
             test_decision: (adminAppr === 'rejected') ? 'rejected' : 'approved',
             send_email: true,
+            question_ids: Array.isArray(att.question_ids) ? att.question_ids : (typeof att.question_ids === 'string' ? JSON.parse(att.question_ids || '[]') : (att.question_ids || [])),
             answers: att.answers || [],
             disc_result: att.disc_test_result || null,
             is_disc: isDisc,
@@ -163,7 +164,78 @@
             }
         });
 
+        // Urutkan pembahasan dan butir soal persis sesuai urutan pengerjaan pada attempt (question_ids)
+        let qIds = this.gradingData.question_ids;
+        if (typeof qIds === 'string') {
+            try { qIds = JSON.parse(qIds); } catch (e) { qIds = []; }
+        }
+
+        if (Array.isArray(qIds) && qIds.length > 0) {
+            const orderMap = {};
+            qIds.forEach((id, idx) => {
+                orderMap[String(id)] = idx;
+            });
+            groups.sort((a, b) => {
+                const idxA = orderMap[String(a.question_id)] !== undefined ? orderMap[String(a.question_id)] : 999999;
+                const idxB = orderMap[String(b.question_id)] !== undefined ? orderMap[String(b.question_id)] : 999999;
+                if (idxA !== idxB) {
+                    return idxA - idxB;
+                }
+                return (Number(a.question_id) || 0) - (Number(b.question_id) || 0);
+            });
+        } else {
+            // Fallback: Urutkan berdasarkan nomor urut metadata atau ID pertanyaan
+            groups.sort((a, b) => {
+                const numA = a.question?.metadata?.number ?? a.question_id ?? 0;
+                const numB = b.question?.metadata?.number ?? b.question_id ?? 0;
+                return Number(numA) - Number(numB);
+            });
+        }
+
         return groups;
+    },
+
+    getQuestionMetadata(item) {
+        if (!item || !item.question || !item.question.metadata) return {};
+        let meta = item.question.metadata;
+        if (typeof meta === 'string') {
+            try {
+                meta = JSON.parse(meta);
+            } catch (e) {
+                return {};
+            }
+        }
+        return (typeof meta === 'object' && meta !== null) ? meta : {};
+    },
+
+    getCorrectOption(item) {
+        if (!item || !item.question || !item.question.options) return null;
+        return item.question.options.find(opt => opt.is_correct === true || opt.is_correct === 1 || opt.is_correct === '1');
+    },
+
+    getExplanation(item) {
+        const meta = this.getQuestionMetadata(item);
+        return meta.explanation || meta.pembahasan || '';
+    },
+
+    getReference(item) {
+        const meta = this.getQuestionMetadata(item);
+        return meta.reference || meta.referensi || '';
+    },
+
+    getSubCategory(item) {
+        const meta = this.getQuestionMetadata(item);
+        return meta.sub_category || meta.topic || (item.question?.sub_category ? (item.question.sub_category.name || item.question.sub_category) : (item.question?.subCategory?.name || ''));
+    },
+
+    getDocument(item) {
+        const meta = this.getQuestionMetadata(item);
+        return meta.document || null;
+    },
+
+    cleanQuestionText(text) {
+        if (!text) return '';
+        return text.replace(/\[\[DOK\]\]/g, '').trim();
     },
 
     getPolyline(scores) {
@@ -1394,22 +1466,50 @@
 
                     <!-- Score Card Header (Untuk Tes Objektif / Essay Non-DISC / Non-PAPI) -->
                     <template x-if="!gradingData.disc_result && !gradingData.is_disc && !gradingData.is_papi">
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
-                            <div class="p-3 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800">
-                                <span class="block text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase">Skor Pilihan Ganda</span>
-                                <span class="text-base font-extrabold text-indigo-900 dark:text-indigo-200" x-text="gradingData.objective_score"></span>
+                        <div class="my-4 space-y-3">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200/80 dark:border-indigo-800/60">
+                                <div>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-indigo-600 text-white uppercase tracking-wider">
+                                        Laporan Hasil Tes
+                                    </span>
+                                    <h4 class="text-sm font-bold text-gray-900 dark:text-white mt-1" x-text="gradingData.test_title || 'Tes Kompetensi'"></h4>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <a :href="'{{ $gradeActionPrefix }}' + gradingData.id + '/result-pdf'" target="_blank"
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-100/80 hover:bg-indigo-200 dark:bg-indigo-900/60 dark:hover:bg-indigo-800 text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700 rounded-xl text-xs font-semibold shadow-2xs transition-all">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        <span>Preview PDF</span>
+                                    </a>
+                                    <a :href="'{{ $gradeActionPrefix }}' + gradingData.id + '/result-pdf?download=1'"
+                                       class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-sm shadow-indigo-500/20 transition-all">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                        <span>Unduh PDF</span>
+                                    </a>
+                                </div>
                             </div>
-                            <div class="p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
-                                <span class="block text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase">Skor Essay</span>
-                                <span class="text-base font-extrabold text-amber-900 dark:text-amber-200" x-text="gradingData.essay_score"></span>
-                            </div>
-                            <div class="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
-                                <span class="block text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase">Total Skor Akhir</span>
-                                <span class="text-base font-extrabold text-emerald-900 dark:text-emerald-200" x-text="gradingData.total_score"></span>
-                            </div>
-                            <div class="p-3 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
-                                <span class="block text-[10px] font-semibold text-gray-500 uppercase">KKM Minimum</span>
-                                <span class="text-base font-extrabold text-gray-800 dark:text-slate-200" x-text="gradingData.passing_score + '%'"></span>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <div class="p-3 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800">
+                                    <span class="block text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase">Skor Pilihan Ganda</span>
+                                    <span class="text-base font-extrabold text-indigo-900 dark:text-indigo-200" x-text="gradingData.objective_score"></span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
+                                    <span class="block text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase">Skor Essay</span>
+                                    <span class="text-base font-extrabold text-amber-900 dark:text-amber-200" x-text="gradingData.essay_score"></span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+                                    <span class="block text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase">Total Skor Akhir</span>
+                                    <span class="text-base font-extrabold text-emerald-900 dark:text-emerald-200" x-text="gradingData.total_score"></span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
+                                    <span class="block text-[10px] font-semibold text-gray-500 uppercase">KKM Minimum</span>
+                                    <span class="text-base font-extrabold text-gray-800 dark:text-slate-200" x-text="gradingData.passing_score + '%'"></span>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -1434,8 +1534,8 @@
                                     <div class="p-4 rounded-xl border transition" :class="item.question_type === 'essay' ? 'bg-amber-50/30 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/60' : (item.question_type === 'disc' || item.most_answer || item.least_answer ? 'bg-purple-50/40 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800/60' : 'bg-gray-50/50 dark:bg-slate-800/40 border-gray-200 dark:border-slate-700')">
                                         
                                         <div class="flex items-start justify-between gap-3 mb-2">
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-6 h-6 rounded-lg bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center" x-text="index + 1"></span>
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="w-6 h-6 rounded-lg bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center shrink-0" x-text="index + 1"></span>
                                                 
                                                 <template x-if="item.question_type === 'multiple_choice'">
                                                     <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
@@ -1453,6 +1553,11 @@
                                                     </span>
                                                 </template>
 
+                                                <!-- Topik / Sub-Kategori Soal FAT jika ada -->
+                                                <template x-if="getSubCategory(item)">
+                                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800" x-text="getSubCategory(item)"></span>
+                                                </template>
+
                                                 <template x-if="item.question_type !== 'disc' && !item.most_answer && !item.least_answer">
                                                     <span class="text-xs font-bold text-gray-500 dark:text-slate-400" x-text="'(Bobot Max: ' + (item.points || 1) + ' Poin)'"></span>
                                                 </template>
@@ -1460,7 +1565,7 @@
 
                                             <!-- Reviewer badge if already reviewed -->
                                             <template x-if="item.single_answer && item.single_answer.reviewer">
-                                                <span class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                                <span class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 shrink-0">
                                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                                     </svg>
@@ -1469,20 +1574,161 @@
                                             </template>
                                         </div>
 
-                                        <!-- Pertanyaan -->
-                                        <p class="text-xs font-bold text-gray-900 dark:text-white mb-2" x-text="item.question ? item.question.question : ('Nomor Soal ' + (index + 1))"></p>
+                                        <!-- Pertanyaan & Lampiran Kasus -->
+                                        <div class="mb-3 space-y-2">
+                                            <p class="text-xs font-bold text-gray-900 dark:text-white leading-relaxed whitespace-pre-line" x-text="item.question ? cleanQuestionText(item.question.question) : ('Nomor Soal ' + (index + 1))"></p>
 
-                                        <!-- 1. Tipe Pilihan Ganda Display -->
-                                        <template x-if="item.question_type === 'multiple_choice' && item.single_answer">
-                                            <div class="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-xs space-y-1">
-                                                <div class="flex items-center justify-between">
-                                                    <span class="text-gray-500 dark:text-slate-400">Jawaban Pelamar:</span>
-                                                    <span class="font-bold" :class="item.single_answer.option && item.single_answer.option.is_correct ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'" x-text="item.single_answer.option ? item.single_answer.option.option_text : 'Tidak Dijawab'"></span>
+                                            <!-- Gambar Soal (jika ada) -->
+                                            <template x-if="item.question && item.question.image_path">
+                                                <div class="mt-2 mb-2">
+                                                    <img :src="item.question.image_path.startsWith('http') ? item.question.image_path : ('/storage/' + item.question.image_path)" alt="Lampiran Soal" class="max-h-60 rounded-lg border border-gray-200 dark:border-slate-700 shadow-xs object-contain">
                                                 </div>
-                                                <div class="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-slate-800">
-                                                    <span class="text-gray-500 dark:text-slate-400">Nilai Otomatis:</span>
-                                                    <span class="font-bold text-indigo-600 dark:text-indigo-400" x-text="(item.single_answer.score || 0) + ' Poin'"></span>
+                                            </template>
+
+                                            <!-- Lampiran Tabel Dokumen Kasus FAT (jika ada) -->
+                                            <template x-if="getDocument(item)">
+                                                <div class="my-2.5 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs overflow-x-auto shadow-2xs">
+                                                    <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-200 dark:border-slate-700">
+                                                        <div>
+                                                            <template x-if="getDocument(item).from">
+                                                                <p class="text-[10px] text-gray-500 dark:text-slate-400" x-text="getDocument(item).from"></p>
+                                                            </template>
+                                                            <h5 class="text-xs font-bold text-gray-800 dark:text-slate-200 uppercase tracking-wider" x-text="getDocument(item).title || 'DOKUMEN KASUS / SOAL'"></h5>
+                                                        </div>
+                                                    </div>
+                                                    <table class="w-full text-left border-collapse text-[11px]">
+                                                        <template x-if="getDocument(item).cols && getDocument(item).cols.length">
+                                                            <thead>
+                                                                <tr class="border-b border-slate-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 font-semibold text-gray-700 dark:text-slate-300">
+                                                                    <template x-for="(col, cIdx) in getDocument(item).cols" :key="cIdx">
+                                                                        <th class="p-1.5" :class="getDocument(item).al && getDocument(item).al[cIdx] === 'r' ? 'text-right' : 'text-left'" x-text="col"></th>
+                                                                    </template>
+                                                                </tr>
+                                                            </thead>
+                                                        </template>
+                                                        <tbody>
+                                                            <template x-for="(row, rIdx) in (getDocument(item).rows || [])" :key="rIdx">
+                                                                <tr class="border-b border-slate-100 dark:border-slate-800/60 text-gray-800 dark:text-slate-200">
+                                                                    <template x-for="(cell, cellIdx) in row" :key="cellIdx">
+                                                                        <td class="p-1.5" :class="getDocument(item).al && getDocument(item).al[cellIdx] === 'r' ? 'text-right font-mono' : 'text-left'" x-text="cell"></td>
+                                                                    </template>
+                                                                </tr>
+                                                            </template>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
+                                            </template>
+                                        </div>
+
+                                        <!-- 1. Tipe Pilihan Ganda Display (Langsung Seluruh Opsi & Pembahasan) -->
+                                        <template x-if="item.question_type === 'multiple_choice'">
+                                            <div class="space-y-2.5">
+                                                <!-- Status & Nilai Ringkas -->
+                                                <div class="flex items-center justify-between px-3 py-2 rounded-xl border text-xs"
+                                                    :class="item.single_answer && item.single_answer.option && item.single_answer.option.is_correct ? 'bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200' : 'bg-rose-50/60 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/60 text-rose-900 dark:text-rose-200'">
+                                                    <div class="flex items-center gap-2">
+                                                        <template x-if="item.single_answer && item.single_answer.option && item.single_answer.option.is_correct">
+                                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">
+                                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                                                </svg>
+                                                                Jawaban Pelamar Benar
+                                                            </span>
+                                                        </template>
+                                                        <template x-if="!item.single_answer || !item.single_answer.option || !item.single_answer.option.is_correct">
+                                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300">
+                                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                                                                </svg>
+                                                                <span x-text="item.single_answer && item.single_answer.option ? 'Jawaban Pelamar Salah' : 'Tidak Dijawab Pelamar'"></span>
+                                                            </span>
+                                                        </template>
+                                                    </div>
+                                                    <div class="flex items-center gap-1 font-bold text-xs">
+                                                        <span class="text-gray-500 dark:text-slate-400 font-normal">Nilai Otomatis:</span>
+                                                        <span class="font-extrabold" :class="item.single_answer && item.single_answer.option && item.single_answer.option.is_correct ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'" x-text="(item.single_answer ? item.single_answer.score || 0 : 0) + ' Poin'"></span>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Seluruh Opsi Pilihan (A - D) Langsung Tampil -->
+                                                <div class="space-y-1.5">
+                                                    <template x-for="(opt, optIdx) in (item.question?.options || [])" :key="opt.id || optIdx">
+                                                        <div class="flex items-start justify-between gap-2.5 p-2.5 rounded-xl border text-xs transition"
+                                                            :class="opt.is_correct ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-400 dark:border-emerald-700 text-emerald-950 dark:text-emerald-100 ring-1 ring-emerald-400/40' : (item.single_answer?.option_id === opt.id ? 'bg-rose-50/70 dark:bg-rose-950/40 border-rose-400 dark:border-rose-700 text-rose-950 dark:text-rose-100 ring-1 ring-rose-400/40' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-800 text-gray-700 dark:text-slate-300')">
+                                                            <div class="flex items-start gap-2.5 min-w-0">
+                                                                <span class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5"
+                                                                    :class="opt.is_correct ? 'bg-emerald-600 text-white' : (item.single_answer?.option_id === opt.id ? 'bg-rose-600 text-white' : 'bg-gray-200 dark:bg-slate-800 text-gray-700 dark:text-slate-300')"
+                                                                    x-text="['A', 'B', 'C', 'D', 'E'][optIdx] || (optIdx + 1)"></span>
+                                                                <span class="text-xs leading-relaxed font-medium" x-text="opt.option_text"></span>
+                                                            </div>
+                                                            <div class="shrink-0 flex items-center gap-1.5 text-[10px] font-bold">
+                                                                <template x-if="opt.is_correct && item.single_answer?.option_id === opt.id">
+                                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-600 text-white shadow-xs">
+                                                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                                                        Pilihan Pelamar (Benar ✓)
+                                                                    </span>
+                                                                </template>
+                                                                <template x-if="opt.is_correct && item.single_answer?.option_id !== opt.id">
+                                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/70 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                                                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                                                        Kunci Jawaban Benar
+                                                                    </span>
+                                                                </template>
+                                                                <template x-if="!opt.is_correct && item.single_answer?.option_id === opt.id">
+                                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white shadow-xs">
+                                                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                                                        Pilihan Pelamar (Salah ✕)
+                                                                    </span>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </div>
+
+                                                <!-- Kotak Penjelasan / Pembahasan Langsung (Selalu Terbuka) -->
+                                                <template x-if="getExplanation(item)">
+                                                    <div class="p-3.5 rounded-xl bg-indigo-50/70 dark:bg-slate-900/90 border border-indigo-200/90 dark:border-indigo-900/70 text-xs space-y-1.5 shadow-2xs">
+                                                        <div class="flex items-center justify-between text-indigo-900 dark:text-indigo-300 font-bold border-b border-indigo-100 dark:border-indigo-950/80 pb-2">
+                                                            <span class="flex items-center gap-1.5 text-xs">
+                                                                <span class="text-base">💡</span>
+                                                                <span>Pembahasan & Penjelasan Soal:</span>
+                                                            </span>
+                                                            <template x-if="item.single_answer && item.single_answer.option && item.single_answer.option.is_correct">
+                                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                                                    ✓ Pemahaman Tepat
+                                                                </span>
+                                                            </template>
+                                                            <template x-if="!item.single_answer || !item.single_answer.option || !item.single_answer.option.is_correct">
+                                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                                                                    ✕ Perlu Evaluasi
+                                                                </span>
+                                                            </template>
+                                                        </div>
+                                                        <p class="text-gray-800 dark:text-slate-200 whitespace-pre-line leading-relaxed text-[11px] font-medium" x-text="getExplanation(item)"></p>
+                                                        <template x-if="getReference(item)">
+                                                            <div class="pt-1.5 border-t border-indigo-100 dark:border-indigo-950/80 flex items-center gap-1 text-[10px] text-indigo-700 dark:text-indigo-400 font-semibold">
+                                                                <span>📚 Rujukan / Dasar:</span>
+                                                                <span class="italic font-normal text-gray-700 dark:text-slate-300" x-text="getReference(item)"></span>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+
+                                                <!-- Fallback Penjelasan Ringkas jika Soal tidak memiliki metadata.explanation khusus -->
+                                                <template x-if="!getExplanation(item)">
+                                                    <div class="p-3 rounded-xl border text-[11px] leading-relaxed flex items-start gap-2 shadow-2xs"
+                                                        :class="item.single_answer && item.single_answer.option && item.single_answer.option.is_correct ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200/60 dark:border-emerald-900/40 text-emerald-800 dark:text-emerald-300' : 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-200/60 dark:border-amber-900/40 text-amber-800 dark:text-amber-300'">
+                                                        <span class="text-xs">💡</span>
+                                                        <div>
+                                                            <template x-if="item.single_answer && item.single_answer.option && item.single_answer.option.is_correct">
+                                                                <span><strong>Penjelasan:</strong> Jawaban yang dipilih oleh pelamar sudah tepat dan sesuai dengan kunci jawaban sistem.</span>
+                                                            </template>
+                                                            <template x-if="!item.single_answer || !item.single_answer.option || !item.single_answer.option.is_correct">
+                                                                <span><strong>Penjelasan:</strong> Jawaban pelamar keliru. Kunci jawaban yang tepat adalah <strong x-text="getCorrectOption(item) ? ('\"' + getCorrectOption(item).option_text + '\"') : 'pilihan yang ditetapkan sistem'"></strong>.</span>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </template>
                                             </div>
                                         </template>
 

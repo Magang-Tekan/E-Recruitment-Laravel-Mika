@@ -21,6 +21,9 @@ class TestAttempt extends Model
         'participant_gender',
         'test_date',
         'test_id',
+        'package_id',
+        'duration_minutes',
+        'question_ids',
         'started_at',
         'finished_at',
         'duration',
@@ -28,12 +31,16 @@ class TestAttempt extends Model
         'essay_score',
         'total_score',
         'status',
+        'violations_count',
+        'violation_logs',
     ];
 
     protected $casts = [
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
         'test_date' => 'date',
+        'question_ids' => 'array',
+        'violation_logs' => 'array',
     ];
 
     protected $appends = [

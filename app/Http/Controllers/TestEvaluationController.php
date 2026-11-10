@@ -351,6 +351,218 @@ class TestEvaluationController extends Controller
         return $pdf->stream($fileName);
     }
 
+    /**
+     * Preview or download standard/competency test results as a PDF document.
+     */
+    public function downloadResultPdf(Request $request, string $id)
+    {
+        $attempt = TestAttempt::with([
+            'jobApplication.applicantProfile.user',
+            'jobApplication.job.company',
+            'user.employeeProfile.company',
+            'test.category',
+            'answers.question.subCategory',
+            'answers.option',
+        ])->findOrFail($id);
+
+        $user = auth()->user();
+        $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+        $isRecruiter = $request->is('recruiter/*') || $request->routeIs('recruiter.*') || ($user && ($user->role_id == 2 || strtolower($user->role?->name ?? '') === 'recruiter' || (bool) $user->is_recruiter));
+        
+        $isOwner = $user && (
+            ($attempt->user_id && $attempt->user_id == $user->id) ||
+            ($attempt->jobApplication?->applicantProfile?->user_id && $attempt->jobApplication?->applicantProfile?->user_id == $user->id)
+        );
+
+        if (!$isAdmin && !$isRecruiter && !$isOwner) {
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk melihat laporan hasil tes ini.');
+        }
+
+        $isDesignatedRecruiter = $user && ((bool) $user->is_recruiter && !$isAdmin && $user->role_id != 2);
+        if (!$isAdmin && !$isOwner && $isRecruiter) {
+            $jobReviewerId  = $attempt->jobApplication?->job?->reviewer_id;
+            $employeeDeptId = $user?->employeeProfile?->department_id;
+            $employeePosId  = $user?->employeeProfile?->position_id;
+            $jobDeptId      = $attempt->jobApplication?->job?->department_id ?? $attempt->test?->department_id;
+            $jobPosId       = $attempt->jobApplication?->job?->position_id;
+
+            if ($isDesignatedRecruiter) {
+                $hasAccess = ($jobReviewerId && $jobReviewerId == $user->id)
+                    || ($employeePosId && $jobPosId && $jobPosId == $employeePosId);
+            } else {
+                $hasAccess = ($jobReviewerId && $jobReviewerId == $user->id)
+                    || ($employeeDeptId && $jobDeptId && $jobDeptId == $employeeDeptId)
+                    || ($user->role_id == 2 && !$employeeDeptId);
+            }
+
+            if (!$hasAccess) {
+                abort(403, 'Akses ditolak. Anda hanya dapat melihat laporan peserta untuk posisi Anda atau lowongan yang ditugaskan kepada Anda.');
+            }
+        }
+
+        $isEmployeeAttempt = ($attempt->attempt_type === 'employee') || empty($attempt->job_application_id);
+        $candidateName = $attempt->participant_name ?: ($isEmployeeAttempt 
+            ? ($attempt->user?->employeeProfile?->full_name ?? ($attempt->user?->name ?? 'Peserta')) 
+            : ($attempt->jobApplication?->applicantProfile?->full_name ?? ($attempt->jobApplication?->applicantProfile?->user?->name ?? 'Kandidat')));
+
+        $companyName = $attempt->jobApplication?->job?->company?->name ?? ($attempt->user?->employeeProfile?->company?->name ?? 'PT. Tri Dinamika Nusantara');
+        $participantStatus = $isEmployeeAttempt ? 'Karyawan Internal' : 'Pelamar Baru';
+        $token = 'FAT-PKT-' . ($attempt->package_id ?: 1);
+
+        $totalQuestions = $attempt->answers->count() ?: ($attempt->test?->total_questions ?: 50);
+        $packageName = ($attempt->package_id ? "Paket {$attempt->package_id}" : 'Paket Standar') . " (Soal 1–{$totalQuestions})";
+
+        $startedAtFormatted = $attempt->started_at ? \Carbon\Carbon::parse($attempt->started_at)->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-';
+        $finishedAtFormatted = $attempt->finished_at ? \Carbon\Carbon::parse($attempt->finished_at)->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-';
+        $testDateFormatted = \Carbon\Carbon::parse($attempt->test_date ?: $attempt->started_at)->locale('id')->isoFormat('dddd, D MMMM Y');
+
+        $durationSeconds = $attempt->duration ?: ($attempt->started_at && $attempt->finished_at ? $attempt->started_at->diffInSeconds($attempt->finished_at) : 0);
+        $minutes = floor($durationSeconds / 60);
+        $seconds = $durationSeconds % 60;
+        $durationFormatted = ($minutes > 0 ? "{$minutes} menit " : '') . "{$seconds} detik";
+        $durationShort = ($minutes > 0 ? "{$minutes}m " : '') . "{$seconds}s";
+        $durationLimitMinutes = $attempt->duration_minutes ?: ($attempt->test?->duration_minutes ?: 120);
+
+        $submissionType = in_array($attempt->status, ['completed', 'passed', 'failed']) ? 'Selesai mandiri oleh peserta' : 'Selesai otomatis (waktu habis)';
+
+        $score = (float) ($attempt->total_score ?? 0);
+        $passingScore = (float) ($attempt->test?->passing_score ?? 60);
+        $isPassed = ($attempt->status === 'passed') || ($score >= $passingScore);
+        $requiredCorrect = (int) ceil(($passingScore / 100) * $totalQuestions);
+
+        $correctCount = $attempt->answers->where('score', '>', 0)->count();
+        $answeredCount = $attempt->answers->whereNotNull('option_id')->count();
+        $emptyCount = $attempt->answers->whereNull('option_id')->count();
+        $wrongCount = max(0, $answeredCount - $correctCount);
+
+        $correctPct = $totalQuestions > 0 ? round(($correctCount / $totalQuestions) * 100, 1) : 0;
+        $wrongPct = $totalQuestions > 0 ? round(($wrongCount / $totalQuestions) * 100, 1) : 0;
+        $emptyPct = $totalQuestions > 0 ? round(($emptyCount / $totalQuestions) * 100, 1) : 0;
+        $violationsCount = (int) ($attempt->violations_count ?? 0);
+        $violationLogs = is_array($attempt->violation_logs)
+            ? $attempt->violation_logs
+            : (json_decode($attempt->violation_logs ?? '[]', true) ?: []);
+
+        $docId = strtoupper(substr(md5('FAT_TEST_' . $attempt->id . '_' . ($attempt->started_at?->timestamp ?? 0)), 0, 12));
+        $createdDate = \Carbon\Carbon::parse($attempt->finished_at ?: now())->locale('id')->isoFormat('D MMMM Y [pukul] HH.mm');
+
+        if ($isPassed) {
+            $narrativeText = "Selamat! Anda berhasil menjawab benar {$correctCount} dari {$totalQuestions} soal ({$packageName}). Nilai akhir Anda adalah " . round($score) . "/100, melampaui batas kelulusan {$passingScore}%. Hasil evaluasi kompetensi menunjukkan penguasaan materi yang baik pada bidang ini.";
+        } else {
+            $narrativeText = "Anda menjawab benar {$correctCount} dari {$totalQuestions} soal ({$packageName}). Nilai akhir Anda adalah " . round($score) . "/100, di bawah batas kelulusan {$passingScore}%. Tetap semangat, pelajari kembali materi yang belum dikuasai pada rincian evaluasi materi di bawah.";
+        }
+
+        $testCategoryName = $attempt->test?->category?->name ?: ($attempt->test?->title ?: 'Tes Kompetensi');
+
+        // Grouping by Theme & Subcategory (Materi)
+        $themes = [];
+        $materiList = [];
+
+        foreach ($attempt->answers as $ans) {
+            $subName = $ans->question?->subCategory?->name ?? 'Kompetensi Umum';
+
+            $themeName = $subName;
+            if (str_contains($subName, '–')) {
+                $parts = explode('–', $subName);
+                $themeName = trim($parts[0]);
+            } elseif (str_contains($subName, '-')) {
+                $parts = explode('-', $subName);
+                $themeName = trim($parts[0]);
+            }
+
+            if (!isset($themes[$themeName])) {
+                $themes[$themeName] = ['name' => $themeName, 'total' => 0, 'correct' => 0];
+            }
+            $themes[$themeName]['total']++;
+            if ($ans->score > 0) {
+                $themes[$themeName]['correct']++;
+            }
+
+            if (!isset($materiList[$subName])) {
+                $materiList[$subName] = ['name' => $subName, 'theme' => $themeName, 'total' => 0, 'correct' => 0];
+            }
+            $materiList[$subName]['total']++;
+            if ($ans->score > 0) {
+                $materiList[$subName]['correct']++;
+            }
+        }
+
+        foreach ($themes as &$t) {
+            $t['percentage'] = $t['total'] > 0 ? round(($t['correct'] / $t['total']) * 100, 1) : 0;
+            $t['score_100'] = round($t['percentage']);
+        }
+        unset($t);
+
+        foreach ($materiList as &$m) {
+            $m['percentage'] = $m['total'] > 0 ? round(($m['correct'] / $m['total']) * 100, 1) : 0;
+            $m['score_100'] = round($m['percentage']);
+        }
+        unset($m);
+
+        uasort($materiList, function ($x, $y) {
+            if ($y['percentage'] == $x['percentage']) {
+                return $y['total'] <=> $x['total'];
+            }
+            return $y['percentage'] <=> $x['percentage'];
+        });
+
+        $cleanName = Str::slug($candidateName, '_');
+        $cleanTest = Str::slug($attempt->test?->title ?? 'Tes_Kompetensi', '_');
+        $date = now()->format('Ymd');
+        $fileName = "Hasil_Tes_{$cleanTest}_{$cleanName}_{$docId}_{$date}.pdf";
+
+        $data = compact(
+            'attempt',
+            'candidateName',
+            'companyName',
+            'participantStatus',
+            'token',
+            'totalQuestions',
+            'packageName',
+            'startedAtFormatted',
+            'finishedAtFormatted',
+            'testDateFormatted',
+            'durationFormatted',
+            'durationShort',
+            'durationLimitMinutes',
+            'submissionType',
+            'score',
+            'passingScore',
+            'isPassed',
+            'requiredCorrect',
+            'correctCount',
+            'wrongCount',
+            'emptyCount',
+            'correctPct',
+            'wrongPct',
+            'emptyPct',
+            'violationsCount',
+            'violationLogs',
+            'docId',
+            'createdDate',
+            'narrativeText',
+            'testCategoryName',
+            'themes',
+            'materiList'
+        );
+
+        $pdf = Pdf::loadView('admin.test-evaluation.result-pdf', $data)
+            ->setPaper('a4', 'portrait')
+            ->setOption([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'defaultFont' => 'sans-serif',
+                'dpi' => 120,
+                'isPhpEnabled' => true,
+            ]);
+
+        if ($request->query('download') == '1') {
+            return $pdf->download($fileName);
+        }
+
+        return $pdf->stream($fileName);
+    }
+
     public function updateGrade(Request $request, string $id)
     {
         $attempt = TestAttempt::with([

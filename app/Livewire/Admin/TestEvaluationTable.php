@@ -135,6 +135,7 @@ class TestEvaluationTable extends Component
             'jobApplication.testAdmin',
             'test.category',
             'answers.question.options',
+            'answers.question.subCategory',
             'answers.option',
             'answers.reviewer',
             'discTestResult.discProfile',

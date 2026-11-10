@@ -29,9 +29,9 @@ class TestController extends Controller
             DB::beginTransaction();
 
             $selectedQuestions = $request->input('selected_questions', []);
-            $totalQuestions = count($selectedQuestions) > 0 
-                ? count($selectedQuestions) 
-                : (int) $request->total_questions;
+            $totalQuestions = $request->filled('total_questions') && (int) $request->total_questions > 0
+                ? (int) $request->total_questions
+                : count($selectedQuestions);
 
             // Handle job_ids (multi-select) or legacy single job_id
             $jobIds = $request->input('job_ids', []);
@@ -100,9 +100,9 @@ class TestController extends Controller
             DB::beginTransaction();
 
             $selectedQuestions = $request->input('selected_questions', []);
-            $totalQuestions = count($selectedQuestions) > 0 
-                ? count($selectedQuestions) 
-                : (int) $request->total_questions;
+            $totalQuestions = $request->filled('total_questions') && (int) $request->total_questions > 0
+                ? (int) $request->total_questions
+                : count($selectedQuestions);
 
             // Handle job_ids (multi-select) or legacy single job_id
             $jobIds = $request->input('job_ids', []);

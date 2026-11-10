@@ -49,6 +49,10 @@
         let name = this.categoriesMap[catId] || '';
         return name.toLowerCase().includes('disc');
     },
+    isFatCategory(catId) {
+        let name = this.categoriesMap[catId] || '';
+        return name.toLowerCase().includes('fat');
+    },
 
     openEditModal(test) {
         let qIds = [];
@@ -63,6 +67,10 @@
             deptIds = [test.department_id.toString()];
         }
 
+        let dur = test.duration_minutes ?? 60;
+        let pScore = test.passing_score ?? 60;
+        let tQuestions = test.total_questions ?? (qIds.length || 10);
+
         this.editData = {
             id: test.id,
             target_scope: deptIds.length > 0 ? 'specific' : 'all',
@@ -70,9 +78,9 @@
             target_employee_type: test.target_employee_type || 'all',
             category_id: test.category_id,
             title: test.title,
-            duration_minutes: test.duration_minutes,
-            passing_score: test.passing_score,
-            total_questions: test.total_questions,
+            duration_minutes: dur,
+            passing_score: pScore,
+            total_questions: tQuestions,
             is_random: Boolean(test.is_random),
             selected_questions: qIds
         };
@@ -330,7 +338,7 @@
                     <tr class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
                         <th class="px-6 py-4 w-12">No</th>
                         <th class="px-6 py-4">Judul Paket Asesmen</th>
-                        <th class="px-6 py-4">Target Departemen & Sasaran</th>
+                        <th class="px-6 py-4 min-w-[200px]">Target Departemen & Sasaran</th>
                         <th class="px-6 py-4">Kategori Soal</th>
                         <th class="px-6 py-4">Durasi & KKM</th>
                         <th class="px-6 py-4">Soal & Opsi Acak</th>
@@ -357,50 +365,73 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="flex flex-col gap-1.5 items-start">
-                                    @php
-                                        $deptCount = $t->departments->count();
-                                    @endphp
-                                    @if ($deptCount > 0)
-                                        <div class="flex flex-wrap gap-1 max-w-xs">
-                                            @foreach ($t->departments->take(2) as $d)
-                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800" title="{{ $d->name }} {{ $d->company ? '('.$d->company->name.')' : '' }}">
-                                                    {{ $d->name }}
-                                                </span>
-                                            @endforeach
-                                            @if ($deptCount > 2)
-                                                <span class="px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border border-gray-200 dark:border-slate-700" title="{{ $t->departments->pluck('name')->implode(', ') }}">
-                                                    +{{ $deptCount - 2 }} lainnya
-                                                </span>
-                                            @endif
+                                <div class="space-y-2 min-w-[200px]">
+                                    <!-- 1. Departemen -->
+                                    <div>
+                                        <div class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400 mb-1">
+                                            <svg class="w-3 h-3 text-indigo-500 dark:text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                            </svg>
+                                            <span>Departemen</span>
                                         </div>
-                                    @elseif ($t->department)
-                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                                            {{ $t->department->name }}
-                                        </span>
-                                    @else
-                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                            Semua Departemen
-                                        </span>
-                                    @endif
+                                        @php
+                                            $deptCount = $t->departments->count();
+                                        @endphp
+                                        @if ($deptCount > 0)
+                                            <div class="flex flex-wrap items-center gap-1.5">
+                                                @foreach ($t->departments->take(2) as $d)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80" title="{{ $d->name }} {{ $d->company ? '('.$d->company->name.')' : '' }}">
+                                                        {{ $d->name }}
+                                                    </span>
+                                                @endforeach
+                                                @if ($deptCount > 2)
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border border-gray-200 dark:border-slate-700" title="{{ $t->departments->pluck('name')->implode(', ') }}">
+                                                        +{{ $deptCount - 2 }} lainnya
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @elseif ($t->department)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80">
+                                                {{ $t->department->name }}
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-[#93F514] border border-emerald-200/80 dark:border-emerald-800/80">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-[#93F514]"></span>
+                                                Semua Departemen
+                                            </span>
+                                        @endif
+                                    </div>
 
-                                    @if ($t->target_employee_type === 'internship')
-                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                                            Magang
-                                        </span>
-                                    @elseif ($t->target_employee_type === 'permanent')
-                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                                            Karyawan Tetap
-                                        </span>
-                                    @elseif ($t->target_employee_type === 'contract')
-                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                                            Karyawan Kontrak
-                                        </span>
-                                    @else
-                                        <span class="text-[10px] text-gray-400">
-                                            Semua Karyawan & Magang
-                                        </span>
-                                    @endif
+                                    <!-- 2. Sasaran Peserta -->
+                                    <div class="pt-1.5 border-t border-gray-100 dark:border-slate-800/80">
+                                        <div class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400 mb-1">
+                                            <svg class="w-3 h-3 text-emerald-500 dark:text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                            <span>Sasaran</span>
+                                        </div>
+                                        @if ($t->target_employee_type === 'internship')
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-800/80">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                                Magang
+                                            </span>
+                                        @elseif ($t->target_employee_type === 'permanent')
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-[#93F514] border border-emerald-200/80 dark:border-emerald-800/80">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-[#93F514]"></span>
+                                                Karyawan Tetap
+                                            </span>
+                                        @elseif ($t->target_employee_type === 'contract')
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/80">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                                Karyawan Kontrak
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium bg-gray-50 dark:bg-slate-800/80 text-gray-600 dark:text-slate-300 border border-gray-200/80 dark:border-slate-700">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                                                Semua Karyawan & Magang
+                                            </span>
+                                        @endif
+                                    </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
@@ -605,6 +636,15 @@
                                                 if (kkmInput) kkmInput.value = 0;
                                                 if (totalInput) totalInput.value = 24;
                                             });
+                                        } else if (isFatCategory(createCategoryId)) {
+                                            $nextTick(() => {
+                                                let durInput = document.getElementById('create_duration');
+                                                let kkmInput = document.getElementById('create_passing_score');
+                                                let totalInput = document.getElementById('create_total_questions');
+                                                if (durInput) durInput.value = 240;
+                                                if (kkmInput) kkmInput.value = 61;
+                                                if (totalInput) totalInput.value = 100;
+                                            });
                                         }
                                     "
                                     required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
@@ -638,7 +678,12 @@
                                 <label for="create_duration" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                                     Durasi (Menit) <span class="text-rose-500">*</span>
                                 </label>
-                                <input type="number" name="duration_minutes" id="create_duration" min="1" value="{{ old('duration_minutes', 60) }}" required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <input type="number" name="duration_minutes" id="create_duration" min="1" 
+                                    :value="isFatCategory(createCategoryId) ? 240 : {{ old('duration_minutes', 60) }}" 
+                                    required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <template x-if="isFatCategory(createCategoryId)">
+                                    <p class="mt-1 text-[10px] text-emerald-500 font-semibold">💡 Rekomendasi FAT: 240 Menit (4 Jam)</p>
+                                </template>
                                 @error('duration_minutes')
                                     <p class="mt-1 text-[11px] text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -649,10 +694,13 @@
                                     Nilai KKM (%) <span class="text-rose-500">*</span>
                                 </label>
                                 <input type="number" step="0.01" name="passing_score" id="create_passing_score" min="0" max="100" 
-                                    :value="isDiscCategory(createCategoryId) ? 0 : 75" 
+                                    :value="isFatCategory(createCategoryId) ? 61 : (isDiscCategory(createCategoryId) ? 0 : {{ old('passing_score', 75) }})" 
                                     :readonly="isDiscCategory(createCategoryId)"
-                                    :class="isDiscCategory(createCategoryId) ? 'opacity-60 bg-gray-200 cursor-not-allowed' : ''"
+                                    :class="isDiscCategory(createCategoryId) ? 'opacity-60 bg-gray-200 dark:bg-slate-700/60 cursor-not-allowed font-bold' : ''"
                                     required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <template x-if="isFatCategory(createCategoryId)">
+                                    <p class="mt-1 text-[10px] text-emerald-500 font-semibold">💡 Standar KKM FAT: 61%</p>
+                                </template>
                                 <template x-if="isDiscCategory(createCategoryId)">
                                     <p class="mt-1 text-[10px] text-purple-500 font-semibold">Tanpa KKM (Tes Profil)</p>
                                 </template>
@@ -666,10 +714,13 @@
                                     Jumlah Soal <span class="text-rose-500">*</span>
                                 </label>
                                 <input type="number" name="total_questions" id="create_total_questions" min="1" 
-                                    :value="isDiscCategory(createCategoryId) ? 24 : 10" 
+                                    :value="isFatCategory(createCategoryId) ? 100 : (isDiscCategory(createCategoryId) ? 24 : {{ old('total_questions', 10) }})" 
                                     :readonly="isDiscCategory(createCategoryId)"
-                                    :class="isDiscCategory(createCategoryId) ? 'opacity-60 bg-gray-200 cursor-not-allowed' : ''"
+                                    :class="isDiscCategory(createCategoryId) ? 'opacity-60 bg-gray-200 dark:bg-slate-700/60 cursor-not-allowed font-bold' : ''"
                                     required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <template x-if="isFatCategory(createCategoryId)">
+                                    <p class="mt-1 text-[10px] text-emerald-500 font-semibold">💡 Standar Paket Utama: 100 Soal</p>
+                                </template>
                                 <template x-if="isDiscCategory(createCategoryId)">
                                     <p class="mt-1 text-[10px] text-purple-500 font-semibold">Standar 24 Soal DISC</p>
                                 </template>
@@ -861,7 +912,18 @@
                                 <label for="edit_category_id" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                                     Kategori Soal <span class="text-rose-500">*</span>
                                 </label>
-                                <select name="category_id" id="edit_category_id" x-model="editData.category_id" required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <select name="category_id" id="edit_category_id" x-model="editData.category_id" 
+                                    @change="
+                                        if (isDiscCategory(editData.category_id)) {
+                                            editData.passing_score = 0;
+                                            editData.total_questions = 24;
+                                        } else if (isFatCategory(editData.category_id)) {
+                                            editData.duration_minutes = 240;
+                                            editData.passing_score = 61;
+                                            editData.total_questions = 100;
+                                        }
+                                    "
+                                    required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
                                     <option value="">-- Pilih Kategori Soal --</option>
                                     @foreach ($categories as $cat)
                                         <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -890,7 +952,11 @@
                                 <label for="edit_duration" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                                     Durasi (Menit) <span class="text-rose-500">*</span>
                                 </label>
-                                <input type="number" name="duration_minutes" id="edit_duration" min="1" x-model="editData.duration_minutes" required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <input type="number" name="duration_minutes" id="edit_duration" min="1" x-model="editData.duration_minutes" 
+                                    required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <template x-if="isFatCategory(editData.category_id)">
+                                    <p class="mt-1 text-[10px] text-emerald-500 font-semibold">💡 Standar FAT: 240 Menit (4 Jam)</p>
+                                </template>
                                 @error('duration_minutes')
                                     <p class="mt-1 text-[11px] text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -903,8 +969,11 @@
                                 <input type="number" step="0.01" name="passing_score" id="edit_passing_score" min="0" max="100" 
                                     x-model="editData.passing_score" 
                                     :readonly="isDiscCategory(editData.category_id)"
-                                    :class="isDiscCategory(editData.category_id) ? 'opacity-60 bg-gray-200 cursor-not-allowed' : ''"
+                                    :class="isDiscCategory(editData.category_id) ? 'opacity-60 bg-gray-200 dark:bg-slate-700/60 cursor-not-allowed font-bold' : ''"
                                     required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <template x-if="isFatCategory(editData.category_id)">
+                                    <p class="mt-1 text-[10px] text-emerald-500 font-semibold">💡 Standar FAT: KKM 61% (Min. 61 Benar)</p>
+                                </template>
                                 <template x-if="isDiscCategory(editData.category_id)">
                                     <p class="mt-1 text-[10px] text-purple-500 font-semibold">Tanpa KKM (Tes Profil)</p>
                                 </template>
@@ -920,8 +989,11 @@
                                 <input type="number" name="total_questions" id="edit_total_questions" min="1" 
                                     x-model="editData.total_questions" 
                                     :readonly="isDiscCategory(editData.category_id)"
-                                    :class="isDiscCategory(editData.category_id) ? 'opacity-60 bg-gray-200 cursor-not-allowed' : ''"
+                                    :class="isDiscCategory(editData.category_id) ? 'opacity-60 bg-gray-200 dark:bg-slate-700/60 cursor-not-allowed font-bold' : ''"
                                     required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <template x-if="isFatCategory(editData.category_id)">
+                                    <p class="mt-1 text-[10px] text-emerald-500 font-semibold">💡 Standar Paket Utama: 100 Soal</p>
+                                </template>
                                 <template x-if="isDiscCategory(editData.category_id)">
                                     <p class="mt-1 text-[10px] text-purple-500 font-semibold">Standar 24 Soal DISC</p>
                                 </template>

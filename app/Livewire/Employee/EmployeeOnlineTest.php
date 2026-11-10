@@ -33,9 +33,32 @@ class EmployeeOnlineTest extends Component
     public $questions = [];
     public $currentQuestionIndex = 0;
 
-    // Paginasi multi-soal: tampilkan beberapa soal sekaligus (PAPI Kostick: 5, DISC: 1)
+    // Paginasi multi-soal: 1 soal per halaman (PAPI Kostick: 5, DISC: 1)
     public $currentPage = 0;       // Indeks halaman saat ini (0-based)
-    public $questionsPerPage = 5;  // Jumlah soal per halaman
+    public $questionsPerPage = 1;  // Jumlah soal per halaman
+
+    // Paket Soal CBT (Khususnya Standar Tes FAT)
+    public $selectedPkg = 1;
+
+    // Modal Konfirmasi Selesai Ujian
+    public $showConfirmModal = false;
+
+    public function isFatTest(): bool
+    {
+        $cat = strtolower($this->test->category?->name ?? '');
+        $title = strtolower($this->test->title ?? '');
+        return str_contains($cat, 'fat') || str_contains($title, 'fat');
+    }
+
+    public function getPackageDefinitions(): array
+    {
+        return [
+            1 => ['id' => 1, 'name' => 'PAKET 1', 'questions' => 100, 'duration' => 240, 'pass_pct' => 61, 'min_correct' => 61],
+            2 => ['id' => 2, 'name' => 'PAKET 2', 'questions' => 75,  'duration' => 180, 'pass_pct' => 61, 'min_correct' => 46],
+            3 => ['id' => 3, 'name' => 'PAKET 3', 'questions' => 50,  'duration' => 120, 'pass_pct' => 61, 'min_correct' => 31],
+            4 => ['id' => 4, 'name' => 'PAKET 4', 'questions' => 25,  'duration' => 60,  'pass_pct' => 61, 'min_correct' => 16],
+        ];
+    }
 
     // Jawaban user:
     // Pilihan ganda: [ question_id => option_id ]
@@ -60,6 +83,10 @@ class EmployeeOnlineTest extends Component
     public $participantGender = 'male';
     public $testDate = '';
 
+    // Proctoring & Pelanggaran Layar Penuh (Fullscreen Guard)
+    public $violationsCount = 0;
+    public $violationLogs = [];
+
     public function mount($testId)
     {
         $user = Auth::user();
@@ -72,12 +99,10 @@ class EmployeeOnlineTest extends Component
 
         $categoryName = strtolower($this->test->category?->name ?? '');
         $testTitle    = strtolower($this->test->title ?? '');
-        if (str_contains($categoryName, 'disc') || str_contains($testTitle, 'disc')) {
-            $this->questionsPerPage = 1;
-        } elseif (str_contains($categoryName, 'papi') || str_contains($testTitle, 'papi')) {
+        if (str_contains($categoryName, 'papi') || str_contains($testTitle, 'papi')) {
             $this->questionsPerPage = 5;
         } else {
-            $this->questionsPerPage = 5;
+            $this->questionsPerPage = 1;
         }
 
         // Inisialisasi default biodata dari profil karyawan
@@ -115,11 +140,18 @@ class EmployeeOnlineTest extends Component
                 $this->testDate = Carbon::parse($existingAttempt->test_date)->toDateString();
             }
 
+            $this->violationsCount = (int) ($existingAttempt->violations_count ?? 0);
+            $this->violationLogs = is_array($existingAttempt->violation_logs)
+                ? $existingAttempt->violation_logs
+                : (json_decode($existingAttempt->violation_logs ?? '[]', true) ?: []);
+
             if (in_array($existingAttempt->status, ['completed', 'passed', 'failed'])) {
                 $this->testState = 'completed';
+                $this->loadQuestionsAndAnswers();
             } elseif ($existingAttempt->status === 'in_progress') {
                 // Hitung sisa waktu
-                $durationSec = ($this->test->duration_minutes ?: 60) * 60;
+                $this->selectedPkg = $existingAttempt->package_id ?: 1;
+                $durationSec = ($existingAttempt->duration_minutes ?: ($this->test->duration_minutes ?: 60)) * 60;
                 $elapsedSec = Carbon::parse($existingAttempt->started_at)->diffInSeconds(now());
                 $remaining = $durationSec - $elapsedSec;
 
@@ -135,8 +167,12 @@ class EmployeeOnlineTest extends Component
         }
     }
 
-    public function startTest()
+    public function startTest($packageId = null)
     {
+        if ($packageId) {
+            $this->selectedPkg = (int) $packageId;
+        }
+
         $user = Auth::user();
         if (!$user) return;
 
@@ -169,6 +205,11 @@ class EmployeeOnlineTest extends Component
             if ($existingAttempt) {
                 $this->attempt = $existingAttempt;
                 $this->attemptId = $existingAttempt->id;
+                $this->selectedPkg = $existingAttempt->package_id ?: $this->selectedPkg;
+                $this->violationsCount = (int) ($existingAttempt->violations_count ?? 0);
+                $this->violationLogs = is_array($existingAttempt->violation_logs)
+                    ? $existingAttempt->violation_logs
+                    : (json_decode($existingAttempt->violation_logs ?? '[]', true) ?: []);
 
                 if (in_array($existingAttempt->status, ['completed', 'passed', 'failed'])) {
                     $this->testState = 'completed';
@@ -184,7 +225,7 @@ class EmployeeOnlineTest extends Component
                         'test_date'          => $this->testDate,
                     ]);
 
-                    $durationSec = ($this->test->duration_minutes ?: 60) * 60;
+                    $durationSec = ($existingAttempt->duration_minutes ?: ($this->test->duration_minutes ?: 60)) * 60;
                     $elapsedSec = Carbon::parse($existingAttempt->started_at)->diffInSeconds(now());
                     $remaining = $durationSec - $elapsedSec;
 
@@ -195,6 +236,7 @@ class EmployeeOnlineTest extends Component
                     } else {
                         $this->timeRemainingSeconds = (int) $remaining;
                         $this->testState = 'taking';
+                        $this->dispatch('test-started', ['remaining' => $this->timeRemainingSeconds]);
                     }
 
                     DB::commit();
@@ -210,13 +252,47 @@ class EmployeeOnlineTest extends Component
                 ->whereDoesntHave('answers')
                 ->delete();
 
-            $this->loadQuestionsAndAnswers();
+            // Siapkan butir soal untuk attempt baru ini
+            $pool = $this->test->questions()->with('options')->get();
+            if ($pool->isEmpty()) {
+                $pool = QuestionBank::with('options')
+                    ->where('category_id', $this->test->category_id)
+                    ->get();
+            }
 
-            if (empty($this->questions)) {
+            if ($pool->isEmpty()) {
                 DB::rollBack();
                 session()->flash('error', 'Paket ujian belum memiliki butir soal yang tersedia. Silakan hubungi tim admin / HR.');
                 return;
             }
+
+            // Pengacakan atau pengurutan awal
+            if ($this->test->is_random) {
+                $pool = $pool->shuffle();
+            } else {
+                $pool = $pool->sortBy(function ($q) {
+                    return $q->pivot?->order_number ?? ($q->metadata['number'] ?? $q->id);
+                })->values();
+            }
+
+            // Tentukan jumlah soal dan durasi berdasarkan paket yang dipilih (FAT) atau pengaturan standar ujian
+            $isFat = $this->isFatTest();
+            $packages = $this->getPackageDefinitions();
+            $pkg = $packages[$this->selectedPkg] ?? $packages[1];
+
+            if ($isFat) {
+                $targetCount = min($pkg['questions'], $pool->count());
+                $durationMinutes = (int) $pkg['duration'];
+                $selectedQuestions = $pool->take($targetCount);
+                $packageId = $pkg['id'];
+            } else {
+                $targetCount = $this->test->total_questions > 0 ? min($this->test->total_questions, $pool->count()) : $pool->count();
+                $durationMinutes = (int) ($this->test->duration_minutes ?: 60);
+                $selectedQuestions = $pool->take($targetCount);
+                $packageId = null;
+            }
+
+            $questionIds = $selectedQuestions->pluck('id')->values()->all();
 
             $attempt = TestAttempt::create([
                 'user_id'            => $user->id,
@@ -226,14 +302,37 @@ class EmployeeOnlineTest extends Component
                 'participant_gender' => $this->participantGender,
                 'test_date'          => $this->testDate,
                 'test_id'            => $this->test->id,
+                'package_id'         => $packageId,
+                'duration_minutes'   => $durationMinutes,
+                'question_ids'       => $questionIds,
                 'started_at'         => now(),
                 'status'             => 'in_progress',
             ]);
 
             $this->attempt = $attempt;
             $this->attemptId = $attempt->id;
-            $this->timeRemainingSeconds = ($this->test->duration_minutes ?: 60) * 60;
+            $this->questions = $selectedQuestions->map(function ($q) {
+                return [
+                    'id' => $q->id,
+                    'question' => $q->question_text ?? ($q->question ?? ''),
+                    'question_text' => $q->question_text ?? ($q->question ?? ''),
+                    'question_type' => $q->question_type,
+                    'points' => $q->points ?? 1,
+                    'image_path' => $q->image_path ?? null,
+                    'options' => $q->options->map(function ($opt) {
+                        return [
+                            'id' => $opt->id,
+                            'option_text' => $opt->option_text,
+                            'is_correct' => $opt->is_correct ?? false,
+                        ];
+                    })->toArray(),
+                ];
+            })->values()->toArray();
+
+            $this->timeRemainingSeconds = $durationMinutes * 60;
             $this->testState = 'taking';
+
+            $this->dispatch('test-started', ['remaining' => $this->timeRemainingSeconds]);
 
             DB::commit();
         } catch (\Exception $e) {
@@ -244,23 +343,48 @@ class EmployeeOnlineTest extends Component
 
     public function loadQuestionsAndAnswers()
     {
-        $linkedQuestions = $this->test->questions()->with('options')->get();
+        // 1. Jika attempt sudah ada dan memiliki question_ids, muat hanya soal-soal tersebut sesuai urutan tersimpan
+        if ($this->attempt && !empty($this->attempt->question_ids)) {
+            $qIds = (array) $this->attempt->question_ids;
+            $questionsMap = QuestionBank::with('options')
+                ->whereIn('id', $qIds)
+                ->get()
+                ->keyBy('id');
 
-        if ($linkedQuestions->isEmpty()) {
-            $query = QuestionBank::with('options')
-                ->where('category_id', $this->test->category_id);
+            $ordered = collect();
+            foreach ($qIds as $qid) {
+                if (isset($questionsMap[$qid])) {
+                    $ordered->push($questionsMap[$qid]);
+                }
+            }
+            $linkedQuestions = $ordered;
+        } else {
+            $linkedQuestions = $this->test->questions()->with('options')->get();
+
+            if ($linkedQuestions->isEmpty()) {
+                $query = QuestionBank::with('options')
+                    ->where('category_id', $this->test->category_id);
+
+                if ($this->test->is_random) {
+                    $query->inRandomOrder();
+                } else {
+                    $query->orderBy('id', 'asc');
+                }
+
+                if ($this->test->total_questions > 0) {
+                    $query->take($this->test->total_questions);
+                }
+
+                $linkedQuestions = $query->get();
+            }
 
             if ($this->test->is_random) {
-                $query->inRandomOrder();
+                $linkedQuestions = $linkedQuestions->shuffle();
             } else {
-                $query->orderBy('id', 'asc');
+                $linkedQuestions = $linkedQuestions->sortBy(function ($q) {
+                    return $q->pivot?->order_number ?? ($q->metadata['number'] ?? $q->id);
+                })->values();
             }
-
-            if ($this->test->total_questions > 0) {
-                $query->take($this->test->total_questions);
-            }
-
-            $linkedQuestions = $query->get();
         }
 
         $isPapi = ($this->test->category && str_contains(strtolower($this->test->category->name), 'papi'))
@@ -281,12 +405,8 @@ class EmployeeOnlineTest extends Component
             $linkedQuestions = $linkedQuestions->sortBy(function ($q) {
                 return $q->metadata['number'] ?? $q->id;
             })->values();
-        } elseif ($this->test->is_random) {
-            $linkedQuestions = $linkedQuestions->shuffle();
         } else {
-            $linkedQuestions = $linkedQuestions->sortBy(function ($q) {
-                return $q->pivot?->order_number ?? ($q->metadata['number'] ?? $q->id);
-            })->values();
+            $this->questionsPerPage = 1;
         }
 
         $this->questions = $linkedQuestions->map(function ($q) {
@@ -345,29 +465,142 @@ class EmployeeOnlineTest extends Component
         }
     }
 
-    public function selectQuestion($index)
+    public function selectQuestion($index, $currentQuestionId = null, $currentSelectedOpt = null)
     {
+        if (function_exists('store')) {
+            store($this)->set('skipRender', false);
+        }
+
+        if ($currentQuestionId && $currentSelectedOpt) {
+            if (!isset($this->answers[$currentQuestionId]) || $this->answers[$currentQuestionId] != $currentSelectedOpt) {
+                $question = collect($this->questions)->firstWhere('id', $currentQuestionId);
+                $isMc = $question && in_array($question['question_type'] ?? '', ['multiple_choice', 'papi_kostick']);
+
+                if ($isMc) {
+                    $this->saveAnswer($currentQuestionId, $currentSelectedOpt);
+                }
+            }
+        }
+
         if (isset($this->questions[$index])) {
             $this->currentQuestionIndex = $index;
             // Pastikan halaman mengikuti soal yang dipilih
-            $this->currentPage = (int) floor($index / $this->questionsPerPage);
+            $this->currentPage = (int) floor($index / max(1, $this->questionsPerPage));
         }
     }
 
-    public function nextQuestion()
+    public function nextQuestion($currentQuestionId = null, $currentSelectedOpt = null)
     {
-        $totalPages = (int) ceil(count($this->questions) / $this->questionsPerPage);
-        if ($this->currentPage < $totalPages - 1) {
-            $this->currentPage++;
-            $this->currentQuestionIndex = $this->currentPage * $this->questionsPerPage;
+        if (function_exists('store')) {
+            store($this)->set('skipRender', false);
+        }
+
+        if ($currentQuestionId && $currentSelectedOpt) {
+            if (!isset($this->answers[$currentQuestionId]) || $this->answers[$currentQuestionId] != $currentSelectedOpt) {
+                $question = collect($this->questions)->firstWhere('id', $currentQuestionId);
+                $isMc = $question && in_array($question['question_type'] ?? '', ['multiple_choice', 'papi_kostick']);
+
+                if ($isMc) {
+                    $this->saveAnswer($currentQuestionId, $currentSelectedOpt);
+                }
+            }
+        }
+
+        if ($this->questionsPerPage <= 1) {
+            if ($this->currentQuestionIndex < count($this->questions) - 1) {
+                $this->currentQuestionIndex++;
+                $this->currentPage = $this->currentQuestionIndex;
+            }
+        } else {
+            $totalPages = (int) ceil(count($this->questions) / $this->questionsPerPage);
+            if ($this->currentPage < $totalPages - 1) {
+                $this->currentPage++;
+                $this->currentQuestionIndex = $this->currentPage * $this->questionsPerPage;
+            } elseif ($this->currentQuestionIndex < count($this->questions) - 1) {
+                $this->currentQuestionIndex++;
+            }
         }
     }
 
-    public function prevQuestion()
+    public function prevQuestion($currentQuestionId = null, $currentSelectedOpt = null)
     {
-        if ($this->currentPage > 0) {
-            $this->currentPage--;
-            $this->currentQuestionIndex = $this->currentPage * $this->questionsPerPage;
+        if (function_exists('store')) {
+            store($this)->set('skipRender', false);
+        }
+
+        if ($currentQuestionId && $currentSelectedOpt) {
+            if (!isset($this->answers[$currentQuestionId]) || $this->answers[$currentQuestionId] != $currentSelectedOpt) {
+                $question = collect($this->questions)->firstWhere('id', $currentQuestionId);
+                $isMc = $question && in_array($question['question_type'] ?? '', ['multiple_choice', 'papi_kostick']);
+
+                if ($isMc) {
+                    $this->saveAnswer($currentQuestionId, $currentSelectedOpt);
+                }
+            }
+        }
+
+        if ($this->questionsPerPage <= 1) {
+            if ($this->currentQuestionIndex > 0) {
+                $this->currentQuestionIndex--;
+                $this->currentPage = $this->currentQuestionIndex;
+            }
+        } else {
+            if ($this->currentPage > 0) {
+                $this->currentPage--;
+                $this->currentQuestionIndex = $this->currentPage * $this->questionsPerPage;
+            } elseif ($this->currentQuestionIndex > 0) {
+                $this->currentQuestionIndex--;
+            }
+        }
+    }
+
+    /**
+     * Simpan pilihan ganda / PAPI di background tanpa re-render template penuh agar delay cepat.
+     */
+    public function saveChoiceAnswer($questionId, $optionId)
+    {
+        $this->saveAnswer($questionId, $optionId);
+        $this->skipRender();
+    }
+
+    /**
+     * Simpan pilihan DISC di background tanpa re-render template penuh agar delay cepat.
+     */
+    public function saveDiscAnswer($questionId, $optionId, $discType)
+    {
+        $this->saveAnswer($questionId, $optionId, null, $discType);
+        $this->skipRender();
+    }
+
+    /**
+     * Catat pelanggaran pengawasan sesi ujian ke database dan memory.
+     */
+    public function recordViolation($reason = '', $clientCount = null)
+    {
+        if ($clientCount !== null && (int)$clientCount > $this->violationsCount) {
+            $this->violationsCount = (int)$clientCount;
+        } else {
+            $this->violationsCount++;
+        }
+
+        $log = [
+            'violation' => $this->violationsCount,
+            'reason'    => $reason ?: 'Keluar dari mode layar penuh / berpindah jendela',
+            'time'      => now()->toIso8601String(),
+        ];
+        $this->violationLogs[] = $log;
+
+        if ($this->attemptId) {
+            TestAttempt::where('id', $this->attemptId)->update([
+                'violations_count' => $this->violationsCount,
+                'violation_logs'   => json_encode($this->violationLogs),
+            ]);
+        }
+
+        if ($this->violationsCount >= 3) {
+            $this->finishTest(true, null, null, $this->violationsCount);
+        } else {
+            $this->skipRender();
         }
     }
 
@@ -699,9 +932,70 @@ class EmployeeOnlineTest extends Component
         return $unanswered;
     }
 
-    public function finishTest($isAuto = false)
+    public function openFinishModal($currentQuestionId = null, $currentSelectedOpt = null)
     {
+        if (function_exists('store')) {
+            store($this)->set('skipRender', false);
+        }
+
+        if ($currentQuestionId && $currentSelectedOpt) {
+            $this->saveAnswer($currentQuestionId, $currentSelectedOpt);
+        }
+
+        foreach ($this->questions as $q) {
+            if ($q['question_type'] === 'essay' && isset($this->answers[$q['id']])) {
+                $this->saveAnswer($q['id'], null, $this->answers[$q['id']]);
+            }
+        }
+
+        if ($this->attemptId) {
+            $dbAnswers = TestAnswer::where('attempt_id', $this->attemptId)->get();
+            foreach ($dbAnswers as $ans) {
+                if ($ans->answer_type) {
+                    $this->answers[$ans->question_id][$ans->answer_type] = $ans->option_id;
+                } elseif ($ans->option_id) {
+                    $this->answers[$ans->question_id] = $ans->option_id;
+                } elseif ($ans->essay_answer) {
+                    $this->answers[$ans->question_id] = $ans->essay_answer;
+                }
+            }
+        }
+
+        $this->showConfirmModal = true;
+        $this->dispatch('open-confirm-modal');
+    }
+
+    public function closeFinishModal()
+    {
+        $this->showConfirmModal = false;
+        $this->dispatch('close-confirm-modal');
+    }
+
+    public function goToFirstUnanswered()
+    {
+        $this->showConfirmModal = false;
+        $unanswered = $this->getUnansweredQuestions();
+        if (!empty($unanswered)) {
+            $this->currentQuestionIndex = $unanswered[0]['index'];
+            $this->currentPage = (int) floor($this->currentQuestionIndex / max(1, $this->questionsPerPage));
+        }
+    }
+
+    public function finishTest($isAuto = false, $currentQuestionId = null, $currentSelectedOpt = null, $violationsCount = null)
+    {
+        if (function_exists('store')) {
+            store($this)->set('skipRender', false);
+        }
+
         if (!$this->attemptId) return;
+
+        if ($violationsCount !== null && (int)$violationsCount > $this->violationsCount) {
+            $this->violationsCount = (int)$violationsCount;
+        }
+
+        if ($currentQuestionId && $currentSelectedOpt) {
+            $this->saveAnswer($currentQuestionId, $currentSelectedOpt);
+        }
 
         // Pastikan simpan jawaban essay yang sedang aktif
         foreach ($this->questions as $q) {
@@ -710,7 +1004,11 @@ class EmployeeOnlineTest extends Component
             }
         }
 
-        if (!$isAuto) {
+        $isDisc = collect($this->questions)->contains('question_type', 'disc');
+        $isPapi = collect($this->questions)->contains('question_type', 'papi_kostick');
+        $isPsychometric = $isDisc || $isPapi;
+
+        if (!$isAuto && $isPsychometric) {
             $unanswered = $this->getUnansweredQuestions();
             if (!empty($unanswered)) {
                 $this->currentQuestionIndex = $unanswered[0]['index'];
@@ -726,10 +1024,9 @@ class EmployeeOnlineTest extends Component
                     $detailStr .= ' ...dan ' . ($count - 5) . ' butir lainnya';
                 }
 
-                $isDisc = collect($this->questions)->contains('question_type', 'disc');
                 $errorMessage = $isDisc
                     ? "Tes DISC belum dapat diselesaikan karena masih ada {$count} butir soal yang belum lengkap. Setiap nomor wajib memiliki 1 pilihan P (Paling) dan 1 pilihan K (Kurang). Rincian: [{$detailStr}]."
-                    : "Ujian belum dapat diselesaikan karena masih ada {$count} butir soal yang belum dijawab. Rincian: [{$detailStr}].";
+                    : "Tes PAPI Kostick belum dapat diselesaikan karena masih ada {$count} butir soal yang belum dipilih. Rincian: [{$detailStr}].";
 
                 session()->flash('test_error', $errorMessage);
                 return;
@@ -737,6 +1034,14 @@ class EmployeeOnlineTest extends Component
         }
 
         $attempt = TestAttempt::with(['answers.question'])->findOrFail($this->attemptId);
+
+        if (in_array($attempt->status, ['completed', 'passed', 'failed'])) {
+            $this->showConfirmModal = false;
+            $this->attempt = TestAttempt::with(['discTestResult.discProfile', 'papiTestResult'])->find($attempt->id) ?? $attempt;
+            $this->testState = 'completed';
+            $this->dispatch('test-completed');
+            return;
+        }
 
         $startedAt = Carbon::parse($attempt->started_at);
         $finishedAt = now();
@@ -774,6 +1079,16 @@ class EmployeeOnlineTest extends Component
 
         $passingScore = (float) $this->test->passing_score;
 
+        // Hitung persentase nilai pilihan ganda berdasarkan butir soal yang diujikan
+        $maxObjectivePoints = collect($this->questions)->where('question_type', 'multiple_choice')->sum(function ($q) {
+            return $q['points'] ?? 1;
+        });
+        if ($maxObjectivePoints <= 0) {
+            $maxObjectivePoints = count($this->questions) ?: 1;
+        }
+
+        $scorePercentage = ($objectiveScore / $maxObjectivePoints) * 100;
+
         if (($hasDisc || $hasPapi) && !$hasEssay && !$hasMultipleChoice) {
             $status = 'completed';
             $totalScore = 100;
@@ -782,42 +1097,58 @@ class EmployeeOnlineTest extends Component
             $totalScore = $objectiveScore;
         } elseif ($passingScore <= 0) {
             $status = 'completed';
-            $totalScore = $objectiveScore;
+            $totalScore = round($scorePercentage, 2);
         } else {
-            $totalScore = $objectiveScore;
-            $status = ($totalScore >= $passingScore) ? 'passed' : 'failed';
+            $totalScore = round($scorePercentage, 2);
+            $status = ($scorePercentage >= $passingScore) ? 'passed' : 'failed';
         }
 
         $attempt->update([
-            'finished_at' => $finishedAt,
-            'duration' => $durationSeconds,
-            'objective_score' => $objectiveScore,
-            'total_score' => $totalScore,
-            'status' => $status,
+            'finished_at'      => $finishedAt,
+            'duration'         => $durationSeconds,
+            'objective_score'  => $objectiveScore,
+            'total_score'      => $totalScore,
+            'status'           => $status,
+            'violations_count' => $this->violationsCount,
+            'violation_logs'   => is_array($this->violationLogs) ? json_encode($this->violationLogs) : $this->violationLogs,
         ]);
 
+        $this->showConfirmModal = false;
         $this->attempt = TestAttempt::with(['discTestResult.discProfile', 'papiTestResult'])->find($attempt->id) ?? $attempt;
         $this->testState = 'completed';
+        $this->dispatch('test-completed');
     }
 
-    public function finishTestAuto()
+    public function finishTestAuto($violationsCount = null)
     {
-        $this->finishTest(true);
+        $this->finishTest(true, null, null, $violationsCount);
     }
 
     public function render()
     {
         $discResult = null;
         $papiResult = null;
-        if ($this->attemptId) {
+        $unansweredQuestions = [];
+
+        // Optimasi: Hanya muat hasil psikometri saat ujian sudah berstatus selesai (completed)
+        if ($this->testState === 'completed' && $this->attemptId) {
             $discResult = DiscTestResult::with('discProfile')->where('test_attempt_id', $this->attemptId)->first();
             $papiResult = PapiTestResult::where('test_attempt_id', $this->attemptId)->first();
         }
 
-        $unansweredQuestions = ($this->testState === 'taking') ? $this->getUnansweredQuestions() : [];
+        // Hitung kelengkapan butir soal secara cepat tanpa query ke database
         $totalQuestions = count($this->questions);
-        $unansweredCount = count($unansweredQuestions);
-        $completedCount = max(0, $totalQuestions - $unansweredCount);
+        $completedCount = 0;
+        foreach ($this->questions as $q) {
+            $qid = $q['id'];
+            if (($q['question_type'] ?? '') === 'disc') {
+                if (!empty($this->answers[$qid]['most']) && !empty($this->answers[$qid]['least'])) {
+                    $completedCount++;
+                }
+            } elseif (isset($this->answers[$qid]) && $this->answers[$qid] !== null && $this->answers[$qid] !== '') {
+                $completedCount++;
+            }
+        }
         $progressPercent = $totalQuestions > 0 ? round(($completedCount / $totalQuestions) * 100) : 0;
 
         $questionsPerPage = $this->questionsPerPage;
@@ -844,6 +1175,8 @@ class EmployeeOnlineTest extends Component
             'progressPercent'      => $progressPercent,
             'timeRemainingSeconds' => $this->timeRemainingSeconds,
             'testState'            => $this->testState,
+            'violationsCount'      => $this->violationsCount,
+            'violationLogs'        => $this->violationLogs,
         ])->layout('layouts.app');
     }
 }

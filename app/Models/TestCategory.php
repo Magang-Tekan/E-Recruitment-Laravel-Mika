@@ -17,6 +17,11 @@ class TestCategory extends Model
         return $this->hasMany(QuestionBank::class, 'category_id');
     }
 
+    public function subCategories(): HasMany
+    {
+        return $this->hasMany(TestSubCategory::class, 'category_id');
+    }
+
     public function tests(): HasMany
     {
         return $this->hasMany(Test::class, 'category_id');

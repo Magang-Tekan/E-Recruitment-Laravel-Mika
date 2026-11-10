@@ -47,6 +47,10 @@
         let name = this.categoriesMap[catId] || '';
         return name.toLowerCase().includes('disc');
     },
+    isFatCategory(catId) {
+        let name = this.categoriesMap[catId] || '';
+        return name.toLowerCase().includes('fat');
+    },
 
     openEditModal(test) {
         let qIds = [];
@@ -61,15 +65,19 @@
             jIds = [test.job_id.toString()];
         }
 
+        let dur = test.duration_minutes ?? 60;
+        let pScore = test.passing_score ?? 60;
+        let tQuestions = test.total_questions ?? (qIds.length || 10);
+
         this.editData = {
             id: test.id,
             target_job_scope: jIds.length > 0 ? 'specific' : 'all',
             job_ids: jIds,
             category_id: test.category_id,
             title: test.title,
-            duration_minutes: test.duration_minutes,
-            passing_score: test.passing_score,
-            total_questions: test.total_questions,
+            duration_minutes: dur,
+            passing_score: pScore,
+            total_questions: tQuestions,
             is_random: Boolean(test.is_random),
             selected_questions: qIds
         };
@@ -557,6 +565,15 @@
                                                 if (kkmInput) kkmInput.value = 0;
                                                 if (totalInput) totalInput.value = 24;
                                             });
+                                        } else if (isFatCategory(createCategoryId)) {
+                                            $nextTick(() => {
+                                                let durInput = document.getElementById('create_duration');
+                                                let kkmInput = document.getElementById('create_passing_score');
+                                                let totalInput = document.getElementById('create_total_questions');
+                                                if (durInput) durInput.value = 240;
+                                                if (kkmInput) kkmInput.value = 61;
+                                                if (totalInput) totalInput.value = 100;
+                                            });
                                         }
                                     "
                                     required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
@@ -590,7 +607,12 @@
                                 <label for="create_duration" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                                     Durasi (Menit) <span class="text-rose-500">*</span>
                                 </label>
-                                <input type="number" name="duration_minutes" id="create_duration" min="1" value="{{ old('duration_minutes', 60) }}" required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <input type="number" name="duration_minutes" id="create_duration" min="1" 
+                                    :value="isFatCategory(createCategoryId) ? 240 : {{ old('duration_minutes', 60) }}" 
+                                    required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <template x-if="isFatCategory(createCategoryId)">
+                                    <p class="mt-1 text-[10px] text-emerald-500 font-semibold">💡 Rekomendasi FAT: 240 Menit (4 Jam)</p>
+                                </template>
                                 @error('duration_minutes')
                                     <p class="mt-1 text-[11px] text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -601,10 +623,13 @@
                                     Nilai KKM (%) <span class="text-rose-500">*</span>
                                 </label>
                                 <input type="number" step="0.01" name="passing_score" id="create_passing_score" min="0" max="100" 
-                                    :value="isDiscCategory(createCategoryId) ? 0 : 75" 
+                                    :value="isFatCategory(createCategoryId) ? 61 : (isDiscCategory(createCategoryId) ? 0 : {{ old('passing_score', 75) }})" 
                                     :readonly="isDiscCategory(createCategoryId)"
-                                    :class="isDiscCategory(createCategoryId) ? 'opacity-60 bg-gray-200 cursor-not-allowed' : ''"
+                                    :class="isDiscCategory(createCategoryId) ? 'opacity-60 bg-gray-200 dark:bg-slate-700/60 cursor-not-allowed font-bold' : ''"
                                     required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <template x-if="isFatCategory(createCategoryId)">
+                                    <p class="mt-1 text-[10px] text-emerald-500 font-semibold">💡 Standar KKM FAT: 61%</p>
+                                </template>
                                 <template x-if="isDiscCategory(createCategoryId)">
                                     <p class="mt-1 text-[10px] text-purple-500 font-semibold">Tanpa KKM (Tes Profil)</p>
                                 </template>
@@ -618,10 +643,13 @@
                                     Jumlah Soal <span class="text-rose-500">*</span>
                                 </label>
                                 <input type="number" name="total_questions" id="create_total_questions" min="1" 
-                                    :value="isDiscCategory(createCategoryId) ? 24 : 10" 
+                                    :value="isFatCategory(createCategoryId) ? 100 : (isDiscCategory(createCategoryId) ? 24 : {{ old('total_questions', 10) }})" 
                                     :readonly="isDiscCategory(createCategoryId)"
-                                    :class="isDiscCategory(createCategoryId) ? 'opacity-60 bg-gray-200 cursor-not-allowed' : ''"
+                                    :class="isDiscCategory(createCategoryId) ? 'opacity-60 bg-gray-200 dark:bg-slate-700/60 cursor-not-allowed font-bold' : ''"
                                     required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <template x-if="isFatCategory(createCategoryId)">
+                                    <p class="mt-1 text-[10px] text-emerald-500 font-semibold">💡 Standar Paket Utama: 100 Soal</p>
+                                </template>
                                 <template x-if="isDiscCategory(createCategoryId)">
                                     <p class="mt-1 text-[10px] text-purple-500 font-semibold">Standar 24 Soal DISC</p>
                                 </template>
@@ -794,7 +822,18 @@
                                 <label for="edit_category_id" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                                     Kategori Soal <span class="text-rose-500">*</span>
                                 </label>
-                                <select name="category_id" id="edit_category_id" x-model="editData.category_id" required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <select name="category_id" id="edit_category_id" x-model="editData.category_id" 
+                                    @change="
+                                        if (isDiscCategory(editData.category_id)) {
+                                            editData.passing_score = 0;
+                                            editData.total_questions = 24;
+                                        } else if (isFatCategory(editData.category_id)) {
+                                            editData.duration_minutes = 240;
+                                            editData.passing_score = 61;
+                                            editData.total_questions = 100;
+                                        }
+                                    "
+                                    required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
                                     <option value="">-- Pilih Kategori Soal --</option>
                                     @foreach ($categories as $cat)
                                         <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -823,7 +862,11 @@
                                 <label for="edit_duration" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                                     Durasi (Menit) <span class="text-rose-500">*</span>
                                 </label>
-                                <input type="number" name="duration_minutes" id="edit_duration" min="1" x-model="editData.duration_minutes" required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <input type="number" name="duration_minutes" id="edit_duration" min="1" x-model="editData.duration_minutes" 
+                                    required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <template x-if="isFatCategory(editData.category_id)">
+                                    <p class="mt-1 text-[10px] text-emerald-500 font-semibold">💡 Standar FAT: 240 Menit (4 Jam)</p>
+                                </template>
                                 @error('duration_minutes')
                                     <p class="mt-1 text-[11px] text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -836,8 +879,11 @@
                                 <input type="number" step="0.01" name="passing_score" id="edit_passing_score" min="0" max="100" 
                                     x-model="editData.passing_score" 
                                     :readonly="isDiscCategory(editData.category_id)"
-                                    :class="isDiscCategory(editData.category_id) ? 'opacity-60 bg-gray-200 cursor-not-allowed' : ''"
+                                    :class="isDiscCategory(editData.category_id) ? 'opacity-60 bg-gray-200 dark:bg-slate-700/60 cursor-not-allowed font-bold' : ''"
                                     required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <template x-if="isFatCategory(editData.category_id)">
+                                    <p class="mt-1 text-[10px] text-emerald-500 font-semibold">💡 Standar FAT: KKM 61% (Min. 61 Benar)</p>
+                                </template>
                                 <template x-if="isDiscCategory(editData.category_id)">
                                     <p class="mt-1 text-[10px] text-purple-500 font-semibold">Tanpa KKM (Tes Profil)</p>
                                 </template>
@@ -853,8 +899,11 @@
                                 <input type="number" name="total_questions" id="edit_total_questions" min="1" 
                                     x-model="editData.total_questions" 
                                     :readonly="isDiscCategory(editData.category_id)"
-                                    :class="isDiscCategory(editData.category_id) ? 'opacity-60 bg-gray-200 cursor-not-allowed' : ''"
+                                    :class="isDiscCategory(editData.category_id) ? 'opacity-60 bg-gray-200 dark:bg-slate-700/60 cursor-not-allowed font-bold' : ''"
                                     required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <template x-if="isFatCategory(editData.category_id)">
+                                    <p class="mt-1 text-[10px] text-emerald-500 font-semibold">💡 Standar Paket Utama: 100 Soal</p>
+                                </template>
                                 <template x-if="isDiscCategory(editData.category_id)">
                                     <p class="mt-1 text-[10px] text-purple-500 font-semibold">Standar 24 Soal DISC</p>
                                 </template>

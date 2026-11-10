@@ -5,6 +5,7 @@ namespace App\Imports;
 use App\Models\QuestionBank;
 use App\Models\QuestionOption;
 use App\Models\TestCategory;
+use App\Models\TestSubCategory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -75,27 +76,45 @@ class QuestionBankImport implements ToCollection, WithHeadingRow
                 if (is_numeric($rawCategory) && in_array((int)$rawCategory, $categoryIds)) {
                     $categoryId = (int)$rawCategory;
                 } else {
-                    $lowerCat = strtolower($rawCategory);
-                    if (isset($categories[$lowerCat])) {
-                        $categoryId = $categories[$lowerCat]->id;
-                    }
+                    $category = TestCategory::firstOrCreate(['name' => $rawCategory ?: 'Umum']);
+                    $categoryId = $category->id;
                 }
 
-                if (!$categoryId) {
-                    $firstCategory = TestCategory::first();
-                    if ($firstCategory) {
-                        $categoryId = $firstCategory->id;
-                    } else {
-                        throw new \Exception("Category '{$rawCategory}' pada baris {$rowNumber} tidak ditemukan dan tidak ada kategori default.");
-                    }
+                $imagePath = trim((string)($row['gambar'] ?? $row['image_path'] ?? $row['lampiran'] ?? '')) ?: null;
+
+                $metadata = [];
+                $subCategoryModel = null;
+                $subCat = trim((string)($row['sub_kategori'] ?? $row['sub_category'] ?? $row['topik'] ?? $row['topic'] ?? ''));
+                if (!empty($subCat)) {
+                    $metadata['sub_category'] = $subCat;
+                    $metadata['topic'] = $subCat;
+                    $subCategoryModel = TestSubCategory::firstOrCreate([
+                        'category_id' => $categoryId,
+                        'name' => $subCat,
+                    ]);
+                }
+                if (!empty($row['pembahasan'] ?? $row['explanation'] ?? '')) {
+                    $metadata['explanation'] = trim($row['pembahasan'] ?? $row['explanation']);
+                }
+                if (!empty($row['referensi'] ?? $row['reference'] ?? '')) {
+                    $metadata['reference'] = trim($row['referensi'] ?? $row['reference']);
+                }
+                $rawDoc = $row['detail_lampiran_dokumen'] ?? $row['detail_dokumen'] ?? null;
+                if (!empty($rawDoc)) {
+                    $metadata['document'] = is_string($rawDoc) ? json_decode($rawDoc, true) : $rawDoc;
+                }
+                if (!empty($row['jenis_lampiran'])) {
+                    $metadata['doc_type'] = trim($row['jenis_lampiran']);
                 }
 
                 $questionBank = QuestionBank::create([
                     'category_id' => $categoryId,
+                    'sub_category_id' => $subCategoryModel?->id,
                     'question' => $questionText,
                     'question_type' => $questionType,
                     'points' => $points,
-                    'image_path' => null,
+                    'image_path' => $imagePath,
+                    'metadata' => !empty($metadata) ? $metadata : null,
                 ]);
 
                 if ($questionType === 'multiple_choice') {
