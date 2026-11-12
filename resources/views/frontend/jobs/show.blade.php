@@ -274,7 +274,7 @@
                     </div>
                 @endif
 
-                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+                <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-5 sm:gap-6">
                     <div class="flex items-start gap-4 min-w-0 flex-1">
                         @if ($job->company?->logo_url)
                             <div
@@ -312,14 +312,14 @@
                                 {{ $job->localized_title }}
                             </h1>
                             <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-sm mt-2">
-                                <span class="text-[#93F514] font-semibold flex items-center gap-1.5 company-badge whitespace-nowrap sm:whitespace-normal">
+                                <span class="text-[#93F514] font-semibold flex items-center gap-1.5 company-badge whitespace-nowrap">
                                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-400 company-icon shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                     </svg>
                                     <span>{{ $job->company?->name ?? __('Perusahaan Mitra') }}</span>
                                 </span>
 
-                                <span class="text-[#93F514] font-semibold flex items-center gap-1.5 department-badge whitespace-nowrap sm:whitespace-normal">
+                                <span class="text-[#93F514] font-semibold flex items-center gap-1.5 department-badge whitespace-nowrap">
                                     <svg class="w-3.5 h-3.5 text-gray-400 dark:text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                     </svg>
@@ -369,7 +369,7 @@
                                 @else
                                     <button type="button" 
                                             @click="handleApplyClick()"
-                                            class="flex-1 md:flex-initial h-11 sm:h-12 px-6 rounded-2xl bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-sm sm:text-base shadow-md shadow-black/30 transition cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98]">
+                                            class="job-apply-btn flex-1 md:flex-initial h-11 sm:h-12 px-6 rounded-2xl bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-sm sm:text-base shadow-md shadow-black/30 transition cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98]">
                                         <svg class="w-4 h-4 text-black shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                                         </svg>
@@ -378,7 +378,7 @@
                                 @endif
                             @else
                                 <a href="{{ route('login') }}"
-                                    class="flex-1 md:flex-initial h-11 sm:h-12 px-6 rounded-2xl bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-sm sm:text-base shadow-md shadow-black/30 transition inline-flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98]">
+                                    class="job-apply-btn flex-1 md:flex-initial h-11 sm:h-12 px-6 rounded-2xl bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-sm sm:text-base shadow-md shadow-black/30 transition inline-flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98]">
                                     <span>{{ __('Masuk & Lamar') }}</span>
                                 </a>
                             @endauth
@@ -879,7 +879,7 @@
                             </button>
                             <button type="submit" 
                                     :disabled="isSubmitting || !statementAgreed"
-                                    class="confirm-submit-btn px-6 py-2.5 rounded-xl bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-xs shadow-md shadow-black/30 transition flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                                    class="confirm-submit-btn px-6 py-2.5 rounded-xl font-extrabold text-xs transition flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                                 <svg x-show="isSubmitting" class="animate-spin w-4 h-4 text-black" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

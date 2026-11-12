@@ -627,21 +627,34 @@
             border-color: #94A3B8 !important;
         }
 
-        /* Ya, Kirim Lamaran Button */
-        html.light-mode .confirm-submit-btn {
-            background-color: #93F514 !important;
-            color: #000000 !important;
-            border: 1px solid #84DC10 !important;
-            box-shadow: 0 4px 14px rgba(147, 245, 20, 0.35) !important;
+        /* Ya, Kirim Lamaran Button: normal senada tombol "Batal", hover Hijau Tua (#2D6B00) */
+        html.light-mode .confirm-submit-btn.confirm-submit-btn {
+            background-color: #F8FAFC !important;
+            color: #475569 !important;
+            border: 1px solid #CBD5E1 !important;
+            box-shadow: none !important;
         }
 
-        html.light-mode .confirm-submit-btn:hover:not(:disabled) {
-            background-color: #82DC0A !important;
-            color: #000000 !important;
-            box-shadow: 0 6px 18px rgba(147, 245, 20, 0.45) !important;
+        html.light-mode .confirm-submit-btn.confirm-submit-btn span,
+        html.light-mode .confirm-submit-btn.confirm-submit-btn svg {
+            color: #475569 !important;
+            stroke: #475569 !important;
         }
 
-        html.light-mode .confirm-submit-btn:disabled {
+        html.light-mode .confirm-submit-btn.confirm-submit-btn:hover:not(:disabled) {
+            background-color: #2D6B00 !important;
+            border-color: #2D6B00 !important;
+            color: #FFFFFF !important;
+            box-shadow: none !important;
+        }
+
+        html.light-mode .confirm-submit-btn.confirm-submit-btn:hover:not(:disabled) span,
+        html.light-mode .confirm-submit-btn.confirm-submit-btn:hover:not(:disabled) svg {
+            color: #FFFFFF !important;
+            stroke: #FFFFFF !important;
+        }
+
+        html.light-mode .confirm-submit-btn.confirm-submit-btn:disabled {
             background-color: #F1F5F9 !important;
             color: #94A3B8 !important;
             border: 1px solid #E2E8F0 !important;
@@ -650,8 +663,34 @@
             cursor: not-allowed !important;
         }
 
-        html.light-mode .confirm-submit-btn:disabled svg {
+        html.light-mode .confirm-submit-btn.confirm-submit-btn:disabled svg {
             color: #94A3B8 !important;
+        }
+
+        /* Ya, Kirim Lamaran Button di Dark Mode: tetap neon #93F514 + teks hitam */
+        html.dark .confirm-submit-btn {
+            background-color: #93F514 !important;
+            color: #000000 !important;
+            border: 1px solid #93F514 !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.30) !important;
+        }
+
+        html.dark .confirm-submit-btn span,
+        html.dark .confirm-submit-btn svg {
+            color: #000000 !important;
+            stroke: #000000 !important;
+        }
+
+        html.dark .confirm-submit-btn:hover:not(:disabled) {
+            background-color: #82DC0A !important;
+            border-color: #82DC0A !important;
+            color: #000000 !important;
+        }
+
+        html.dark .confirm-submit-btn:hover:not(:disabled) span,
+        html.dark .confirm-submit-btn:hover:not(:disabled) svg {
+            color: #000000 !important;
+            stroke: #000000 !important;
         }
 
         /* Incomplete Modal Card */
@@ -1783,6 +1822,43 @@
         html.light-mode .job-card-item a.job-detail-btn:hover,
         html.light-mode .company-job-item a.job-detail-btn:hover,
         html.light-mode .job-card-item a.bg-\[\#93F514\]:hover {
+            background-color: #235400 !important;
+            border-color: #235400 !important;
+            color: #FFFFFF !important;
+            box-shadow: none !important;
+            filter: none !important;
+        }
+
+        /* Tombol "Lamar Posisi Ini" / "Masuk & Lamar" di halaman detail lowongan: Hijau Tua (#2D6B00) senada dengan "Detail & Lamar" */
+        html.light-mode .job-apply-btn,
+        html.light-mode button.job-apply-btn,
+        html.light-mode a.job-apply-btn {
+            background-color: #2D6B00 !important;
+            color: #FFFFFF !important;
+            border-color: #2D6B00 !important;
+            box-shadow: none !important;
+            filter: none !important;
+            text-shadow: none !important;
+        }
+
+        html.light-mode .job-apply-btn span,
+        html.light-mode button.job-apply-btn span,
+        html.light-mode a.job-apply-btn span {
+            color: #FFFFFF !important;
+            text-shadow: none !important;
+        }
+
+        html.light-mode .job-apply-btn svg,
+        html.light-mode button.job-apply-btn svg,
+        html.light-mode a.job-apply-btn svg {
+            color: #FFFFFF !important;
+            stroke: #FFFFFF !important;
+            filter: none !important;
+        }
+
+        html.light-mode .job-apply-btn:hover,
+        html.light-mode button.job-apply-btn:hover,
+        html.light-mode a.job-apply-btn:hover {
             background-color: #235400 !important;
             border-color: #235400 !important;
             color: #FFFFFF !important;
