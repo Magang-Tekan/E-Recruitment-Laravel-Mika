@@ -10,6 +10,7 @@ use App\Models\TestAnswer;
 use App\Models\QuestionBank;
 use App\Models\DiscTestResult;
 use App\Models\PapiTestResult;
+use App\Services\AspectEvaluationService;
 use App\Services\DiscCalculatorService;
 use App\Services\PapiKostickCalculatorService;
 use Illuminate\Support\Facades\Auth;
@@ -60,6 +61,68 @@ class EmployeeOnlineTest extends Component
         ];
     }
 
+    /**
+     * Soal bergradasi (SJT) memiliki minimal satu opsi berbobot 1.
+     * Soal teknis biner hanya memiliki bobot 2 dan 0.
+     */
+    protected function hasGradedWeights($question): bool
+    {
+        $weights = $question->metadata['option_weights'] ?? null;
+        if (is_string($weights)) {
+            $weights = json_decode($weights, true);
+        }
+
+        if (!is_array($weights)) {
+            return false;
+        }
+
+        foreach ($weights as $weight) {
+            if (is_numeric($weight) && (float) $weight === 1.0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Ambil soal secara proporsional dari kelompok teknis dan situasional.
+     * Tanpa ini, tes 60 soal dari bank 144 soal hanya mengambil 60 soal teknis pertama.
+     */
+    protected function selectQuestionsForAttempt($pool, int $targetCount)
+    {
+        if ($targetCount >= $pool->count()) {
+            return $pool->values();
+        }
+
+        $graded = $pool->filter(fn ($q) => $this->hasGradedWeights($q))->values();
+        $binary = $pool->reject(fn ($q) => $this->hasGradedWeights($q))->values();
+
+        // Bank tanpa soal bergradasi: pertahankan perilaku lama (ambil N soal pertama).
+        if ($graded->isEmpty() || $binary->isEmpty()) {
+            return $pool->take($targetCount)->values();
+        }
+
+        $gradedCount = (int) round($targetCount * ($graded->count() / $pool->count()));
+        $gradedCount = max(1, min($gradedCount, $graded->count(), $targetCount - 1));
+        $binaryCount = $targetCount - $gradedCount;
+
+        if ($binaryCount > $binary->count()) {
+            $binaryCount = $binary->count();
+            $gradedCount = $targetCount - $binaryCount;
+        }
+
+        $selected = $binary->take($binaryCount)->concat($graded->take($gradedCount));
+
+        if ($this->test->is_random) {
+            return $selected->shuffle()->values();
+        }
+
+        return $selected->sortBy(function ($q) {
+            return $q->pivot?->order_number ?? ($q->metadata['number'] ?? $q->id);
+        })->values();
+    }
+
     // Jawaban user:
     // Pilihan ganda: [ question_id => option_id ]
     // Essay: [ question_id => 'teks jawaban' ]
@@ -86,6 +149,8 @@ class EmployeeOnlineTest extends Component
     // Proctoring & Pelanggaran Layar Penuh (Fullscreen Guard)
     public $violationsCount = 0;
     public $violationLogs = [];
+
+    // Pengaman navigasi (anti klik ganda yang membuat soal melompat)
 
     public function mount($testId)
     {
@@ -283,12 +348,12 @@ class EmployeeOnlineTest extends Component
             if ($isFat) {
                 $targetCount = min($pkg['questions'], $pool->count());
                 $durationMinutes = (int) $pkg['duration'];
-                $selectedQuestions = $pool->take($targetCount);
+                $selectedQuestions = $this->selectQuestionsForAttempt($pool, $targetCount);
                 $packageId = $pkg['id'];
             } else {
                 $targetCount = $this->test->total_questions > 0 ? min($this->test->total_questions, $pool->count()) : $pool->count();
                 $durationMinutes = (int) ($this->test->duration_minutes ?: 60);
-                $selectedQuestions = $pool->take($targetCount);
+                $selectedQuestions = $this->selectQuestionsForAttempt($pool, $targetCount);
                 $packageId = null;
             }
 
@@ -318,6 +383,7 @@ class EmployeeOnlineTest extends Component
                     'question_text' => $q->question_text ?? ($q->question ?? ''),
                     'question_type' => $q->question_type,
                     'points' => $q->points ?? 1,
+                    'metadata' => $q->metadata,
                     'image_path' => $q->image_path ?? null,
                     'options' => $q->options->map(function ($opt) {
                         return [
@@ -416,6 +482,7 @@ class EmployeeOnlineTest extends Component
                 'question_text' => $q->question_text ?? ($q->question ?? ''),
                 'question_type' => $q->question_type,
                 'points' => $q->points ?? 1,
+                'metadata' => $q->metadata,
                 'image_path' => $q->image_path ?? null,
                 'options' => $q->options->map(function ($opt) {
                     return [
@@ -489,8 +556,36 @@ class EmployeeOnlineTest extends Component
         }
     }
 
+    /**
+     * Selaraskan indeks server ke soal yang benar-benar sedang tampil di browser.
+     * Bila snapshot Livewire sempat tertimpa respons request yang datang terlambat,
+     * satu klik pengguna tetap dihitung satu langkah dari soal yang ia lihat
+     * (bukan melompati soal). Aman dipanggil saat soal sudah sinkron: langsung return.
+     */
+    protected function alignToClientQuestion($questionId = null): void
+    {
+        if (!$questionId) {
+            return;
+        }
+
+        $currentId = $this->questions[$this->currentQuestionIndex]['id'] ?? null;
+        if ($currentId == $questionId) {
+            return;
+        }
+
+        $index = array_search($questionId, array_column($this->questions, 'id'));
+        if ($index === false) {
+            return;
+        }
+
+        $this->currentQuestionIndex = (int) $index;
+        $this->currentPage = (int) floor($index / max(1, $this->questionsPerPage));
+    }
+
     public function nextQuestion($currentQuestionId = null, $currentSelectedOpt = null)
     {
+        $this->alignToClientQuestion($currentQuestionId);
+
         if (function_exists('store')) {
             store($this)->set('skipRender', false);
         }
@@ -524,6 +619,8 @@ class EmployeeOnlineTest extends Component
 
     public function prevQuestion($currentQuestionId = null, $currentSelectedOpt = null)
     {
+        $this->alignToClientQuestion($currentQuestionId);
+
         if (function_exists('store')) {
             store($this)->set('skipRender', false);
         }
@@ -604,6 +701,38 @@ class EmployeeOnlineTest extends Component
         }
     }
 
+    /**
+     * Tentukan poin jawaban pilihan ganda.
+     * Jika soal punya metadata.option_weights (soal bergradasi/SJT), pakai bobot opsi terpilih.
+     * Selain itu, gunakan aturan lama (benar = poin penuh, salah = 0) agar tes lama tidak berubah.
+     */
+    protected function resolveChoiceScore(array $question, $optionId): float
+    {
+        if (($question['question_type'] ?? null) === 'multiple_choice') {
+            $weights = $question['metadata']['option_weights'] ?? null;
+            if (is_string($weights)) {
+                $weights = json_decode($weights, true);
+            }
+
+            if (is_array($weights) && !empty($weights)) {
+                $optIndex = collect($question['options'] ?? [])->search(
+                    fn ($opt) => (string) ($opt['id'] ?? '') === (string) $optionId
+                );
+
+                if ($optIndex !== false && isset($weights[$optIndex]) && is_numeric($weights[$optIndex])) {
+                    return (float) $weights[$optIndex];
+                }
+
+                return 0.0;
+            }
+        }
+
+        $opt = collect($question['options'] ?? [])->firstWhere('id', $optionId);
+        $isCorrect = $opt && !empty($opt['is_correct']);
+
+        return $isCorrect ? (float) ($question['points'] ?: 1) : 0.0;
+    }
+
     public function saveAnswer($questionId, $optionId = null, $essayText = null, $discType = null)
     {
         if (!$this->attemptId) return;
@@ -642,12 +771,6 @@ class EmployeeOnlineTest extends Component
         } elseif ($question['question_type'] === 'multiple_choice' || $question['question_type'] === 'papi_kostick') {
             $this->answers[$questionId] = $optionId;
 
-            $isCorrect = false;
-            $opt = collect($question['options'])->firstWhere('id', $optionId);
-            if ($opt && !empty($opt['is_correct'])) {
-                $isCorrect = true;
-            }
-
             TestAnswer::updateOrCreate(
                 [
                     'attempt_id' => $this->attemptId,
@@ -656,7 +779,7 @@ class EmployeeOnlineTest extends Component
                 [
                     'option_id' => $optionId,
                     'essay_answer' => null,
-                    'score' => $isCorrect ? ($question['points'] ?: 1) : 0,
+                    'score' => $this->resolveChoiceScore($question, $optionId),
                 ]
             );
         } elseif ($question['question_type'] === 'essay') {
@@ -1101,6 +1224,11 @@ class EmployeeOnlineTest extends Component
         } else {
             $totalScore = round($scorePercentage, 2);
             $status = ($scorePercentage >= $passingScore) ? 'passed' : 'failed';
+        }
+
+        // Dual-Gate Passing Rule: wajib lolos KKM total DAN ambang Etika & Integritas (70).
+        if ($status === 'passed' && AspectEvaluationService::calculateAspects($attempt)['failed_ethics']) {
+            $status = 'failed';
         }
 
         $attempt->update([

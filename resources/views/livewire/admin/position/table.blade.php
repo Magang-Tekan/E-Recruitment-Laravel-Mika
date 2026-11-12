@@ -5,8 +5,11 @@
     isSubmittingCreate: false,
     isSubmittingEdit: false,
     isSubmittingDelete: false,
+    createCompanyId: '{{ old('company_id', optional($allDepartments->firstWhere('id', old('department_id')))->company_id ?? '') }}',
+    createDepartmentId: '{{ old('department_id', '') }}',
     editData: {
         id: '{{ old('id', '') }}',
+        company_id: '{{ old('company_id', optional($allDepartments->firstWhere('id', old('department_id')))->company_id ?? '') }}',
         department_id: '{{ old('department_id', '') }}',
         name: '{{ old('name', '') }}',
         description: '{{ old('description', '') }}'
@@ -15,10 +18,23 @@
         id: '',
         name: ''
     },
+    onCompanyChange(isEdit = false) {
+        if (!isEdit) {
+            this.createDepartmentId = '';
+        } else {
+            this.editData.department_id = '';
+        }
+    },
     openEditModal(pos) {
+        const compId = (pos.department && pos.department.company_id) 
+            ? String(pos.department.company_id) 
+            : (pos.company_id ? String(pos.company_id) : '');
+        const deptId = pos.department_id ? String(pos.department_id) : '';
+
         this.editData = {
             id: pos.id,
-            department_id: pos.department_id || '',
+            company_id: compId,
+            department_id: deptId,
             name: pos.name || '',
             description: pos.description || ''
         };
@@ -244,6 +260,7 @@
                                 <div class="flex items-center justify-end gap-2">
                                     <button @click="openEditModal({{ json_encode([
                                         'id' => $position->id,
+                                        'company_id' => $position->department?->company_id,
                                         'department_id' => $position->department_id,
                                         'name' => $position->name,
                                         'description' => $position->description
@@ -327,16 +344,46 @@
                     <form action="{{ route('admin.position.store') }}" method="POST" @submit="isSubmittingCreate = true" class="mt-4 space-y-4">
                         @csrf
 
-                        <!-- Department Selection -->
+                        <!-- Company Selection -->
+                        <div>
+                            <label for="create_company_id" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                Perusahaan <span class="text-rose-500">*</span>
+                            </label>
+                            <select name="company_id" 
+                                    id="create_company_id" 
+                                    x-model="createCompanyId" 
+                                    @change="onCompanyChange(false)" 
+                                    required 
+                                    class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition cursor-pointer">
+                                <option value="">-- Pilih Perusahaan --</option>
+                                @foreach ($companies as $comp)
+                                    <option value="{{ $comp->id }}">{{ $comp->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('company_id')
+                                <p class="mt-1 text-[11px] text-rose-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Department Selection (Cascading by Company) -->
                         <div>
                             <label for="create_department_id" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                                 Departemen / Divisi <span class="text-rose-500">*</span>
                             </label>
-                            <select name="department_id" id="create_department_id" required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
-                                <option value="">-- Pilih Departemen --</option>
-                                @foreach ($departments as $dept)
-                                    <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>
-                                        {{ $dept->name }} {{ $dept->company ? '('.$dept->company->name.')' : '' }}
+                            <select name="department_id" 
+                                    id="create_department_id" 
+                                    x-model="createDepartmentId" 
+                                    required 
+                                    :disabled="!createCompanyId" 
+                                    class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                                <option value="" x-text="!createCompanyId ? '-- Pilih Perusahaan Terlebih Dahulu --' : '-- Pilih Departemen --'">-- Pilih Departemen --</option>
+                                @foreach ($allDepartments as $dept)
+                                    <option value="{{ $dept->id }}" 
+                                            data-company-id="{{ $dept->company_id }}"
+                                            x-show="createCompanyId == '{{ $dept->company_id }}'"
+                                            :hidden="createCompanyId != '{{ $dept->company_id }}'"
+                                            :disabled="createCompanyId != '{{ $dept->company_id }}'">
+                                        {{ $dept->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -413,15 +460,47 @@
                         <input type="hidden" name="is_edit" value="1">
                         <input type="hidden" name="id" :value="editData.id">
 
-                        <!-- Department Selection -->
+                        <!-- Company Selection -->
+                        <div>
+                            <label for="edit_company_id" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                Perusahaan <span class="text-rose-500">*</span>
+                            </label>
+                            <select name="company_id" 
+                                    id="edit_company_id" 
+                                    x-model="editData.company_id" 
+                                    @change="onCompanyChange(true)" 
+                                    required 
+                                    class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition cursor-pointer">
+                                <option value="">-- Pilih Perusahaan --</option>
+                                @foreach ($companies as $comp)
+                                    <option value="{{ $comp->id }}">{{ $comp->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('company_id')
+                                <p class="mt-1 text-[11px] text-rose-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Department Selection (Cascading by Company) -->
                         <div>
                             <label for="edit_department_id" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                                 Departemen / Divisi <span class="text-rose-500">*</span>
                             </label>
-                            <select name="department_id" id="edit_department_id" x-model="editData.department_id" required class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
-                                <option value="">-- Pilih Departemen --</option>
-                                @foreach ($departments as $dept)
-                                    <option value="{{ $dept->id }}">{{ $dept->name }} {{ $dept->company ? '('.$dept->company->name.')' : '' }}</option>
+                            <select name="department_id" 
+                                    id="edit_department_id" 
+                                    x-model="editData.department_id" 
+                                    required 
+                                    :disabled="!editData.company_id" 
+                                    class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                                <option value="" x-text="!editData.company_id ? '-- Pilih Perusahaan Terlebih Dahulu --' : '-- Pilih Departemen --'">-- Pilih Departemen --</option>
+                                @foreach ($allDepartments as $dept)
+                                    <option value="{{ $dept->id }}" 
+                                            data-company-id="{{ $dept->company_id }}"
+                                            x-show="editData.company_id == '{{ $dept->company_id }}'"
+                                            :hidden="editData.company_id != '{{ $dept->company_id }}'"
+                                            :disabled="editData.company_id != '{{ $dept->company_id }}'">
+                                        {{ $dept->name }}
+                                    </option>
                                 @endforeach
                             </select>
                             @error('department_id')

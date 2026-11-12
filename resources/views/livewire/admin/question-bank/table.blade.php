@@ -76,6 +76,7 @@
         this.detailData = {
             id: q.id,
             category_name: q.category ? q.category.name : '-',
+            sub_category_name: (q.sub_category ? q.sub_category.name : (q.metadata && q.metadata.sub_category ? q.metadata.sub_category : null)),
             question: q.question,
             question_type: q.question_type,
             points: q.points || 1,
@@ -313,12 +314,25 @@
                 </div>
 
                 @if ($search || $categoryId || $type || $usageFilter || $hasImage || $sortBy !== 'latest')
-                    <button type="button" wire:click="resetFilters" class="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-1 cursor-pointer">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        <span>Reset Filter</span>
-                    </button>
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        @if ($this->totalMatchingCount > 0)
+                            <button type="button" 
+                                    wire:click="selectAllMatchingQuestions" 
+                                    class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1 cursor-pointer">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                                <span>Pilih Semua Hasil Filter ({{ $this->totalMatchingCount }})</span>
+                            </button>
+                            <span class="text-gray-300 dark:text-slate-700">•</span>
+                        @endif
+                        <button type="button" wire:click="resetFilters" class="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-1 cursor-pointer">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            <span>Reset Filter</span>
+                        </button>
+                    </div>
                 @endif
             </div>
         </div>
@@ -328,7 +342,7 @@
     <div class="relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
 
         <!-- Livewire Loading Overlay -->
-        <div wire:loading wire:target="search, categoryId, type, usageFilter, hasImage, sortBy, previousPage, nextPage, gotoPage, resetFilters" class="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-10 transition">
+        <div wire:loading wire:target="search, categoryId, type, usageFilter, hasImage, sortBy, previousPage, nextPage, gotoPage, resetFilters, selectAll, selectAllMatchingQuestions, resetSelection, bulkDelete" class="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-10 transition">
             <div class="flex items-center gap-2.5 px-4 py-2.5 bg-slate-900/90 dark:bg-slate-800/90 text-white rounded-xl shadow-xl text-xs font-semibold">
                 <svg class="animate-spin w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -338,11 +352,57 @@
             </div>
         </div>
 
+        <!-- Bulk Selection Action Bar -->
+        @if ($this->selectedCount > 0)
+            <div class="px-6 py-3 bg-indigo-50/90 dark:bg-indigo-950/50 border-b border-indigo-100 dark:border-indigo-900/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition">
+                <div class="flex items-center gap-2.5 text-xs text-indigo-900 dark:text-indigo-200">
+                    <span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-indigo-600 text-white text-[11px] font-bold">
+                        {{ $this->selectedCount }}
+                    </span>
+                    <span class="font-medium">
+                        @if ($selectAllMatching)
+                            Semua <strong>{{ $this->totalMatchingCount }}</strong> butir soal (seluruh hasil filter{{ $this->activeCategoryName ? ' Kategori: ' . $this->activeCategoryName : '' }}) telah dipilih.
+                        @else
+                            <strong>{{ count($selectedQuestions) }}</strong> butir soal pada halaman ini dipilih.
+                            @if ($this->totalMatchingCount > count($selectedQuestions))
+                                <button type="button" 
+                                        wire:click="selectAllMatchingQuestions" 
+                                        class="ml-1 font-bold underline hover:text-indigo-700 dark:hover:text-indigo-100 cursor-pointer">
+                                    Pilih semua {{ $this->totalMatchingCount }} soal yang sesuai filter
+                                </button>
+                            @endif
+                        @endif
+                    </span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" 
+                            wire:click="resetSelection" 
+                            class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-slate-300 hover:text-gray-800 hover:bg-white/70 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer">
+                        Batalkan Pilihan
+                    </button>
+                    <button type="button" 
+                            wire:click="confirmBulkDelete" 
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-lg shadow-xs shadow-rose-600/30 transition cursor-pointer">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span>Hapus Terpilih ({{ $this->selectedCount }})</span>
+                    </button>
+                </div>
+            </div>
+        @endif
+
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
-                        <th class="px-6 py-4 w-12">No</th>
+                        <th class="pl-6 pr-2 py-4 w-10 text-center">
+                            <input type="checkbox" 
+                                   wire:model.live="selectAll" 
+                                   class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-slate-700 dark:bg-slate-800 cursor-pointer"
+                                   title="Pilih semua di halaman ini">
+                        </th>
+                        <th class="px-3 py-4 w-12 text-center">No</th>
                         <th class="px-6 py-4">Pertanyaan</th>
                         <th class="px-6 py-4">Kategori</th>
                         <th class="px-6 py-4">Jenis Soal</th>
@@ -352,8 +412,14 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-slate-800/60 text-gray-700 dark:text-slate-300">
                     @forelse ($questions as $index => $q)
-                        <tr class="hover:bg-gray-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                            <td class="px-6 py-4 font-medium text-gray-500 dark:text-slate-400">
+                        <tr class="hover:bg-gray-50/80 dark:hover:bg-slate-800/40 transition-colors {{ in_array((string)$q->id, $selectedQuestions) ? 'bg-indigo-50/40 dark:bg-indigo-950/20' : '' }}">
+                            <td class="pl-6 pr-2 py-4 text-center">
+                                <input type="checkbox" 
+                                       wire:model.live="selectedQuestions" 
+                                       value="{{ $q->id }}" 
+                                       class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-slate-700 dark:bg-slate-800 cursor-pointer">
+                            </td>
+                            <td class="px-3 py-4 font-medium text-gray-500 dark:text-slate-400 text-center">
                                 {{ $questions->firstItem() + $index }}
                             </td>
                             <td class="px-6 py-4 max-w-md">
@@ -416,10 +482,13 @@
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 border border-gray-200 dark:border-slate-700">
                                     {{ $q->category->name ?? '-' }}
                                 </span>
-                                @if (!empty($q->metadata['sub_category']))
+                                @php
+                                    $subCategoryName = $q->subCategory?->name ?? ($q->metadata['sub_category'] ?? null);
+                                @endphp
+                                @if (!empty($subCategoryName))
                                     <div class="mt-1">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                                            {{ $q->metadata['sub_category'] }}
+                                            {{ $subCategoryName }}
                                         </span>
                                     </div>
                                 @endif
@@ -474,7 +543,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-gray-400 dark:text-slate-500">
+                            <td colspan="7" class="px-6 py-12 text-center text-gray-400 dark:text-slate-500">
                                 <div class="flex flex-col items-center justify-center gap-2">
                                     <svg class="w-10 h-10 text-gray-300 dark:text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -812,8 +881,8 @@
                     <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-slate-800">
                         <div class="flex items-center gap-2">
                             <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800" x-text="detailData.category_name"></span>
-                            <template x-if="detailData.metadata && detailData.metadata.sub_category">
-                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800" x-text="detailData.metadata.sub_category"></span>
+                            <template x-if="detailData.sub_category_name || (detailData.metadata && detailData.metadata.sub_category)">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800" x-text="detailData.sub_category_name || detailData.metadata.sub_category"></span>
                             </template>
                             <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" x-text="detailData.points + ' Poin'"></span>
                         </div>
@@ -979,6 +1048,64 @@
         </div>
     </div>
 
+    <!-- Bulk Delete Confirmation Modal -->
+    @if ($showBulkDeleteModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="bulk-delete-title" role="dialog" aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm" wire:click="$set('showBulkDeleteModal', false)"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block align-bottom bg-white dark:bg-slate-900 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full border border-gray-200 dark:border-slate-800">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </div>
+                            <div class="space-y-1.5 flex-1">
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white" id="bulk-delete-title">
+                                    Hapus {{ $this->selectedCount }} Soal Terpilih?
+                                </h3>
+                                <p class="text-xs text-gray-500 dark:text-slate-400 leading-relaxed">
+                                    Anda akan menghapus secara permanen <strong class="text-rose-600 dark:text-rose-400">{{ $this->selectedCount }} butir soal</strong> yang dipilih.
+                                </p>
+                                @if ($this->activeCategoryName)
+                                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                        <span class="font-semibold">Kategori:</span> {{ $this->activeCategoryName }}
+                                    </div>
+                                @endif
+                                <p class="text-[11px] text-gray-400 dark:text-slate-500 pt-1">
+                                    Seluruh opsi jawaban, riwayat jawaban, dan file lampiran terkait akan ikut terhapus secara permanen. Tindakan ini tidak dapat dibatalkan.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-slate-800">
+                            <button type="button" 
+                                    wire:click="$set('showBulkDeleteModal', false)" 
+                                    class="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer">
+                                Batal
+                            </button>
+                            <button type="button" 
+                                    wire:click="bulkDelete" 
+                                    wire:loading.attr="disabled"
+                                    class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-md shadow-rose-500/20 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                                <svg wire:loading wire:target="bulkDelete" class="animate-spin w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span wire:loading.remove wire:target="bulkDelete">Ya, Hapus {{ $this->selectedCount }} Soal</span>
+                                <span wire:loading wire:target="bulkDelete">Menghapus...</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Import Excel Modal -->
     <div x-show="showImportModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
@@ -986,7 +1113,7 @@
 
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-            <div x-show="showImportModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-slate-900 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-gray-200 dark:border-slate-800">
+            <div x-show="showImportModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-slate-900 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full border border-gray-200 dark:border-slate-800">
                 
                 <div class="p-6 space-y-5">
                     <div class="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-4">
@@ -1008,7 +1135,7 @@
                         </button>
                     </div>
 
-                    <!-- Template download info box (Dua Pilihan Jelas & Seimbang) -->
+                    <!-- Template download info box (Tiga Pilihan Format) -->
                     <div class="space-y-2">
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-bold text-gray-700 dark:text-slate-300 flex items-center gap-1.5">
@@ -1016,7 +1143,7 @@
                             </span>
                             <span class="text-[11px] text-gray-400 dark:text-slate-500">Pilih salah satu format:</span>
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <!-- Template Standar / Umum -->
                             <a href="{{ route('admin.question_bank.download_template') }}" 
                                class="group relative flex flex-col justify-between p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 hover:bg-white dark:bg-slate-800/60 dark:hover:bg-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition">
@@ -1035,7 +1162,7 @@
                                     </p>
                                 </div>
                                 <div class="pt-2.5 mt-2 border-t border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                                    <span class="text-[11px]">Download File</span>
+                                    <span class="text-[11px]">Download</span>
                                     <svg class="w-4 h-4 group-hover:translate-y-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                     </svg>
@@ -1053,14 +1180,39 @@
                                         <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">.xlsx</span>
                                     </div>
                                     <h4 class="text-xs font-bold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">
-                                        Template Sub-Kategori
+                                        Sub-Kategori Umum
                                     </h4>
                                     <p class="text-[11px] text-gray-500 dark:text-slate-400 leading-normal">
-                                        Format lengkap dengan sub-kategori <span class="italic text-gray-400 dark:text-slate-500">(opsional)</span>, pembahasan & lampiran.
+                                        Format lengkap dengan sub-kategori, pembahasan & lampiran.
                                     </p>
                                 </div>
                                 <div class="pt-2.5 mt-2 border-t border-emerald-200/80 dark:border-slate-700/60 flex items-center justify-between text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                                    <span class="text-[11px]">Download File</span>
+                                    <span class="text-[11px]">Download</span>
+                                    <svg class="w-4 h-4 group-hover:translate-y-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                </div>
+                            </a>
+
+                            <!-- Template Khusus TKK (Dengan Sub-Kategori Aspek & Bobot SJT) -->
+                            <a href="{{ route('admin.question_bank.download_tkk_template') }}" 
+                               class="group relative flex flex-col justify-between p-3.5 rounded-xl border border-amber-300/80 dark:border-amber-500/40 bg-amber-50/40 hover:bg-white dark:bg-amber-950/20 dark:hover:bg-slate-800 hover:border-amber-500 dark:hover:border-amber-400 hover:shadow-md transition">
+                                <div class="space-y-1.5">
+                                    <div class="flex items-center justify-between">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+                                            Khusus TKK
+                                        </span>
+                                        <span class="text-[10px] text-amber-600 dark:text-amber-400 font-mono">.xlsx</span>
+                                    </div>
+                                    <h4 class="text-xs font-bold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition">
+                                        Template TKK
+                                    </h4>
+                                    <p class="text-[11px] text-gray-500 dark:text-slate-400 leading-normal">
+                                        Format TKK dengan 6 sub-kategori aspek kompetensi & bobot opsi.
+                                    </p>
+                                </div>
+                                <div class="pt-2.5 mt-2 border-t border-amber-200/80 dark:border-slate-700/60 flex items-center justify-between text-xs font-semibold text-amber-600 dark:text-amber-400">
+                                    <span class="text-[11px]">Download</span>
                                     <svg class="w-4 h-4 group-hover:translate-y-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                     </svg>

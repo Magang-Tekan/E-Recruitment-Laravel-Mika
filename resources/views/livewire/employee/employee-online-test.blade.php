@@ -588,14 +588,6 @@
                 isScreenObfuscated: false,
                 isFileDialogActive: false,
                 _focusLostAt: 0,
-                watermarkClock: '',
-                updateWatermarkClock() {
-                    let d = new Date();
-                    let pad = (n) => String(n).padStart(2, '0');
-                    let dateStr = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear();
-                    let timeStr = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
-                    this.watermarkClock = dateStr + ' ' + timeStr + ' WIB';
-                },
                 wipeClipboard() {
                     try {
                         if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -821,9 +813,7 @@
                 },
                 startTimer() {
                     if (this.timeRemaining > 0 && !this.timerInterval) {
-                        this.updateWatermarkClock();
                         this.timerInterval = setInterval(() => {
-                            this.updateWatermarkClock();
                             if (this.timeRemaining > 0) {
                                 this.timeRemaining--;
                             } else {
@@ -838,7 +828,6 @@
                     this.initNotes();
                     this.initCalcTape();
                     this.initExcel();
-                    this.updateWatermarkClock();
 
                     // Nilai dari server dibaca sekali di sini (bukan lewat x-data) agar re-render Livewire tidak me-reset state Alpine
                     this.timeRemaining = parseInt(this.$el.dataset.timeRemaining || '0', 10) || 0;
@@ -869,7 +858,6 @@
                             let sec = (Array.isArray(e) && e[0]) ? (e[0].remaining || e[0]) : (e?.remaining || e);
                             this.timeRemaining = parseInt(sec) || 10800;
                             this.testState = 'taking';
-                            this.updateWatermarkClock();
                             this.startTimer();
                             this.startGracePeriod(2);
                             if (typeof initCopyProtection === 'function') initCopyProtection();
@@ -1395,15 +1383,6 @@ tab/jendela, atau mengambil tangkapan layar (PrintScreen/Snipping Tool) dihitung
             $isMultiPage = !$isPapiPage && !$isDiscPage;
         @endphp
 
-        <!-- WATERMARK PENGAMAN ANTI-FOTO KAMERA HP & ANTI-BOCOR SOAL -->
-        <div class="pointer-events-none select-none fixed inset-0 z-10 overflow-hidden opacity-[0.045] dark:opacity-[0.035] flex flex-wrap content-start gap-x-20 gap-y-16 p-6 -rotate-12">
-            @for ($w = 0; $w < 24; $w++)
-                <div class="font-mono text-xs font-black tracking-widest text-slate-900 dark:text-white uppercase whitespace-nowrap">
-                    {{ $participantName ?: (auth()->user()->name ?? 'KARYAWAN CBT') }} &bull; {{ auth()->user()->email ?? '' }} &bull; <span x-text="watermarkClock"></span>
-                </div>
-            @endfor
-        </div>
-
         <div x-init="testState = 'taking'; timeRemaining = {{ $timeRemainingSeconds }}; startTimer();" 
              class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start relative transition-all duration-200">
             <!-- Left Side: Lembar Soal & Jawaban (3 Cols) -->
@@ -1442,7 +1421,7 @@ tab/jendela, atau mengambil tangkapan layar (PrintScreen/Snipping Tool) dihitung
                                             $selectedPapi = $answers[$pq['id']] ?? null;
                                             $isEven       = $pgIdx % 2 === 0;
                                         @endphp
-                                        <tbody wire:key="papi-group-{{ $pq['id'] }}" wire:ignore
+                                        <tbody wire:key="papi-group-{{ $pq['id'] }}"
                                             x-data="{ sel: {{ $selectedPapi ?? 'null' }} }"
                                             class="border-t-4 {{ $isEven ? 'border-indigo-300 dark:border-indigo-700' : 'border-slate-300 dark:border-slate-600' }}">
 
@@ -1495,9 +1474,11 @@ tab/jendela, atau mengambil tangkapan layar (PrintScreen/Snipping Tool) dihitung
                             </table>
                         </div>
 
-                        <!-- Pagination Footer for PAPI -->
-                        <div class="flex items-center justify-between p-4 border-t border-slate-100 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#070B14]">
-                            <button type="button" wire:click="prevQuestion" {{ $currentPage === 0 ? 'disabled' : '' }}
+                        <!-- Pagination Footer for PAPI: navLock mencegah klik ganda yang melompati 1 halaman -->
+                        <div x-data="{ navLock: false }" class="flex items-center justify-between p-4 border-t border-slate-100 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#070B14]">
+                            <button type="button"
+                                @click="if (navLock) return; navLock = true; $wire.prevQuestion().finally(() => navLock = false)"
+                                :disabled="navLock || {{ $currentPage === 0 ? 'true' : 'false' }}"
                                 class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1A2A4C] disabled:opacity-40 disabled:cursor-not-allowed transition shadow-2xs">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                                 <span>Halaman Sebelumnya</span>
@@ -1508,8 +1489,10 @@ tab/jendela, atau mengambil tangkapan layar (PrintScreen/Snipping Tool) dihitung
                             </span>
 
                             @if ($currentPage < $totalPages - 1)
-                                <button type="button" wire:click="nextQuestion"
-                                    class="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-xs">
+                                <button type="button"
+                                    @click="if (navLock) return; navLock = true; $wire.nextQuestion().finally(() => navLock = false)"
+                                    :disabled="navLock"
+                                    class="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-xs disabled:opacity-50 disabled:cursor-not-allowed">
                                     <span>Halaman Selanjutnya</span>
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                 </button>
@@ -1532,9 +1515,19 @@ tab/jendela, atau mengambil tangkapan layar (PrintScreen/Snipping Tool) dihitung
                     <div id="soal-area" wire:key="soal-area-{{ $currentQuestion['id'] }}" 
                          x-data="{
                              selected: {{ json_encode($selectedInitial) }},
+                             pendingSave: null,
                              pick(optId) {
                                  this.selected = optId;
-                                 $wire.saveChoiceAnswer({{ $currentQuestion['id'] }}, optId);
+                                 // Simpan jawaban ditunda sejenak: tombol Selanjutnya/Sebelumnya sudah
+                                 // mengirim jawaban terpilih, sehingga navigasi tidak mengantre di belakang
+                                 // request simpan (Livewire memproses request per komponen secara berurutan).
+                                 clearTimeout(this.pendingSave);
+                                 this.pendingSave = setTimeout(() => {
+                                     $wire.saveChoiceAnswer({{ $currentQuestion['id'] }}, optId);
+                                 }, 1200);
+                             },
+                             stopPendingSave() {
+                                 clearTimeout(this.pendingSave);
                              }
                          }"
                          class="bg-white dark:bg-[#0D1527] rounded-3xl border border-slate-200/80 dark:border-[#1D2E54] shadow-sm p-6 sm:p-8 space-y-6">
@@ -2024,7 +2017,6 @@ tab/jendela, atau mengambil tangkapan layar (PrintScreen/Snipping Tool) dihitung
                             @endphp
                             <div class="space-y-4 pt-2" 
                                  wire:key="disc-box-{{ $currentQuestion['id'] }}"
-                                 wire:ignore
                                  x-data="{
                                      discMost: {{ $mostOpt ?? 'null' }},
                                      discLeast: {{ $leastOpt ?? 'null' }},
@@ -2120,12 +2112,11 @@ tab/jendela, atau mengambil tangkapan layar (PrintScreen/Snipping Tool) dihitung
                             </div>
                         @endif
 
-                        <!-- Navigation Buttons -->
-                        <div class="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-[#1D2E54] gap-3">
+                        <!-- Navigation Buttons: navLock = kunci seketika agar klik ganda tidak terkirim 2x -->
+                        <div x-data="{ navLock: false }" class="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-[#1D2E54] gap-3">
                             <button type="button" 
-                                @click="$wire.prevQuestion({{ $currentQuestion['id'] }}, typeof selected !== 'undefined' ? selected : null)" 
-                                {{ $currentQuestionIndex === 0 ? 'disabled' : '' }}
-                                wire:loading.attr="disabled" wire:target="prevQuestion"
+                                @click="if (navLock) return; navLock = true; stopPendingSave(); $wire.prevQuestion({{ $currentQuestion['id'] }}, typeof selected !== 'undefined' ? selected : null).finally(() => navLock = false)" 
+                                :disabled="navLock || {{ $currentQuestionIndex === 0 ? 'true' : 'false' }}"
                                 class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-300 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#1A2A4C] disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer">
                                 <svg class="w-4 h-4 text-slate-500 dark:text-[#93A5C9]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -2135,8 +2126,8 @@ tab/jendela, atau mengambil tangkapan layar (PrintScreen/Snipping Tool) dihitung
 
                             @if ($currentQuestionIndex < count($questions) - 1)
                                 <button type="button" 
-                                    @click="$wire.nextQuestion({{ $currentQuestion['id'] }}, typeof selected !== 'undefined' ? selected : null)"
-                                    wire:loading.attr="disabled" wire:target="nextQuestion"
+                                    @click="if (navLock) return; navLock = true; stopPendingSave(); $wire.nextQuestion({{ $currentQuestion['id'] }}, typeof selected !== 'undefined' ? selected : null).finally(() => navLock = false)"
+                                    :disabled="navLock"
                                     class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-bold transition shadow-xs disabled:opacity-50 cursor-pointer">
                                     <span>Selanjutnya</span>
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2145,7 +2136,7 @@ tab/jendela, atau mengambil tangkapan layar (PrintScreen/Snipping Tool) dihitung
                                 </button>
                             @else
                                 <button type="button" 
-                                    @click="$wire.openFinishModal({{ $currentQuestion['id'] }}, typeof selected !== 'undefined' ? selected : null)"
+                                    @click="stopPendingSave(); $wire.openFinishModal({{ $currentQuestion['id'] }}, typeof selected !== 'undefined' ? selected : null)"
                                     wire:loading.attr="disabled" wire:target="openFinishModal,finishTest"
                                     class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition cursor-pointer">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2662,7 +2653,9 @@ tab/jendela, atau mengambil tangkapan layar (PrintScreen/Snipping Tool) dihitung
             <div @click.stop class="max-w-md w-full bg-gray-900 border-2 border-rose-500/80 rounded-3xl p-6 sm:p-7 text-center space-y-4 shadow-2xl shadow-rose-950/60 cursor-default">
                 <div class="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 flex items-center justify-center mx-auto shadow-inner animate-pulse">
                     <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 4.5h16.5a.75.75 0 01.75.75v9.5a.75.75 0 01-.75.75H3.75a.75.75 0 01-.75-.75v-9.5a.75.75 0 01.75-.75z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20.25h6M12 15.5v4.75" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 3l16 18" />
                     </svg>
                 </div>
                 <div>
@@ -2674,6 +2667,20 @@ tab/jendela, atau mengambil tangkapan layar (PrintScreen/Snipping Tool) dihitung
                         Terdeteksi aktivitas tangkapan layar (Print Screen / Snipping Tool). Seluruh tampilan soal diburamkan dan aktivitas ini dicatat sebagai pelanggaran demi integritas keamanan.
                     </p>
                 </div>
+
+                <!-- Indikator Peringatan Pelanggaran -->
+                <div class="p-3.5 rounded-2xl bg-gray-800 border border-gray-700 space-y-2 text-left">
+                    <div class="flex items-center justify-between text-xs font-semibold">
+                        <span class="text-gray-400">Peringatan Pelanggaran:</span>
+                        <span class="font-mono font-bold text-rose-400" x-text="Math.min(violations, maxViolations) + ' / ' + maxViolations + ' Pelanggaran'">1 / 3 Pelanggaran</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 pt-1">
+                        <div class="h-2 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50"></div>
+                        <div class="h-2 rounded-full transition-colors duration-300" :class="violations >= 2 ? 'bg-rose-500 shadow-sm shadow-rose-500/50' : 'bg-gray-700'"></div>
+                        <div class="h-2 rounded-full transition-colors duration-300" :class="violations >= 3 ? 'bg-rose-500 shadow-sm shadow-rose-500/50' : 'bg-gray-700'"></div>
+                    </div>
+                </div>
+
                 <button type="button" @click="returnToFullscreen()" class="w-full py-2.5 px-4 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition shadow-md cursor-pointer flex items-center justify-center gap-2">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />

@@ -77,16 +77,22 @@ class PositionTable extends Component
 
         $companies = Company::orderBy('name')->get();
 
-        // Filter departments by selected company for cascading dropdown
+        // Filter departments by selected company for cascading dropdown in filter toolbar
         $departments = Department::with('company')
             ->when($this->companyFilter, fn($q) => $q->where('company_id', $this->companyFilter))
             ->orderBy('name')
             ->get();
 
+        // All departments for create/edit modal forms
+        $allDepartments = Department::with('company')
+            ->orderBy('name')
+            ->get();
+
         return view('livewire.admin.position.table', [
-            'positions'   => $positions,
-            'companies'   => $companies,
-            'departments' => $departments,
+            'positions'      => $positions,
+            'companies'      => $companies,
+            'departments'    => $departments,
+            'allDepartments' => $allDepartments,
         ]);
     }
 }

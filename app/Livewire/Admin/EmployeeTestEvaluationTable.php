@@ -9,6 +9,7 @@ use App\Models\Company;
 use App\Models\Department;
 use App\Models\Test;
 use Illuminate\Support\Facades\DB;
+use App\Services\AspectEvaluationService;
 use App\Livewire\Traits\WithTableSkeleton;
 
 class EmployeeTestEvaluationTable extends Component
@@ -225,6 +226,9 @@ class EmployeeTestEvaluationTable extends Component
         }
 
         $attempts = $query->paginate($this->perPage);
+
+        // Hitung Nilai per Aspek sekali untuk seluruh baris halaman ini (satu query soal).
+        AspectEvaluationService::attachToAttempts($attempts->getCollection());
 
         return view('livewire.admin.employee-test-evaluation.table', [
             'attempts' => $attempts,

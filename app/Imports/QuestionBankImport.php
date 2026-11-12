@@ -18,12 +18,47 @@ class QuestionBankImport implements ToCollection, WithHeadingRow
     public $importedCount = 0;
     public $errors = [];
 
+    /**
+     * Terima bobot opsi dalam format "2,0,1,0", "2;1;0;0", atau "[2,1,0,0]".
+     * Mengembalikan null jika kolom kosong/tidak valid agar import lama tetap aman.
+     */
+    protected function parseOptionWeights($raw): ?array
+    {
+        if (is_array($raw)) {
+            $values = $raw;
+        } else {
+            $raw = trim((string) ($raw ?? ''));
+            if ($raw === '') {
+                return null;
+            }
+
+            $decoded = str_starts_with($raw, '[') ? json_decode($raw, true) : null;
+            $values = is_array($decoded) ? $decoded : preg_split('/\s*[,;|\/]\s*/', $raw);
+        }
+
+        if (!is_array($values) || count($values) < 2) {
+            return null;
+        }
+
+        $weights = [];
+        foreach ($values as $value) {
+            $value = trim((string) $value);
+            if ($value === '' || !is_numeric($value)) {
+                return null;
+            }
+            $weights[] = (float) $value;
+        }
+
+        return $weights;
+    }
+
     public function collection(Collection $rows)
     {
         $categories = TestCategory::all()->keyBy(function ($cat) {
             return strtolower(trim($cat->name));
         });
         $categoryIds = TestCategory::pluck('id')->toArray();
+        $subCategoryCache = [];
 
         DB::beginTransaction();
         try {
@@ -54,6 +89,11 @@ class QuestionBankImport implements ToCollection, WithHeadingRow
                     $points = 1;
                 }
 
+                // Kolom opsional untuk soal bergradasi (SJT): 2 = terbaik, 1 = cukup baik, 0 = kurang tepat.
+                $optionWeights = $this->parseOptionWeights(
+                    $row['bobot_opsi'] ?? $row['option_weights'] ?? $row['bobot_jawaban'] ?? null
+                );
+
                 // Normalize Question Type
                 $questionType = 'multiple_choice';
                 if (in_array($rawType, ['essay', 'uraian', 'isihan'])) {
@@ -73,11 +113,15 @@ class QuestionBankImport implements ToCollection, WithHeadingRow
 
                 // Resolve Category ID
                 $categoryId = null;
+                $catKey = strtolower($rawCategory);
                 if (is_numeric($rawCategory) && in_array((int)$rawCategory, $categoryIds)) {
                     $categoryId = (int)$rawCategory;
+                } elseif ($catKey !== '' && isset($categories[$catKey])) {
+                    $categoryId = $categories[$catKey]->id;
                 } else {
                     $category = TestCategory::firstOrCreate(['name' => $rawCategory ?: 'Umum']);
                     $categoryId = $category->id;
+                    $categories[strtolower($category->name)] = $category;
                 }
 
                 $imagePath = trim((string)($row['gambar'] ?? $row['image_path'] ?? $row['lampiran'] ?? '')) ?: null;
@@ -86,12 +130,47 @@ class QuestionBankImport implements ToCollection, WithHeadingRow
                 $subCategoryModel = null;
                 $subCat = trim((string)($row['sub_kategori'] ?? $row['sub_category'] ?? $row['topik'] ?? $row['topic'] ?? ''));
                 if (!empty($subCat)) {
-                    $metadata['sub_category'] = $subCat;
-                    $metadata['topic'] = $subCat;
-                    $subCategoryModel = TestSubCategory::firstOrCreate([
-                        'category_id' => $categoryId,
-                        'name' => $subCat,
-                    ]);
+                    $subCat = mb_substr($subCat, 0, 255);
+                    $subCatCacheKey = $categoryId . '|' . mb_strtolower($subCat);
+
+                    if (isset($subCategoryCache[$subCatCacheKey])) {
+                        $subCategoryModel = $subCategoryCache[$subCatCacheKey];
+                    } else {
+                        // 1. Exact match atau case-insensitive
+                        $subCategoryModel = TestSubCategory::where('category_id', $categoryId)
+                            ->where(function ($q) use ($subCat) {
+                                $q->where('name', $subCat)
+                                  ->orWhereRaw('LOWER(TRIM(name)) = ?', [mb_strtolower($subCat)]);
+                            })
+                            ->first();
+
+                        // 2. Fuzzy match toleran tanda pisah (dash "-", en-dash "–", em-dash "—" dan spasi)
+                        if (!$subCategoryModel) {
+                            $normalizedSearch = preg_replace('/[\s\x{2013}\x{2014}-]+/u', '-', mb_strtolower($subCat));
+                            $candidates = TestSubCategory::where('category_id', $categoryId)->get();
+                            foreach ($candidates as $cand) {
+                                $normalizedCand = preg_replace('/[\s\x{2013}\x{2014}-]+/u', '-', mb_strtolower(trim($cand->name)));
+                                if ($normalizedSearch === $normalizedCand) {
+                                    $subCategoryModel = $cand;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // 3. Jika belum pernah ada, buat baru
+                        if (!$subCategoryModel) {
+                            $subCategoryModel = TestSubCategory::create([
+                                'category_id' => $categoryId,
+                                'name' => $subCat,
+                            ]);
+                        }
+
+                        $subCategoryCache[$subCatCacheKey] = $subCategoryModel;
+                    }
+
+                    $canonicalSubName = $subCategoryModel?->name ?: $subCat;
+                    $metadata['sub_category'] = $canonicalSubName;
+                    $metadata['topic'] = $canonicalSubName;
                 }
                 if (!empty($row['pembahasan'] ?? $row['explanation'] ?? '')) {
                     $metadata['explanation'] = trim($row['pembahasan'] ?? $row['explanation']);
@@ -105,6 +184,14 @@ class QuestionBankImport implements ToCollection, WithHeadingRow
                 }
                 if (!empty($row['jenis_lampiran'])) {
                     $metadata['doc_type'] = trim($row['jenis_lampiran']);
+                }
+
+                if ($optionWeights !== null) {
+                    $metadata['option_weights'] = $optionWeights;
+                    $maxWeight = max($optionWeights);
+                    if ($maxWeight > 0) {
+                        $points = (int) ceil($maxWeight);
+                    }
                 }
 
                 $questionBank = QuestionBank::create([

@@ -749,6 +749,41 @@
         html.dark aside:hover div[class*="overflow-y-auto"]::-webkit-scrollbar-thumb {
             background-color: rgba(255, 255, 255, 0.18) !important;
         }
+
+        /* =========================================================================
+           MODE HALAMAN UJIAN (CBT): SIDEBAR KIRI SELALU HILANG
+           Berlaku di seluruh halaman ujian (rute employee.test & applicant.test),
+           baik sebelum mulai, saat mengerjakan (fullscreen maupun tidak), sampai
+           selesai. Murni tampilan: komponen sidebar tidak diubah/dihapus, hanya
+           disembunyikan, dan otomatis kembali di halaman lain.
+           ========================================================================= */
+        body.exam-mode .app-sidebar {
+            display: none !important;
+        }
+
+        body.exam-mode .app-main {
+            padding-left: 0 !important;
+        }
+
+        /* Cadangan: bila ada halaman ujian yang memakai fullscreen tanpa
+           kelas exam-mode, sidebar tetap disembunyikan saat fullscreen. */
+        html:fullscreen .app-sidebar,
+        html:-webkit-full-screen .app-sidebar,
+        html:-moz-full-screen .app-sidebar,
+        html:-ms-fullscreen .app-sidebar,
+        html:fullscreen aside,
+        html:-webkit-full-screen aside,
+        html:-moz-full-screen aside,
+        html:-ms-fullscreen aside {
+            display: none !important;
+        }
+
+        html:fullscreen .app-main,
+        html:-webkit-full-screen .app-main,
+        html:-moz-full-screen .app-main,
+        html:-ms-fullscreen .app-main {
+            padding-left: 0 !important;
+        }
     </style>
 </head>
 
@@ -769,12 +804,13 @@
     $isDeepNavySection = true;
     $isApplicantProfile = auth()->check() && !$isAdminOrRecruiter && !$isEmployee;
     $hasSidebar = $isAdminOrRecruiter || $isApplicantProfile || $isEmployee;
+    $isExamPage = request()->routeIs('employee.test') || request()->routeIs('applicant.test');
     $defaultTab = $isEmployee ? 'dashboard' : 'pribadi';
     $currentTab = request('tab', $defaultTab);
 @endphp
 
 <body
-    class="font-sans antialiased bg-[#F1F5F1] dark:bg-[#070B14] text-gray-900 dark:text-[#EEEEEE] selection:bg-[#93F514] selection:text-black"
+    class="font-sans antialiased bg-[#F1F5F1] dark:bg-[#070B14] text-gray-900 dark:text-[#EEEEEE] selection:bg-[#93F514] selection:text-black {{ $isExamPage ? 'exam-mode' : '' }}"
     x-data="appLayout('{{ $currentTab }}')"
     x-on:request-switch-tab.window="switchTab($event.detail)">
     <div class="min-h-screen flex bg-[#F1F5F1] dark:bg-[#070B14]">
@@ -789,14 +825,14 @@
         @endif
 
         <!-- Main Content Container -->
-        <div class="flex-1 flex flex-col min-w-0 transition-all duration-300 {{ $hasSidebar ? 'lg:pl-64' : '' }}">
+        <div class="app-main flex-1 flex flex-col min-w-0 transition-all duration-300 {{ $hasSidebar ? 'lg:pl-64' : '' }}">
 
             <!-- Top Navbar / Header -->
             <header
                 class="sticky top-0 z-30 bg-white dark:bg-[#0D1527] dark:border-[#1D2E54] shadow-xs border-b border-gray-200">
                 <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
-                    <!-- Mobile Hamburger Button (Visible when sidebar present) -->
-                    @if ($hasSidebar)
+                    <!-- Mobile Hamburger Button (Visible when sidebar present, disembunyikan di halaman ujian) -->
+                    @if ($hasSidebar && !$isExamPage)
                         <button @click="sidebarOpen = !sidebarOpen"
                             class="lg:hidden p-2 mr-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#14203A] focus:outline-none">
                             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

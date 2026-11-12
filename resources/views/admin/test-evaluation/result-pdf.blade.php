@@ -506,52 +506,73 @@
         </tr>
     </table>
 
-    <!-- Nilai Per Tema -->
+    <!-- Nilai Per Aspek -->
     <div style="margin-top: 4px;">
         <table class="w-full section-header">
             <tr>
-                <td class="section-title text-left">Nilai per Tema Kompetensi</td>
-                <td class="section-note text-right">Garis vertikal abu-abu menandai batas kelulusan standar 60%</td>
+                <td class="section-title text-left">Nilai per Aspek</td>
+                <td class="section-note text-right">Garis vertikal abu-abu menandai acuan 60%</td>
             </tr>
         </table>
 
         <table class="eval-table w-full">
             <thead>
                 <tr>
-                    <th style="width: 26%; text-align: left;">Tema Kompetensi</th>
-                    <th style="width: 14%; text-align: center;">Ketepatan</th>
-                    <th style="width: 45%; text-align: left;">Indikator Penguasaan (Ambang Batas 60%)</th>
-                    <th style="width: 15%; text-align: right;">Skor (100)</th>
+                    <th style="width: 32%; text-align: left;">Aspek</th>
+                    <th style="width: 10%; text-align: center;">Poin</th>
+                    <th style="width: 26%; text-align: left;">Capaian</th>
+                    <th style="width: 8%; text-align: right;">Nilai</th>
+                    <th style="width: 24%; text-align: left;">Status</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($themes as $theme)
+                @forelse($aspectEvaluation['aspects'] as $aspect)
                     @php
-                        $tPass = $theme['percentage'] >= 60;
+                        $aspectBarColor = $aspect['status_type'] === 'success'
+                            ? '#10B981'
+                            : ($aspect['status_type'] === 'danger' ? '#F43F5E' : '#D97706');
+                        $aspectStatusStyle = $aspect['status_type'] === 'success'
+                            ? 'background-color: #EAF8EE; color: #0B6A36; border: 1px solid #9FE0B7;'
+                            : ($aspect['status_type'] === 'danger'
+                                ? 'background-color: #FDF0ED; color: #991B1B; border: 1px solid #F3A99B;'
+                                : 'background-color: #FFFBEB; color: #92400E; border: 1px solid #FDE68A;');
                     @endphp
                     <tr>
-                        <td class="font-bold" style="color: #0F172A;">{{ $theme['name'] }}</td>
-                        <td class="text-center" style="font-weight: 600; color: #475569;">
-                            {{ $theme['correct'] }} / {{ $theme['total'] }} soal
-                        </td>
+                        <td class="font-bold" style="color: #0F172A;">{{ $aspect['name'] }}</td>
+                        <td class="text-center" style="font-weight: 600; color: #475569;">{{ $aspect['poin_str'] }}</td>
                         <td>
                             <div class="bar-wrapper">
                                 <div class="bar-marker"></div>
-                                <div class="bar-fill {{ $tPass ? 'bar-color-pass' : 'bar-color-fail' }}"
-                                     style="width: {{ min(100, $theme['percentage']) }}%;"></div>
+                                <div class="bar-fill" style="background-color: {{ $aspectBarColor }}; width: {{ min(100, $aspect['score']) }}%;"></div>
                             </div>
                         </td>
-                        <td class="text-right" style="font-weight: 800; font-size: 10px; color: {{ $tPass ? '#059669' : '#DC2626' }};">
-                            {{ $theme['score_100'] }}
+                        <td class="text-right" style="font-weight: 800; font-size: 10px; color: {{ $aspectBarColor }};">
+                            {{ $aspect['score'] }}
+                        </td>
+                        <td>
+                            <span style="display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 7.5px; font-weight: 700; {{ $aspectStatusStyle }}">
+                                {{ $aspect['status'] }}
+                            </span>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="text-center" style="color: #94A3B8; padding: 8px;">Tidak ada data tema tersedia</td>
+                        <td colspan="5" class="text-center" style="color: #94A3B8; padding: 8px;">Tidak ada data aspek tersedia</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
+
+        @if (!empty($aspectEvaluation['flagged_for_interview']))
+            <div class="narrative-box" style="margin-top: 4px; margin-bottom: 4px;">
+                <strong>Catatan Wawancara:</strong> Aspek yang perlu didalami saat wawancara —
+                {{ implode(', ', $aspectEvaluation['flagged_for_interview']) }}.
+            </div>
+        @endif
+
+        <div class="score-threshold-note" style="margin-top: 3px;">
+            Syarat lulus: skor total di atas 60 dan nilai Etika &amp; Integritas minimal 70. Aspek lain di bawah 50 ditandai untuk digali saat wawancara (tidak menggugurkan).
+        </div>
     </div>
 
     <!-- Ketepatan Per Materi Uji -->

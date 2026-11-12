@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Imports\QuestionBankImport;
 use App\Exports\QuestionBankTemplateExport;
 use App\Exports\QuestionBankFatTemplateExport;
+use App\Exports\QuestionBankTkkTemplateExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class QuestionBankController extends Controller
@@ -190,5 +191,10 @@ class QuestionBankController extends Controller
     public function downloadFatTemplate()
     {
         return Excel::download(new QuestionBankFatTemplateExport(), 'template_import_bank_soal_fat.xlsx');
+    }
+
+    public function downloadTkkTemplate()
+    {
+        return Excel::download(new QuestionBankTkkTemplateExport(), 'template_import_soal_tkk.xlsx');
     }
 }

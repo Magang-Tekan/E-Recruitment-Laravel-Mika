@@ -258,6 +258,7 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':admin'])
             Route::post('question-banks/import', [QuestionBankController::class, 'import'])->name('question_bank.import');
             Route::get('question-banks/download-template', [QuestionBankController::class, 'downloadTemplate'])->name('question_bank.download_template');
             Route::get('question-banks/download-fat-template', [QuestionBankController::class, 'downloadFatTemplate'])->name('question_bank.download_fat_template');
+            Route::get('question-banks/download-tkk-template', [QuestionBankController::class, 'downloadTkkTemplate'])->name('question_bank.download_tkk_template');
             Route::put('question-banks/{id}', [QuestionBankController::class, 'update'])->name('question_bank.update');
             Route::delete('question-banks/{id}', [QuestionBankController::class, 'destroy'])->name('question_bank.destroy');
 

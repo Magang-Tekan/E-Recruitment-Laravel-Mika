@@ -13,6 +13,7 @@ use App\Mail\ApplicationStatusUpdatedMail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\DiscTrait;
 use App\Services\DiscChartService;
+use App\Services\AspectEvaluationService;
 use Illuminate\Support\Str;
 
 class TestEvaluationController extends Controller
@@ -427,7 +428,12 @@ class TestEvaluationController extends Controller
 
         $score = (float) ($attempt->total_score ?? 0);
         $passingScore = (float) ($attempt->test?->passing_score ?? 60);
-        $isPassed = ($attempt->status === 'passed') || ($score >= $passingScore);
+
+        // Analisis Nilai per Aspek + aturan kelulusan ganda (skor total & Etika & Integritas)
+        $aspectEvaluation = AspectEvaluationService::calculateAspects($attempt);
+
+        $isPassed = (($attempt->status === 'passed') || ($score >= $passingScore))
+            && !$aspectEvaluation['failed_ethics'];
         $requiredCorrect = (int) ceil(($passingScore / 100) * $totalQuestions);
 
         $correctCount = $attempt->answers->where('score', '>', 0)->count();
@@ -446,7 +452,9 @@ class TestEvaluationController extends Controller
         $docId = strtoupper(substr(md5('FAT_TEST_' . $attempt->id . '_' . ($attempt->started_at?->timestamp ?? 0)), 0, 12));
         $createdDate = \Carbon\Carbon::parse($attempt->finished_at ?: now())->locale('id')->isoFormat('D MMMM Y [pukul] HH.mm');
 
-        if ($isPassed) {
+        if ($aspectEvaluation['failed_ethics']) {
+            $narrativeText = "Anda menjawab benar {$correctCount} dari {$totalQuestions} soal ({$packageName}) dengan nilai akhir " . round($score) . "/100. Namun nilai aspek Etika & Integritas berada di bawah batas minimum 70%, sehingga syarat kelulusan ganda belum terpenuhi.";
+        } elseif ($isPassed) {
             $narrativeText = "Selamat! Anda berhasil menjawab benar {$correctCount} dari {$totalQuestions} soal ({$packageName}). Nilai akhir Anda adalah " . round($score) . "/100, melampaui batas kelulusan {$passingScore}%. Hasil evaluasi kompetensi menunjukkan penguasaan materi yang baik pada bidang ini.";
         } else {
             $narrativeText = "Anda menjawab benar {$correctCount} dari {$totalQuestions} soal ({$packageName}). Nilai akhir Anda adalah " . round($score) . "/100, di bawah batas kelulusan {$passingScore}%. Tetap semangat, pelajari kembali materi yang belum dikuasai pada rincian evaluasi materi di bawah.";
@@ -454,44 +462,20 @@ class TestEvaluationController extends Controller
 
         $testCategoryName = $attempt->test?->category?->name ?: ($attempt->test?->title ?: 'Tes Kompetensi');
 
-        // Grouping by Theme & Subcategory (Materi)
-        $themes = [];
+        // Grouping per Sub-Kategori (Materi Uji)
         $materiList = [];
 
         foreach ($attempt->answers as $ans) {
             $subName = $ans->question?->subCategory?->name ?? 'Kompetensi Umum';
 
-            $themeName = $subName;
-            if (str_contains($subName, '–')) {
-                $parts = explode('–', $subName);
-                $themeName = trim($parts[0]);
-            } elseif (str_contains($subName, '-')) {
-                $parts = explode('-', $subName);
-                $themeName = trim($parts[0]);
-            }
-
-            if (!isset($themes[$themeName])) {
-                $themes[$themeName] = ['name' => $themeName, 'total' => 0, 'correct' => 0];
-            }
-            $themes[$themeName]['total']++;
-            if ($ans->score > 0) {
-                $themes[$themeName]['correct']++;
-            }
-
             if (!isset($materiList[$subName])) {
-                $materiList[$subName] = ['name' => $subName, 'theme' => $themeName, 'total' => 0, 'correct' => 0];
+                $materiList[$subName] = ['name' => $subName, 'total' => 0, 'correct' => 0];
             }
             $materiList[$subName]['total']++;
             if ($ans->score > 0) {
                 $materiList[$subName]['correct']++;
             }
         }
-
-        foreach ($themes as &$t) {
-            $t['percentage'] = $t['total'] > 0 ? round(($t['correct'] / $t['total']) * 100, 1) : 0;
-            $t['score_100'] = round($t['percentage']);
-        }
-        unset($t);
 
         foreach ($materiList as &$m) {
             $m['percentage'] = $m['total'] > 0 ? round(($m['correct'] / $m['total']) * 100, 1) : 0;
@@ -542,7 +526,7 @@ class TestEvaluationController extends Controller
             'createdDate',
             'narrativeText',
             'testCategoryName',
-            'themes',
+            'aspectEvaluation',
             'materiList'
         );
 
