@@ -1369,7 +1369,7 @@
 
                         <!-- Tabel semua soal di halaman ini -->
                         <div class="overflow-x-auto">
-                            <table class="w-full text-xs border-collapse">
+                            <table class="papi-table w-full text-xs border-collapse">
                                 <thead>
                                     <tr class="border-b-2 border-slate-300 dark:border-[#1D2E54] text-center text-[11px] font-extrabold uppercase tracking-wider">
                                         <th class="w-12 py-2.5 px-2 bg-slate-200 dark:bg-[#14203A] text-slate-700 dark:text-slate-300 border-r-2 border-slate-300 dark:border-[#1D2E54]">No</th>
@@ -1377,24 +1377,24 @@
                                         <th class="py-2.5 px-4 bg-slate-50 dark:bg-[#14203A]/50 text-slate-700 dark:text-slate-300 text-left">Pernyataan</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    @foreach ($pageQuestions as $pgIdx => $pq)
+                                @foreach ($pageQuestions as $pgIdx => $pq)
                                         @php
                                             $globalIdx    = $pageStart + $pgIdx;
                                             $selectedPapi = $answers[$pq['id']] ?? null;
                                             $isEven       = $pgIdx % 2 === 0;
                                         @endphp
                                         <tbody wire:key="papi-group-{{ $pq['id'] }}"
-                                            x-data="{ sel: {{ $selectedPapi ?? 'null' }} }"
                                             class="border-t-4 {{ $isEven ? 'border-indigo-300 dark:border-indigo-700' : 'border-slate-300 dark:border-slate-600' }}">
 
                                             @foreach ($pq['options'] as $oIdx => $opt)
-                                                @php $label = ['A','B','C','D','E'][$oIdx] ?? ($oIdx+1); @endphp
-                                                <tr class="cursor-pointer"
-                                                    :class="sel == {{ $opt['id'] }}
-                                                        ? 'bg-indigo-50 dark:bg-indigo-950/40'
-                                                        : '{{ $isEven ? 'hover:bg-slate-50 dark:hover:bg-[#14203A]/50' : 'hover:bg-slate-100/60 dark:hover:bg-[#14203A]/30' }}'"
-                                                    @click="sel = {{ $opt['id'] }}; $wire.saveAnswer({{ $pq['id'] }}, {{ $opt['id'] }})">
+                                                @php
+                                                    $label      = ['A','B','C','D','E'][$oIdx] ?? ($oIdx+1);
+                                                    $isSelected = (string) $selectedPapi === (string) $opt['id'];
+                                                @endphp
+                                                <tr wire:key="papi-opt-{{ $opt['id'] }}"
+                                                    class="cursor-pointer {{ $isEven ? 'hover:bg-slate-50 dark:hover:bg-[#14203A]/50' : 'hover:bg-slate-100/60 dark:hover:bg-[#14203A]/30' }}"
+                                                    wire:click="saveAnswer({{ $pq['id'] }}, {{ $opt['id'] }})"
+                                                    onclick="this.querySelector('input[type=radio]').checked = true">
 
                                                     @if ($oIdx === 0)
                                                         <td rowspan="{{ count($pq['options']) }}"
@@ -1404,27 +1404,23 @@
                                                         </td>
                                                     @endif
 
-                                                    <td class="text-center w-14 border-r-2 border-slate-200 dark:border-[#1D2E54] py-0"
-                                                        @click.stop="sel = {{ $opt['id'] }}; $wire.saveAnswer({{ $pq['id'] }}, {{ $opt['id'] }})">
+                                                    <td class="text-center w-14 border-r-2 border-slate-200 dark:border-[#1D2E54] py-0">
                                                         <label class="flex items-center justify-center w-full h-11 cursor-pointer">
                                                             <input type="radio"
                                                                 id="papi_opt_{{ $opt['id'] }}"
                                                                 name="papi_q_{{ $pq['id'] }}"
                                                                 value="{{ $opt['id'] }}"
-                                                                :checked="sel == {{ $opt['id'] }}"
+                                                                {{ $isSelected ? 'checked' : '' }}
                                                                 class="w-4 h-4 text-indigo-600 border-2 border-slate-400 focus:ring-indigo-500 cursor-pointer">
                                                         </label>
                                                     </td>
 
                                                     <td class="py-3 px-4 text-slate-800 dark:text-slate-200 font-medium text-xs sm:text-sm leading-snug">
                                                         <span class="inline-flex items-center gap-2.5">
-                                                            <span class="w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-black shrink-0 transition-colors duration-100"
-                                                                :class="sel == {{ $opt['id'] }}
-                                                                    ? 'bg-indigo-600 text-white shadow-xs'
-                                                                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'">
+                                                            <span class="papi-badge w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-black shrink-0 transition-colors duration-100 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                                                                 {{ $label }}
                                                             </span>
-                                                            <span :class="sel == {{ $opt['id'] }} ? 'text-indigo-900 dark:text-indigo-100 font-semibold' : ''">
+                                                            <span class="papi-text">
                                                                 {{ $opt['option_text'] }}
                                                             </span>
                                                         </span>
@@ -1432,8 +1428,7 @@
                                                 </tr>
                                             @endforeach
                                         </tbody>
-                                    @endforeach
-                                </tbody>
+                                @endforeach
                             </table>
                         </div>
 
@@ -2901,6 +2896,30 @@
          PROTEKSI ANTI-COPY SOAL UJIAN
          ========================================== --}}
     <style>
+    /* PAPI Kostick: tanda pilihan langsung muncul begitu radio dipilih, tanpa menunggu server */
+    .papi-table tbody tr:has(input[type="radio"]:checked) {
+        background-color: #EEF2FF !important;
+    }
+
+    .papi-table tbody tr:has(input[type="radio"]:checked) .papi-badge {
+        background-color: #4F46E5 !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .papi-table tbody tr:has(input[type="radio"]:checked) .papi-text {
+        color: #312E81 !important;
+        font-weight: 600 !important;
+    }
+
+    .dark .papi-table tbody tr:has(input[type="radio"]:checked) {
+        background-color: rgba(49, 46, 129, 0.4) !important;
+    }
+
+    .dark .papi-table tbody tr:has(input[type="radio"]:checked) .papi-text {
+        color: #E0E7FF !important;
+    }
+
     @media print {
         html, body {
             display: none !important;
