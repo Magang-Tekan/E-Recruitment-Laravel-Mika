@@ -1,4 +1,6 @@
 {
+    "The email has already been taken.": "Email ini sudah terdaftar dalam sistem. Silakan masuk (login) menggunakan akun Anda.",
+    "The :attribute has already been taken.": ":Attribute ini sudah terdaftar dalam sistem.",
     "// === [1. NAVIGASI, TOMBOL & UMUM] ===": "",
     "Home": "Beranda",
     "Beranda": "Beranda",

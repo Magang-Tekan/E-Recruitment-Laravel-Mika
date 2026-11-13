@@ -96,9 +96,15 @@ new #[Layout('layouts.guest')] class extends Component {
         ];
 
         $messages = [
+            'name.required' => __('Nama lengkap wajib diisi.'),
             'nik.required' => __('Nomor Induk Kependudukan (NIK) wajib diisi.'),
             'nik.digits' => __('NIK harus terdiri dari tepat 16 digit angka.'),
-            'nik.unique' => __('NIK ini sudah terdaftar dalam sistem.'),
+            'nik.unique' => __('NIK ini sudah terdaftar dalam sistem. Jika sudah memiliki akun, silakan masuk (login).'),
+            'email.required' => __('Alamat email wajib diisi.'),
+            'email.email' => __('Format alamat email tidak valid.'),
+            'email.unique' => __('Email ini sudah terdaftar dalam sistem. Silakan masuk (login) menggunakan akun Anda.'),
+            'password.required' => __('Kata sandi wajib diisi.'),
+            'password.confirmed' => __('Konfirmasi kata sandi tidak cocok dengan kata sandi.'),
         ];
 
         if ($this->account_type === 'employee') {
@@ -122,8 +128,10 @@ new #[Layout('layouts.guest')] class extends Component {
                 },
             ];
 
+            $messages['employee_type.required'] = __('Silakan pilih kategori status hubungan kerja.');
             $messages['company_id.required'] = __('Silakan pilih Perusahaan tempat Anda bekerja.');
             $messages['department_id.required'] = __('Silakan pilih Departemen tempat Anda bekerja.');
+            $messages['company_passkey.required'] = __('Kode token / passkey perusahaan wajib diisi.');
         }
 
         $validated = $this->validate($rules, $messages);
@@ -373,7 +381,7 @@ new #[Layout('layouts.guest')] class extends Component {
                         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        </svg>  
                         <span>{{ session('error') }}</span>
                     </div>
                 @endif
@@ -464,13 +472,22 @@ new #[Layout('layouts.guest')] class extends Component {
                                 class="w-full pl-10 pr-4 py-2.5 bg-black/40 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white placeholder-gray-500 transition outline-none" />
                         </div>
                         @if ($errors->has('nik'))
-                            <p class="mt-1 text-xs text-red-400 font-normal flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="mt-1 text-xs text-red-400 font-normal flex items-start gap-1.5">
+                                <svg class="w-4 h-4 shrink-0 mt-0.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                {{ $errors->first('nik') }}
-                            </p>
+                                <div class="flex-1">
+                                    <span>{{ $errors->first('nik') }}</span>
+                                    @if (str_contains(strtolower($errors->first('nik')), 'terdaftar') || str_contains(strtolower($errors->first('nik')), 'masuk'))
+                                        <div class="mt-1">
+                                            <a href="{{ route('login') }}" class="inline-flex items-center gap-1 font-semibold text-[#93F514] hover:underline">
+                                                <span>Klik di sini untuk Masuk ke Akun Anda</span>
+                                            </a>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
                         @endif
                     </div>
 
@@ -520,13 +537,22 @@ new #[Layout('layouts.guest')] class extends Component {
                                 class="w-full pl-10 pr-4 py-2.5 bg-black/40 border border-white/15 focus:border-[#93F514] focus:ring-1 focus:ring-[#93F514] rounded-xl text-sm text-white placeholder-gray-500 transition outline-none" />
                         </div>
                         @if ($errors->has('email'))
-                            <p class="mt-1 text-xs text-red-400 font-normal flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="mt-1 text-xs text-red-400 font-normal flex items-start gap-1.5">
+                                <svg class="w-4 h-4 shrink-0 mt-0.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                {{ $errors->first('email') }}
-                            </p>
+                                <div class="flex-1">
+                                    <span>{{ $errors->first('email') }}</span>
+                                    @if (str_contains(strtolower($errors->first('email')), 'terdaftar') || str_contains(strtolower($errors->first('email')), 'masuk') || str_contains(strtolower($errors->first('email')), 'taken'))
+                                        <div class="mt-1">
+                                            <a href="{{ route('login') }}" class="inline-flex items-center gap-1 font-semibold text-[#93F514] hover:underline">
+                                                <span>Klik di sini untuk Masuk ke Akun Anda</span> &rarr;
+                                            </a>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
                         @endif
                     </div>
 
