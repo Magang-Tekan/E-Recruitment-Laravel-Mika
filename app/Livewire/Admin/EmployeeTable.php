@@ -28,6 +28,7 @@ class EmployeeTable extends Component
     public $editFullName = '';
     public $editNik = '';
     public $editEmployeeType = 'permanent';
+    public $editCompanyId = '';
     public $editDepartmentId = '';
     public $editPositionId = '';
     public $editPositionTitle = '';
@@ -42,6 +43,8 @@ class EmployeeTable extends Component
     public $promoteId = null;
     public $promoteFullName = '';
     public $promoteCurrentPosition = '';
+    public $promoteCurrentCompany = '';
+    public $promoteCompanyId = '';
     public $promotePositionId = '';
     public $promoteNewPosition = '';
     public $promoteTargetType = 'permanent';
@@ -53,8 +56,32 @@ class EmployeeTable extends Component
     public $masterPasskey = '';
     public $showPasskeyText = true;
 
+    public function updatedEditCompanyId()
+    {
+        if ($this->editDepartmentId) {
+            $dept = Department::find($this->editDepartmentId);
+            if ($dept && (string) $dept->company_id !== (string) $this->editCompanyId) {
+                $this->editDepartmentId = '';
+                $this->editPositionId = '';
+            }
+        }
+        if ($this->editPositionId) {
+            $pos = Position::with('department')->find($this->editPositionId);
+            if ($pos && (string) ($pos->department?->company_id) !== (string) $this->editCompanyId) {
+                $this->editPositionId = '';
+            }
+        }
+    }
+
     public function updatedEditDepartmentId()
     {
+        if ($this->editDepartmentId) {
+            $dept = Department::find($this->editDepartmentId);
+            if ($dept && $dept->company_id) {
+                $this->editCompanyId = (string) $dept->company_id;
+            }
+        }
+
         if ($this->editPositionId) {
             $pos = Position::find($this->editPositionId);
             if ($pos && (string) $pos->department_id !== (string) $this->editDepartmentId) {
@@ -66,15 +93,45 @@ class EmployeeTable extends Component
     public function updatedEditPositionId()
     {
         if ($this->editPositionId) {
-            $pos = Position::find($this->editPositionId);
+            $pos = Position::with('department')->find($this->editPositionId);
             if ($pos) {
                 $this->editPositionTitle = $pos->name;
+                if (!$this->editDepartmentId && $pos->department_id) {
+                    $this->editDepartmentId = (string) $pos->department_id;
+                }
+                if (!$this->editCompanyId && $pos->department?->company_id) {
+                    $this->editCompanyId = (string) $pos->department->company_id;
+                }
+            }
+        }
+    }
+
+    public function updatedPromoteCompanyId()
+    {
+        if ($this->promoteDepartmentId) {
+            $dept = Department::find($this->promoteDepartmentId);
+            if ($dept && (string) $dept->company_id !== (string) $this->promoteCompanyId) {
+                $this->promoteDepartmentId = '';
+                $this->promotePositionId = '';
+            }
+        }
+        if ($this->promotePositionId) {
+            $pos = Position::with('department')->find($this->promotePositionId);
+            if ($pos && (string) ($pos->department?->company_id) !== (string) $this->promoteCompanyId) {
+                $this->promotePositionId = '';
             }
         }
     }
 
     public function updatedPromoteDepartmentId()
     {
+        if ($this->promoteDepartmentId) {
+            $dept = Department::find($this->promoteDepartmentId);
+            if ($dept && $dept->company_id) {
+                $this->promoteCompanyId = (string) $dept->company_id;
+            }
+        }
+
         if ($this->promotePositionId) {
             $pos = Position::find($this->promotePositionId);
             if ($pos && (string) $pos->department_id !== (string) $this->promoteDepartmentId) {
@@ -86,9 +143,15 @@ class EmployeeTable extends Component
     public function updatedPromotePositionId()
     {
         if ($this->promotePositionId) {
-            $pos = Position::find($this->promotePositionId);
+            $pos = Position::with('department')->find($this->promotePositionId);
             if ($pos) {
                 $this->promoteNewPosition = $pos->name;
+                if (!$this->promoteDepartmentId && $pos->department_id) {
+                    $this->promoteDepartmentId = (string) $pos->department_id;
+                }
+                if (!$this->promoteCompanyId && $pos->department?->company_id) {
+                    $this->promoteCompanyId = (string) $pos->department->company_id;
+                }
             }
         }
     }
@@ -130,12 +193,13 @@ class EmployeeTable extends Component
 
     public function openEdit($id)
     {
-        $employee = EmployeeProfile::with('user')->findOrFail($id);
+        $employee = EmployeeProfile::with(['user', 'department.company'])->findOrFail($id);
         $this->editId = $employee->id;
         $this->editFullName = $employee->full_name ?? ($employee->user?->name ?? '');
         $this->editNik = $employee->nik ?? ($employee->user?->nik ?? '');
         $this->editEmployeeType = $employee->employee_type ?? 'permanent';
-        $this->editDepartmentId = $employee->department_id;
+        $this->editCompanyId = (string) ($employee->company_id ?: ($employee->department?->company_id ?: ''));
+        $this->editDepartmentId = $employee->department_id ? (string) $employee->department_id : '';
         $this->editPositionId = $employee->position_id ? (string) $employee->position_id : '';
         $this->editPositionTitle = $employee->position_title ?? ($employee->position?->name ?? '');
         $this->showEditModal = true;
@@ -144,7 +208,7 @@ class EmployeeTable extends Component
     public function closeEditModal()
     {
         $this->showEditModal = false;
-        $this->reset(['editId', 'editFullName', 'editNik', 'editEmployeeType', 'editDepartmentId', 'editPositionId', 'editPositionTitle']);
+        $this->reset(['editId', 'editFullName', 'editNik', 'editEmployeeType', 'editCompanyId', 'editDepartmentId', 'editPositionId', 'editPositionTitle']);
     }
 
     public function saveEmployee()
@@ -160,6 +224,7 @@ class EmployeeTable extends Component
                 Rule::unique('users', 'nik')->ignore($employee->user_id),
             ],
             'editEmployeeType' => 'required|in:permanent,contract,internship,probation',
+            'editCompanyId' => 'nullable|exists:companies,id',
             'editDepartmentId' => 'nullable|exists:departments,id',
             'editPositionId' => 'nullable|exists:positions,id',
             'editPositionTitle' => 'nullable|string|max:255',
@@ -174,13 +239,14 @@ class EmployeeTable extends Component
         $dept = $this->editDepartmentId ? Department::find($this->editDepartmentId) : null;
         $pos = $this->editPositionId ? Position::find($this->editPositionId) : null;
         $finalPositionTitle = $this->editPositionTitle ?: ($pos?->name ?? null);
+        $finalCompanyId = $this->editCompanyId ?: ($dept?->company_id ?? $employee->company_id);
 
         $employee->update([
             'full_name' => $this->editFullName,
             'nik' => $this->editNik,
             'employee_type' => $this->editEmployeeType,
+            'company_id' => $finalCompanyId ?: null,
             'department_id' => $this->editDepartmentId ?: null,
-            'company_id' => $dept?->company_id ?? $employee->company_id,
             'position_id' => $this->editPositionId ?: null,
             'position_title' => $finalPositionTitle,
         ]);
@@ -236,14 +302,16 @@ class EmployeeTable extends Component
 
     public function openPromoteModal($id)
     {
-        $employee = EmployeeProfile::with(['user', 'department'])->findOrFail($id);
+        $employee = EmployeeProfile::with(['user', 'department.company', 'company', 'position'])->findOrFail($id);
         $this->promoteId = $employee->id;
         $this->promoteFullName = $employee->full_name ?? ($employee->user?->name ?? 'Peserta Magang');
         $this->promoteCurrentPosition = $employee->position?->name ?? ($employee->position_title ?? 'Intern / Magang');
+        $this->promoteCurrentCompany = $employee->company?->name ?? ($employee->department?->company?->name ?? '');
+        $this->promoteCompanyId = (string) ($employee->company_id ?: ($employee->department?->company_id ?: ''));
+        $this->promoteDepartmentId = $employee->department_id ? (string) $employee->department_id : '';
+        $this->promoteDepartmentName = $employee->department?->name ?? 'Belum Diatur';
         $this->promotePositionId = '';
         $this->promoteNewPosition = $employee->position_title ? str_ireplace(['intern', 'magang', 'internship'], 'Staff', $employee->position_title) : 'Staff';
-        $this->promoteDepartmentId = $employee->department_id;
-        $this->promoteDepartmentName = $employee->department?->name ?? 'Belum Diatur';
         $this->promoteTargetType = 'permanent';
         $this->showPromoteModal = true;
     }
@@ -251,34 +319,36 @@ class EmployeeTable extends Component
     public function closePromoteModal()
     {
         $this->showPromoteModal = false;
-        $this->reset(['promoteId', 'promoteFullName', 'promoteCurrentPosition', 'promotePositionId', 'promoteNewPosition', 'promoteTargetType', 'promoteDepartmentId', 'promoteDepartmentName']);
+        $this->reset(['promoteId', 'promoteFullName', 'promoteCurrentPosition', 'promoteCurrentCompany', 'promoteCompanyId', 'promotePositionId', 'promoteNewPosition', 'promoteTargetType', 'promoteDepartmentId', 'promoteDepartmentName']);
     }
 
     public function confirmPromotion()
     {
         $this->validate([
             'promoteTargetType' => 'required|in:permanent,contract',
+            'promoteCompanyId' => 'nullable|exists:companies,id',
+            'promoteDepartmentId' => 'nullable|exists:departments,id',
             'promotePositionId' => 'nullable|exists:positions,id',
             'promoteNewPosition' => 'required|string|max:255',
-            'promoteDepartmentId' => 'nullable|exists:departments,id',
         ]);
 
         $employee = EmployeeProfile::findOrFail($this->promoteId);
         $dept = $this->promoteDepartmentId ? Department::find($this->promoteDepartmentId) : null;
         $pos = $this->promotePositionId ? Position::find($this->promotePositionId) : null;
         $finalTitle = $this->promoteNewPosition ?: ($pos?->name ?? 'Staff');
+        $finalCompanyId = $this->promoteCompanyId ?: ($dept?->company_id ?? $employee->company_id);
 
         $employee->update([
             'employee_type' => $this->promoteTargetType,
+            'company_id' => $finalCompanyId ?: null,
+            'department_id' => $this->promoteDepartmentId ?: null,
             'position_id' => $this->promotePositionId ?: null,
             'position_title' => $finalTitle,
-            'department_id' => $this->promoteDepartmentId ?: $employee->department_id,
-            'company_id' => $dept?->company_id ?? $employee->company_id,
         ]);
 
         $statusText = $this->promoteTargetType === 'permanent' ? 'Karyawan Tetap' : 'Karyawan Kontrak';
         $this->closePromoteModal();
-        session()->flash('message', 'Selamat! ' . $employee->full_name . ' berhasil diangkat menjadi ' . $statusText . ' dengan jabatan "' . $this->promoteNewPosition . '".');
+        session()->flash('message', 'Selamat! ' . $employee->full_name . ' berhasil diangkat menjadi ' . $statusText . ' dengan jabatan "' . $finalTitle . '".');
     }
 
     public function openPasskeyModal()
@@ -329,7 +399,41 @@ class EmployeeTable extends Component
             $q->where('company_id', $this->companyId);
         })->orderBy('name', 'asc')->get();
 
-        $positions = Position::with('department')->orderBy('name', 'asc')->get();
+        $positions = Position::with('department.company')->orderBy('name', 'asc')->get();
+
+        // Departments & Positions for Edit Modal
+        $editDepartments = Department::with('company')
+            ->when($this->editCompanyId, fn($q) => $q->where('company_id', $this->editCompanyId))
+            ->orderBy('name', 'asc')
+            ->get();
+
+        $editPositions = Position::with('department.company')
+            ->when($this->editDepartmentId, function ($q) {
+                $q->where('department_id', $this->editDepartmentId);
+            }, function ($q) {
+                if ($this->editCompanyId) {
+                    $q->whereHas('department', fn($dq) => $dq->where('company_id', $this->editCompanyId));
+                }
+            })
+            ->orderBy('name', 'asc')
+            ->get();
+
+        // Departments & Positions for Promote Modal
+        $promoteDepartments = Department::with('company')
+            ->when($this->promoteCompanyId, fn($q) => $q->where('company_id', $this->promoteCompanyId))
+            ->orderBy('name', 'asc')
+            ->get();
+
+        $promotePositions = Position::with('department.company')
+            ->when($this->promoteDepartmentId, function ($q) {
+                $q->where('department_id', $this->promoteDepartmentId);
+            }, function ($q) {
+                if ($this->promoteCompanyId) {
+                    $q->whereHas('department', fn($dq) => $dq->where('company_id', $this->promoteCompanyId));
+                }
+            })
+            ->orderBy('name', 'asc')
+            ->get();
 
         $employees = EmployeeProfile::with(['user', 'company', 'department.company', 'position'])
             ->when($this->search, function ($query) {
@@ -369,6 +473,10 @@ class EmployeeTable extends Component
             'departments' => $departments,
             'filterDepartments' => $filterDepartments,
             'positions' => $positions,
+            'editDepartments' => $editDepartments,
+            'editPositions' => $editPositions,
+            'promoteDepartments' => $promoteDepartments,
+            'promotePositions' => $promotePositions,
         ]);
     }
 }

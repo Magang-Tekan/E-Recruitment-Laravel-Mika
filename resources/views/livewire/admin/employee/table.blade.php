@@ -145,8 +145,9 @@
             </div>
         </div>
 
-        <div class="overflow-x-hidden">
-            <table class="w-full text-left border-collapse table-fixed">
+        <!-- Desktop & tablet landscape: tabel penuh -->
+        <div class="hidden lg:block overflow-x-auto">
+            <table class="w-full min-w-[880px] text-left border-collapse table-fixed">
                 <colgroup>
                     <col style="width:40px">
                     <col style="width:20%">
@@ -344,8 +345,135 @@
             </table>
         </div>
 
+        <!-- HP & tablet portrait: daftar kartu -->
+        <div class="lg:hidden">
+            @if ($employees->isEmpty())
+                <div class="py-12 px-4 text-center text-gray-400 dark:text-slate-500">
+                    <div class="flex flex-col items-center justify-center gap-2">
+                        <svg class="w-8 h-8 text-gray-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span class="text-xs">Belum ada karyawan internal yang mendaftar.</span>
+                    </div>
+                </div>
+            @else
+                <div class="p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    @foreach ($employees as $emp)
+                        @php
+                            $cardPhoto = $emp->photo ?? $emp->user?->avatar;
+                            $cardPhotoUrl = $cardPhoto ? (str_starts_with($cardPhoto, 'http') ? $cardPhoto : asset('storage/' . $cardPhoto)) : null;
+                            $cardName = $emp->full_name ?? ($emp->user?->name ?? '-');
+                            $cardNik = $emp->nik ?? ($emp->user?->nik ?? '-');
+                            $cardNikRaw = preg_replace('/[^0-9]/', '', (string) $cardNik);
+                            $cardNikValid = empty($cardNikRaw) || strlen($cardNikRaw) === 16;
+                            $cardPos = trim($emp->position?->name ?? ($emp->position_title ?? ''));
+                            $cardPosGeneric = empty($cardPos) || in_array(strtolower($cardPos), ['magang', 'intern', 'staff internal'], true);
+                            $cardPosition = !$cardPosGeneric
+                                ? $cardPos
+                                : ($emp->employee_type === 'internship'
+                                    ? 'Intern ' . ($emp->department?->name ?? 'Divisi')
+                                    : 'Staff ' . ($emp->department?->name ?? 'Internal'));
+                            $cardCompany = $emp->department?->company?->name ?? ($emp->company?->name ?? null);
+                            $cardType = match ($emp->employee_type) {
+                                'internship' => ['label' => 'Magang', 'class' => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60'],
+                                'contract' => ['label' => 'Kontrak', 'class' => 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60'],
+                                'probation' => ['label' => 'Probation', 'class' => 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/60'],
+                                default => ['label' => 'Tetap', 'class' => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60'],
+                            };
+                            $cardStatus = match ($emp->employee_type) {
+                                'internship' => ['label' => 'Peserta Magang', 'class' => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200/80 dark:border-amber-800/60'],
+                                'probation' => ['label' => 'Masa Percobaan', 'class' => 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200/80 dark:border-purple-800/60'],
+                                'contract' => ['label' => 'Kontrak Aktif', 'class' => 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200/80 dark:border-blue-800/60'],
+                                default => ['label' => 'Karyawan Tetap', 'class' => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800/60'],
+                            };
+                        @endphp
+                        <div class="rounded-2xl border border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 p-3.5 flex flex-col gap-3 min-w-0">
+                            <!-- Identitas -->
+                            <div class="flex items-start gap-3 min-w-0">
+                                @if ($cardPhotoUrl)
+                                    <img src="{{ $cardPhotoUrl }}" alt="{{ $cardName }}" class="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-[#1D2E54] shadow-2xs shrink-0">
+                                @else
+                                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                                        {{ strtoupper(substr($cardName, 0, 2)) }}
+                                    </div>
+                                @endif
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="font-bold text-gray-900 dark:text-white text-sm break-words leading-snug">{{ $cardName }}</div>
+                                        <span class="shrink-0 px-2 py-0.5 rounded-lg font-semibold text-[10px] border {{ $cardType['class'] }}">{{ $cardType['label'] }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-wrap text-[11px] text-gray-400 dark:text-slate-500 mt-0.5">
+                                        <span>NIK:</span>
+                                        <span class="font-mono font-medium text-gray-600 dark:text-slate-300 break-all">{{ $cardNik }}</span>
+                                        @if (!$cardNikValid)
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200/80 dark:border-rose-900/60">Bukan 16 Digit</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Departemen & Jabatan -->
+                            <div class="grid grid-cols-2 gap-2 min-w-0">
+                                <div class="min-w-0">
+                                    <span class="block text-[10px] uppercase font-semibold text-gray-400 dark:text-slate-500">Departemen</span>
+                                    <span class="inline-flex max-w-full mt-0.5 px-2 py-0.5 rounded-lg bg-indigo-50/80 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-semibold text-[11px] border border-indigo-200/80 dark:border-indigo-800/60 truncate" title="{{ $emp->department?->name ?? 'Belum Diatur' }}">
+                                        {{ $emp->department?->name ?? 'Belum Diatur' }}
+                                    </span>
+                                    @if ($cardCompany)
+                                        <div class="text-[10px] text-gray-400 dark:text-slate-400 truncate mt-1" title="{{ $cardCompany }}">{{ $cardCompany }}</div>
+                                    @endif
+                                </div>
+                                <div class="min-w-0">
+                                    <span class="block text-[10px] uppercase font-semibold text-gray-400 dark:text-slate-500">Jabatan</span>
+                                    <div class="font-semibold text-gray-800 dark:text-slate-200 text-[11.5px] truncate mt-0.5" title="{{ $cardPosition }}">{{ $cardPosition }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Kontak -->
+                            <div class="min-w-0">
+                                <span class="block text-[10px] uppercase font-semibold text-gray-400 dark:text-slate-500">Kontak</span>
+                                <div class="text-[11.5px] text-gray-700 dark:text-slate-300 font-medium truncate" title="{{ $emp->user?->email ?? '-' }}">{{ $emp->user?->email ?? '-' }}</div>
+                                @if ($emp->phone_number)
+                                    <div class="text-[11px] text-gray-400 dark:text-slate-500">{{ $emp->phone_number }}</div>
+                                @endif
+                            </div>
+
+                            <!-- Status & Aksi -->
+                            <div class="flex items-center justify-between gap-2 pt-2.5 border-t border-gray-200/80 dark:border-slate-700/60">
+                                <span class="inline-flex items-center whitespace-nowrap px-2.5 py-1 rounded-full font-semibold text-[10px] border {{ $cardStatus['class'] }}">
+                                    {{ $cardStatus['label'] }}
+                                </span>
+                                <div class="flex items-center gap-1">
+                                    @if ($emp->employee_type === 'internship')
+                                        <button wire:click="openPromoteModal({{ $emp->id }})" aria-label="Angkat jadi karyawan" title="Angkat jadi Karyawan"
+                                            class="p-2 rounded-lg text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 active:scale-95 transition">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                            </svg>
+                                        </button>
+                                    @endif
+                                    <button wire:click="openEdit({{ $emp->id }})" aria-label="Edit data karyawan" title="Edit Data / Status Pegawai"
+                                        class="p-2 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-slate-700 active:scale-95 transition">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button wire:click="openDeleteModal({{ $emp->id }})" aria-label="Hapus karyawan" title="Hapus Pegawai"
+                                        class="p-2 rounded-lg text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-gray-100 dark:hover:bg-slate-700 active:scale-95 transition">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
         @if ($employees->hasPages() || $perPage != 10)
-            <div class="px-6 py-4 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="px-3 sm:px-6 py-4 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                     <span class="text-xs text-gray-500 dark:text-slate-400">Tampilkan</span>
                     <select wire:model.live="perPage" class="pl-2.5 pr-7 py-1.5 text-xs rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition cursor-pointer">
@@ -414,8 +542,11 @@
                                 </span>
                             </div>
                             <div class="border-l border-gray-200/80 dark:border-slate-700 pl-3">
-                                <span class="text-[10px] text-gray-400 uppercase font-semibold block">Departemen</span>
+                                <span class="text-[10px] text-gray-400 uppercase font-semibold block">Departemen & Perusahaan</span>
                                 <span class="font-bold text-gray-700 dark:text-slate-300 block truncate">{{ $promoteDepartmentName }}</span>
+                                @if ($promoteCurrentCompany)
+                                    <span class="text-[11px] text-gray-500 dark:text-slate-400 block truncate mt-0.5">{{ $promoteCurrentCompany }}</span>
+                                @endif
                             </div>
                         </div>
 
@@ -444,17 +575,36 @@
                             @error('promoteTargetType') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- 2. Departemen & Posisi Baru Grid -->
+                        <!-- 2. Penempatan Perusahaan -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                Penempatan Perusahaan
+                            </label>
+                            <select wire:model.live="promoteCompanyId"
+                                class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
+                                <option value="" class="bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400">-- Pilih Perusahaan --</option>
+                                @foreach ($companies as $comp)
+                                    <option value="{{ $comp->id }}" class="bg-white dark:bg-slate-800 text-gray-900 dark:text-white py-1">{{ $comp->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('promoteCompanyId') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- 3. Departemen & Posisi Baru Grid -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                                     Penempatan Departemen
                                 </label>
                                 <select wire:model.live="promoteDepartmentId"
-                                    class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition cursor-pointer">
-                                    <option value="">-- Tetap di Departemen Saat Ini --</option>
-                                    @foreach ($departments as $dept)
-                                        <option value="{{ $dept->id }}">{{ $dept->name }} {{ $dept->company ? '('.$dept->company->name.')' : '' }}</option>
+                                    class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
+                                    <option value="" class="bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400">
+                                        {{ $promoteCompanyId ? '-- Pilih Departemen --' : '-- Semua Departemen --' }}
+                                    </option>
+                                    @foreach ($promoteDepartments as $dept)
+                                        <option value="{{ $dept->id }}" class="bg-white dark:bg-slate-800 text-gray-900 dark:text-white py-1">
+                                            {{ $dept->name }} @if(!$promoteCompanyId && $dept->company)({{ $dept->company->name }})@endif
+                                        </option>
                                     @endforeach
                                 </select>
                                 @error('promoteDepartmentId') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
@@ -466,12 +616,12 @@
                                     <span class="text-[10px] text-gray-400 font-normal">Otomatis</span>
                                 </label>
                                 <select wire:model.live="promotePositionId"
-                                    class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition cursor-pointer">
-                                    <option value="">-- Pilih Posisi Baru --</option>
-                                    @foreach ($positions as $pos)
-                                        @if (!$promoteDepartmentId || $promoteDepartmentId == $pos->department_id)
-                                            <option value="{{ $pos->id }}">{{ $pos->name }} ({{ $pos->department?->name }})</option>
-                                        @endif
+                                    class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
+                                    <option value="" class="bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400">-- Pilih Posisi Baru --</option>
+                                    @foreach ($promotePositions as $pos)
+                                        <option value="{{ $pos->id }}" class="bg-white dark:bg-slate-800 text-gray-900 dark:text-white py-1">
+                                            {{ $pos->name }} @if(!$promoteDepartmentId && $pos->department)({{ $pos->department->name }})@endif
+                                        </option>
                                     @endforeach
                                 </select>
                                 @error('promotePositionId') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
@@ -571,6 +721,21 @@
                             @error('editEmployeeType') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
+                        <!-- Perusahaan / Entitas -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                Perusahaan / Entitas
+                            </label>
+                            <select wire:model.live="editCompanyId"
+                                class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
+                                <option value="" class="bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400">-- Pilih Perusahaan --</option>
+                                @foreach ($companies as $comp)
+                                    <option value="{{ $comp->id }}" class="bg-white dark:bg-slate-800 text-gray-900 dark:text-white py-1">{{ $comp->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('editCompanyId') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+
                         <!-- Departemen / Divisi & Master Posisi Grid -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
@@ -579,9 +744,13 @@
                                 </label>
                                 <select wire:model.live="editDepartmentId"
                                     class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
-                                    <option value="" class="bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400">-- Pilih Departemen --</option>
-                                    @foreach ($departments as $dept)
-                                        <option value="{{ $dept->id }}" class="bg-white dark:bg-slate-800 text-gray-900 dark:text-white py-1">{{ $dept->name }} {{ $dept->company ? '('.$dept->company->name.')' : '' }}</option>
+                                    <option value="" class="bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400">
+                                        {{ $editCompanyId ? '-- Pilih Departemen --' : '-- Semua Departemen --' }}
+                                    </option>
+                                    @foreach ($editDepartments as $dept)
+                                        <option value="{{ $dept->id }}" class="bg-white dark:bg-slate-800 text-gray-900 dark:text-white py-1">
+                                            {{ $dept->name }} @if(!$editCompanyId && $dept->company)({{ $dept->company->name }})@endif
+                                        </option>
                                     @endforeach
                                 </select>
                                 @error('editDepartmentId') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
@@ -594,11 +763,11 @@
                                 </label>
                                 <select wire:model.live="editPositionId"
                                     class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
-                                    <option value="">-- Bebas / Khusus --</option>
-                                    @foreach ($positions as $pos)
-                                        @if (!$editDepartmentId || $editDepartmentId == $pos->department_id)
-                                            <option value="{{ $pos->id }}">{{ $pos->name }} ({{ $pos->department?->name }})</option>
-                                        @endif
+                                    <option value="" class="bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400">-- Bebas / Khusus --</option>
+                                    @foreach ($editPositions as $pos)
+                                        <option value="{{ $pos->id }}" class="bg-white dark:bg-slate-800 text-gray-900 dark:text-white py-1">
+                                            {{ $pos->name }} @if(!$editDepartmentId && $pos->department)({{ $pos->department->name }})@endif
+                                        </option>
                                     @endforeach
                                 </select>
                                 @error('editPositionId') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror

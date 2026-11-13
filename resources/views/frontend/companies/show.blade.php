@@ -133,7 +133,7 @@
             <div class="flex flex-wrap items-center gap-3 w-full md:w-auto shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-[#93F514]/15">
                 @if($activeJobs->count() > 0)
                     <a href="#lowongan-terbuka"
-                       class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-xs sm:text-sm shadow-lg shadow-[#93F514]/25 transition-all duration-200 active:scale-[0.98]">
+                       class="company-jobs-cta flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-xs sm:text-sm shadow-lg shadow-[#93F514]/25 transition-all duration-200 active:scale-[0.98]">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
