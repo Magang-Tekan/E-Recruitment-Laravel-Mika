@@ -378,7 +378,7 @@
                                 @endif
                             @else
                                 <a href="{{ route('login') }}"
-                                    class="job-apply-btn flex-1 md:flex-initial h-11 sm:h-12 px-6 rounded-2xl bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-sm sm:text-base shadow-md shadow-black/30 transition inline-flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98]">
+                                    class="job-apply-btn flex-1 md:flex-initial h-11 sm:h-12 px-6 rounded-2xl bg-[#1a4d00] hover:bg-[#163f00] dark:bg-[#93F514] dark:hover:bg-[#82dc0a] text-white dark:text-black font-extrabold text-sm sm:text-base shadow-md shadow-black/30 transition inline-flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98]">
                                     <span>{{ __('Masuk & Lamar') }}</span>
                                 </a>
                             @endauth

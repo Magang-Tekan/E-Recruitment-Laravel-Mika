@@ -735,6 +735,28 @@
             color: #000000 !important;
         }
 
+        /* Tombol CTA Tahap 01-06 (Alur Pendaftaran): hitam pekat, hover hijau tua di light mode */
+        html.light-mode .stage-cta,
+        html.light-mode a.stage-cta {
+            background-color: #000000 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.20) !important;
+        }
+
+        html.light-mode .stage-cta:hover,
+        html.light-mode a.stage-cta:hover {
+            background-color: #1A4D00 !important;
+            color: #FFFFFF !important;
+        }
+
+        html.light-mode .stage-cta span,
+        html.light-mode .stage-cta svg,
+        html.light-mode .stage-cta:hover span,
+        html.light-mode .stage-cta:hover svg {
+            color: #FFFFFF !important;
+            stroke: currentColor;
+        }
+
         /* "Cari Lowongan" & "Pantau Status" submit button: normal hitam pekat + teks putih & icon neon, hover warna hitam pekat bukan neon di light mode */
         html.light-mode .bg-\[\#051405\],
         html.light-mode a.bg-\[\#051405\],
@@ -1676,18 +1698,18 @@
 
         /* Alur Pendaftaran "Daftar Akun Sekarang" button */
         html.light-mode #alur-pendaftaran a[href*="register"] {
-            background: #061806 !important;
+            background: #000000 !important;
             background-image: none !important;
             color: #FFFFFF !important;
-            border: 1px solid rgba(147, 245, 20, 0.50) !important;
+            border: 1px solid rgba(0, 0, 0, 0.20) !important;
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.20) !important;
         }
 
         html.light-mode #alur-pendaftaran a[href*="register"]:hover {
-            background: #93F514 !important;
-            border-color: #93F514 !important;
-            color: #000000 !important;
-            box-shadow: 0 6px 22px rgba(147, 245, 20, 0.60) !important;
+            background: #1A4D00 !important;
+            border-color: #1A4D00 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.28) !important;
         }
 
         /* CTA "Masuk Akun" button: Putih + Border Halus */
@@ -2258,10 +2280,10 @@
         }
 
         html.light-mode .group-company-card .group-detail-btn:hover {
-            background-color: #93F514 !important;
-            border-color: #93F514 !important;
-            color: #000000 !important;
-            box-shadow: 0 4px 14px rgba(147, 245, 20, 0.40) !important;
+            background-color: #2D6B00 !important;
+            border-color: #2D6B00 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 4px 14px rgba(45, 107, 0, 0.30) !important;
         }
 
         /* Group Website icon button in light mode */
@@ -2297,6 +2319,26 @@
 
         html.light-mode .company-hero-card .text-gray-400 {
             color: #4B5563 !important;
+        }
+
+        /* Tombol "Lihat Lowongan" pada hero detail perusahaan */
+        html.light-mode .company-hero-card .company-jobs-cta {
+            background-color: #2D6B00 !important;
+            color: #FFFFFF !important;
+            border: 1px solid #2D6B00 !important;
+            box-shadow: 0 6px 18px rgba(45, 107, 0, 0.25) !important;
+        }
+
+        html.light-mode .company-hero-card .company-jobs-cta:hover {
+            background-color: #1A4D00 !important;
+            border-color: #1A4D00 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 8px 22px rgba(45, 107, 0, 0.35) !important;
+        }
+
+        html.light-mode .company-hero-card .company-jobs-cta svg {
+            color: #FFFFFF !important;
+            stroke: #FFFFFF !important;
         }
 
         html.light-mode .company-hero-card .company-initial-avatar {

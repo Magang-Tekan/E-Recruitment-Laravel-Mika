@@ -695,25 +695,25 @@
                         <button @click="activeStep = step.num" type="button"
                             class="group relative text-left p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer overflow-hidden"
                             :class="activeStep === step.num ?
-                                'bg-white dark:bg-white/[0.08] border-[#3b8004] dark:border-[#93F514] shadow-sm' :
-                                'bg-white dark:bg-white/[0.02] hover:bg-gray-50 dark:hover:bg-white/[0.05] border-gray-200 dark:border-white/[0.06] hover:border-gray-300 dark:hover:border-white/15 shadow-sm dark:shadow-none'">
+                                'bg-white dark:bg-white/[0.08] border-[#1a4d00] dark:border-[#93F514] shadow-sm' :
+                                'bg-white dark:bg-white/[0.02] hover:bg-emerald-50/40 dark:hover:bg-white/[0.05] border-gray-200 dark:border-white/[0.06] hover:border-[#1a4d00] dark:hover:border-white/15 shadow-sm dark:shadow-none'">
 
                             <div class="flex items-center justify-between mb-1.5">
                                 <span class="text-xs font-extrabold tracking-wider transition-colors"
-                                    :class="activeStep === step.num ? 'text-[#3b8004] dark:text-[#93F514]' :
-                                        'text-gray-400 dark:text-zinc-500 group-hover:text-gray-600 dark:group-hover:text-zinc-400'"
+                                    :class="activeStep === step.num ? 'text-[#1a4d00] dark:text-[#93F514]' :
+                                        'text-gray-400 dark:text-zinc-500 group-hover:text-[#1a4d00] dark:group-hover:text-zinc-400'"
                                     x-text="step.id"></span>
                                 <span class="w-2 h-2 rounded-full transition-colors"
-                                    :class="activeStep === step.num ? 'bg-[#4fa304] dark:bg-[#93F514]' :
-                                        'bg-gray-300 dark:bg-zinc-700'"></span>
+                                    :class="activeStep === step.num ? 'bg-[#1a4d00] dark:bg-[#93F514]' :
+                                        'bg-gray-300 dark:bg-zinc-700 group-hover:bg-[#1a4d00] dark:group-hover:bg-zinc-500'"></span>
                             </div>
                             <div class="text-xs sm:text-sm font-bold truncate transition-colors"
                                 :class="activeStep === step.num ? 'text-gray-900 dark:text-white' :
                                     'text-gray-700 dark:text-zinc-300 group-hover:text-gray-900 dark:group-hover:text-white'"
                                 x-text="step.title"></div>
                             <div class="text-[11px] font-medium truncate mt-0.5 transition-colors"
-                                :class="activeStep === step.num ? 'text-gray-600 dark:text-zinc-400' :
-                                    'text-gray-500 dark:text-zinc-500'"
+                                :class="activeStep === step.num ? 'text-[#1a4d00] dark:text-zinc-400' :
+                                    'text-gray-500 dark:text-zinc-500 group-hover:text-[#1a4d00] dark:group-hover:text-zinc-400'"
                                 x-text="step.sub"></div>
                         </button>
                     </template>
@@ -794,16 +794,23 @@
                                             : route('admin.dashboard'))
                                         : route('profile');
                                 @endphp
-                                <a href="{{ $dashRoute }}"
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
-                                    <span>{{ $isAdminOrRecruiter ? __('Buka Dashboard Manajemen') : __('Buka Profil Saya') }}</span>
-                                </a>
+                                @if ($isAdminOrRecruiter)
+                                    <a href="{{ $dashRoute }}"
+                                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-black dark:bg-[#93F514] text-white dark:text-black font-bold text-xs sm:text-sm hover:bg-gray-800 dark:hover:bg-[#82e00b] transition shadow-md shadow-black/20 dark:shadow-[#93F514]/25">
+                                        <span>{{ __('Buka Dashboard Manajemen') }}</span>
+                                    </a>
+                                @else
+                                    <a href="{{ $dashRoute }}"
+                                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl stage-cta bg-black text-white dark:bg-[#93F514] dark:text-black font-bold text-xs sm:text-sm hover:bg-[#1a4d00] hover:text-white dark:hover:bg-[#82e00b] dark:hover:text-black transition shadow-md shadow-black/25 dark:shadow-[#93F514]/25">
+                                        <span>{{ __('Buka Profil Saya') }}</span>
+                                    </a>
+                                @endif
                             @else
                                 <a href="{{ route('register') }}"
-                                    class="inline-flex items-center gap-3 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25 group">
+                                    class="inline-flex items-center gap-3 px-6 py-2.5 rounded-xl stage-cta bg-black text-white dark:bg-[#93F514] dark:text-black font-bold text-xs sm:text-sm hover:bg-[#1a4d00] hover:text-white dark:hover:bg-[#82e00b] dark:hover:text-black transition shadow-md shadow-black/25 dark:shadow-[#93F514]/25 group">
                                     <span>{{ __('Daftar Akun Sekarang') }}</span>
                                     <span
-                                        class="w-5 h-5 rounded-md bg-black/10 flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                                        class="w-5 h-5 rounded-md bg-white/15 dark:bg-black/10 group-hover:bg-white/25 flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                                 d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -905,12 +912,12 @@
                         <div class="pt-3 flex flex-wrap items-center gap-3">
                             @auth
                                 <a href="{{ route('profile') }}"
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl stage-cta bg-black text-white dark:bg-[#93F514] dark:text-black font-bold text-xs sm:text-sm hover:bg-[#1a4d00] hover:text-white dark:hover:bg-[#82e00b] dark:hover:text-black transition shadow-md shadow-black/25 dark:shadow-[#93F514]/25">
                                     <span>{{ __('Lengkapi Profil Sekarang') }}</span>
                                 </a>
                             @else
                                 <a href="{{ route('login') }}"
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl stage-cta bg-black text-white dark:bg-[#93F514] dark:text-black font-bold text-xs sm:text-sm hover:bg-[#1a4d00] hover:text-white dark:hover:bg-[#82e00b] dark:hover:text-black transition shadow-md shadow-black/25 dark:shadow-[#93F514]/25">
                                     <span>{{ __('Masuk untuk Lengkapi Profil') }}</span>
                                 </a>
                             @endauth
@@ -1007,7 +1014,7 @@
                         <!-- Action Bar -->
                         <div class="pt-3 flex flex-wrap items-center gap-3">
                             <a href="{{ route('jobs.index') }}"
-                                class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl stage-cta bg-black text-white dark:bg-[#93F514] dark:text-black font-bold text-xs sm:text-sm hover:bg-[#1a4d00] hover:text-white dark:hover:bg-[#82e00b] dark:hover:text-black transition shadow-md shadow-black/25 dark:shadow-[#93F514]/25">
                                 <span>{{ __('Jelajahi Lowongan Tersedia') }}</span>
                             </a>
                             <button type="button" @click="activeStep = 4"
@@ -1104,12 +1111,12 @@
                         <div class="pt-3 flex flex-wrap items-center gap-3">
                             @auth
                                 <a href="{{ route('profile', ['tab' => 'riwayat']) }}"
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl stage-cta bg-black text-white dark:bg-[#93F514] dark:text-black font-bold text-xs sm:text-sm hover:bg-[#1a4d00] hover:text-white dark:hover:bg-[#82e00b] dark:hover:text-black transition shadow-md shadow-black/25 dark:shadow-[#93F514]/25">
                                     <span>{{ __('Cek Status Ujian di Riwayat') }}</span>
                                 </a>
                             @else
                                 <a href="{{ route('login') }}"
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl stage-cta bg-black text-white dark:bg-[#93F514] dark:text-black font-bold text-xs sm:text-sm hover:bg-[#1a4d00] hover:text-white dark:hover:bg-[#82e00b] dark:hover:text-black transition shadow-md shadow-black/25 dark:shadow-[#93F514]/25">
                                     <span>{{ __('Masuk ke Portal Ujian') }}</span>
                                 </a>
                             @endauth
@@ -1207,12 +1214,12 @@
                         <div class="pt-3 flex flex-wrap items-center gap-3">
                             @auth
                                 <a href="{{ route('profile', ['tab' => 'riwayat']) }}"
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl stage-cta bg-black text-white dark:bg-[#93F514] dark:text-black font-bold text-xs sm:text-sm hover:bg-[#1a4d00] hover:text-white dark:hover:bg-[#82e00b] dark:hover:text-black transition shadow-md shadow-black/25 dark:shadow-[#93F514]/25">
                                     <span>{{ __('Pantau Jadwal Wawancara') }}</span>
                                 </a>
                             @else
                                 <a href="{{ route('jobs.index') }}"
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl stage-cta bg-black text-white dark:bg-[#93F514] dark:text-black font-bold text-xs sm:text-sm hover:bg-[#1a4d00] hover:text-white dark:hover:bg-[#82e00b] dark:hover:text-black transition shadow-md shadow-black/25 dark:shadow-[#93F514]/25">
                                     <span>{{ __('Lihat Peluang Karir') }}</span>
                                 </a>
                             @endauth
@@ -1310,15 +1317,15 @@
                         <div class="pt-3 flex flex-wrap items-center gap-3">
                             @auth
                                 <a href="{{ route('profile', ['tab' => 'riwayat']) }}"
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25">
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl stage-cta bg-black text-white dark:bg-[#93F514] dark:text-black font-bold text-xs sm:text-sm hover:bg-[#1a4d00] hover:text-white dark:hover:bg-[#82e00b] dark:hover:text-black transition shadow-md shadow-black/25 dark:shadow-[#93F514]/25">
                                     <span>{{ __('Lihat Riwayat & Status Saya') }}</span>
                                 </a>
                             @else
                                 <a href="{{ route('register') }}"
-                                    class="inline-flex items-center gap-3 px-6 py-2.5 rounded-xl bg-[#93F514] text-black font-bold text-xs sm:text-sm hover:bg-[#82e00b] transition shadow-md shadow-[#93F514]/25 group">
+                                    class="inline-flex items-center gap-3 px-6 py-2.5 rounded-xl stage-cta bg-black text-white dark:bg-[#93F514] dark:text-black font-bold text-xs sm:text-sm hover:bg-[#1a4d00] hover:text-white dark:hover:bg-[#82e00b] dark:hover:text-black transition shadow-md shadow-black/25 dark:shadow-[#93F514]/25 group">
                                     <span>{{ __('Daftar & Raih Karir Impian') }}</span>
                                     <span
-                                        class="w-5 h-5 rounded-md bg-black/10 flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                                        class="w-5 h-5 rounded-md bg-white/15 dark:bg-black/10 group-hover:bg-white/25 flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                                 d="M14 5l7 7m0 0l-7 7m7-7H3" />

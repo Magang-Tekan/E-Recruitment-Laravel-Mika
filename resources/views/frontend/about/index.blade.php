@@ -150,7 +150,7 @@
                             <span class="text-xs text-gray-400 font-semibold mr-1 about-doc-label">{{ __('Dokumentasi:') }}</span>
                             <template x-for="(slide, index) in slides" :key="index">
                                 <button @click="goTo(index)"
-                                    :class="currentSlide === index ? 'w-8 bg-[#93F514] shadow-sm about-dot-active' : 'w-2.5 bg-white/25 hover:bg-white/45 border border-white/10 about-dot-inactive'"
+                                    :class="currentSlide === index ? 'w-8 bg-[#1a4d00] dark:bg-[#93F514] shadow-sm about-dot-active' : 'w-2.5 bg-white/25 hover:bg-white/45 border border-white/10 about-dot-inactive'"
                                     class="h-2 rounded-full transition-all duration-300 cursor-pointer"
                                     :aria-label="'Slide ' + (index + 1)">
                                 </button>
