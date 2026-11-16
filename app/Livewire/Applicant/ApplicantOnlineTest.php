@@ -262,9 +262,7 @@ class ApplicantOnlineTest extends Component
             }
 
             $this->violationsCount = (int) ($existingAttempt->violations_count ?? 0);
-            $this->violationLogs = is_array($existingAttempt->violation_logs)
-                ? $existingAttempt->violation_logs
-                : (json_decode($existingAttempt->violation_logs ?? '[]', true) ?: []);
+            $this->violationLogs = TestAttempt::decodeViolationLogs($existingAttempt->violation_logs);
 
             if (in_array($existingAttempt->status, ['completed', 'passed', 'failed'])) {
                 $this->testState = 'completed';
@@ -334,9 +332,7 @@ class ApplicantOnlineTest extends Component
                 $this->attemptId = $existingAttempt->id;
                 $this->selectedPkg = $existingAttempt->package_id ?: $this->selectedPkg;
                 $this->violationsCount = (int) ($existingAttempt->violations_count ?? 0);
-                $this->violationLogs = is_array($existingAttempt->violation_logs)
-                    ? $existingAttempt->violation_logs
-                    : (json_decode($existingAttempt->violation_logs ?? '[]', true) ?: []);
+                $this->violationLogs = TestAttempt::decodeViolationLogs($existingAttempt->violation_logs);
 
                 if (in_array($existingAttempt->status, ['completed', 'passed', 'failed'])) {
                     $this->testState = 'completed';
@@ -710,6 +706,8 @@ class ApplicantOnlineTest extends Component
      */
     public function recordViolation($reason = '', $clientCount = null)
     {
+        $this->violationLogs = TestAttempt::decodeViolationLogs($this->violationLogs);
+
         if ($clientCount !== null && (int)$clientCount > $this->violationsCount) {
             $this->violationsCount = (int)$clientCount;
         } else {
@@ -724,6 +722,7 @@ class ApplicantOnlineTest extends Component
         $this->violationLogs[] = $log;
 
         if ($this->attemptId) {
+            // Update lewat query builder tidak menjalankan cast model, jadi log di-encode sekali di sini.
             TestAttempt::where('id', $this->attemptId)->update([
                 'violations_count' => $this->violationsCount,
                 'violation_logs'   => json_encode($this->violationLogs),
@@ -1316,7 +1315,8 @@ class ApplicantOnlineTest extends Component
             'total_score'      => $totalScore,
             'status'           => $status,
             'violations_count' => $this->violationsCount,
-            'violation_logs'   => is_array($this->violationLogs) ? json_encode($this->violationLogs) : $this->violationLogs,
+            // Atribut memakai cast 'array', jadi kirim array apa adanya (jangan di-encode ganda).
+            'violation_logs'   => TestAttempt::decodeViolationLogs($this->violationLogs),
         ]);
 
         // Jika ujian PG murni lulus KKM, otomatis update status lamaran ke 'Shortlisted'

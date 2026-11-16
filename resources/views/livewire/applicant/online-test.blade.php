@@ -810,6 +810,12 @@
                     this.showSecurityToast(this.violationReason);
 
                     if (this.$wire) this.$wire.recordViolation(this.violationReason, this.violations).catch(() => {});
+
+                    // Pelanggaran terakhir: kirim lembar jawaban langsung dari klien agar sesi
+                    // tidak menggantung bila permintaan recordViolation gagal di server.
+                    if (this.violations >= this.maxViolations) {
+                        this.submitAutoExam();
+                    }
                 },
                 formatTime(sec) {
                     if (sec <= 0) return '00:00:00';

@@ -102,7 +102,7 @@
             participant_name: att.participant_name || name,
             participant_age: att.participant_age || (app && app.applicant_profile ? app.applicant_profile.age : null),
             participant_gender: att.participant_gender || (app && app.applicant_profile ? app.applicant_profile.gender : null),
-            test_date: att.test_date || (att.started_at ? att.started_at.substring(0, 10) : null)
+            test_date: att.test_date || att.started_at || null
         };
         this.showGradingModal = true;
     },
@@ -131,6 +131,19 @@
     calcY(score) {
         let val = Math.max(-8, Math.min(8, parseFloat(score) || 0));
         return 80 - (val * 8.125);
+    },
+
+    // Tanggal tes tampil dalam format Indonesia (16 November 2026). Nilai dari server berupa
+    // ISO UTC (tengah malam WIB = 17:00Z hari sebelumnya), jadi konversi memakai zona aplikasi
+    // dan jangan dipotong substring.
+    formatTanggalTes(value) {
+        if (!value) return '-';
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return String(value).substring(0, 10);
+        return d.toLocaleDateString('id-ID', {
+            day: 'numeric', month: 'long', year: 'numeric',
+            timeZone: '{{ config('app.timezone', 'Asia/Jakarta') }}',
+        });
     },
 
     getGroupedQuestions() {
@@ -1386,7 +1399,7 @@
                                     </div>
                                     <div class="p-2.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/60">
                                         <span class="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-0.5">Tanggal Tes</span>
-                                        <span class="font-bold text-gray-900 dark:text-white" x-text="gradingData.test_date ? gradingData.test_date.substring(0, 10) : '-'"></span>
+                                        <span class="font-bold text-gray-900 dark:text-white" x-text="formatTanggalTes(gradingData.test_date)"></span>
                                     </div>
                                 </div>
                             </template>

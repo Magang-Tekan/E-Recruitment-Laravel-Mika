@@ -61,6 +61,26 @@ class TestAttempt extends Model
         return null;
     }
 
+    /**
+     * Log pelanggaran selalu dikembalikan sebagai array, termasuk untuk data lama
+     * yang terlanjur tersimpan sebagai string JSON ganda.
+     */
+    public static function decodeViolationLogs($value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        $decoded = json_decode((string) $value, true);
+
+        // Nilai yang sempat di-encode dua kali masih berupa string JSON.
+        if (is_string($decoded)) {
+            $decoded = json_decode($decoded, true);
+        }
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
     public function getIsPsychometricAttribute(): bool
     {
         $title = strtolower($this->test?->title ?? '');
