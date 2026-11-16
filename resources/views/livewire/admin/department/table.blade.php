@@ -199,8 +199,15 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
+        <!-- Desktop & tablet landscape: tabel penuh -->
+        <div class="hidden md:block overflow-x-auto">
+            <table class="w-full min-w-[700px] text-left border-collapse text-xs">
+                <colgroup>
+                    <col style="width:30%">
+                    <col style="width:28%">
+                    <col style="width:30%">
+                    <col style="width:12%">
+                </colgroup>
                 <thead>
                     <tr
                         class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
@@ -219,22 +226,24 @@
                                         class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-semibold shrink-0">
                                         {{ strtoupper(substr($department->name, 0, 1)) }}
                                     </div>
-                                    <span>{{ $department->name }}</span>
+                                    <span class="truncate">{{ $department->name }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
                                 @if ($department->company)
-                                    <span
-                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-[#14203A] text-slate-700 dark:text-[#DDE5F5] border border-slate-200/80 dark:border-[#1D2E54]">
+                                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-[#14203A] text-slate-700 dark:text-[#DDE5F5] border border-slate-200/80 dark:border-[#1D2E54] max-w-[260px]"
+                                        title="{{ $department->company->name }}">
                                         <svg class="w-3.5 h-3.5 text-blue-500 dark:text-sky-400 shrink-0" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor" stroke-width="1.8">
+                                            stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                         </svg>
-                                        {{ $department->company->name }}
-                                    </span>
+                                        <span class="truncate">{{ $department->company->name }}</span>
+                                    </div>
                                 @else
-                                    <span class="text-gray-400 italic text-[11px]">-</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium text-gray-400 dark:text-slate-500 bg-gray-100/80 dark:bg-slate-800">
+                                        Semua Perusahaan
+                                    </span>
                                 @endif
                             </td>
                             <td class="px-6 py-4">
@@ -251,7 +260,7 @@
                                             'name' => $department->name,
                                             'description' => $department->description,
                                         ]) }})"
-                                        class="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                                        class="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                                         title="Edit">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
                                             stroke="currentColor">
@@ -264,7 +273,7 @@
                                             'id' => $department->id,
                                             'name' => $department->name,
                                         ]) }})"
-                                        class="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                                        class="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                                         title="Hapus">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
                                             stroke="currentColor">
@@ -295,9 +304,101 @@
             </table>
         </div>
 
+        <!-- HP & tablet portrait: daftar kartu departemen -->
+        <div class="md:hidden">
+            @if ($departments->isEmpty())
+                <div class="py-12 px-4 text-center text-gray-400 dark:text-slate-500">
+                    <div class="flex flex-col items-center justify-center gap-2">
+                        <svg class="w-10 h-10 text-gray-300 dark:text-slate-700" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        <span class="text-sm font-medium">Belum ada data departemen</span>
+                        <span class="text-xs">Klik tombol "Tambah Departemen" untuk menambahkan data baru.</span>
+                    </div>
+                </div>
+            @else
+                <div class="p-3.5 sm:p-4 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    @foreach ($departments as $department)
+                        <div class="rounded-2xl border border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 p-3.5 sm:p-4 flex flex-col justify-between gap-3 min-w-0 shadow-2xs">
+                            <!-- Header Departemen & Aksi -->
+                            <div class="flex items-start justify-between gap-2 min-w-0">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold shrink-0">
+                                        {{ strtoupper(substr($department->name, 0, 1)) }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <h4 class="font-bold text-gray-900 dark:text-white text-sm truncate" title="{{ $department->name }}">
+                                            {{ $department->name }}
+                                        </h4>
+                                        <span class="text-[10px] text-gray-400 uppercase font-semibold">Departemen</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <button
+                                        @click="openEditModal({{ json_encode([
+                                            'id' => $department->id,
+                                            'company_id' => $department->company_id,
+                                            'name' => $department->name,
+                                            'description' => $department->description,
+                                        ]) }})"
+                                        class="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                                        title="Edit">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        @click="openDeleteModal({{ json_encode([
+                                            'id' => $department->id,
+                                            'name' => $department->name,
+                                        ]) }})"
+                                        class="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                                        title="Hapus">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Kolom Perusahaan (Responsif & Rapi) -->
+                            <div class="bg-white/70 dark:bg-slate-900/60 p-2.5 rounded-xl border border-gray-100 dark:border-slate-800/80">
+                                <span class="block text-[10px] uppercase font-semibold text-gray-400 dark:text-slate-500 mb-1">Perusahaan Naungan</span>
+                                @if ($department->company)
+                                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-[#14203A] text-slate-700 dark:text-[#DDE5F5] border border-slate-200/80 dark:border-[#1D2E54] max-w-full"
+                                        title="{{ $department->company->name }}">
+                                        <svg class="w-3.5 h-3.5 text-blue-500 dark:text-sky-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                        <span class="truncate">{{ $department->company->name }}</span>
+                                    </div>
+                                @else
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium text-gray-400 dark:text-slate-500 bg-gray-100/80 dark:bg-slate-800">
+                                        Semua Perusahaan
+                                    </span>
+                                @endif
+                            </div>
+
+                            <!-- Deskripsi -->
+                            @if ($department->description)
+                                <div class="text-[11.5px] text-gray-500 dark:text-slate-400 line-clamp-2">
+                                    {{ $department->description }}
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
         @if ($departments->hasPages() || $perPage != 10)
             <div
-                class="px-6 py-4 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                class="px-4 sm:px-6 py-4 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                     <span class="text-xs text-gray-500 dark:text-slate-400">Tampilkan</span>
                     <select wire:model.live="perPage"

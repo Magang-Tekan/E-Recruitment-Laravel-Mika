@@ -490,8 +490,9 @@
             </div>
         </div>
 
-        <div class="overflow-x-hidden">
-            <table class="w-full text-left border-collapse table-fixed">
+        <!-- Desktop & tablet landscape: tabel penuh -->
+        <div class="hidden lg:block overflow-x-auto">
+            <table class="w-full min-w-[960px] text-left border-collapse table-fixed">
                 <colgroup>
                     <col style="width:40px">
                     <col style="width:20%">
@@ -745,9 +746,203 @@
             </table>
         </div>
 
+        <!-- HP & tablet portrait: daftar kartu evaluasi asesmen -->
+        <div class="lg:hidden">
+            @if ($attempts->isEmpty())
+                <div class="py-12 px-4 text-center text-gray-400 dark:text-slate-500">
+                    <div class="flex flex-col items-center justify-center gap-2">
+                        <svg class="w-8 h-8 text-gray-300 dark:text-slate-600" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        <span class="text-xs">Belum ada riwayat pengerjaan asesmen dari karyawan.</span>
+                    </div>
+                </div>
+            @else
+                <div class="p-3.5 sm:p-4 grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    @foreach ($attempts as $index => $attempt)
+                        @php
+                            $emp = $attempt->user?->employeeProfile;
+                            $discResult = $attempt->discTestResult;
+                            $papiResult = $attempt->papiTestResult;
+                            $isPapi =
+                                $papiResult ||
+                                str_contains(strtolower($attempt->test?->category?->name ?? ''), 'papi') ||
+                                str_contains(strtolower($attempt->test?->title ?? ''), 'papi');
+                            $isDisc = !$isPapi && (
+                                $discResult ||
+                                (str_contains(strtolower($attempt->test?->title ?? ''), 'disc') ||
+                                    str_contains(strtolower($attempt->test?->title ?? ''), 'personality') ||
+                                    str_contains(strtolower($attempt->test?->category?->name ?? ''), 'disc') ||
+                                    str_contains(strtolower($attempt->test?->category?->name ?? ''), 'kepribadian')));
+                            $passingScore = (float) ($attempt->test?->passing_score ?? 0);
+                            $totalScore = (float) ($attempt->total_score ?? 0);
+                            $isPassed = $attempt->status === 'passed' || (!$isDisc && !$isPapi && $totalScore >= $passingScore && $passingScore > 0) || ($passingScore == 0 && $attempt->status === 'passed');
+
+                            $empPhoto = $emp?->photo ?? $attempt->user?->avatar;
+                            $empPhotoUrl = $empPhoto ? (str_starts_with($empPhoto, 'http') ? $empPhoto : asset('storage/' . $empPhoto)) : null;
+                            $empName = $emp?->full_name ?? ($attempt->user?->name ?? 'Karyawan');
+                            $empNik = $emp?->nik ?? ($attempt->user?->nik ?? '-');
+                            $empType = $emp?->employee_type ?? 'permanent';
+                            $typeBadge = match ($empType) {
+                                'internship' => ['label' => 'Magang', 'class' => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60'],
+                                'contract' => ['label' => 'Kontrak', 'class' => 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60'],
+                                'probation' => ['label' => 'Probation', 'class' => 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/60'],
+                                default => ['label' => 'Tetap', 'class' => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60'],
+                            };
+                            $evalPos = $emp?->position?->name ?? ($emp?->position_title ?? null);
+                            $cardCompany = $emp?->department?->company?->name ?? ($emp?->company?->name ?? null);
+                        @endphp
+                        <div class="rounded-2xl border border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 p-3.5 sm:p-4 flex flex-col justify-between gap-3 min-w-0 shadow-2xs">
+                            <!-- Identitas & Badge Tipe -->
+                            <div class="flex items-start gap-3 min-w-0">
+                                @if ($empPhotoUrl)
+                                    <img src="{{ $empPhotoUrl }}" alt="{{ $empName }}"
+                                        class="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-[#1D2E54] shadow-2xs shrink-0">
+                                @else
+                                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                                        {{ strtoupper(substr($empName, 0, 2)) }}
+                                    </div>
+                                @endif
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="font-bold text-gray-900 dark:text-white text-sm break-words leading-snug">
+                                            {{ $empName }}
+                                        </div>
+                                        <span class="shrink-0 px-2 py-0.5 rounded-lg font-semibold text-[10px] border {{ $typeBadge['class'] }}">
+                                            {{ $typeBadge['label'] }}
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-wrap text-[11px] text-gray-400 dark:text-slate-500 mt-0.5">
+                                        <span>NIK: <span class="font-mono font-medium text-gray-600 dark:text-slate-300">{{ $empNik }}</span></span>
+                                        <span>•</span>
+                                        <span class="truncate">{{ $attempt->user?->email ?? '-' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Info Penempatan: Departemen & Posisi -->
+                            <div class="grid grid-cols-2 gap-2 text-xs bg-white/70 dark:bg-slate-900/60 p-2.5 rounded-xl border border-gray-100 dark:border-slate-800/80">
+                                <div class="min-w-0">
+                                    <span class="block text-[10px] uppercase font-semibold text-gray-400 dark:text-slate-500">Departemen</span>
+                                    <div class="font-semibold text-gray-800 dark:text-slate-200 text-[11.5px] truncate mt-0.5" title="{{ $emp?->department?->name ?? 'Semua Departemen' }}">
+                                        {{ $emp?->department?->name ?? 'Semua Departemen' }}
+                                    </div>
+                                    @if ($cardCompany)
+                                        <div class="text-[10px] text-gray-400 dark:text-slate-400 truncate mt-0.5" title="{{ $cardCompany }}">
+                                            {{ $cardCompany }}
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="min-w-0">
+                                    <span class="block text-[10px] uppercase font-semibold text-gray-400 dark:text-slate-500">Jabatan</span>
+                                    <div class="font-semibold text-gray-800 dark:text-slate-200 text-[11.5px] truncate mt-0.5" title="{{ $evalPos ?? '-' }}">
+                                        {{ $evalPos ?? '-' }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Paket Asesmen & Waktu -->
+                            <div class="space-y-1.5 text-xs">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="min-w-0">
+                                        <span class="block text-[10px] uppercase font-semibold text-gray-400 dark:text-slate-500">Paket Asesmen</span>
+                                        <div class="font-bold text-gray-900 dark:text-white text-xs truncate mt-0.5" title="{{ $attempt->test?->title ?? '-' }}">
+                                            {{ $attempt->test?->title ?? '-' }}
+                                        </div>
+                                        <div class="text-[10.5px] text-gray-400 dark:text-slate-500 truncate">
+                                            {{ $attempt->test?->category?->name ?? 'Asesmen Internal' }}
+                                        </div>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <span class="block text-[10px] uppercase font-semibold text-gray-400 dark:text-slate-500">Waktu Tes</span>
+                                        <div class="font-medium text-gray-700 dark:text-slate-300 text-[11px] mt-0.5">
+                                            {{ \Carbon\Carbon::parse($attempt->finished_at ?? ($attempt->started_at ?? now()))->translatedFormat('d M Y, H:i') }}
+                                        </div>
+                                        @if ($attempt->duration)
+                                            <div class="text-[10px] text-gray-400">
+                                                Durasi: {{ round($attempt->duration / 60) }} mnt
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hasil Nilai & Status & Aksi -->
+                            <div class="flex items-center justify-between gap-2 pt-2.5 border-t border-gray-200/80 dark:border-slate-700/60">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    @if ($isDisc && $discResult)
+                                        <span class="px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs border border-purple-200 dark:border-purple-800/60">
+                                            {{ $discResult?->discProfile?->pattern_name ?? ($discResult?->primary_trait ?? 'DISC Profil') }}
+                                        </span>
+                                    @elseif ($isPapi)
+                                        <div class="inline-flex flex-col">
+                                            <span class="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold text-xs border border-amber-200 dark:border-amber-800/60">
+                                                PAPI Kostick
+                                            </span>
+                                            @if ($papiResult)
+                                                <span class="text-[9.5px] text-gray-400 mt-0.5">
+                                                    {{ $papiResult->is_valid ? 'Valid (45/45)' : 'Perlu Cek' }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <div class="flex items-baseline gap-1.5">
+                                            <span class="font-extrabold text-base {{ $isPassed ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                                                {{ $totalScore }}
+                                            </span>
+                                            <span class="text-[10px] text-gray-400">/ KKM {{ $passingScore }}</span>
+                                        </div>
+                                    @endif
+
+                                    <!-- Status kelulusan -->
+                                    @if ($attempt->status === 'in_progress')
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-semibold text-[10px] border border-sky-200 dark:border-sky-800">
+                                            Mengerjakan
+                                        </span>
+                                    @elseif ($isDisc || $isPapi)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full {{ $isPapi ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' : 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300' }} font-semibold text-[10px]">
+                                            Selesai
+                                        </span>
+                                    @elseif ($isPassed)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-semibold text-[10px]">
+                                            Lolos Standar
+                                        </span>
+                                    @elseif ($attempt->status === 'failed')
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 font-semibold text-[10px]">
+                                            Di Bawah KKM
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-semibold text-[10px]">
+                                            Sedang Proses
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <!-- Tombol Evaluasi -->
+                                <button
+                                    @click="openGradeModal({{ \Illuminate\Support\Js::from($attempt) }}, {{ $isDisc ? 'true' : 'false' }}, {{ $isPapi ? 'true' : 'false' }})"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-semibold text-xs border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 active:scale-95 transition cursor-pointer shrink-0"
+                                    title="{{ $isPapi ? 'Riwayat & Interpretasi PAPI' : ($isDisc ? 'Riwayat Jawaban & Profil' : 'Riwayat Jawaban & Nilai') }}">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    <span>Evaluasi</span>
+                                </button>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
         @if ($attempts->hasPages() || $perPage != 10)
             <div
-                class="px-6 py-4 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                class="px-4 sm:px-6 py-4 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                     <span class="text-xs text-gray-500 dark:text-slate-400">Tampilkan</span>
                     <select wire:model.live="perPage"
@@ -831,31 +1026,31 @@
     <!-- MODAL EVALUASI & RIWAYAT JAWABAN KARYAWAN -->
     <div x-show="showGradeModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto custom-scrollbar"
         style="display: none;">
-        <div class="min-h-screen px-4 py-6 sm:py-8 flex items-center justify-center">
+        <div class="min-h-screen px-2.5 sm:px-4 py-4 sm:py-8 flex items-center justify-center">
             <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" @click="showGradeModal = false"></div>
 
-            <div class="relative bg-white dark:bg-slate-800 rounded-3xl max-w-5xl w-full p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-slate-700 z-10 max-h-[90vh] overflow-y-auto custom-scrollbar [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300/80 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400"
+            <div class="relative bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl max-w-5xl w-full p-4 sm:p-6 lg:p-8 shadow-2xl border border-gray-100 dark:border-slate-700 z-10 max-h-[92vh] overflow-y-auto custom-scrollbar [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300/80 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400"
                 x-show="selectedAttempt">
                 <div
-                    class="flex items-center justify-between pb-4 mb-4 border-b border-gray-100 dark:border-slate-700">
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-800 dark:text-slate-100"
+                    class="flex items-start justify-between gap-3 pb-4 mb-4 border-b border-gray-100 dark:border-slate-700">
+                    <div class="min-w-0">
+                        <h3 class="text-base sm:text-lg font-bold text-gray-800 dark:text-slate-100 leading-snug"
                             x-text="selectedAttempt?.is_papi ? 'Riwayat Jawaban & Interpretasi PAPI Kostick' : (selectedAttempt?.is_disc ? 'Riwayat Jawaban & Profil Asesmen Karyawan' : 'Riwayat Jawaban & Evaluasi Asesmen Karyawan')">
                             Riwayat Jawaban & Evaluasi Asesmen Karyawan
                         </h3>
-                        <p class="text-xs text-gray-400 mt-0.5">
-                            Karyawan: <span class="font-bold text-gray-700 dark:text-slate-200"
-                                x-text="selectedAttempt.user?.employee_profile?.full_name || selectedAttempt.user?.name || 'Karyawan'"></span>
-                            |
-                            Departemen: <span class="font-medium text-indigo-600 dark:text-indigo-400"
-                                x-text="selectedAttempt.user?.employee_profile?.department?.name || 'Semua Divisi'"></span>
-                            |
-                            Ujian: <span class="font-medium text-gray-700 dark:text-slate-300"
-                                x-text="selectedAttempt.test?.title || '-'"></span>
+                        <p class="text-xs text-gray-400 mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                            <span>Karyawan: <span class="font-bold text-gray-700 dark:text-slate-200"
+                                x-text="selectedAttempt.user?.employee_profile?.full_name || selectedAttempt.user?.name || 'Karyawan'"></span></span>
+                            <span>•</span>
+                            <span>Departemen: <span class="font-medium text-indigo-600 dark:text-indigo-400"
+                                x-text="selectedAttempt.user?.employee_profile?.department?.name || 'Semua Divisi'"></span></span>
+                            <span>•</span>
+                            <span>Ujian: <span class="font-medium text-gray-700 dark:text-slate-300"
+                                x-text="selectedAttempt.test?.title || '-'"></span></span>
                         </p>
                     </div>
                     <button @click="showGradeModal = false"
-                        class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200">
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 shrink-0 transition cursor-pointer">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12" />
@@ -2029,13 +2224,13 @@
 
                                                 <!-- Penilaian Essay -->
                                                 <div
-                                                    class="flex items-center justify-between pt-2 border-t border-amber-200/80 dark:border-amber-900/60">
+                                                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-amber-200/80 dark:border-amber-900/60">
                                                     <span class="text-[11px] font-medium text-gray-500">Poin Maksimal:
                                                         <span class="font-bold text-gray-700 dark:text-slate-300"
                                                             x-text="item.points || 10"></span></span>
                                                     <div class="flex items-center gap-2">
                                                         <label
-                                                            class="text-[11px] font-bold text-amber-900 dark:text-amber-200">Beri
+                                                            class="text-[11px] font-bold text-amber-900 dark:text-amber-200 shrink-0">Beri
                                                             Nilai Essay:</label>
                                                         <input type="number"
                                                             :name="'essay_scores[' + item.single_answer.id + ']'"
@@ -2045,7 +2240,7 @@
                                                             placeholder="0"
                                                             class="w-20 px-2.5 py-1 bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700 rounded-xl text-xs text-center font-bold focus:ring-2 focus:ring-amber-500 outline-none">
                                                         <span
-                                                            class="text-xs text-amber-800 dark:text-amber-300 font-semibold">Poin</span>
+                                                            class="text-xs text-amber-800 dark:text-amber-300 font-semibold shrink-0">Poin</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -2057,7 +2252,7 @@
 
                             <!-- Footer Form -->
                             <div
-                                class="pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center"
+                                class="pt-4 border-t border-gray-100 dark:border-slate-700 flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
                                 :class="(selectedAttempt.is_disc || selectedAttempt.disc_test_result) ? 'justify-end' : 'justify-between'">
                                 <template x-if="!selectedAttempt.is_disc && !selectedAttempt.disc_test_result">
                                     <span class="text-[11px] text-gray-400">
@@ -2065,14 +2260,14 @@
                                         karyawan.
                                     </span>
                                 </template>
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center justify-end gap-2">
                                     <button type="button" @click="showGradeModal = false"
-                                        class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition shadow-xs">
+                                        class="px-4 sm:px-5 py-2 sm:py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition shadow-xs cursor-pointer">
                                         Tutup
                                     </button>
                                     <template x-if="!selectedAttempt.is_disc && !selectedAttempt.disc_test_result">
                                         <button type="submit"
-                                            class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition">
+                                            class="px-4 sm:px-5 py-2 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition cursor-pointer">
                                             Simpan Nilai Evaluasi
                                         </button>
                                     </template>
