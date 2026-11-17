@@ -135,17 +135,16 @@
     }"
     x-on:salary-updated.window="
         if ($event.detail && $event.detail.formatted) {
-            let val = $event.detail.formatted;
-            let existing = (other.expected_salary || '').trim();
+            const salaryPattern = /(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d{4,})/i;
+            const val = $event.detail.formatted;
+            const existing = (other.expected_salary || '').trim();
             if (!existing || /^Rp\s*[\d\.]+\s*$/i.test(existing) || /^\d+$/.test(existing)) {
                 other.expected_salary = val;
+            } else if (salaryPattern.test(existing)) {
+                // Nominalnya ada: ganti di tempat (idempoten, walau nominalnya sama).
+                other.expected_salary = existing.replace(salaryPattern, val);
             } else {
-                let replaced = existing.replace(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d{4,})/i, val);
-                if (replaced !== existing) {
-                    other.expected_salary = replaced;
-                } else {
-                    other.expected_salary = val + ' ' + existing;
-                }
+                other.expected_salary = val + ' ' + existing;
             }
         }
     ">

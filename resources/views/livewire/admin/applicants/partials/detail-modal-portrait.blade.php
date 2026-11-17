@@ -682,20 +682,26 @@
                                             </span>
                                         </template>
                                     </div>
-                                    <div class="sm:col-span-2">
-                                        <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Minat Industri / Bidang:</span>
-                                        <div class="flex items-center flex-wrap gap-1.5 mt-1">
-                                            <template x-if="detailData.applicant_profile.job_preference.interested_field_1">
-                                                <span class="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-[10.5px] font-medium border border-indigo-100 dark:border-indigo-900/40" x-text="detailData.applicant_profile.job_preference.interested_field_1"></span>
-                                            </template>
-                                            <template x-if="detailData.applicant_profile.job_preference.interested_field_2">
-                                                <span class="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-[10.5px] font-medium border border-indigo-100 dark:border-indigo-900/40" x-text="detailData.applicant_profile.job_preference.interested_field_2"></span>
-                                            </template>
-                                            <template x-if="detailData.applicant_profile.job_preference.interested_field_3">
-                                                <span class="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-[10.5px] font-medium border border-indigo-100 dark:border-indigo-900/40" x-text="detailData.applicant_profile.job_preference.interested_field_3"></span>
-                                            </template>
-                                            <template x-if="!detailData.applicant_profile.job_preference.interested_field_1 && !detailData.applicant_profile.job_preference.interested_field_2 && !detailData.applicant_profile.job_preference.interested_field_3">
-                                                <span class="text-gray-400 italic text-[11px]">-</span>
+                                    {{-- Minat lowongan 1-3, mengikuti form Minat Kerja kandidat --}}
+                                    <div class="sm:col-span-2 md:col-span-3">
+                                        <span class="text-gray-400 dark:text-slate-500 block text-[10.5px] mb-1">Minat Lowongan:</span>
+                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                            <template x-for="slot in [1, 2, 3]" :key="slot">
+                                                <div class="rounded-xl border border-gray-100 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-2.5">
+                                                    <div class="flex items-center gap-1.5 mb-1">
+                                                        <span class="inline-flex items-center justify-center w-4 h-4 rounded bg-emerald-100 dark:bg-emerald-950/60 text-[10px] font-bold text-emerald-700 dark:text-emerald-400" x-text="slot"></span>
+                                                        <span class="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-500" x-text="'Minat Lowongan ' + slot"></span>
+                                                    </div>
+                                                    <template x-if="detailData.applicant_profile.job_preference['pref' + slot + '_company'] || detailData.applicant_profile.job_preference['pref' + slot + '_department'] || detailData.applicant_profile.job_preference['pref' + slot + '_position']">
+                                                        <div>
+                                                            <p class="text-[11.5px] font-bold text-gray-900 dark:text-white truncate" x-text="(detailData.applicant_profile.job_preference['pref' + slot + '_company'] || {}).name || 'Tanpa perusahaan'"></p>
+                                                            <p class="text-[11px] text-gray-500 dark:text-slate-400 truncate" x-text="[detailData.applicant_profile.job_preference['pref' + slot + '_department'], detailData.applicant_profile.job_preference['pref' + slot + '_position']].map(o => o && o.name).filter(Boolean).join(' · ') || '-'"></p>
+                                                        </div>
+                                                    </template>
+                                                    <template x-if="!detailData.applicant_profile.job_preference['pref' + slot + '_company'] && !detailData.applicant_profile.job_preference['pref' + slot + '_department'] && !detailData.applicant_profile.job_preference['pref' + slot + '_position']">
+                                                        <p class="text-[11px] italic text-gray-400 dark:text-slate-500">Belum dipilih</p>
+                                                    </template>
+                                                </div>
                                             </template>
                                         </div>
                                     </div>

@@ -220,6 +220,7 @@ class ApplicantProfile extends Model
 
         return $this->cachedSectionStatuses = [
             'pribadi' => ! empty($this->nik) && ! empty($this->full_name) && ! empty($this->phone) && ! empty($this->address) && ! empty($this->marital_status),
+            'foto' => ! empty($this->photo),
             'cv' => ! empty($this->cv_file_path) || ! empty($this->generated_cv_url),
             'keluarga' => $this->relationLoaded('family') ? (bool) $this->family : ($this->family()->exists() || ! empty($this->child_sequence)),
             'pendidikan' => ($this->relationLoaded('educations') ? $this->educations->isNotEmpty() : $this->educations()->exists())
@@ -427,6 +428,25 @@ class ApplicantProfile extends Model
     }
 
     /**
+     * Rapikan teks gaji hasil sinkronisasi agar nominal tidak menumpuk,
+     * mis. "Rp 9.000.000 Rp 9.000.000 karena banyak" -> "Rp 9.000.000 karena banyak".
+     */
+    public static function normalizeSalaryText($text): string
+    {
+        $text = trim((string) $text);
+        if ($text === '') {
+            return '';
+        }
+
+        $pattern = '/^(rp\.?\s*\d{1,3}(?:\.\d{3})+|rp\.?\s*\d{4,})\s+\1(?=\s|$)/i';
+        while (preg_match($pattern, $text)) {
+            $text = preg_replace($pattern, '$1', $text);
+        }
+
+        return $text;
+    }
+
+    /**
      * Calculate total profile completion percentage (0 - 100%)
      */
     public function getCompletionPercentageAttribute(): int
@@ -442,9 +462,10 @@ class ApplicantProfile extends Model
             'skill'               => 10,
             'data_tambahan'       => 10,
             // Data Pelengkap (20% total)
-            'pengalaman'          => 10,
-            'organisasi_prestasi' => 7,
+            'pengalaman'          => 8,
+            'organisasi_prestasi' => 4,
             'social_media'        => 3,
+            'foto'                => 5,
         ];
 
         $totalPercentage = 0;

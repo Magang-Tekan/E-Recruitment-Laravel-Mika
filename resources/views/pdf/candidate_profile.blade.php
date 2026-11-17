@@ -985,16 +985,28 @@
                     <td style="font-weight: bold; background-color: #f8fafc;">Status Pencarian Kerja</td>
                     <td style="font-weight: bold;">{{ $pref->job_search_status ?? 'Aktif Mencari Kerja' }}</td>
                 </tr>
-                <tr>
-                    <td style="font-weight: bold; background-color: #f8fafc;">Bidang Pekerjaan yang Diminati</td>
-                    <td>
-                        @if ($pref)
-                            {{ implode(', ', array_filter([$pref->interested_field_1, $pref->interested_field_2, $pref->interested_field_3])) ?: '-' }}
-                        @else
-                            -
-                        @endif
-                    </td>
-                </tr>
+                @for ($slot = 1; $slot <= 3; $slot++)
+                    @php
+                        $slotParts = $pref ? array_values(array_filter([
+                            $pref->{'pref' . $slot . 'Company'}?->name,
+                            $pref->{'pref' . $slot . 'Department'}?->name,
+                            $pref->{'pref' . $slot . 'Position'}?->name,
+                        ])) : [];
+                    @endphp
+                    <tr>
+                        <td style="font-weight: bold; background-color: #f8fafc;">Minat Lowongan {{ $slot }}</td>
+                        <td>
+                            @if (!empty($slotParts))
+                                <span style="font-weight: bold;">{{ $slotParts[0] }}</span>
+                                @if (count($slotParts) > 1)
+                                    <span style="color: #475569;"> &mdash; {{ implode(' — ', array_slice($slotParts, 1)) }}</span>
+                                @endif
+                            @else
+                                <span style="color: #94a3b8;">-</span>
+                            @endif
+                        </td>
+                    </tr>
+                @endfor
             </tbody>
         </table>
 

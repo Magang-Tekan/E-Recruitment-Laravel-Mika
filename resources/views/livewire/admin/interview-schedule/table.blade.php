@@ -447,9 +447,9 @@
     <!-- Card 2: Data Table Section Card -->
     <div class="relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
 
-        <!-- Table Container -->
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+        <!-- Desktop & tablet landscape: tabel penuh -->
+        <div class="hidden lg:block overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[960px]">
                 <thead>
                     <tr class="border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/30 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         <th class="py-3.5 px-4 sm:px-6">Kandidat & Posisi</th>
@@ -779,6 +779,242 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <!-- HP & tablet portrait: daftar kartu jadwal wawancara -->
+        <div class="lg:hidden">
+            @if ($schedules->isEmpty())
+                <div class="py-12 px-4 text-center">
+                    <div class="max-w-sm mx-auto space-y-3">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-500 mx-auto flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        @if(!empty($isDesignatedRecruiter) && ($assignedJobsCount ?? 0) === 0)
+                            <h4 class="text-sm font-bold text-gray-900 dark:text-white">Belum Ada Lowongan yang Ditugaskan ke Anda</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                Anda telah ditunjuk sebagai Recruiter, namun belum dipilih sebagai Reviewer pada lowongan aktif.
+                            </p>
+                        @else
+                            <h4 class="text-sm font-bold text-gray-900 dark:text-white">Tidak ada jadwal wawancara ditemukan</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                Belum ada jadwal yang cocok dengan filter pencarian Anda atau belum ada wawancara yang dijadwalkan.
+                            </p>
+                            @if ($isAdmin)
+                                <div class="pt-2">
+                                    <button type="button" @click="openCreateModal()" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-sm transition cursor-pointer">
+                                        Jadwalkan Wawancara Pertama
+                                    </button>
+                                </div>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+            @else
+                <div class="p-3.5 sm:p-4 grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    @foreach ($schedules as $schedule)
+                        @php
+                            $interviewDate = \Carbon\Carbon::parse($schedule->interview_date);
+                            $isToday = $interviewDate->isToday();
+                            $isPast = $interviewDate->isPast();
+                            $isOnline = $schedule->is_online;
+                            
+                            $status = $schedule->status;
+                            $statusClasses = match(strtolower($status)) {
+                                'scheduled' => 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
+                                'completed' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+                                'rescheduled' => 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+                                'cancelled' => 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-800',
+                                'no show' => 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
+                                default => 'bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
+                            };
+
+                            $candProfile = $schedule->jobApplication?->applicantProfile;
+                            $candPhotoUrl = $candProfile?->photo_url ?? ($candProfile?->user?->avatar ? (\Illuminate\Support\Str::startsWith($candProfile->user->avatar, ['http://', 'https://']) ? $candProfile->user->avatar : asset('storage/' . $candProfile->user->avatar)) : null);
+                            $candName = $candProfile->full_name ?? 'Pelamar Tidak Ditemukan';
+
+                            $interviewerPhoto = $schedule->user?->avatar ?? $schedule->user?->employeeProfile?->photo;
+                            $interviewerPhotoUrl = $interviewerPhoto ? (\Illuminate\Support\Str::startsWith($interviewerPhoto, ['http://', 'https://']) ? $interviewerPhoto : asset('storage/' . $interviewerPhoto)) : null;
+
+                            $canCompleteOrEvaluate = $schedule->status !== 'Completed' || ($schedule->jobApplication && strtolower($schedule->jobApplication->status) === 'interview');
+                            $recruiterAlreadyEvaluated = $schedule->jobApplication && in_array($schedule->jobApplication->interview_recruiter_approval, ['approved', 'rejected']);
+
+                            $app = $schedule->jobApplication;
+                            $appStatus = strtolower($app->status ?? '');
+                            $recNotes = $app->interview_recruiter_notes ?? '';
+                            $admNotes = $app->interview_admin_notes ?? '';
+                            $isOverride = str_contains($recNotes, 'Admin Override') || str_contains($admNotes, 'Admin Override') || str_contains($app->notes ?? '', 'Admin Override');
+                            $recruiterApproved = ($app?->interview_recruiter_approval === 'approved');
+                            $adminApproved = ($app?->interview_admin_approval === 'approved');
+                            $recruiterRejected = ($app?->interview_recruiter_approval === 'rejected');
+                            $adminRejected = ($app?->interview_admin_approval === 'rejected');
+                        @endphp
+                        <div class="rounded-2xl border border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 p-3.5 sm:p-4 flex flex-col justify-between gap-3 min-w-0 shadow-2xs">
+                            <!-- Identitas Kandidat & Status Sesi -->
+                            <div class="flex items-start gap-3 min-w-0">
+                                <div class="relative w-10 h-10 shrink-0">
+                                    @if ($candPhotoUrl)
+                                        <img src="{{ $candPhotoUrl }}" alt="{{ $candName }}" referrerpolicy="no-referrer"
+                                            class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm"
+                                            onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                        <div class="hidden w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs items-center justify-center shadow-2xs">
+                                            {{ strtoupper(substr($candName, 0, 2)) }}
+                                        </div>
+                                    @else
+                                        <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shadow-2xs">
+                                            {{ strtoupper(substr($candName, 0, 2)) }}
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <h4 class="font-bold text-gray-900 dark:text-white text-sm break-words leading-snug">
+                                            {{ $candName }}
+                                        </h4>
+                                        <span class="shrink-0 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border {{ $statusClasses }}">
+                                            <span class="w-1.5 h-1.5 rounded-full {{ strtolower($status) === 'completed' ? 'bg-emerald-500' : (strtolower($status) === 'scheduled' ? 'bg-indigo-500' : (strtolower($status) === 'rescheduled' ? 'bg-amber-500' : 'bg-rose-500')) }}"></span>
+                                            {{ $status }}
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold truncate mt-0.5">
+                                        {{ $schedule->jobApplication->job->title ?? '-' }}
+                                    </p>
+                                    <p class="text-[10px] text-gray-400 truncate">
+                                        {{ $schedule->jobApplication->job->company->name ?? '-' }} • {{ $candProfile->user->email ?? '-' }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Waktu & Metode Wawancara -->
+                            <div class="grid grid-cols-2 gap-2 text-xs bg-white/70 dark:bg-slate-900/60 p-2.5 rounded-xl border border-gray-100 dark:border-slate-800/80">
+                                <div class="min-w-0">
+                                    <span class="block text-[10px] uppercase font-semibold text-gray-400 dark:text-slate-500">Waktu Wawancara</span>
+                                    <div class="font-bold text-gray-900 dark:text-white text-[11px] truncate mt-0.5">
+                                        {{ $interviewDate->translatedFormat('d M Y') }}
+                                    </div>
+                                    <div class="flex items-center gap-1.5 mt-0.5">
+                                        <span class="text-[11px] font-semibold text-gray-700 dark:text-gray-300">{{ $interviewDate->translatedFormat('H:i') }} WIB</span>
+                                        @if ($isToday)
+                                            <span class="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 animate-pulse">Hari Ini</span>
+                                        @elseif ($isPast)
+                                            <span class="px-1.5 py-0.2 rounded text-[9.5px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-500">Lewat</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <span class="block text-[10px] uppercase font-semibold text-gray-400 dark:text-slate-500">Metode & Lokasi</span>
+                                    @if ($isOnline)
+                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 mt-0.5">
+                                            Online
+                                        </span>
+                                        @if ($schedule->meeting_link)
+                                            <div class="flex items-center gap-1 mt-1">
+                                                <a href="{{ $schedule->meeting_link }}" target="_blank" rel="noopener noreferrer" class="text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline truncate" title="{{ $schedule->meeting_link }}">
+                                                    Tautan Meet
+                                                </a>
+                                                <button type="button" @click="copyToClipboard('{{ $schedule->meeting_link }}')" class="p-0.5 text-gray-400 hover:text-indigo-600 cursor-pointer" title="Salin Link">
+                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        @endif
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 mt-0.5">
+                                            Offline
+                                        </span>
+                                        <p class="text-[10.5px] text-gray-600 dark:text-gray-300 truncate mt-0.5" title="{{ $schedule->location }}">
+                                            {{ $schedule->location }}
+                                        </p>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <!-- Pewawancara & Keputusan Approval -->
+                            <div class="space-y-1.5 text-xs">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        @if ($interviewerPhotoUrl)
+                                            <img src="{{ $interviewerPhotoUrl }}" alt="{{ $schedule->user->name ?? 'Pewawancara' }}" class="w-6 h-6 rounded-full object-cover border border-gray-200 dark:border-slate-700 shrink-0 shadow-2xs">
+                                        @else
+                                            <div class="w-6 h-6 rounded-full bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-slate-700 flex items-center justify-center font-bold text-[9px] shrink-0">
+                                                {{ strtoupper(substr($schedule->user->name ?? 'U', 0, 1)) }}
+                                            </div>
+                                        @endif
+                                        <div class="min-w-0">
+                                            <span class="font-bold text-gray-800 dark:text-gray-200 text-xs truncate block" title="{{ $schedule->user->name ?? '-' }}">
+                                                {{ $schedule->user->name ?? '-' }}
+                                            </span>
+                                            <span class="text-[10px] text-gray-400 block truncate">{{ $schedule->user->role->name ?? 'Recruiter/Admin' }}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Keputusan Approval Tag -->
+                                    <div class="shrink-0 text-right">
+                                        @if ($schedule->jobApplication)
+                                            @if ($appStatus === 'accepted')
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                                    {{ $isOverride ? 'Diterima (Override)' : 'Double Approved' }}
+                                                </span>
+                                            @elseif ($appStatus === 'rejected')
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                                                    Ditolak
+                                                </span>
+                                            @elseif (strtolower($status) === 'completed')
+                                                @if ($recruiterApproved && !$adminApproved)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">Menunggu HR</span>
+                                                @elseif (!$recruiterApproved && $adminApproved)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">Menunggu Recruiter</span>
+                                                @else
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">Evaluasi</span>
+                                                @endif
+                                            @else
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9.5px] font-medium bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">Menunggu Sesi</span>
+                                            @endif
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer Aksi -->
+                            <div class="flex items-center justify-end gap-1.5 pt-2.5 border-t border-gray-200/80 dark:border-slate-700/60">
+                                @if ($canCompleteOrEvaluate)
+                                    <button type="button" @click="openCompleteModal({{ json_encode($schedule) }})" 
+                                        class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition font-semibold text-xs border border-emerald-200/80 dark:border-emerald-800/60 shadow-2xs cursor-pointer">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>{{ !$isAdmin ? ($recruiterAlreadyEvaluated ? 'Ubah Approval' : 'Beri Approval') : ($schedule->status === 'Completed' ? 'Keputusan' : 'Selesaikan') }}</span>
+                                    </button>
+                                @elseif (!$isAdmin)
+                                    <button type="button" @click="openCompleteModal({{ json_encode($schedule) }})" 
+                                        class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition font-medium text-xs border border-slate-200 dark:border-slate-700 cursor-pointer">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        <span>Hasil</span>
+                                    </button>
+                                @endif
+
+                                @if ($isAdmin)
+                                    <button type="button" @click="openEditModal({{ json_encode($schedule) }})" title="Edit / Reschedule Jadwal" class="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition cursor-pointer">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg>
+                                    </button>
+                                    <button type="button" @click="openDeleteModal({{ json_encode($schedule) }})" title="Hapus Jadwal Wawancara" class="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition cursor-pointer">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
 
         <!-- Pagination -->

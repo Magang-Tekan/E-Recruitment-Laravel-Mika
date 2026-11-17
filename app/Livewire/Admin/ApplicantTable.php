@@ -10,6 +10,7 @@ use App\Models\Company;
 use App\Models\Job;
 use App\Models\Degree;
 use App\Models\ApplicantProfile;
+use App\Models\ApplicantJobPreference;
 use Illuminate\Support\Facades\DB;
 use App\Livewire\Traits\WithTableSkeleton;
 
@@ -212,7 +213,7 @@ class ApplicantTable extends Component
             'applicantProfile.socialMedias',
             'applicantProfile.languages',
             'applicantProfile.family',
-            'applicantProfile.jobPreference',
+            'applicantProfile.jobPreference' => fn ($query) => $query->with(ApplicantJobPreference::PREF_RELATIONS),
             'statusHistories.changedBy',
             'interviewSchedules.user'
         ])

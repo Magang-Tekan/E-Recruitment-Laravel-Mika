@@ -4,7 +4,9 @@ namespace App\Livewire\Applicant;
 
 use App\Models\ApplicantJobPreference;
 use App\Models\ApplicantProfile;
+use App\Models\Company;
 use App\Models\Department;
+use App\Models\Position;
 use App\Models\WorkExperience;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
@@ -43,6 +45,19 @@ class Pengalaman extends Component
     public $expected_salary;
     public $is_willing_to_relocate = true;
 
+    // Minat Lowongan bertingkat — Perusahaan → Departemen → Posisi
+    public $pref1_company_id;
+    public $pref1_department_id;
+    public $pref1_position_id;
+
+    public $pref2_company_id;
+    public $pref2_department_id;
+    public $pref2_position_id;
+
+    public $pref3_company_id;
+    public $pref3_department_id;
+    public $pref3_position_id;
+
     public function mount()
     {
         $user = Auth::user();
@@ -56,6 +71,19 @@ class Pengalaman extends Component
                 $this->notice_period = $pref->notice_period;
                 $this->expected_salary = $pref->expected_salary ? (int) $pref->expected_salary : null;
                 $this->is_willing_to_relocate = $pref->is_willing_to_relocate ? '1' : '0';
+
+                // Load minat lowongan bertingkat
+                $this->pref1_company_id    = $pref->pref1_company_id;
+                $this->pref1_department_id = $pref->pref1_department_id;
+                $this->pref1_position_id   = $pref->pref1_position_id;
+
+                $this->pref2_company_id    = $pref->pref2_company_id;
+                $this->pref2_department_id = $pref->pref2_department_id;
+                $this->pref2_position_id   = $pref->pref2_position_id;
+
+                $this->pref3_company_id    = $pref->pref3_company_id;
+                $this->pref3_department_id = $pref->pref3_department_id;
+                $this->pref3_position_id   = $pref->pref3_position_id;
             } else {
                 $this->is_willing_to_relocate = '1';
             }
@@ -88,6 +116,41 @@ class Pengalaman extends Component
         if ($value) {
             $this->end_date = null;
         }
+    }
+
+    // ── Cascade reset untuk dropdown minat lowongan bertingkat ──
+
+    public function updatedPref1CompanyId()
+    {
+        $this->pref1_department_id = null;
+        $this->pref1_position_id   = null;
+    }
+
+    public function updatedPref1DepartmentId()
+    {
+        $this->pref1_position_id = null;
+    }
+
+    public function updatedPref2CompanyId()
+    {
+        $this->pref2_department_id = null;
+        $this->pref2_position_id   = null;
+    }
+
+    public function updatedPref2DepartmentId()
+    {
+        $this->pref2_position_id = null;
+    }
+
+    public function updatedPref3CompanyId()
+    {
+        $this->pref3_department_id = null;
+        $this->pref3_position_id   = null;
+    }
+
+    public function updatedPref3DepartmentId()
+    {
+        $this->pref3_position_id = null;
     }
 
     protected function rules()
@@ -225,6 +288,15 @@ class Pengalaman extends Component
             'notice_period' => 'nullable|string|max:255',
             'expected_salary' => 'nullable|numeric|min:0',
             'is_willing_to_relocate' => 'required|boolean',
+            'pref1_company_id'    => 'nullable|exists:companies,id',
+            'pref1_department_id' => 'nullable|exists:departments,id',
+            'pref1_position_id'   => 'nullable|exists:positions,id',
+            'pref2_company_id'    => 'nullable|exists:companies,id',
+            'pref2_department_id' => 'nullable|exists:departments,id',
+            'pref2_position_id'   => 'nullable|exists:positions,id',
+            'pref3_company_id'    => 'nullable|exists:companies,id',
+            'pref3_department_id' => 'nullable|exists:departments,id',
+            'pref3_position_id'   => 'nullable|exists:positions,id',
         ]);
 
         $user = Auth::user();
@@ -235,11 +307,20 @@ class Pengalaman extends Component
         ApplicantJobPreference::updateOrCreate(
             ['applicant_profile_id' => $profile->id],
             [
-                'interested_field_1' => $this->interested_field_1,
-                'interested_field_2' => $this->interested_field_2,
-                'interested_field_3' => $this->interested_field_3,
-                'notice_period' => $this->notice_period,
-                'expected_salary' => $this->expected_salary,
+                'interested_field_1'   => $this->interested_field_1,
+                'pref1_company_id'     => $this->pref1_company_id ?: null,
+                'pref1_department_id'  => $this->pref1_department_id ?: null,
+                'pref1_position_id'    => $this->pref1_position_id ?: null,
+                'interested_field_2'   => $this->interested_field_2,
+                'pref2_company_id'     => $this->pref2_company_id ?: null,
+                'pref2_department_id'  => $this->pref2_department_id ?: null,
+                'pref2_position_id'    => $this->pref2_position_id ?: null,
+                'interested_field_3'   => $this->interested_field_3,
+                'pref3_company_id'     => $this->pref3_company_id ?: null,
+                'pref3_department_id'  => $this->pref3_department_id ?: null,
+                'pref3_position_id'    => $this->pref3_position_id ?: null,
+                'notice_period'        => $this->notice_period,
+                'expected_salary'      => $this->expected_salary,
                 'is_willing_to_relocate' => (bool) $this->is_willing_to_relocate,
             ]
         );
@@ -250,7 +331,7 @@ class Pengalaman extends Component
 
         if ($this->expected_salary !== null && $this->expected_salary !== '') {
             $formattedSalary = ApplicantProfile::formatSalaryString($this->expected_salary);
-            $existing = trim((string)($otherAnswers['expected_salary'] ?? ''));
+            $existing = ApplicantProfile::normalizeSalaryText($otherAnswers['expected_salary'] ?? '');
 
             if ($existing === '' || is_numeric($existing) || preg_match('/^Rp\s*[\d\.]+\s*$/i', $existing)) {
                 $otherAnswers['expected_salary'] = $formattedSalary;
@@ -317,6 +398,31 @@ class Pengalaman extends Component
 
         $departments = Department::select('name')->distinct()->orderBy('name')->pluck('name')->toArray();
 
+        // Data untuk dropdown minat lowongan bertingkat
+        $companies = Company::orderBy('name')->get(['id', 'name']);
+
+        // Departemen & posisi yang difilter berdasarkan pilihan masing-masing minat
+        $departments1 = $this->pref1_company_id
+            ? Department::where('company_id', $this->pref1_company_id)->orderBy('name')->get(['id', 'name'])
+            : collect();
+        $positions1 = $this->pref1_department_id
+            ? Position::where('department_id', $this->pref1_department_id)->orderBy('name')->get(['id', 'name'])
+            : collect();
+
+        $departments2 = $this->pref2_company_id
+            ? Department::where('company_id', $this->pref2_company_id)->orderBy('name')->get(['id', 'name'])
+            : collect();
+        $positions2 = $this->pref2_department_id
+            ? Position::where('department_id', $this->pref2_department_id)->orderBy('name')->get(['id', 'name'])
+            : collect();
+
+        $departments3 = $this->pref3_company_id
+            ? Department::where('company_id', $this->pref3_company_id)->orderBy('name')->get(['id', 'name'])
+            : collect();
+        $positions3 = $this->pref3_department_id
+            ? Position::where('department_id', $this->pref3_department_id)->orderBy('name')->get(['id', 'name'])
+            : collect();
+
         $employmentTypes = [
             'Full-time',
             'Part-time',
@@ -336,10 +442,17 @@ class Pengalaman extends Component
         ];
 
         return view('livewire.applicant.pengalaman', [
-            'experiences' => $experiences,
-            'employmentTypes' => $employmentTypes,
-            'departments' => $departments,
+            'experiences'       => $experiences,
+            'employmentTypes'   => $employmentTypes,
+            'departments'       => $departments,
             'noticePeriodOptions' => $noticePeriodOptions,
+            'companies'         => $companies,
+            'departments1'      => $departments1,
+            'positions1'        => $positions1,
+            'departments2'      => $departments2,
+            'positions2'        => $positions2,
+            'departments3'      => $departments3,
+            'positions3'        => $positions3,
         ]);
     }
 }

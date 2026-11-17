@@ -308,8 +308,9 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
+        <!-- Desktop & tablet landscape: tabel penuh -->
+        <div class="hidden lg:block overflow-x-auto">
+            <table class="w-full min-w-[960px] text-left border-collapse text-xs">
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
                         <th class="px-6 py-4 w-12">No</th>
@@ -452,8 +453,143 @@
             </table>
         </div>
 
+        <!-- HP & tablet portrait: daftar kartu paket ujian -->
+        <div class="lg:hidden">
+            @if ($tests->isEmpty())
+                <div class="py-12 px-4 text-center text-gray-400 dark:text-slate-500">
+                    <div class="flex flex-col items-center justify-center gap-2">
+                        <svg class="w-10 h-10 text-gray-300 dark:text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        <span class="text-sm font-medium">Belum ada paket ujian tes</span>
+                        <span class="text-xs">Klik tombol "Buat Paket Ujian" untuk merakit ujian baru.</span>
+                    </div>
+                </div>
+            @else
+                <div class="p-3.5 sm:p-4 grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    @foreach ($tests as $index => $t)
+                        @php
+                            $jobCount = $t->jobs->count();
+                            $isDisc = str_contains(strtolower($t->category->name ?? ''), 'disc');
+                        @endphp
+                        <div class="rounded-2xl border border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 p-3.5 sm:p-4 flex flex-col justify-between gap-3 min-w-0 shadow-2xs">
+                            <!-- Judul & Kategori -->
+                            <div class="flex items-start gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold shrink-0">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <h4 class="font-bold text-gray-900 dark:text-white text-sm break-words leading-snug">
+                                            {{ $t->title }}
+                                        </h4>
+                                        <span class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800">
+                                            {{ $t->category->name ?? '-' }}
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-[11px] text-gray-400 dark:text-slate-500 mt-0.5">
+                                        <span>{{ $t->attempts_count }} Percobaan Ujian</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Target Lowongan Kerja -->
+                            <div class="bg-white/70 dark:bg-slate-900/60 p-2.5 rounded-xl border border-gray-100 dark:border-slate-800/80">
+                                <span class="block text-[10px] uppercase font-semibold text-gray-400 dark:text-slate-500 mb-1">Target Lowongan</span>
+                                @if ($jobCount > 0)
+                                    <div class="flex flex-wrap gap-1">
+                                        @foreach ($t->jobs->take(3) as $j)
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800" title="{{ $j->title }} {{ $j->company ? '('.$j->company->name.')' : '' }}">
+                                                {{ $j->title }}
+                                            </span>
+                                        @endforeach
+                                        @if ($jobCount > 3)
+                                            <span class="px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border border-gray-200 dark:border-slate-700" title="{{ $t->jobs->pluck('title')->implode(', ') }}">
+                                                +{{ $jobCount - 3 }} lainnya
+                                            </span>
+                                        @endif
+                                    </div>
+                                @elseif ($t->job)
+                                    <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                        {{ $t->job->title }}
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                        Semua Lowongan (Umum)
+                                    </span>
+                                @endif
+                            </div>
+
+                            <!-- Info Durasi, KKM, & Soal -->
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div class="p-2 rounded-xl bg-white/70 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800/80">
+                                    <div class="flex items-center gap-1.5 text-gray-800 dark:text-slate-200 font-semibold text-xs">
+                                        <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>{{ $t->duration_minutes }} Menit</span>
+                                    </div>
+                                    <div class="mt-1">
+                                        @if ($isDisc)
+                                            <span class="text-[10.5px] text-purple-600 dark:text-purple-400 font-semibold">Profil (Tanpa KKM)</span>
+                                        @else
+                                            <span class="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-semibold">KKM: {{ number_format($t->passing_score, 0) }}%</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="p-2 rounded-xl bg-white/70 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800/80">
+                                    <div class="font-semibold text-indigo-700 dark:text-indigo-300 text-xs">
+                                        {{ $t->questions_count }} / {{ $t->total_questions }} Soal
+                                    </div>
+                                    <div class="mt-1">
+                                        @if ($t->is_random)
+                                            <span class="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                </svg>
+                                                Soal Diacak
+                                            </span>
+                                        @else
+                                            <span class="text-[10px] text-gray-400 font-medium">
+                                                Urutan Tetap
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer Aksi -->
+                            <div class="flex items-center justify-end gap-1.5 pt-2.5 border-t border-gray-200/80 dark:border-slate-700/60">
+                                <button @click="openDetailModal({{ json_encode($t) }})" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/40 transition cursor-pointer" title="Detail Ujian">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    <span>Detail</span>
+                                </button>
+                                <button @click="openEditModal({{ json_encode($t) }})" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition cursor-pointer" title="Edit Ujian">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    <span>Edit</span>
+                                </button>
+                                <button @click="openDeleteModal({{ json_encode($t) }})" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition cursor-pointer" title="Hapus Ujian">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    <span>Hapus</span>
+                                </button>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
         @if ($tests->hasPages() || $perPage != 10)
-            <div class="px-6 py-4 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="px-4 sm:px-6 py-4 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                     <span class="text-xs text-gray-500 dark:text-slate-400">Tampilkan</span>
                     <select wire:model.live="perPage" class="pl-2.5 pr-7 py-1.5 text-xs rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition cursor-pointer">

@@ -6,7 +6,7 @@
             style="background-image: radial-gradient(#93F514 1px, transparent 1px); background-size: 20px 20px;">
         </div>
         <div class="relative z-10">
-            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ __('Riwayat Pendidikan & Kualifikasi') }}</h2>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ __('Riwayat Pendidikan & Keahlian') }}</h2>
             <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 font-medium">{{ __('* Kelola riwayat pendidikan formal, kemampuan bahasa, keahlian teknis, sertifikasi profesional, dan pelatihan Anda.') }}</p>
         </div>
     </div>

@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\User;
+use App\Models\ApplicantJobPreference;
 use App\Livewire\Traits\WithTableSkeleton;
 
 class CandidateTable extends Component
@@ -58,7 +59,7 @@ class CandidateTable extends Component
             'applicantProfile.socialMedias',
             'applicantProfile.languages',
             'applicantProfile.family',
-            'applicantProfile.jobPreference',
+            'applicantProfile.jobPreference' => fn ($query) => $query->with(ApplicantJobPreference::PREF_RELATIONS),
             'applicantProfile.jobApplications.job.company',
             'applicantProfile.jobApplications.job.department'
         ])

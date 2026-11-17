@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\JobApplication;
 use App\Models\ApplicantProfile;
+use App\Models\ApplicantJobPreference;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
 
@@ -29,7 +30,7 @@ class CandidateProfilePdfController extends Controller
             'applicantProfile.socialMedias',
             'applicantProfile.languages',
             'applicantProfile.family',
-            'applicantProfile.jobPreference',
+            'applicantProfile.jobPreference' => fn ($query) => $query->with(ApplicantJobPreference::PREF_RELATIONS),
             'applicantProfile.jobApplications.job.company'
         ])->findOrFail($id);
 
@@ -81,7 +82,7 @@ class CandidateProfilePdfController extends Controller
             'applicantProfile.socialMedias',
             'applicantProfile.languages',
             'applicantProfile.family',
-            'applicantProfile.jobPreference',
+            'applicantProfile.jobPreference' => fn ($query) => $query->with(ApplicantJobPreference::PREF_RELATIONS),
             'job.company',
             'job.department'
         ])->findOrFail($id);

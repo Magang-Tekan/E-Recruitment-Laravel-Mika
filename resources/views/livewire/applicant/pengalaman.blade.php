@@ -159,217 +159,152 @@
         </div>
 
 
-        <form wire:submit.prevent="savePreference" class="space-y-6" x-data="{
-            departments: @js($departments),
-        
-            openField1: false,
-            field1Query: '',
-            openField2: false,
-            field2Query: '',
-            openField3: false,
-            field3Query: '',
-        
-            get filteredField1() {
-                if (!this.field1Query) return this.departments;
-                return this.departments.filter(d => d.toLowerCase().includes(this.field1Query.toLowerCase()));
-            },
-            get filteredField2() {
-                if (!this.field2Query) return this.departments;
-                return this.departments.filter(d => d.toLowerCase().includes(this.field2Query.toLowerCase()));
-            },
-            get filteredField3() {
-                if (!this.field3Query) return this.departments;
-                return this.departments.filter(d => d.toLowerCase().includes(this.field3Query.toLowerCase()));
-            }
-        }"
+        <form wire:submit.prevent="savePreference" class="space-y-6"
             x-on:salary-updated.window="
                 if ($event.detail && $event.detail.salary) {
                     $wire.set('expected_salary', $event.detail.salary, false);
                 }
-            "
-            @click.outside="openField1 = false; openField2 = false; openField3 = false;">
+            ">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
 
-                <!-- Bidang yang diminati 1 -->
-                <div class="relative">
-                    <label
-                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                        {{ __('Bidang yang diminati 1') }} <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <input type="text" x-model="$wire.interested_field_1"
-                            @focus="openField1 = true; field1Query = ''"
-                            @input="openField1 = true; field1Query = $event.target.value"
-                            placeholder="{{ __('Pilih / Ketik Bidang Minat 1') }}"
-                            class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                        <div
-                            class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7" />
-                            </svg>
+                {{-- Kolom kiri: tiga minat lowongan --}}
+                <div class="lg:col-span-3 space-y-3">
+
+                    {{-- Minat Lowongan 1 --}}
+                    <div class="rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50/60 dark:bg-[#111B31] p-3.5 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-md bg-emerald-600/10 dark:bg-[#93F514]/15 text-[11px] font-bold text-emerald-700 dark:text-[#93F514]">1</span>
+                            <span class="text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">{{ __('Minat Lowongan 1') }}</span>
+                        </div>
+                        <select wire:model.live="pref1_company_id" class="w-full px-3.5 py-2 rounded-lg border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-slate-900 dark:text-white text-[13px] focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                            <option value="">— {{ __('Pilih Perusahaan') }} —</option>
+                            @foreach ($companies as $company)
+                                <option value="{{ $company->id }}" @selected($pref1_company_id == $company->id)>{{ $company->name }}</option>
+                            @endforeach
+                        </select>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <select wire:model.live="pref1_department_id" @disabled(!$pref1_company_id) class="w-full px-3.5 py-2 rounded-lg border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-slate-900 dark:text-white text-[13px] focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition disabled:opacity-40 disabled:cursor-not-allowed">
+                                <option value="">— {{ __('Pilih Departemen') }} —</option>
+                                @foreach ($departments1 as $dept)
+                                    <option value="{{ $dept->id }}" @selected($pref1_department_id == $dept->id)>{{ $dept->name }}</option>
+                                @endforeach
+                            </select>
+                            <select wire:model.live="pref1_position_id" @disabled(!$pref1_department_id) class="w-full px-3.5 py-2 rounded-lg border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-slate-900 dark:text-white text-[13px] focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition disabled:opacity-40 disabled:cursor-not-allowed">
+                                <option value="">— {{ __('Pilih Posisi') }} —</option>
+                                @foreach ($positions1 as $pos)
+                                    <option value="{{ $pos->id }}" @selected($pref1_position_id == $pos->id)>{{ $pos->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
 
-                    <div x-show="openField1 && filteredField1.length > 0" x-transition
-                        class="absolute z-30 w-full mt-1 bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-[#1D2E54] rounded-xl shadow-xl max-h-60 overflow-y-auto"
-                        style="display: none;">
-                        <template x-for="dept in filteredField1" :key="dept">
-                            <button type="button" @click="$wire.interested_field_1 = dept; openField1 = false"
-                                class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#14203A] hover:text-emerald-600 dark:hover:text-[#93F514] transition flex items-center justify-between border-b border-slate-100 dark:border-[#1D2E54]/50 last:border-0">
-                                <span x-text="dept"></span>
-                            </button>
-                        </template>
-                    </div>
-                    @error('interested_field_1')
-                        <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Ketersediaan Bekerja (Notice Period) -->
-                <div>
-                    <label
-                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                        {{ __('Ketersediaan Bekerja (Notice Period)') }} <span class="text-red-500">*</span>
-                    </label>
-                    <select wire:model="notice_period"
-                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                        <option value="">{{ __('-- Pilih Notice Period --') }}</option>
-                        @foreach ($noticePeriodOptions as $np)
-                            <option value="{{ $np }}">{{ __($np) }}</option>
-                        @endforeach
-                    </select>
-                    @error('notice_period')
-                        <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Bidang yang diminati 2 -->
-                <div class="relative">
-                    <label
-                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                        {{ __('Bidang yang diminati 2') }} <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <input type="text" x-model="$wire.interested_field_2"
-                            @focus="openField2 = true; field2Query = ''"
-                            @input="openField2 = true; field2Query = $event.target.value"
-                            placeholder="{{ __('Pilih / Ketik Bidang Minat 2') }}"
-                            class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                        <div
-                            class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7" />
-                            </svg>
+                    {{-- Minat Lowongan 2 --}}
+                    <div class="rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50/60 dark:bg-[#111B31] p-3.5 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-md bg-emerald-600/10 dark:bg-[#93F514]/15 text-[11px] font-bold text-emerald-700 dark:text-[#93F514]">2</span>
+                            <span class="text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">{{ __('Minat Lowongan 2') }}</span>
+                        </div>
+                        <select wire:model.live="pref2_company_id" class="w-full px-3.5 py-2 rounded-lg border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-slate-900 dark:text-white text-[13px] focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                            <option value="">— {{ __('Pilih Perusahaan') }} —</option>
+                            @foreach ($companies as $company)
+                                <option value="{{ $company->id }}" @selected($pref2_company_id == $company->id)>{{ $company->name }}</option>
+                            @endforeach
+                        </select>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <select wire:model.live="pref2_department_id" @disabled(!$pref2_company_id) class="w-full px-3.5 py-2 rounded-lg border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-slate-900 dark:text-white text-[13px] focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition disabled:opacity-40 disabled:cursor-not-allowed">
+                                <option value="">— {{ __('Pilih Departemen') }} —</option>
+                                @foreach ($departments2 as $dept)
+                                    <option value="{{ $dept->id }}" @selected($pref2_department_id == $dept->id)>{{ $dept->name }}</option>
+                                @endforeach
+                            </select>
+                            <select wire:model.live="pref2_position_id" @disabled(!$pref2_department_id) class="w-full px-3.5 py-2 rounded-lg border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-slate-900 dark:text-white text-[13px] focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition disabled:opacity-40 disabled:cursor-not-allowed">
+                                <option value="">— {{ __('Pilih Posisi') }} —</option>
+                                @foreach ($positions2 as $pos)
+                                    <option value="{{ $pos->id }}" @selected($pref2_position_id == $pos->id)>{{ $pos->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
 
-                    <div x-show="openField2 && filteredField2.length > 0" x-transition
-                        class="absolute z-30 w-full mt-1 bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-[#1D2E54] rounded-xl shadow-xl max-h-60 overflow-y-auto"
-                        style="display: none;">
-                        <template x-for="dept in filteredField2" :key="dept">
-                            <button type="button" @click="$wire.interested_field_2 = dept; openField2 = false"
-                                class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#14203A] hover:text-emerald-600 dark:hover:text-[#93F514] transition flex items-center justify-between border-b border-slate-100 dark:border-[#1D2E54]/50 last:border-0">
-                                <span x-text="dept"></span>
-                            </button>
-                        </template>
-                    </div>
-                    @error('interested_field_2')
-                        <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Harapan Gaji (Rupiah) -->
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <label
-                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                            {{ __('Harapan Gaji (Rupiah)') }} <span class="text-red-500">*</span>
-                        </label>
-                        <span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-[#93F514]">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            {{ __('Tersinkron dengan Data Tambahan') }}
-                        </span>
-                    </div>
-                    <div class="relative">
-                        <span
-                            class="absolute inset-y-0 left-0 flex items-center pl-4 text-sm font-semibold text-slate-500 dark:text-slate-400 pointer-events-none">Rp</span>
-                        <input type="number" wire:model="expected_salary" placeholder="10.000.000"
-                            class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                    </div>
-                    <p class="text-[11px] text-slate-400 dark:text-[#93A5C9] mt-1">
-                        {{ __('Nominal ini otomatis terhubung dengan pertanyaan ekspektasi gaji di Data Tambahan.') }}
-                    </p>
-                    @error('expected_salary')
-                        <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Bidang yang diminati 3 -->
-                <div class="relative">
-                    <label
-                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                        {{ __('Bidang yang diminati 3') }} <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <input type="text" x-model="$wire.interested_field_3"
-                            @focus="openField3 = true; field3Query = ''"
-                            @input="openField3 = true; field3Query = $event.target.value"
-                            placeholder="{{ __('Pilih / Ketik Bidang Minat 3') }}"
-                            class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
-                        <div
-                            class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7" />
-                            </svg>
+                    {{-- Minat Lowongan 3 --}}
+                    <div class="rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50/60 dark:bg-[#111B31] p-3.5 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-md bg-emerald-600/10 dark:bg-[#93F514]/15 text-[11px] font-bold text-emerald-700 dark:text-[#93F514]">3</span>
+                            <span class="text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">{{ __('Minat Lowongan 3') }}</span>
+                        </div>
+                        <select wire:model.live="pref3_company_id" class="w-full px-3.5 py-2 rounded-lg border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-slate-900 dark:text-white text-[13px] focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                            <option value="">— {{ __('Pilih Perusahaan') }} —</option>
+                            @foreach ($companies as $company)
+                                <option value="{{ $company->id }}" @selected($pref3_company_id == $company->id)>{{ $company->name }}</option>
+                            @endforeach
+                        </select>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <select wire:model.live="pref3_department_id" @disabled(!$pref3_company_id) class="w-full px-3.5 py-2 rounded-lg border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-slate-900 dark:text-white text-[13px] focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition disabled:opacity-40 disabled:cursor-not-allowed">
+                                <option value="">— {{ __('Pilih Departemen') }} —</option>
+                                @foreach ($departments3 as $dept)
+                                    <option value="{{ $dept->id }}" @selected($pref3_department_id == $dept->id)>{{ $dept->name }}</option>
+                                @endforeach
+                            </select>
+                            <select wire:model.live="pref3_position_id" @disabled(!$pref3_department_id) class="w-full px-3.5 py-2 rounded-lg border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-slate-900 dark:text-white text-[13px] focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition disabled:opacity-40 disabled:cursor-not-allowed">
+                                <option value="">— {{ __('Pilih Posisi') }} —</option>
+                                @foreach ($positions3 as $pos)
+                                    <option value="{{ $pos->id }}" @selected($pref3_position_id == $pos->id)>{{ $pos->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
-
-                    <div x-show="openField3 && filteredField3.length > 0" x-transition
-                        class="absolute z-30 w-full mt-1 bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-[#1D2E54] rounded-xl shadow-xl max-h-60 overflow-y-auto"
-                        style="display: none;">
-                        <template x-for="dept in filteredField3" :key="dept">
-                            <button type="button" @click="$wire.interested_field_3 = dept; openField3 = false"
-                                class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#14203A] hover:text-emerald-600 dark:hover:text-[#93F514] transition flex items-center justify-between border-b border-slate-100 dark:border-[#1D2E54]/50 last:border-0">
-                                <span x-text="dept"></span>
-                            </button>
-                        </template>
-                    </div>
-                    @error('interested_field_3')
-                        <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
-                    @enderror
                 </div>
 
-                <!-- Ketersediaan ditempatkan di luar alamat domisili -->
-                <div>
-                    <label
-                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-3">
-                        {{ __('Ketersediaan ditempatkan di luar alamat domisili') }} <span
-                            class="text-red-500">*</span>
-                    </label>
-                    <div class="flex items-center gap-6 pt-1">
-                        <label class="inline-flex items-center gap-2 cursor-pointer">
-                            <input type="radio" wire:model="is_willing_to_relocate" value="1"
-                                class="w-4 h-4 text-emerald-600 border-slate-300 dark:border-[#1D2E54] focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
-                            <span
-                                class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Bersedia') }}</span>
-                        </label>
+                {{-- Kolom kanan: ketersediaan & ekspektasi --}}
+                <div class="lg:col-span-2">
+                    <div class="rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50/60 dark:bg-[#111B31] p-3.5 space-y-4 h-full">
 
-                        <label class="inline-flex items-center gap-2 cursor-pointer">
-                            <input type="radio" wire:model="is_willing_to_relocate" value="0"
-                                class="w-4 h-4 text-emerald-600 border-slate-300 dark:border-[#1D2E54] focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
-                            <span
-                                class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Tidak Bersedia') }}</span>
-                        </label>
+                        <!-- Ketersediaan Bekerja (Notice Period) -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">{{ __('Ketersediaan Bekerja (Notice Period)') }} <span class="text-red-500">*</span></label>
+                            <select wire:model="notice_period" class="w-full px-3.5 py-2 rounded-lg border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-slate-900 dark:text-white text-[13px] focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                                <option value="">{{ __('-- Pilih Notice Period --') }}</option>
+                                @foreach ($noticePeriodOptions as $np)
+                                    <option value="{{ $np }}">{{ __($np) }}</option>
+                                @endforeach
+                            </select>
+                            @error('notice_period') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Harapan Gaji (Rupiah) -->
+                        <div>
+                            <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mb-1.5">
+                                <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">{{ __('Harapan Gaji (Rupiah)') }} <span class="text-red-500">*</span></label>
+                                <span class="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-[#93F514]">
+                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                    {{ __('Tersinkron dengan Data Tambahan') }}
+                                </span>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 pointer-events-none">Rp</span>
+                                <input type="number" wire:model="expected_salary" placeholder="10.000.000" class="w-full pl-10 pr-3.5 py-2 rounded-lg border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#14203A] text-slate-900 dark:text-white text-[13px] focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
+                            </div>
+                            <p class="text-[11px] leading-snug text-slate-400 dark:text-[#93A5C9] mt-1">{{ __('Nominal ini otomatis terhubung dengan pertanyaan ekspektasi gaji di Data Tambahan.') }}</p>
+                            @error('expected_salary') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Ketersediaan ditempatkan di luar alamat domisili -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">{{ __('Ketersediaan ditempatkan di luar alamat domisili') }} <span class="text-red-500">*</span></label>
+                            <div class="flex items-center gap-5">
+                                <label class="inline-flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" wire:model="is_willing_to_relocate" value="1" class="w-4 h-4 text-emerald-600 border-slate-300 dark:border-[#1D2E54] focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
+                                    <span class="text-[13px] font-medium text-slate-700 dark:text-slate-300">{{ __('Bersedia') }}</span>
+                                </label>
+                                <label class="inline-flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" wire:model="is_willing_to_relocate" value="0" class="w-4 h-4 text-emerald-600 border-slate-300 dark:border-[#1D2E54] focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
+                                    <span class="text-[13px] font-medium text-slate-700 dark:text-slate-300">{{ __('Tidak Bersedia') }}</span>
+                                </label>
+                            </div>
+                            @error('is_willing_to_relocate') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        </div>
                     </div>
-                    @error('is_willing_to_relocate')
-                        <span class="text-xs text-red-500 mt-2 block">{{ $message }}</span>
-                    @enderror
                 </div>
 
             </div>

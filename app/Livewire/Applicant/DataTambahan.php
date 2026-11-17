@@ -95,6 +95,11 @@ class DataTambahan extends Component
                 $this->other = array_replace_recursive($this->other, $profile->other_answers);
             }
 
+            // Rapikan teks gaji yang terlanjur menumpuk dari sinkronisasi sebelumnya.
+            if (!empty($this->other['expected_salary'])) {
+                $this->other['expected_salary'] = ApplicantProfile::normalizeSalaryText($this->other['expected_salary']);
+            }
+
             // 🔄 Auto-Sync dari Minat Kerja (Job Preference)
             $pref = $profile->jobPreference;
             if ($pref) {
@@ -133,11 +138,30 @@ class DataTambahan extends Component
     #[On('salary-updated')]
     public function syncSalaryFromEvent($salary = null, $formatted = null)
     {
-        if ($formatted) {
-            $this->other['expected_salary'] = $formatted;
-        } elseif ($salary) {
-            $this->other['expected_salary'] = ApplicantProfile::formatSalaryString($salary);
+        $formatted = $formatted ?: ($salary ? ApplicantProfile::formatSalaryString($salary) : null);
+        if (!$formatted) {
+            return;
         }
+
+        $existing = ApplicantProfile::normalizeSalaryText($this->other['expected_salary'] ?? '');
+
+        // Kosong atau hanya berisi nominal: cukup tulis nominal dari Minat Kerja.
+        if ($existing === '' || is_numeric($existing) || preg_match('/^Rp\s*[\d\.]+\s*$/i', $existing)) {
+            $this->other['expected_salary'] = $formatted;
+            return;
+        }
+
+        // Sudah ada catatan tambahan: ganti nominalnya saja agar teks tidak menumpuk.
+        $count = 0;
+        $replaced = preg_replace(
+            '/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d{4,})/i',
+            $formatted,
+            $existing,
+            1,
+            $count
+        );
+
+        $this->other['expected_salary'] = $count > 0 ? $replaced : $formatted . ' ' . $existing;
     }
 
     public function save($healthData = null, $otherData = null, $selfConceptData = null)
@@ -150,6 +174,11 @@ class DataTambahan extends Component
         }
         if (is_array($otherData)) {
             $this->other = array_replace_recursive($this->other, $otherData);
+        }
+
+        // Jaga-jaga: pastikan nominal gaji tidak tersimpan menumpuk.
+        if (!empty($this->other['expected_salary'])) {
+            $this->other['expected_salary'] = ApplicantProfile::normalizeSalaryText($this->other['expected_salary']);
         }
 
         // 0. Validasi Konsep Diri (minimal 1 kelebihan dan 1 kekurangan diisi)
