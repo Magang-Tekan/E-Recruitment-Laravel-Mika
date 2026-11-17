@@ -233,15 +233,28 @@
                                 <tr class="hover:bg-slate-50/70 dark:hover:bg-[#14203A]/60 transition-colors">
                                     <!-- Kandidat Column -->
                                     <td class="py-3 px-3 align-middle">
+                                        @php
+                                            $applicantName = $app->applicantProfile->full_name ?? ($app->applicantProfile->user->name ?? 'Pelamar');
+                                            $applicantPhoto = $app->applicantProfile->photo ?? ($app->applicantProfile->user->avatar ?? null);
+                                            $applicantPhotoUrl = null;
+                                            if (!empty($applicantPhoto)) {
+                                                $applicantPhotoUrl = str_starts_with($applicantPhoto, 'http') ? $applicantPhoto : asset('storage/' . $applicantPhoto);
+                                            }
+                                        @endphp
                                         <div class="flex items-center gap-3">
-                                            <div
-                                                class="w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] rounded-full bg-blue-50 text-blue-700 dark:bg-[#14203A] dark:text-[#93F514] border border-blue-200/60 dark:border-[#253D75] flex items-center justify-center font-bold text-xs uppercase shadow-sm shrink-0">
-                                                {{ substr($app->applicantProfile->full_name ?? ($app->applicantProfile->user->name ?? 'A'), 0, 2) }}
-                                            </div>
+                                            @if ($applicantPhotoUrl)
+                                                <img src="{{ $applicantPhotoUrl }}" alt="{{ $applicantName }}"
+                                                    class="w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] rounded-full object-cover border border-blue-200/60 dark:border-[#253D75] shadow-sm shrink-0">
+                                            @else
+                                                <div
+                                                    class="w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] rounded-full bg-blue-50 text-blue-700 dark:bg-[#14203A] dark:text-[#93F514] border border-blue-200/60 dark:border-[#253D75] flex items-center justify-center font-bold text-xs uppercase shadow-sm shrink-0">
+                                                    {{ substr($applicantName, 0, 2) }}
+                                                </div>
+                                            @endif
                                             <div class="min-w-0 pr-2">
                                                 <span
                                                     class="font-semibold text-xs sm:text-sm text-slate-900 dark:text-white truncate block leading-tight">
-                                                    {{ $app->applicantProfile->full_name ?? ($app->applicantProfile->user->name ?? 'Pelamar') }}
+                                                    {{ $applicantName }}
                                                 </span>
                                                 @if (!empty($app->applicantProfile->user->email))
                                                     <span

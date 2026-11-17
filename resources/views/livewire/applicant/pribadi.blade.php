@@ -251,8 +251,8 @@
                         <option value="" class="dark:bg-[#14203A] dark:text-white">
                             {{ __('-- Pilih Agama --') }}</option>
                         <option value="Islam" class="dark:bg-[#14203A] dark:text-white">{{ __('Islam') }}</option>
-                        <option value="Kristen Protestan" class="dark:bg-[#14203A] dark:text-white">
-                            {{ __('Kristen Protestan') }}</option>
+                        <option value="Kristen" class="dark:bg-[#14203A] dark:text-white">
+                            {{ __('Kristen') }}</option>
                         <option value="Katolik" class="dark:bg-[#14203A] dark:text-white">{{ __('Katolik') }}
                         </option>
                         <option value="Hindu" class="dark:bg-[#14203A] dark:text-white">{{ __('Hindu') }}</option>
