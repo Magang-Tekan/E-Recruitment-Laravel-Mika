@@ -216,6 +216,9 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':admin'])
             // Pengaturan Hero Banner Beranda
             Route::view('hero-settings', 'livewire.admin.hero.index')->name('hero');
 
+            // Konten Beranda: Alur Pendaftaran & Seleksi
+            Route::view('registration-flow', 'livewire.admin.registration-flow.index')->name('registration-flow');
+
             // Data Master Department
             Route::view('departments', 'livewire.admin.department.index')->name('department');
             Route::post('departments', [DepartmentController::class, 'store'])->name('department.store');

@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\CompanyShowcase;
 use App\Models\Department;
 use App\Models\Job;
+use App\Models\RegistrationStep;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -121,6 +122,24 @@ class HomeController extends Controller
                 ->toArray();
         });
 
+        $registrationSteps = Cache::remember('frontend_registration_steps_' . $locale, 3600, function () {
+            return RegistrationStep::active()->get();
+        });
+
+        $flowTitle = Setting::get('registration_flow_title') ?: 'Alur Pendaftaran & Seleksi';
+        $flowSubtitle = Setting::get('registration_flow_subtitle') ?: 'Ikuti tahapan sistematis dan transparan untuk bergabung menjadi bagian dari talenta terbaik PT Mitra Karya Analitika (MIKA).';
+
+        if ($locale === 'en') {
+            $flowTitle = Setting::get('registration_flow_title_en') ?: __($flowTitle);
+            $flowSubtitle = Setting::get('registration_flow_subtitle_en') ?: __($flowSubtitle);
+        }
+
+        $registrationFlow = [
+            'enabled' => (bool) Setting::get('registration_flow_enabled', true),
+            'title' => $flowTitle,
+            'subtitle' => $flowSubtitle,
+        ];
+
         $heroSettings = Cache::remember('frontend_hero_settings_' . $locale, 86400, function () use ($locale) {
             $isEn = ($locale === 'en');
 
@@ -161,6 +180,8 @@ class HomeController extends Controller
             'companies',
             'showcases',
             'careerTracks',
+            'registrationSteps',
+            'registrationFlow',
             'jobCountsByLevel',
             'heroSettings',
             'search',

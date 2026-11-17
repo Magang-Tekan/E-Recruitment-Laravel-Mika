@@ -138,6 +138,9 @@ class DatabaseSeeder extends Seeder
 
         // 10. Seed Career Tracks (Pilihan Jalur Karir)
         $this->call(CareerTrackSeeder::class);
+
+        // 11. Seed Alur Pendaftaran & Seleksi
+        $this->call(RegistrationStepSeeder::class);
     }
 }
 

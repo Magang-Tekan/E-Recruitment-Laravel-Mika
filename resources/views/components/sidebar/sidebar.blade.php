@@ -79,10 +79,7 @@
                             Data Master
                         </div>
                         <div class="space-y-1">
-                            <x-sidebar.nested-nav-link title="Perusahaan" tooltip="Menu profil, departemen, posisi, showcase & jalur karir" :active="request()->routeIs('admin.company*') ||
-                                request()->routeIs('admin.showcase*') ||
-                                request()->routeIs('admin.career-track*') ||
-                                request()->routeIs('admin.hero*') ||
+                            <x-sidebar.nested-nav-link title="Perusahaan" tooltip="Menu profil perusahaan, departemen & posisi" :active="request()->routeIs('admin.company*') ||
                                 request()->routeIs('admin.department*') ||
                                 request()->routeIs('admin.position*')">
                                 <x-slot:icon>
@@ -108,6 +105,20 @@
                                     class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.position*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Posisi
                                 </a>
+                            </x-sidebar.nested-nav-link>
+
+                            <!-- Konten Beranda: pengaturan tampilan landing page -->
+                            <x-sidebar.nested-nav-link title="Konten Beranda" tooltip="Kelola teks, kartu & alur pendaftaran di halaman beranda" :active="request()->routeIs('admin.showcase*') ||
+                                request()->routeIs('admin.career-track*') ||
+                                request()->routeIs('admin.hero*') ||
+                                request()->routeIs('admin.registration-flow*')">
+                                <x-slot:icon>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M3.75 5.25h16.5A1.5 1.5 0 0121.75 6.75v10.5a1.5 1.5 0 01-1.5 1.5H3.75a1.5 1.5 0 01-1.5-1.5V6.75a1.5 1.5 0 011.5-1.5zM3.75 6.75l8.25 6 8.25-6" />
+                                    </svg>
+                                </x-slot:icon>
                                 <a href="{{ route('admin.showcase') }}"
                                     title="Dokumentasi acara & kegiatan slider beranda"
                                     class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.showcase*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
@@ -122,6 +133,11 @@
                                     title="Pengaturan teks headline, slogan & background hero beranda"
                                     class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.hero*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
                                     Hero Beranda
+                                </a>
+                                <a href="{{ route('admin.registration-flow') }}"
+                                    title="Kelola tahapan alur pendaftaran & seleksi di beranda"
+                                    class="block px-3 py-2 text-xs font-medium {{ request()->routeIs('admin.registration-flow*') ? 'text-emerald-700 dark:text-[#93F514] font-semibold bg-emerald-50 dark:bg-[#93F514]/10' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/60' }} rounded-lg transition-colors">
+                                    Alur Pendaftaran
                                 </a>
                             </x-sidebar.nested-nav-link>
 
