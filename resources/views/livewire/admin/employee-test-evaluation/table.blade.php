@@ -2,6 +2,7 @@
     showGradeModal: false,
     selectedAttempt: null,
     showPdfViewer: false,
+    isSubmittingGrade: false,
     activePdfUrl: null,
     activePdfName: null,
 
@@ -1786,7 +1787,7 @@
                         <!-- FORM / DAFTAR SELURUH BUTIR JAWABAN BERURUTAN (PILIHAN GANDA, ESSAY, & DISC) -->
                         <template x-if="!selectedAttempt.is_papi">
                             <form :action="'{{ url('admin/test-evaluations') }}/' + selectedAttempt.id + '/grade'"
-                                method="POST" class="space-y-4">
+                                method="POST" @submit="isSubmittingGrade = true" class="space-y-4">
                             @csrf
                             @method('PUT')
 
@@ -2266,9 +2267,13 @@
                                         Tutup
                                     </button>
                                     <template x-if="!selectedAttempt.is_disc && !selectedAttempt.disc_test_result">
-                                        <button type="submit"
-                                            class="px-4 sm:px-5 py-2 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition cursor-pointer">
-                                            Simpan Nilai Evaluasi
+                                        <button type="submit" :disabled="isSubmittingGrade"
+                                            class="px-4 sm:px-5 py-2 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                                            <svg x-show="isSubmittingGrade" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <span x-text="isSubmittingGrade ? 'Menyimpan...' : 'Simpan Nilai Evaluasi'"></span>
                                         </button>
                                     </template>
                                 </div>

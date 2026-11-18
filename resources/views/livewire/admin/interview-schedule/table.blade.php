@@ -11,6 +11,10 @@
     showCompleteModal: false,
     showDeleteModal: false,
     createStep: 1,
+    isSubmittingCreate: false,
+    isSubmittingEdit: false,
+    isSubmittingComplete: false,
+    isSubmittingDelete: false,
 
     // Candidates list for searchable combobox
     allCandidates: @js($activeApplications),
@@ -1086,7 +1090,7 @@
             </div>
 
             {{-- FORM (semua step dalam satu form) --}}
-            <form action="{{ $routePrefix }}" method="POST" id="form-create-interview">
+            <form action="{{ $routePrefix }}" method="POST" id="form-create-interview" @submit="isSubmittingCreate = true">
                 @csrf
                 <input type="hidden" name="application_status_override" value="Interview">
                 <input type="hidden" name="send_email" id="create_send_email_val" :value="createData.sendEmail ? '1' : '0'">
@@ -1406,12 +1410,16 @@
                             </svg>
                             Kembali
                         </button>
-                        <button type="submit" form="form-create-interview"
-                            class="inline-flex items-center gap-2 px-6 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 dark:bg-[#93F514] dark:text-black dark:hover:bg-[#82dc12] rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <button type="submit" form="form-create-interview" :disabled="isSubmittingCreate"
+                            class="inline-flex items-center gap-2 px-6 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 dark:bg-[#93F514] dark:text-black dark:hover:bg-[#82dc12] rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition disabled:opacity-60 disabled:cursor-not-allowed">
+                            <svg x-show="!isSubmittingCreate" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            Simpan &amp; Jadwalkan
+                            <svg x-show="isSubmittingCreate" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span x-text="isSubmittingCreate ? 'Menyimpan...' : 'Simpan & Jadwalkan'"></span>
                         </button>
                     </div>
                 </div>
@@ -1450,7 +1458,7 @@
                         </button>
                     </div>
 
-                    <form :action="'{{ $routePrefix }}/' + editData.id" method="POST" class="mt-4 space-y-4">
+                    <form :action="'{{ $routePrefix }}/' + editData.id" method="POST" @submit="isSubmittingEdit = true" class="mt-4 space-y-4">
                         @csrf
                         @method('PUT')
 
@@ -1563,8 +1571,12 @@
                             <button type="button" @click="showEditModal = false" class="px-4 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition">
                                 Batal
                             </button>
-                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 rounded-xl transition cursor-pointer">
-                                Simpan Perubahan
+                            <button type="submit" :disabled="isSubmittingEdit" class="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                                <svg x-show="isSubmittingEdit" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span x-text="isSubmittingEdit ? 'Menyimpan...' : 'Simpan Perubahan'"></span>
                             </button>
                         </div>
                     </form>
@@ -1614,7 +1626,7 @@
                         </button>
                     </div>
 
-                    <form :action="'{{ $routePrefix }}/' + completeData.id" method="POST" class="mt-4 space-y-4">
+                    <form :action="'{{ $routePrefix }}/' + completeData.id" method="POST" @submit="isSubmittingComplete = true" class="mt-4 space-y-4">
                         @csrf
                         @method('PUT')
 
@@ -1943,11 +1955,15 @@
                             <button type="button" @click="showCompleteModal = false" class="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition">
                                 Batal
                             </button>
-                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-sm transition inline-flex items-center gap-1.5">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <button type="submit" :disabled="isSubmittingComplete" class="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-sm transition inline-flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed">
+                                <svg x-show="!isSubmittingComplete" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                 </svg>
-                                <span>Simpan & Terapkan Hasil</span>
+                                <svg x-show="isSubmittingComplete" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span x-text="isSubmittingComplete ? 'Menyimpan...' : 'Simpan & Terapkan Hasil'"></span>
                             </button>
                         </div>
                     </form>
@@ -1996,15 +2012,19 @@
                         </div>
                     </div>
 
-                    <form :action="'{{ $routePrefix }}/' + deleteData.id" method="POST" class="mt-6 flex items-center justify-center gap-3">
+                    <form :action="'{{ $routePrefix }}/' + deleteData.id" method="POST" @submit="isSubmittingDelete = true" class="mt-6 flex items-center justify-center gap-3">
                         @csrf
                         @method('DELETE')
 
                         <button type="button" @click="showDeleteModal = false" class="px-4 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition">
                             Batal
                         </button>
-                        <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-md shadow-rose-500/20 transition">
-                            Ya, Hapus Jadwal
+                        <button type="submit" :disabled="isSubmittingDelete" class="px-5 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-md shadow-rose-500/20 transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <svg x-show="isSubmittingDelete" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span x-text="isSubmittingDelete ? 'Menghapus...' : 'Ya, Hapus Jadwal'"></span>
                         </button>
                     </form>
                 </div>

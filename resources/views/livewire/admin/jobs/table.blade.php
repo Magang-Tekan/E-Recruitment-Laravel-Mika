@@ -2,6 +2,9 @@
     showCreateModal: {{ $errors->any() && !old('is_edit') ? 'true' : 'false' }},
     showEditModal: {{ $errors->any() && old('is_edit') ? 'true' : 'false' }},
     showDeleteModal: false,
+    isSubmittingCreate: false,
+    isSubmittingEdit: false,
+    isSubmittingDelete: false,
     createStep: {{ $errors->has('description') ? '2' : '1' }},
     editStep: {{ $errors->has('description') ? '2' : '1' }},
     createCompanyId: '{{ old('company_id', '') }}',
@@ -600,7 +603,7 @@
         <div class="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-3.5">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
                 <!-- Search Input -->
-                <div class="relative lg:col-span-4">
+                <div class="relative lg:col-span-3">
                     <input type="text" 
                            wire:model.live.debounce.300ms="search" 
                            placeholder="Cari posisi, lokasi, perusahaan..." 
@@ -613,7 +616,7 @@
                 </div>
 
                 <!-- Filter Perusahaan -->
-                <div class="relative lg:col-span-4">
+                <div class="relative lg:col-span-3">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -633,7 +636,7 @@
                 </div>
 
                 <!-- Filter Departemen (Menyesuaikan dengan perusahaan yang dipilih) -->
-                <div class="relative lg:col-span-4">
+                <div class="relative lg:col-span-3">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -646,6 +649,26 @@
                                 {{ $dept->name }} @if(!$companyId && $dept->company)({{ $dept->company->name }})@endif
                             </option>
                         @endforeach
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Filter Tingkat Pengalaman / Tipe -->
+                <div class="relative lg:col-span-3">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                        </svg>
+                    </div>
+                    <select wire:model.live="experienceLevelFilter" class="w-full pl-9 pr-8 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition appearance-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
+                        <option value="">Semua Tingkat Pengalaman</option>
+                        <option value="Magang">Magang / Siswa</option>
+                        <option value="Fresh Graduate">Fresh Graduate (0-1 Tahun)</option>
+                        <option value="Profesional">Profesional (Berpengalaman)</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -670,7 +693,7 @@
                     </button>
                 </div>
 
-                @if ($search || $companyId || $departmentId || $statusFilter)
+                @if ($search || $companyId || $departmentId || $experienceLevelFilter || $statusFilter)
                     <button type="button" wire:click="resetFilters" class="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-1 cursor-pointer">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -963,6 +986,7 @@
                                   return false;
                               }
                               document.getElementById('create_final_description').value = descVal;
+                              isSubmittingCreate = true;
                           " 
                           class="space-y-4">
                         @csrf
@@ -1214,11 +1238,15 @@
                                 <button type="button" @click="showCreateModal = false" class="px-3 py-2 text-xs font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition">
                                     Batal
                                 </button>
-                                <button type="submit" class="px-5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <button type="submit" :disabled="isSubmittingCreate" class="px-5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 rounded-xl transition flex items-center gap-1.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                                    <svg x-show="!isSubmittingCreate" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                     </svg>
-                                    <span>Simpan Lowongan</span>
+                                    <svg x-show="isSubmittingCreate" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span x-text="isSubmittingCreate ? 'Menyimpan...' : 'Simpan Lowongan'"></span>
                                 </button>
                             </div>
                         </div>
@@ -1297,6 +1325,7 @@
                               }
                               editData.description = descVal;
                               document.getElementById('edit_final_description').value = descVal;
+                              isSubmittingEdit = true;
                           " 
                           class="space-y-4">
                         @csrf
@@ -1546,11 +1575,15 @@
                                 <button type="button" @click="showEditModal = false" class="px-3 py-2 text-xs font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition">
                                     Batal
                                 </button>
-                                <button type="submit" class="px-5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <button type="submit" :disabled="isSubmittingEdit" class="px-5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 rounded-xl transition flex items-center gap-1.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                                    <svg x-show="!isSubmittingEdit" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                     </svg>
-                                    <span>Perbarui Lowongan</span>
+                                    <svg x-show="isSubmittingEdit" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span x-text="isSubmittingEdit ? 'Menyimpan...' : 'Perbarui Lowongan'"></span>
                                 </button>
                             </div>
                         </div>
@@ -1609,7 +1642,7 @@
                         </div>
                     </div>
 
-                    <form :action="'{{ url('admin/jobs') }}/' + deleteData.id" method="POST" class="mt-6 flex items-center justify-end gap-3">
+                    <form :action="'{{ url('admin/jobs') }}/' + deleteData.id" method="POST" @submit="isSubmittingDelete = true" class="mt-6 flex items-center justify-end gap-3">
                         @csrf
                         @method('DELETE')
                         <input type="hidden" name="force" :value="deleteData.force ? '1' : '0'">
@@ -1618,10 +1651,15 @@
                             Batal
                         </button>
                         <button type="submit" 
-                                :disabled="deleteData.applications_count > 0 && !deleteData.force"
+                                :disabled="isSubmittingDelete || (deleteData.applications_count > 0 && !deleteData.force)"
                                 :class="deleteData.applications_count > 0 && !deleteData.force ? 'opacity-50 cursor-not-allowed bg-rose-400' : 'bg-rose-600 hover:bg-rose-500 cursor-pointer shadow-md shadow-rose-500/20'"
-                                class="px-4 py-2 text-xs font-semibold text-white rounded-xl transition flex items-center gap-1.5">
-                            <span x-text="deleteData.applications_count > 0 ? 'Hapus Paksa Lowongan' : 'Hapus Lowongan'"></span>
+                                class="px-4 py-2 text-xs font-semibold text-white rounded-xl transition flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <svg x-show="isSubmittingDelete" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span x-show="!isSubmittingDelete" x-text="deleteData.applications_count > 0 ? 'Hapus Paksa Lowongan' : 'Hapus Lowongan'"></span>
+                            <span x-show="isSubmittingDelete" x-cloak>Menghapus...</span>
                         </button>
                     </form>
                 </div>

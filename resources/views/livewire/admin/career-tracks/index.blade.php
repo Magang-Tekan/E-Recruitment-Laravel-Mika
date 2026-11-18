@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-bold text-lg sm:text-xl text-gray-800 dark:text-slate-100 leading-tight">
-            {{ __('Manajemen Pilihan Jalur Karir (Career Tracks)') }}
+            {{ __('Pilihan Jalur Karir (Career Tracks)') }}
         </h2>
     </x-slot>
 

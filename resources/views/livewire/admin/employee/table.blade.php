@@ -646,11 +646,17 @@
                                 Batal
                             </button>
                             <button type="submit"
-                                class="px-5 py-2.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 active:scale-95 rounded-xl transition flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                wire:loading.attr="disabled" wire:target="confirmPromotion"
+                                class="px-5 py-2.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 active:scale-95 rounded-xl transition flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                                <svg wire:loading.remove wire:target="confirmPromotion" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                 </svg>
-                                <span>Ya, Angkat Menjadi Karyawan</span>
+                                <svg wire:loading wire:target="confirmPromotion" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span wire:loading.remove wire:target="confirmPromotion">Ya, Angkat Menjadi Karyawan</span>
+                                <span wire:loading wire:target="confirmPromotion">Mengangkat...</span>
                             </button>
                         </div>
                     </form>
@@ -792,8 +798,14 @@
                                 Batal
                             </button>
                             <button type="submit"
-                                class="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-500/20 transition">
-                                Simpan Perubahan
+                                wire:loading.attr="disabled" wire:target="saveEmployee"
+                                class="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                                <svg wire:loading wire:target="saveEmployee" class="animate-spin w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span wire:loading.remove wire:target="saveEmployee">Simpan Perubahan</span>
+                                <span wire:loading wire:target="saveEmployee">Menyimpan...</span>
                             </button>
                         </div>
                     </form>
@@ -834,11 +846,17 @@
                             Batal
                         </button>
                         <button type="button" wire:click="deleteEmployee"
-                            class="px-5 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 active:scale-95 rounded-xl shadow-md shadow-rose-500/20 transition flex items-center gap-1.5">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            wire:loading.attr="disabled" wire:target="deleteEmployee"
+                            class="px-5 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 active:scale-95 rounded-xl shadow-md shadow-rose-500/20 transition flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <svg wire:loading.remove wire:target="deleteEmployee" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                            <span>Ya, Hapus Pegawai</span>
+                            <svg wire:loading wire:target="deleteEmployee" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span wire:loading.remove wire:target="deleteEmployee">Ya, Hapus Pegawai</span>
+                            <span wire:loading wire:target="deleteEmployee">Menghapus...</span>
                         </button>
                     </div>
                 </div>
@@ -948,7 +966,7 @@
                             </button>
                             <button type="submit" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 rounded-xl transition flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-60">
                                 <span wire:loading.remove wire:target="savePasskey">Simpan Master Passkey</span>
-                                <span wire:loading wire:target="savePasskey" class="flex items-center gap-1.5">
+                                <span wire:loading.flex wire:target="savePasskey" class="flex items-center gap-1.5">
                                     <svg class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

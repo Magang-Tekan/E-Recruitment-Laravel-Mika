@@ -2,6 +2,9 @@
     showCreateModal: {{ $errors->any() && !old('is_edit') ? 'true' : 'false' }},
     showEditModal: {{ $errors->any() && old('is_edit') ? 'true' : 'false' }},
     showDeleteModal: false,
+    isSubmittingCreate: false,
+    isSubmittingEdit: false,
+    isSubmittingDelete: false,
     editData: {
         id: '{{ old('id', '') }}',
         category_id: '{{ old('category_id', '') }}',
@@ -150,7 +153,7 @@
             <div @click="showCreateModal = false" class="fixed inset-0 bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm"></div>
             <div class="relative bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 space-y-4 border border-gray-200 dark:border-slate-800 shadow-xl">
                 <h3 class="text-sm font-bold text-gray-900 dark:text-white">Tambah Sub-Kategori</h3>
-                <form action="{{ route('admin.test_sub_category.store') }}" method="POST" class="space-y-3">
+                <form action="{{ route('admin.test_sub_category.store') }}" method="POST" @submit="isSubmittingCreate = true" class="space-y-3">
                     @csrf
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Kategori Utama *</label>
@@ -170,7 +173,13 @@
                     </div>
                     <div class="flex justify-end gap-2 pt-3 border-t border-gray-100 dark:border-slate-800">
                         <button type="button" @click="showCreateModal = false" class="px-3 py-2 text-xs font-semibold text-gray-500">Batal</button>
-                        <button type="submit" class="px-4 py-2 text-xs font-semibold bg-indigo-600 text-white rounded-xl">Simpan</button>
+                        <button type="submit" :disabled="isSubmittingCreate" class="px-4 py-2 text-xs font-semibold bg-indigo-600 text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <svg x-show="isSubmittingCreate" class="animate-spin w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span x-text="isSubmittingCreate ? 'Menyimpan...' : 'Simpan'"></span>
+                        </button>
                     </div>
                 </form>
             </div>
@@ -183,7 +192,7 @@
             <div @click="showEditModal = false" class="fixed inset-0 bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm"></div>
             <div class="relative bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 space-y-4 border border-gray-200 dark:border-slate-800 shadow-xl">
                 <h3 class="text-sm font-bold text-gray-900 dark:text-white">Edit Sub-Kategori</h3>
-                <form :action="'{{ url('admin/test-sub-categories') }}/' + editData.id" method="POST" class="space-y-3">
+                <form :action="'{{ url('admin/test-sub-categories') }}/' + editData.id" method="POST" @submit="isSubmittingEdit = true" class="space-y-3">
                     @csrf
                     @method('PUT')
                     <div>
@@ -204,7 +213,13 @@
                     </div>
                     <div class="flex justify-end gap-2 pt-3 border-t border-gray-100 dark:border-slate-800">
                         <button type="button" @click="showEditModal = false" class="px-3 py-2 text-xs font-semibold text-gray-500">Batal</button>
-                        <button type="submit" class="px-4 py-2 text-xs font-semibold bg-indigo-600 text-white rounded-xl">Perbarui</button>
+                        <button type="submit" :disabled="isSubmittingEdit" class="px-4 py-2 text-xs font-semibold bg-indigo-600 text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <svg x-show="isSubmittingEdit" class="animate-spin w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span x-text="isSubmittingEdit ? 'Menyimpan...' : 'Perbarui'"></span>
+                        </button>
                     </div>
                 </form>
             </div>
@@ -218,11 +233,17 @@
             <div class="relative bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 space-y-4 border border-gray-200 dark:border-slate-800 shadow-xl">
                 <h3 class="text-sm font-bold text-gray-900 dark:text-white">Hapus Sub-Kategori</h3>
                 <p class="text-xs text-gray-500">Yakin ingin menghapus sub-kategori <strong x-text="deleteData.name"></strong>? Soal yang terkait tidak akan terhapus, hanya relasi sub-kategorinya di-set kosong.</p>
-                <form :action="'{{ url('admin/test-sub-categories') }}/' + deleteData.id" method="POST" class="flex justify-end gap-2 pt-2">
+                <form :action="'{{ url('admin/test-sub-categories') }}/' + deleteData.id" method="POST" @submit="isSubmittingDelete = true" class="flex justify-end gap-2 pt-2">
                     @csrf
                     @method('DELETE')
                     <button type="button" @click="showDeleteModal = false" class="px-3 py-2 text-xs font-semibold text-gray-500">Batal</button>
-                    <button type="submit" class="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-xl">Hapus</button>
+                    <button type="submit" :disabled="isSubmittingDelete" class="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                        <svg x-show="isSubmittingDelete" class="animate-spin w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span x-text="isSubmittingDelete ? 'Menghapus...' : 'Hapus'"></span>
+                    </button>
                 </form>
             </div>
         </div>

@@ -4,6 +4,10 @@
     showDeleteModal: false,
     showDetailModal: false,
 
+    isSubmittingCreate: false,
+    isSubmittingEdit: false,
+    isSubmittingDelete: false,
+
     createCategoryId: '{{ old('category_id', '') }}',
     createSelectedQuestions: [],
     createTargetScope: '{{ old('target_scope', old('department_ids') ? 'specific' : 'all') }}',
@@ -546,7 +550,7 @@
                         </button>
                     </div>
 
-                    <form action="{{ route('admin.employee_test.store') }}" method="POST" class="mt-4 space-y-4">
+                    <form action="{{ route('admin.employee_test.store') }}" method="POST" @submit="isSubmittingCreate = true" class="mt-4 space-y-4">
                         @csrf
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -798,8 +802,12 @@
                             <button type="button" @click="showCreateModal = false" class="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition">
                                 Batal
                             </button>
-                            <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 rounded-xl transition cursor-pointer">
-                                Simpan Paket Asesmen
+                            <button type="submit" :disabled="isSubmittingCreate" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                                <svg x-show="isSubmittingCreate" class="animate-spin w-3.5 h-3.5 text-white dark:text-black" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span x-text="isSubmittingCreate ? 'Menyimpan...' : 'Simpan Paket Asesmen'"></span>
                             </button>
                         </div>
                     </form>
@@ -829,7 +837,7 @@
                         </button>
                     </div>
 
-                    <form :action="'{{ url('admin/employee-tests') }}/' + editData.id" method="POST" class="mt-4 space-y-4">
+                    <form :action="'{{ url('admin/employee-tests') }}/' + editData.id" method="POST" @submit="isSubmittingEdit = true" class="mt-4 space-y-4">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="is_edit" value="1">
@@ -1071,8 +1079,12 @@
                             <button type="button" @click="showEditModal = false" class="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition">
                                 Batal
                             </button>
-                            <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 rounded-xl transition cursor-pointer">
-                                Simpan Perubahan
+                            <button type="submit" :disabled="isSubmittingEdit" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                                <svg x-show="isSubmittingEdit" class="animate-spin w-3.5 h-3.5 text-white dark:text-black" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span x-text="isSubmittingEdit ? 'Menyimpan...' : 'Simpan Perubahan'"></span>
                             </button>
                         </div>
                     </form>
@@ -1226,7 +1238,7 @@
                         </div>
                     </div>
 
-                    <form :action="'{{ url('admin/employee-tests') }}/' + deleteData.id" method="POST" class="mt-6 flex items-center justify-end gap-3">
+                    <form :action="'{{ url('admin/employee-tests') }}/' + deleteData.id" method="POST" @submit="isSubmittingDelete = true" class="mt-6 flex items-center justify-end gap-3">
                         @csrf
                         @method('DELETE')
 
@@ -1238,10 +1250,15 @@
                             Batal
                         </button>
                         <button type="submit" 
-                                :disabled="deleteData.attempts_count > 0 && !forceDeleteConfirmed"
+                                :disabled="isSubmittingDelete || (deleteData.attempts_count > 0 && !forceDeleteConfirmed)"
                                 :class="(deleteData.attempts_count > 0 && !forceDeleteConfirmed) ? 'opacity-50 cursor-not-allowed bg-gray-400 dark:bg-gray-600' : 'bg-rose-600 hover:bg-rose-500 shadow-md shadow-rose-500/20'"
-                                class="px-4 py-2 text-xs font-semibold text-white rounded-xl transition">
-                            <span x-text="deleteData.attempts_count > 0 ? 'Hapus Paksa Paket' : 'Hapus Data'"></span>
+                                class="px-4 py-2 text-xs font-semibold text-white rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <svg x-show="isSubmittingDelete" class="animate-spin w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span x-show="!isSubmittingDelete" x-text="deleteData.attempts_count > 0 ? 'Hapus Paksa Paket' : 'Hapus Data'"></span>
+                            <span x-show="isSubmittingDelete" x-cloak>Menghapus...</span>
                         </button>
                     </form>
                 </div>
