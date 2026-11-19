@@ -5,6 +5,7 @@ namespace App\Livewire\Applicant;
 use App\Models\ApplicantProfile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -116,16 +117,8 @@ class Pribadi extends Component
         $this->blood_type = $profile->blood_type;
         $this->about_me = $profile->about_me;
 
-        if (empty($profile->address) && empty($profile->city)) {
-            $this->is_same_address = true;
-            $this->address = $this->ktp_address;
-            $this->city = $this->ktp_city;
-            $this->province = $this->ktp_province;
-        } elseif (!empty($this->ktp_address) && !empty($this->address) && trim($this->ktp_address) === trim($this->address) && trim($this->ktp_city ?? '') === trim($this->city ?? '')) {
-            $this->is_same_address = true;
-        } else {
-            $this->is_same_address = false;
-        }
+        // Default checkbox alamat domisili sama dengan KTP dibuat belum centang (false)
+        $this->is_same_address = false;
 
         $photoUrl = $profile->photo_url;
         $this->current_photo_url = null;
@@ -187,7 +180,7 @@ class Pribadi extends Component
     protected function rules()
     {
         return [
-            'nik' => 'nullable|digits:16',
+            'nik' => ['nullable', 'digits:16', Rule::unique('users', 'nik')->ignore(Auth::id())],
             'full_name' => 'required|string|max:255',
             'gender' => 'nullable|string|in:Laki-laki,Perempuan',
             'birth_place' => 'nullable|string|max:100',
@@ -223,6 +216,7 @@ class Pribadi extends Component
         return [
             'photo.max' => __('Ukuran foto maksimal adalah 3MB.'),
             'nik.digits' => __('NIK harus terdiri dari 16 digit angka.'),
+            'nik.unique' => __('NIK ini sudah terdaftar oleh akun lain.'),
             'blood_type.in' => __('Pilihan golongan darah tidak valid.'),
             'work_distance_km.numeric' => __('Jarak kerja harus berupa angka.'),
         ];

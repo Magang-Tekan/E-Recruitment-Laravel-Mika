@@ -573,14 +573,16 @@
 
                 <!-- Alamat sesuai KTP -->
                 <div class="md:col-span-2">
-                    <div class="flex items-center justify-between mb-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2.5">
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                            {{ __('Alamat Sesuai KTP') }}
+                            {{ __('Alamat Sesuai KTP') }} <span class="text-red-500">*</span>
                         </label>
-                        <label class="inline-flex items-center gap-2 cursor-pointer text-xs font-medium text-emerald-600 dark:text-[#93F514] select-none">
+                        <label class="group inline-flex items-center gap-2.5 px-3 py-1.5 rounded-xl border cursor-pointer text-xs font-semibold transition-all select-none shadow-xs {{ $is_same_address ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-[#93F514]/50 text-emerald-800 dark:text-[#93F514]' : 'bg-slate-100/90 dark:bg-[#14203A] border-slate-300 dark:border-slate-600/80 hover:border-slate-400 dark:hover:border-slate-400 text-slate-700 dark:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-[#1D2E54]' }}">
                             <input type="checkbox" wire:model.live="is_same_address"
-                                class="rounded border-slate-300 dark:border-[#1D2E54] text-emerald-600 focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
-                            <span>{{ __('Alamat & Kota Domisili sama dengan KTP') }}</span>
+                                class="w-4 h-4 rounded border-2 border-slate-400 dark:border-slate-300 checked:border-emerald-600 dark:checked:border-emerald-500 text-emerald-600 dark:text-emerald-500 focus:ring-2 focus:ring-emerald-500/30 dark:focus:ring-[#93F514]/40 focus:ring-offset-0 bg-white dark:bg-[#0D1527] cursor-pointer transition">
+                            <span class="tracking-tight select-none">
+                                {{ __('Alamat & Kota Domisili sama dengan KTP') }}
+                            </span>
                         </label>
                     </div>
                     <textarea wire:model.live.debounce.300ms="ktp_address" rows="2" placeholder="{{ __('Alamat lengkap seperti yang tercantum pada KTP Anda') }}"
