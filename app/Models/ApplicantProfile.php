@@ -222,7 +222,7 @@ class ApplicantProfile extends Model
             'pribadi' => ! empty($this->nik) && ! empty($this->full_name) && ! empty($this->phone) && ! empty($this->address) && ! empty($this->marital_status),
             'foto' => ! empty($this->photo),
             'cv' => ! empty($this->cv_file_path) || ! empty($this->generated_cv_url),
-            'keluarga' => $this->relationLoaded('family') ? (bool) $this->family : ($this->family()->exists() || ! empty($this->child_sequence)),
+            'keluarga' => $this->isFamilyComplete(),
             'pendidikan' => ($this->relationLoaded('educations') ? $this->educations->isNotEmpty() : $this->educations()->exists())
                 || ($this->relationLoaded('certifications') ? $this->certifications->isNotEmpty() : $this->certifications()->exists())
                 || ($this->relationLoaded('trainings') ? $this->trainings->isNotEmpty() : $this->trainings()->exists()),
@@ -236,6 +236,49 @@ class ApplicantProfile extends Model
             'data_tambahan' => $this->isDataTambahanComplete(),
             'social_media' => $this->relationLoaded('socialMedias') ? $this->socialMedias->isNotEmpty() : $this->socialMedias()->exists(),
         ];
+    }
+
+    /**
+     * Check whether the mandatory family data is completely filled out.
+     * Requires birth order, parents' details, and at least one emergency contact.
+     */
+    public function isFamilyComplete(): bool
+    {
+        if (empty($this->child_sequence) || empty($this->total_siblings)) {
+            return false;
+        }
+
+        $family = $this->relationLoaded('family') ? $this->family : $this->family()->first();
+        if (! $family) {
+            return false;
+        }
+
+        $members = is_array($family->family_members) ? $family->family_members : [];
+        $membersByRelation = collect($members)->keyBy('relation');
+
+        $requiredFields = ['name', 'birth_date', 'birth_place', 'education', 'occupation'];
+        foreach (['Ayah', 'Ibu'] as $relation) {
+            $member = $membersByRelation->get($relation);
+            if (! is_array($member)) {
+                return false;
+            }
+            foreach ($requiredFields as $field) {
+                if (empty(trim((string) ($member[$field] ?? '')))) {
+                    return false;
+                }
+            }
+        }
+
+        $contacts = $family->emergency_contacts ?? [];
+        foreach (['same_house', 'diff_house'] as $group) {
+            foreach (($contacts[$group] ?? []) as $contact) {
+                if (! empty(trim((string) ($contact['name'] ?? ''))) && ! empty(trim((string) ($contact['phone'] ?? '')))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -308,6 +351,7 @@ class ApplicantProfile extends Model
     {
         $statuses = $this->section_statuses;
         return ! empty($statuses['pribadi'])
+            && ! empty($statuses['foto'])
             && ! empty($statuses['cv'])
             && ! empty($statuses['keluarga'])
             && ! empty($statuses['pendidikan'])
@@ -323,7 +367,8 @@ class ApplicantProfile extends Model
     {
         $statuses = $this->section_statuses;
         $mandatoryWeights = [
-            'pribadi'       => 15,
+            'pribadi'       => 10,
+            'foto'          => 5,
             'cv'            => 15,
             'keluarga'      => 10,
             'pendidikan'    => 15,
@@ -348,7 +393,7 @@ class ApplicantProfile extends Model
     public function getMandatoryCompletedCountAttribute(): int
     {
         $statuses = $this->section_statuses;
-        $mandatoryKeys = ['pribadi', 'cv', 'keluarga', 'pendidikan', 'bahasa', 'skill', 'data_tambahan'];
+        $mandatoryKeys = ['pribadi', 'foto', 'cv', 'keluarga', 'pendidikan', 'bahasa', 'skill', 'data_tambahan'];
         
         $completedCount = 0;
         foreach ($mandatoryKeys as $key) {
@@ -368,6 +413,7 @@ class ApplicantProfile extends Model
         $statuses = $this->section_statuses;
         $labels = [
             'pribadi'       => __('Data Pribadi'),
+            'foto'          => __('Foto Profil'),
             'cv'            => __('Unggah Dokumen CV'),
             'keluarga'      => __('Data Keluarga'),
             'pendidikan'    => __('Riwayat Pendidikan'),
@@ -454,7 +500,8 @@ class ApplicantProfile extends Model
         $statuses = $this->section_statuses;
         $weights = [
             // Data Wajib (80% total)
-            'pribadi'             => 15,
+            'pribadi'             => 10,
+            'foto'                => 5,
             'cv'                  => 15,
             'keluarga'            => 10,
             'pendidikan'          => 15,
@@ -462,10 +509,9 @@ class ApplicantProfile extends Model
             'skill'               => 10,
             'data_tambahan'       => 10,
             // Data Pelengkap (20% total)
-            'pengalaman'          => 8,
-            'organisasi_prestasi' => 4,
-            'social_media'        => 3,
-            'foto'                => 5,
+            'pengalaman'          => 10,
+            'organisasi_prestasi' => 5,
+            'social_media'        => 5,
         ];
 
         $totalPercentage = 0;

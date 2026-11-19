@@ -18,6 +18,7 @@ class JobTable extends Component
     public $search = '';
     public $companyId = '';
     public $departmentId = '';
+    public $experienceLevelFilter = '';
     public $statusFilter = '';
     public $perPage = 10;
 
@@ -37,6 +38,11 @@ class JobTable extends Component
         $this->resetPage();
     }
 
+    public function updatingExperienceLevelFilter()
+    {
+        $this->resetPage();
+    }
+
     public function updatingStatusFilter()
     {
         $this->resetPage();
@@ -52,6 +58,7 @@ class JobTable extends Component
         $this->search = '';
         $this->companyId = '';
         $this->departmentId = '';
+        $this->experienceLevelFilter = '';
         $this->statusFilter = '';
         $this->resetPage();
     }
@@ -110,6 +117,9 @@ class JobTable extends Component
             })
             ->when($this->departmentId, function ($query) {
                 $query->where('department_id', $this->departmentId);
+            })
+            ->when($this->experienceLevelFilter, function ($query) {
+                $query->where('experience_level', $this->experienceLevelFilter);
             })
             ->when($this->statusFilter, function ($query) {
                 $query->where('status', $this->statusFilter);

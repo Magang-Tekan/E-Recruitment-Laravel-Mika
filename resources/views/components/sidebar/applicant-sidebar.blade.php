@@ -601,7 +601,7 @@
                                 class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 transition flex items-center gap-2 active:scale-95 cursor-pointer">
                                 <span wire:loading.remove
                                     wire:target="saveJobSearchStatus">{{ __('Simpan Status') }}</span>
-                                <span wire:loading wire:target="saveJobSearchStatus" class="flex items-center gap-2">
+                                <span wire:loading.flex wire:target="saveJobSearchStatus" class="flex items-center gap-2">
                                     <svg class="animate-spin h-4 w-4 text-white dark:text-black" fill="none"
                                         viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10"

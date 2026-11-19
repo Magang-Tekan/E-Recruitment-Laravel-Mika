@@ -6,6 +6,7 @@ use App\Models\Job;
 use App\Models\Company;
 use App\Models\Department;
 use App\Models\JobApplication;
+use App\Models\SearchLog;
 use App\Models\ApplicantProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -19,6 +20,11 @@ class FrontendJobController extends Controller
     {
         $search = $request->query('search');
         $location = $request->query('location');
+
+        // Catat pencarian baru, bukan klik pagination (search tetap terkirim di URL).
+        if (!empty($search) && !$request->has('page')) {
+            SearchLog::record($search, 'jobs');
+        }
 
         // Helper to extract array parameters flexibly (supports array, comma-separated, or single value)
         $getArrayParam = function ($key) use ($request) {
@@ -200,6 +206,7 @@ class FrontendJobController extends Controller
             } else {
                 $missingMandatorySections = [
                     'Data Pribadi',
+                    'Foto Profil',
                     'Dokumen CV',
                     'Data Keluarga',
                     'Riwayat Pendidikan',

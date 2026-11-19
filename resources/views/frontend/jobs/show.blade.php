@@ -68,6 +68,7 @@
          missingSections: {{ json_encode($missingMandatorySections ?? []) }},
          sectionMap: {
              'Data Pribadi': '{{ __('Data Pribadi') }}',
+             'Foto Profil': '{{ __('Foto Profil') }}',
              'Dokumen CV': '{{ __('Dokumen CV') }}',
              'Unggah Dokumen CV': '{{ __('Unggah Dokumen CV') }}',
              'Data Keluarga': '{{ __('Data Keluarga') }}',
@@ -215,7 +216,7 @@
         <span class="text-[#93F514] font-medium truncate max-w-xs sm:max-w-md">{{ $job->localized_title }}</span>
     </nav>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="job-detail-page grid grid-cols-1 lg:grid-cols-12 gap-8">
 
         <!-- Main Job Details (8 cols) -->
         <div class="lg:col-span-8 space-y-8">
@@ -274,17 +275,17 @@
                     </div>
                 @endif
 
-                <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-5 sm:gap-6">
-                    <div class="flex items-start gap-4 min-w-0 flex-1">
+                <div class="flex flex-col gap-5 sm:gap-6">
+                    <div class="flex items-start gap-3.5 sm:gap-4 min-w-0">
                         @if ($job->company?->logo_url)
                             <div
-                                class="w-16 h-16 rounded-2xl bg-white border border-[#93F514]/40 p-2 flex items-center justify-center shadow-md shadow-black/30 shrink-0 overflow-hidden company-logo-box">
+                                class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white border border-[#93F514]/40 p-2 flex items-center justify-center shadow-md shadow-black/30 shrink-0 overflow-hidden company-logo-box">
                                 <img src="{{ $job->company->logo_url }}" alt="{{ $job->company->name }}"
                                     class="w-full h-full object-contain">
                             </div>
                         @else
                             <div
-                                class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#93F514] to-[#5ef558] flex items-center justify-center text-black font-extrabold text-2xl shadow-md shadow-black/30 shrink-0">
+                                class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-[#93F514] to-[#5ef558] flex items-center justify-center text-black font-extrabold text-xl sm:text-2xl shadow-md shadow-black/30 shrink-0">
                                 {{ strtoupper(substr($job->company?->name ?? 'M', 0, 2)) }}
                             </div>
                         @endif
@@ -308,26 +309,26 @@
                                     </span>
                                 @endif
                             </div>
-                            <h1 class="text-2xl sm:text-3xl font-extrabold text-[#EEEEEE] mt-2 break-normal sm:break-words leading-tight">
+                            <h1 class="text-2xl sm:text-3xl font-extrabold text-[#EEEEEE] mt-2 break-words leading-tight [text-wrap:balance]">
                                 {{ $job->localized_title }}
                             </h1>
                             <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-sm mt-2">
-                                <span class="text-[#93F514] font-semibold flex items-center gap-1.5 company-badge whitespace-nowrap">
+                                <span class="text-[#93F514] font-semibold flex items-center gap-1.5 company-badge min-w-0">
                                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-400 company-icon shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                     </svg>
-                                    <span>{{ $job->company?->name ?? __('Perusahaan Mitra') }}</span>
+                                    <span class="break-words">{{ $job->company?->name ?? __('Perusahaan Mitra') }}</span>
                                 </span>
 
-                                <span class="text-[#93F514] font-semibold flex items-center gap-1.5 department-badge whitespace-nowrap">
+                                <span class="text-[#93F514] font-semibold flex items-center gap-1.5 department-badge min-w-0">
                                     <svg class="w-3.5 h-3.5 text-gray-400 dark:text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                     </svg>
-                                    <span>{{ __($job->department?->name ?? 'Umum') }}</span>
+                                    <span class="break-words">{{ __($job->department?->name ?? 'Umum') }}</span>
                                 </span>
 
                                 @if ($job->position)
-                                    <span class="inline-flex items-center text-xs px-2.5 py-0.5 rounded-full bg-[#93F514]/10 text-[#93F514] border border-[#93F514]/30 font-medium whitespace-nowrap">
+                                    <span class="inline-flex items-center text-xs px-2.5 py-0.5 rounded-full bg-[#93F514]/10 text-[#93F514] border border-[#93F514]/30 font-medium whitespace-normal break-words leading-snug text-left">
                                         {{ __('Posisi:') }} {{ __($job->position->name) }}
                                     </span>
                                 @endif
@@ -335,11 +336,11 @@
                         </div>
                     </div>
 
-                    <!-- Actions Container: Buttons + Share Dropdown (Rapi & Sejajar) -->
-                    <div class="flex items-center gap-2.5 sm:gap-3 shrink-0 flex-wrap sm:flex-nowrap">
+                    <!-- Actions Container: Buttons + Share Dropdown (Responsive) -->
+                    <div class="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 w-full">
                         @if ($job->is_expired || $job->status !== 'Open')
                             <!-- Status Tombol Ditutup -->
-                            <div class="flex-1 md:flex-initial h-11 sm:h-12 px-5 rounded-2xl bg-gray-900/90 border border-gray-700 text-gray-400 font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 cursor-not-allowed shadow-inner select-none whitespace-nowrap">
+                            <div class="w-full sm:w-auto h-11 sm:h-12 px-5 rounded-2xl bg-gray-900/90 border border-gray-700 text-gray-400 font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 cursor-not-allowed shadow-inner select-none whitespace-nowrap">
                                 <svg class="w-4 h-4 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                 </svg>
@@ -349,46 +350,43 @@
                             @auth
                                 @if ($isAdminOrRecruiter)
                                     <a href="{{ auth()->user()->isRecruiter() && !auth()->user()->isAdmin() ? route('recruiter.dashboard') : route('admin.dashboard') }}"
-                                        class="admin-dashboard-btn h-11 sm:h-12 px-5 rounded-2xl bg-gray-900 hover:bg-gray-800 border border-gray-700 hover:border-[#93F514]/50 text-white font-bold text-xs sm:text-sm shadow-md inline-flex items-center justify-center gap-2 transition whitespace-nowrap">
+                                        class="admin-dashboard-btn w-full sm:w-auto h-11 sm:h-12 px-5 rounded-2xl bg-gray-900 hover:bg-gray-800 border border-gray-700 hover:border-[#93F514]/50 text-white font-bold text-xs sm:text-sm shadow-md inline-flex items-center justify-center gap-2 transition whitespace-nowrap">
                                         <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                                         </svg>
                                         <span>{{ __('Dashboard') }}</span>
                                     </a>
                                 @elseif($hasApplied)
-                                    <div class="flex-1 md:flex-initial h-11 sm:h-12 px-4 sm:px-5 rounded-2xl bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-sm select-none whitespace-nowrap">
+                                    <div class="w-full sm:w-auto h-11 sm:h-12 px-4 sm:px-5 rounded-2xl bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-sm select-none whitespace-nowrap">
                                         <svg class="w-4 h-4 text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                         </svg>
                                         <span>{{ __('Sudah Dilamar') }}</span>
                                     </div>
                                     <a href="{{ route('profile', ['tab' => 'riwayat']) }}" 
-                                       class="h-11 sm:h-12 px-4 sm:px-5 rounded-2xl bg-[#051405] hover:bg-[#93F514] border border-[#93F514]/30 text-white hover:text-black text-xs sm:text-sm font-semibold shadow-md transition inline-flex items-center justify-center whitespace-nowrap">
+                                       class="w-full sm:w-auto h-11 sm:h-12 px-4 sm:px-5 rounded-2xl bg-[#051405] hover:bg-[#93F514] border border-[#93F514]/30 text-white hover:text-black text-xs sm:text-sm font-semibold shadow-md transition inline-flex items-center justify-center whitespace-nowrap">
                                         <span>{{ __('Pantau Status') }}</span>
                                     </a>
                                 @else
                                     <button type="button" 
                                             @click="handleApplyClick()"
-                                            class="job-apply-btn flex-1 md:flex-initial h-11 sm:h-12 px-6 rounded-2xl bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-sm sm:text-base shadow-md shadow-black/30 transition cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98]">
-                                        <svg class="w-4 h-4 text-black shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                                        </svg>
+                                            class="job-apply-btn w-full sm:w-auto h-11 sm:h-12 px-6 rounded-2xl bg-[#93F514] hover:bg-[#82dc0a] text-black font-extrabold text-sm sm:text-base shadow-md shadow-black/30 transition cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98]">
                                         <span>{{ __('Lamar Posisi Ini') }}</span>
                                     </button>
                                 @endif
                             @else
                                 <a href="{{ route('login') }}"
-                                    class="job-apply-btn flex-1 md:flex-initial h-11 sm:h-12 px-6 rounded-2xl bg-[#1a4d00] hover:bg-[#163f00] dark:bg-[#93F514] dark:hover:bg-[#82dc0a] text-white dark:text-black font-extrabold text-sm sm:text-base shadow-md shadow-black/30 transition inline-flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98]">
+                                    class="job-apply-btn w-full sm:w-auto h-11 sm:h-12 px-6 rounded-2xl bg-[#1a4d00] hover:bg-[#163f00] dark:bg-[#93F514] dark:hover:bg-[#82dc0a] text-white dark:text-black font-extrabold text-sm sm:text-base shadow-md shadow-black/30 transition inline-flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98]">
                                     <span>{{ __('Masuk & Lamar') }}</span>
                                 </a>
                             @endauth
                         @endif
 
                         <!-- Dropdown Bagikan (Sejajar dengan Lamar) -->
-                        <div class="relative shrink-0" x-data="{ openShare: false }" @click.outside="openShare = false">
+                        <div class="relative w-full sm:w-auto min-w-0" x-data="{ openShare: false }" @click.outside="openShare = false">
                             <button type="button" 
                                     @click="openShare = !openShare"
-                                    class="h-11 sm:h-12 px-4 sm:px-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-[#93F514]/30 hover:border-[#93F514] text-[#EEEEEE] hover:text-[#93F514] font-bold text-xs sm:text-sm transition inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm group whitespace-nowrap active:scale-[0.98]"
+                                    class="w-full h-11 sm:h-12 px-4 sm:px-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-[#93F514]/30 hover:border-[#93F514] text-[#EEEEEE] hover:text-[#93F514] font-bold text-xs sm:text-sm transition inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm group whitespace-nowrap active:scale-[0.98]"
                                     :class="openShare ? 'border-[#93F514] text-[#93F514] bg-white/10 ring-2 ring-[#93F514]/20' : ''"
                                     title="{{ __('Bagikan Lowongan Ini') }}">
                                 <svg class="w-4 h-4 text-[#93F514] shrink-0 transition group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -409,7 +407,7 @@
                                  x-transition:leave="transition ease-in duration-100"
                                  x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                                  x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
-                                 class="absolute right-0 mt-2 w-52 rounded-2xl bg-[#061506] border border-[#93F514]/30 shadow-2xl shadow-black/90 p-2 z-50 text-left backdrop-blur-xl">
+                                 class="absolute left-0 sm:left-auto sm:right-0 mt-2 w-52 max-w-[calc(100vw-3rem)] rounded-2xl bg-[#061506] border border-[#93F514]/30 shadow-2xl shadow-black/90 p-2 z-50 text-left backdrop-blur-xl">
                                 
                                 <div class="px-3 py-1.5 text-xs font-bold text-gray-200">
                                     {{ __('Bagikan Lowongan') }}

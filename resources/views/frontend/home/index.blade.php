@@ -603,20 +603,15 @@
                 </div>
 
                 <!-- Popular Searches tags -->
+                @if (!empty($popularSearches))
                 <div class="mt-3 sm:mt-3.5 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs text-gray-400 relative z-10">
                     <span class="font-bold text-[#93F514]">{{ __('Pencarian Populer:') }}</span>
-                    <a href="{{ route('jobs.index', ['search' => 'Software Engineer']) }}"
-                        class="px-2.5 py-0.5 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition text-[11px] sm:text-xs">Software
-                        Engineer</a>
-                    <a href="{{ route('jobs.index', ['search' => 'Staff']) }}"
-                        class="px-2.5 py-0.5 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition text-[11px] sm:text-xs">Staff
-                        Administrasi</a>
-                    <a href="{{ route('jobs.index', ['search' => 'Marketing']) }}"
-                        class="px-2.5 py-0.5 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition text-[11px] sm:text-xs">Digital
-                        Marketing</a>
-                    <a href="{{ route('jobs.index', ['location' => 'Remote']) }}"
-                        class="px-2.5 py-0.5 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition text-[11px] sm:text-xs">Remote</a>
+                    @foreach ($popularSearches as $tag)
+                        <a href="{{ route('jobs.index', $tag['query']) }}" title="{{ $tag['label'] }}"
+                            class="inline-block max-w-[180px] sm:max-w-[220px] truncate px-2.5 py-0.5 rounded-full bg-[#051205] hover:bg-[#93F514]/20 border border-[#93F514]/30 text-gray-300 hover:text-[#93F514] transition text-[11px] sm:text-xs">{{ $tag['label'] }}</a>
+                    @endforeach
                 </div>
+                @endif
 
                 <!-- Quick Stats Summary -->
                 <div

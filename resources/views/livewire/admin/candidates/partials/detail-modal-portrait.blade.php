@@ -1148,15 +1148,20 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
                                     @foreach($healthKeys as $hk => $hl)
                                         @php
-                                            $isY = !empty($hAnswers[$hk]['is_yes']);
+                                            $answered = isset($hAnswers[$hk]) && is_array($hAnswers[$hk]) && array_key_exists('is_yes', $hAnswers[$hk]) && $hAnswers[$hk]['is_yes'] !== null;
+                                            $isY = $answered && !empty($hAnswers[$hk]['is_yes']);
                                             $det = $hAnswers[$hk]['detail'] ?? '';
                                         @endphp
                                         <div class="p-2.5 rounded-xl bg-white/70 dark:bg-slate-900/50 border border-gray-100 dark:border-slate-800 flex flex-col gap-1">
                                             <div class="flex items-center justify-between">
                                                 <span class="text-gray-600 dark:text-slate-300 font-semibold">{{ $hl }}:</span>
-                                                <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $isY ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300' : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' }}">
-                                                    {{ $isY ? 'IYA' : 'TIDAK' }}
-                                                </span>
+                                                @if ($answered)
+                                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $isY ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300' : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' }}">
+                                                        {{ $isY ? 'IYA' : 'TIDAK' }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-gray-400 dark:text-slate-500 text-[11px]">-</span>
+                                                @endif
                                             </div>
                                             @if($isY && $det)
                                                 <span class="text-[10.5px] text-gray-500 dark:text-slate-400 italic">{{ $det }}</span>
@@ -1175,25 +1180,25 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-xs pt-1">
                                     <div class="p-2 rounded-xl bg-white/70 dark:bg-slate-900/50 border border-gray-100 dark:border-slate-800 text-[11px]">
                                         <span class="text-gray-400 block text-[10px]">Perjalanan Dinas</span>
-                                        <span class="font-bold text-gray-800 dark:text-slate-200">{{ strtoupper($oAnswers['business_trip_ready'] ?? 'SIAP') }}</span>
+                                        <span class="font-bold text-gray-800 dark:text-slate-200">{{ !empty($oAnswers['business_trip_ready']) ? strtoupper($oAnswers['business_trip_ready']) : '-' }}</span>
                                     </div>
                                     <div class="p-2 rounded-xl bg-white/70 dark:bg-slate-900/50 border border-gray-100 dark:border-slate-800 text-[11px]">
                                         <span class="text-gray-400 block text-[10px]">Mutasi Bagian/Posisi</span>
-                                        <span class="font-bold text-gray-800 dark:text-slate-200">{{ strtoupper($oAnswers['mutation_position_ready'] ?? 'SIAP') }}</span>
+                                        <span class="font-bold text-gray-800 dark:text-slate-200">{{ !empty($oAnswers['mutation_position_ready']) ? strtoupper($oAnswers['mutation_position_ready']) : '-' }}</span>
                                     </div>
                                     <div class="p-2 rounded-xl bg-white/70 dark:bg-slate-900/50 border border-gray-100 dark:border-slate-800 text-[11px]">
                                         <span class="text-gray-400 block text-[10px]">Mutasi Group</span>
-                                        <span class="font-bold text-gray-800 dark:text-slate-200">{{ strtoupper($oAnswers['mutation_group_ready'] ?? 'SIAP') }}</span>
+                                        <span class="font-bold text-gray-800 dark:text-slate-200">{{ !empty($oAnswers['mutation_group_ready']) ? strtoupper($oAnswers['mutation_group_ready']) : '-' }}</span>
                                     </div>
                                     <div class="p-2 rounded-xl bg-white/70 dark:bg-slate-900/50 border border-gray-100 dark:border-slate-800 text-[11px]">
                                         <span class="text-gray-400 block text-[10px]">Penempatan Kota Lain</span>
-                                        <span class="font-bold text-gray-800 dark:text-slate-200">{{ strtoupper($oAnswers['relocation_city_ready'] ?? 'SIAP') }}</span>
+                                        <span class="font-bold text-gray-800 dark:text-slate-200">{{ !empty($oAnswers['relocation_city_ready']) ? strtoupper($oAnswers['relocation_city_ready']) : '-' }}</span>
                                     </div>
                                 </div>
                                 <div class="space-y-1.5 text-xs pt-1">
                                     <div class="p-2 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-800 text-[11px]">
                                         <span class="text-gray-400 block text-[10px]">Kesiapan Mulai Kerja:</span>
-                                        <span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ $oAnswers['ready_to_work'] ?? 'Dapat Segera Bekerja' }}</span>
+                                        <span class="font-semibold {{ !empty($oAnswers['ready_to_work']) ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-slate-500' }}">{{ !empty($oAnswers['ready_to_work']) ? $oAnswers['ready_to_work'] : '-' }}</span>
                                     </div>
                                     @if(!empty($oAnswers['expected_salary']))
                                         <div class="p-2 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-800 text-[11px]">

@@ -395,9 +395,14 @@ class Keluarga extends Component
 
     public function save()
     {
-        $this->validate([
-            'child_sequence' => 'nullable|numeric|min:1',
-            'total_siblings' => 'nullable|numeric|min:1',
+        $this->syncFamilyStructure();
+
+        $ayahIndex = collect($this->family_members)->search(fn($m) => ($m['relation'] ?? '') === 'Ayah');
+        $ibuIndex = collect($this->family_members)->search(fn($m) => ($m['relation'] ?? '') === 'Ibu');
+
+        $rules = [
+            'child_sequence' => 'required|numeric|min:1',
+            'total_siblings' => 'required|numeric|min:1',
             'family_members.*.name' => 'nullable|string|max:255',
             'family_members.*.age' => 'nullable|numeric|min:0|max:130',
             'family_members.*.birth_place' => 'nullable|string|max:255',
@@ -419,12 +424,46 @@ class Keluarga extends Component
             'emergency_diff_house_name_2' => 'nullable|string|max:255',
             'emergency_diff_house_phone_2' => 'nullable|string|max:30',
             'emergency_diff_house_relation_2' => 'nullable|string|max:100',
-        ], [
+        ];
+
+        // Data Ayah & Ibu wajib diisi lengkap
+        $attributes = [];
+        $parentFields = [
+            'name' => ['rule' => 'required|string|max:255', 'label' => 'Nama Lengkap'],
+            'birth_date' => ['rule' => 'required|date', 'label' => 'Tanggal Lahir'],
+            'birth_place' => ['rule' => 'required|string|max:255', 'label' => 'Tempat Lahir'],
+            'education' => ['rule' => 'required|string|max:100', 'label' => 'Pendidikan Terakhir'],
+            'occupation' => ['rule' => 'required|string|max:100', 'label' => 'Pekerjaan'],
+        ];
+
+        foreach (['Ayah' => $ayahIndex, 'Ibu' => $ibuIndex] as $relation => $index) {
+            if ($index === false) {
+                continue;
+            }
+            foreach ($parentFields as $field => $config) {
+                $key = "family_members.{$index}.{$field}";
+                $rules[$key] = $config['rule'];
+                $attributes[$key] = $config['label'] . ' ' . __($relation);
+            }
+        }
+
+        $this->validate($rules, [
+            'child_sequence.required' => __('Urutan anak wajib diisi.'),
             'child_sequence.numeric' => __('Urutan anak harus berupa angka.'),
             'child_sequence.min' => __('Urutan anak minimal 1.'),
+            'total_siblings.required' => __('Jumlah saudara wajib diisi.'),
             'total_siblings.numeric' => __('Jumlah saudara harus berupa angka.'),
             'total_siblings.min' => __('Jumlah saudara minimal 1.'),
-        ]);
+        ], $attributes);
+
+        // Minimal satu kontak darurat (nama & nomor) wajib diisi
+        $hasEmergencyContact = (!empty($this->emergency_same_house_name_1) && !empty($this->emergency_same_house_phone_1))
+            || (!empty($this->emergency_diff_house_name_1) && !empty($this->emergency_diff_house_phone_1));
+
+        if (!$hasEmergencyContact) {
+            $this->addError('emergency_contact_required', __('Minimal satu kontak darurat (nama dan nomor telepon) wajib diisi.'));
+            return;
+        }
 
         // Validasi kontak darurat tidak boleh sama dengan nomor sendiri / duplikat
         $emergencyFields = [

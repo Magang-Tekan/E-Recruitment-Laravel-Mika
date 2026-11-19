@@ -27,6 +27,22 @@
     <div class="bg-white dark:bg-[#0D1527] p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 dark:border-[#1D2E54]">
         <form wire:submit.prevent="save" class="space-y-8">
 
+            @if ($errors->any())
+                <div class="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-300">
+                    <div class="flex items-center gap-2 font-bold text-xs mb-2">
+                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <span>{{ __('Data keluarga belum lengkap. Mohon lengkapi data berikut:') }}</span>
+                    </div>                                    <ul class="list-disc list-inside space-y-0.5 text-xs font-medium sm:grid sm:grid-cols-2 sm:gap-x-6 sm:space-y-0">
+                        @foreach ($errors->all() as $message)
+                            <li>{{ $message }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <!-- Section 1: Urutan Anak & Jumlah Bersaudara (Smart Reactive Inputs) -->
             <div class="p-5 bg-slate-50/70 dark:bg-[#14203A]/40 rounded-2xl border border-slate-200/80 dark:border-[#1D2E54] space-y-3">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -90,6 +106,7 @@
                         </h3>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             {{ __('Lengkapi data rincian anggota keluarga pada tabel di bawah ini.') }}
+                            <span class="font-semibold text-rose-500">{{ __('Kolom Ayah & Ibu (nama, tanggal lahir, tempat lahir, pendidikan, pekerjaan) wajib diisi.') }}</span>
                         </p>
                     </div>
 
@@ -115,19 +132,30 @@
                 </div>
 
                 <!-- DESKTOP VIEW: Sleek Table 8 Kolom (Sesuai Gambar 2) -->
-                <div class="hidden lg:block overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-[#1D2E54] shadow-xs">
-                    <table class="w-full text-left text-xs text-slate-700 dark:text-slate-300 border-collapse">
+                <div class="hidden lg:block overflow-x-auto custom-scrollbar rounded-2xl border border-slate-200/80 dark:border-[#1D2E54] shadow-xs">
+                    <table class="w-full min-w-[1000px] table-fixed text-left text-xs text-slate-700 dark:text-slate-300 border-collapse">
+                        <colgroup>
+                            <col class="w-[8%]">
+                            <col class="w-[17%]">
+                            <col class="w-[13%]">
+                            <col class="w-[12%]">
+                            <col class="w-[5%]">
+                            <col class="w-[13%]">
+                            <col class="w-[13%]">
+                            <col class="w-[14%]">
+                            <col class="w-[5%]">
+                        </colgroup>
                         <thead class="bg-slate-100/80 dark:bg-[#14203A] text-slate-800 dark:text-slate-200 uppercase font-bold text-[11px] tracking-wider border-b border-slate-200 dark:border-[#1D2E54]">
                             <tr>
-                                <th scope="col" class="py-3 px-3 w-32 font-bold">{{ __('Hubungan') }}</th>
-                                <th scope="col" class="py-3 px-3 min-w-[170px] font-bold">{{ __('Nama Lengkap') }}</th>
-                                <th scope="col" class="py-3 px-3 w-36 font-bold">{{ __('Tanggal Lahir') }}</th>
-                                <th scope="col" class="py-3 px-3 min-w-[130px] font-bold">{{ __('Tempat Lahir') }}</th>
-                                <th scope="col" class="py-3 px-2 w-20 font-bold text-center">{{ __('Usia') }}</th>
-                                <th scope="col" class="py-3 px-3 w-36 font-bold">{{ __('Pendidikan Terakhir') }}</th>
-                                <th scope="col" class="py-3 px-3 min-w-[150px] font-bold">{{ __('Pekerjaan') }}</th>
-                                <th scope="col" class="py-3 px-3 min-w-[160px] font-bold">{{ __('Nama Perusahaan') }}</th>
-                                <th scope="col" class="py-3 px-2 w-12 text-center font-bold">{{ __('Aksi') }}</th>
+                                <th scope="col" class="py-3 px-2.5 font-bold">{{ __('Hubungan') }}</th>
+                                <th scope="col" class="py-3 px-2 font-bold">{{ __('Nama Lengkap') }}</th>
+                                <th scope="col" class="py-3 px-2 font-bold">{{ __('Tanggal Lahir') }}</th>
+                                <th scope="col" class="py-3 px-2 font-bold">{{ __('Tempat Lahir') }}</th>
+                                <th scope="col" class="py-3 px-1 font-bold text-center">{{ __('Usia') }}</th>
+                                <th scope="col" class="py-3 px-2 font-bold">{{ __('Pendidikan Terakhir') }}</th>
+                                <th scope="col" class="py-3 px-2 font-bold">{{ __('Pekerjaan') }}</th>
+                                <th scope="col" class="py-3 px-2 font-bold">{{ __('Nama Perusahaan') }}</th>
+                                <th scope="col" class="py-3 px-1 text-center font-bold">{{ __('Aksi') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200/70 dark:divide-[#1D2E54]">
@@ -144,8 +172,8 @@
                                 @endphp
                                 <tr class="hover:bg-slate-50/60 dark:hover:bg-[#14203A]/40 transition" wire:key="family-row-desktop-{{ $index }}">
                                     <!-- 1. Hubungan -->
-                                    <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
-                                        <div class="flex items-center gap-2">
+                                    <td class="py-2.5 px-2.5 font-semibold text-slate-900 dark:text-white align-middle">
+                                        <div class="flex items-center gap-1.5 min-w-0">
                                             @if($isParent)
                                                 <span class="w-2 h-2 rounded-full {{ $rel === 'Ayah' ? 'bg-blue-500' : 'bg-pink-500' }}"></span>
                                             @elseif($isSpouse)
@@ -155,7 +183,7 @@
                                             @else
                                                 <span class="w-2 h-2 rounded-full bg-slate-400"></span>
                                             @endif
-                                            <span>{{ $displayRel }}</span>
+                                            <span class="truncate" title="{{ $displayRel }}">{{ $displayRel }}</span>
                                             @if($isParent)
                                                 <span class="text-red-500">*</span>
                                             @endif
@@ -166,7 +194,7 @@
                                     <td class="py-2.5 px-2">
                                         <input type="text" wire:model="family_members.{{ $index }}.name"
                                             placeholder="{{ __('Nama Lengkap') }}"
-                                            class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition">
+                                            class="w-full min-w-0 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition">
                                         @error("family_members.{$index}.name")
                                             <span class="text-[10px] text-red-500 block">{{ $message }}</span>
                                         @enderror
@@ -175,14 +203,14 @@
                                     <!-- 3. Tanggal Lahir -->
                                     <td class="py-2.5 px-2">
                                         <input type="date" wire:model.live="family_members.{{ $index }}.birth_date"
-                                            class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition dark:[color-scheme:dark] cursor-pointer">
+                                            class="w-full min-w-0 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition dark:[color-scheme:dark] cursor-pointer">
                                     </td>
 
                                     <!-- 4. Tempat Lahir -->
                                     <td class="py-2.5 px-2">
                                         <input type="text" wire:model="family_members.{{ $index }}.birth_place"
                                             placeholder="{{ __('Kota Lahir') }}"
-                                            class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition">
+                                            class="w-full min-w-0 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition">
                                     </td>
 
                                     <!-- 5. Usia -->
@@ -190,13 +218,13 @@
                                         <input type="number" min="0" max="130" wire:model="family_members.{{ $index }}.age"
                                             placeholder="{{ __('Usia') }}"
                                             title="{{ __('Terisi otomatis saat memilih tanggal lahir, atau dapat diketik manual') }}"
-                                            class="w-16 px-1.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-xs text-center font-medium focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition">
+                                            class="w-full min-w-0 px-1 py-1.5 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-xs text-center font-medium focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition">
                                     </td>
 
                                     <!-- 6. Pendidikan Terakhir -->
                                     <td class="py-2.5 px-2">
                                         <select wire:model="family_members.{{ $index }}.education"
-                                            class="w-full px-2 py-1.5 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition">
+                                            class="w-full min-w-0 px-2 py-1.5 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition">
                                             <option value="">{{ __('-- Pilih --') }}</option>
                                             @foreach($educationOptions as $opt)
                                                 <option value="{{ $opt }}">{{ $opt }}</option>
@@ -207,7 +235,7 @@
                                     <!-- 7. Pekerjaan -->
                                     <td class="py-2.5 px-2">
                                         <select wire:model="family_members.{{ $index }}.occupation"
-                                            class="w-full px-2 py-1.5 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition">
+                                            class="w-full min-w-0 px-2 py-1.5 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition">
                                             <option value="">{{ __('-- Pilih Pekerjaan --') }}</option>
                                             @foreach($occupationOptions as $occ)
                                                 <option value="{{ $occ }}">{{ $occ }}</option>
@@ -218,8 +246,8 @@
                                     <!-- 8. Nama Perusahaan -->
                                     <td class="py-2.5 px-2">
                                         <input type="text" wire:model="family_members.{{ $index }}.company"
-                                            placeholder="{{ __('Nama Instansi / Perusahaan') }}"
-                                            class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition">
+                                            placeholder="{{ __('Cth: PT ABC') }}"
+                                            class="w-full min-w-0 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#93F514] transition">
                                     </td>
 
                                     <!-- Aksi (Hapus row jika deletable) -->
@@ -356,7 +384,7 @@
                             {{ __('Nomor yang Dapat Dihubungi Ketika Terjadi Keadaan Darurat') }}
                         </h3>
                         <p class="text-xs text-slate-500 dark:text-[#93A5C9] mt-1 leading-relaxed font-normal sm:font-medium">
-                            {{ __('* Mohon cantumkan kontak darurat keluarga/kerabat yang dapat dihubungi sewaktu-waktu (opsional 1 atau 2 orang).') }}
+                            {{ __('* Mohon cantumkan minimal 1 kontak darurat keluarga/kerabat yang dapat dihubungi sewaktu-waktu (maksimal 2 orang).') }}
                         </p>
                         <div class="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/40 text-[11px] font-medium text-amber-800 dark:text-amber-300">
                             <svg class="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

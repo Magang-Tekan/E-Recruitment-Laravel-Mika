@@ -1781,6 +1781,13 @@
             color: #3D7A00 !important;
         }
 
+        /* Ikon kuota pada kartu lowongan: hijau tua di light mode */
+        html.light-mode .job-card-item .job-quota-icon {
+            color: #2D6B00 !important;
+            stroke: #2D6B00 !important;
+            opacity: 1 !important;
+        }
+
         /* Card Logo Container in Light Mode */
         html.light-mode .job-card-item .bg-\[\#051205\] {
             background-color: #F3F9EE !important;
@@ -2431,6 +2438,26 @@
             color: #111827 !important;
         }
 
+        /* Tombol "Lihat Semua Lowongan Karir" pada empty state: hijau tua */
+        html.light-mode .company-empty-jobs .company-empty-jobs-cta {
+            background-color: #2D6B00 !important;
+            color: #FFFFFF !important;
+            border-color: #2D6B00 !important;
+            box-shadow: 0 4px 14px rgba(45, 107, 0, 0.20) !important;
+        }
+
+        html.light-mode .company-empty-jobs .company-empty-jobs-cta:hover {
+            background-color: #1A4D00 !important;
+            border-color: #1A4D00 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 6px 18px rgba(45, 107, 0, 0.28) !important;
+        }
+
+        html.light-mode .company-empty-jobs .company-empty-jobs-cta svg {
+            color: #FFFFFF !important;
+            stroke: #FFFFFF !important;
+        }
+
         /* =====================================================
            FOOTER: OFFICIAL WEBSITE BUTTON (LIGHT MODE)
         ===================================================== */
@@ -2532,6 +2559,17 @@
         html.light-mode .related-company-name {
             color: #2D6B00 !important;
             font-weight: 600 !important;
+        }
+
+        /* Halaman detail lowongan: kartu utama putih, komponen di dalamnya hijau muda */
+        html.light-mode .job-detail-page .bg-\[\#050e05\] {
+            background-color: #FFFFFF !important;
+            border-color: rgba(45, 107, 0, 0.18) !important;
+        }
+
+        html.light-mode .job-detail-page .bg-\[\#030803\] {
+            background-color: #F2FAE8 !important;
+            border-color: rgba(45, 107, 0, 0.18) !important;
         }
 
         /* Admin Mode Banner & Dashboard Button di Light Mode */

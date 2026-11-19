@@ -213,7 +213,7 @@ class Pribadi extends Component
             'postal_code' => 'nullable|string|max:10',
             'blood_type' => 'nullable|string|in:A,B,AB,O',
             'about_me' => 'nullable|string|max:1000',
-            'photo' => 'nullable|image|max:5120',
+            'photo' => 'nullable|image|max:3072',
             'cv_file' => 'nullable|file|max:10240',
         ];
     }
@@ -221,6 +221,7 @@ class Pribadi extends Component
     protected function messages()
     {
         return [
+            'photo.max' => __('Ukuran foto maksimal adalah 3MB.'),
             'nik.digits' => __('NIK harus terdiri dari 16 digit angka.'),
             'blood_type.in' => __('Pilihan golongan darah tidak valid.'),
             'work_distance_km.numeric' => __('Jarak kerja harus berupa angka.'),

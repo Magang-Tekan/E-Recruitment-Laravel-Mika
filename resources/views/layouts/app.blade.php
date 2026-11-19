@@ -122,9 +122,12 @@
 
                 init: function() {
                     window.__appNav = this;
+                    window.__photoUnsaved = false;
                 },
 
                 isFormDirty: function() {
+                    if (window.__photoUnsaved) return true;
+
                     var tab = this.activeTab;
                     var pane = document.querySelector('[data-tab-pane="' + tab + '"]') ||
                                document.querySelector('[data-tab-pane*="' + tab + '"]');
@@ -231,6 +234,7 @@
 
                 clearDirty: function() {
                     window.__hasUnsavedChanges = false;
+                    window.__photoUnsaved = false;
                     var tab = this.activeTab;
                     var pane = document.querySelector('[data-tab-pane="' + tab + '"]') ||
                                document.querySelector('[data-tab-pane*="' + tab + '"]');
@@ -1137,8 +1141,9 @@
             window.addEventListener('profile-updated', (e) => {
                 if (!window.__pageReady) return;
                 window.__hasUnsavedChanges = false;
+                window.__photoUnsaved = false;
                 document.querySelectorAll('[data-form-dirty]').forEach(el => el.removeAttribute('data-form-dirty'));
-                document.querySelectorAll('[data-tab-dirty]').forEach(el => el.removeAttribute('data-t                      rty'));
+                document.querySelectorAll('[data-tab-dirty]').forEach(el => el.removeAttribute('data-tab-dirty'));
 
                 if (typeof window.showSavedToast === 'function') {
                     const msg = (e.detail && e.detail.message) ? e.detail.message : '{{ __('Perubahan data Anda telah berhasil disimpan.') }}';

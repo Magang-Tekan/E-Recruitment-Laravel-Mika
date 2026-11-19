@@ -667,9 +667,9 @@ $showPositionBadge =
 
                         <!-- Top Content Area -->
                         <div class="flex-1 flex flex-col">
-                            <!-- Header Card: Logo + Company Info + Employment Type -->
-                            <div class="flex items-start justify-between gap-3 mb-4">
-                                <div class="flex items-center gap-3 min-w-0 flex-1">
+                            <!-- Header Card: Logo + Company Info -->
+                            <div class="mb-4">
+                                <div class="flex items-start gap-3">
                                     @if ($job->company?->logo_url)
                                         <div
                                             class="w-12 h-12 rounded-2xl bg-white border border-[#93F514]/40 p-1.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
@@ -683,32 +683,34 @@ $showPositionBadge =
                                         </div>
                                     @endif
                                     <div class="min-w-0 flex-1">
-                                        <h4 class="text-xs font-bold text-gray-300 uppercase tracking-wider truncate"
+                                        <h4 class="text-xs font-bold text-gray-300 uppercase tracking-wider leading-snug break-words"
                                             title="{{ $job->company?->name ?? __('Perusahaan Mitra') }}">
                                             {{ $job->company?->name ?? __('Perusahaan Mitra') }}
                                         </h4>
                                         <div class="flex items-center gap-1.5 flex-wrap mt-1">
                                             <span
-                                                class="inline-flex items-center text-[11px] font-semibold text-[#93F514] truncate max-w-[130px]">
+                                                class="inline-flex items-center text-[11px] font-semibold text-[#93F514] break-words leading-snug">
                                                 {{ __($job->department?->name ?? 'Umum') }}
                                             </span>
                                             @if ($showPositionBadge)
                                                 <span
-                                                    class="inline-flex items-center text-[10px] px-2 py-0.5 rounded-full bg-[#93F514]/10 text-[#93F514] border border-[#93F514]/30 font-semibold truncate max-w-[120px]">
+                                                    class="inline-flex items-center text-[10px] px-2 py-0.5 rounded-full bg-[#93F514]/10 text-[#93F514] border border-[#93F514]/30 font-semibold whitespace-normal break-words leading-snug text-left">
                                                     {{ __($job->position->name) }}
                                                 </span>
                                             @endif
                                         </div>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-1.5 flex-wrap justify-end shrink-0 self-start">
+
+                                <!-- Type Badges -->
+                                <div class="flex flex-wrap items-center gap-1.5 mt-3">
                                     @if ($job->experience_level)
-                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#EEEEEE]/10 border border-white/20 text-gray-200 shadow-sm whitespace-nowrap">
+                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#EEEEEE]/10 border border-white/20 text-gray-200 shadow-sm whitespace-nowrap">
                                             {{ __($job->experience_level) }}
                                         </span>
                                     @endif
                                     <span
-                                        class="px-2.5 py-1 rounded-full text-xs font-bold bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] whitespace-nowrap shadow-sm">
+                                        class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#93F514]/15 border border-[#93F514]/40 text-[#93F514] whitespace-nowrap shadow-sm">
                                         {{ __($job->employment_type) }}
                                     </span>
                                 </div>
@@ -798,10 +800,10 @@ $showPositionBadge =
                         <!-- Footer Card Action: Pinned firmly at bottom -->
                         <div class="mt-6 pt-4 border-t border-[#93F514]/15 flex items-center justify-between gap-3">
                             <div class="flex items-center gap-1.5 text-xs text-gray-400">
-                                <svg class="w-3.5 h-3.5 text-[#93F514]/70 shrink-0" fill="none" viewBox="0 0 24 24"
+                                <svg class="job-quota-icon w-4 h-4 text-[#93F514]/70 shrink-0" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                                 </svg>
                                 <span>{{ __('Kuota:') }} <strong
                                         class="text-[#EEEEEE] font-bold">{{ $job->quota ?? 1 }}</strong>@if ($job->is_quota_full) <span class="text-[10px] text-amber-400 font-semibold">({{ __('Terpenuhi') }})</span>@endif</span>
@@ -968,10 +970,10 @@ $showPositionBadgeList =
                                     </div>
 
                                     <div class="flex items-center gap-1.5 text-gray-400">
-                                        <svg class="w-3.5 h-3.5 text-[#93F514]/70 shrink-0" fill="none"
+                                        <svg class="job-quota-icon w-4 h-4 text-[#93F514]/70 shrink-0" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                                         </svg>
                                         <span>{{ __('Kuota:') }} <strong
                                                 class="text-[#EEEEEE] font-bold">{{ $job->quota ?? 1 }}</strong>@if ($job->is_quota_full) <span class="text-[10px] text-amber-400 font-semibold">({{ __('Terpenuhi') }})</span>@endif</span>

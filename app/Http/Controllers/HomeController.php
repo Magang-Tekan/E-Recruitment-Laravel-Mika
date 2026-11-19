@@ -7,7 +7,9 @@ use App\Models\Company;
 use App\Models\CompanyShowcase;
 use App\Models\Department;
 use App\Models\Job;
+use App\Models\JobApplication;
 use App\Models\RegistrationStep;
+use App\Models\SearchLog;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -21,6 +23,10 @@ class HomeController extends Controller
     {
         $search = $request->query('search');
         $location = $request->query('location');
+
+        if (!empty($search)) {
+            SearchLog::record($search, 'home');
+        }
 
         $hasFilter = !empty($search) || !empty($location);
 
@@ -126,6 +132,84 @@ class HomeController extends Controller
             return RegistrationStep::active()->get();
         });
 
+        // Pencarian populer: hanya posisi yang masih punya lowongan aktif.
+        // Ranking = keyword yang sering dicari (30 hari) + posisi yang banyak dilamar (90 hari).
+        $popularSearches = Cache::remember('home_popular_searches', 900, function () {
+            $hasActiveJob = function (string $keyword) {
+                $kw = mb_strtolower($keyword);
+
+                return Job::active()->where(function ($q) use ($kw) {
+                    $q->whereRaw('LOWER(title) LIKE ?', ["%{$kw}%"])
+                        ->orWhereRaw('LOWER(location) LIKE ?', ["%{$kw}%"])
+                        ->orWhereRaw('LOWER(employment_type) LIKE ?', ["%{$kw}%"])
+                        ->orWhereRaw('LOWER(experience_level) LIKE ?', ["%{$kw}%"])
+                        ->orWhereHas('position', fn($p) => $p->whereRaw('LOWER(name) LIKE ?', ["%{$kw}%"]));
+                })->exists();
+            };
+
+            $searched = SearchLog::query()
+                ->where('created_at', '>=', now()->subDays(30))
+                ->selectRaw('MIN(keyword) as keyword, COUNT(*) as total')
+                ->groupByRaw('LOWER(keyword)')
+                ->orderByDesc('total')
+                ->limit(10)
+                ->pluck('keyword')
+                ->filter(fn($keyword) => $hasActiveJob((string) $keyword))
+                ->take(3);
+
+            // Pakai nama posisi bila ada (lebih rapi daripada judul internal lowongan),
+            // fallback ke judul lowongan. Hanya lowongan yang masih aktif/belum kedaluwarsa.
+            $applied = JobApplication::query()
+                ->join('jobs', 'jobs.id', '=', 'job_applications.job_id')
+                ->leftJoin('positions', 'positions.id', '=', 'jobs.position_id')
+                ->where('job_applications.applied_at', '>=', now()->subDays(90))
+                ->where('jobs.status', 'Open')
+                ->where(function ($q) {
+                    $q->whereNull('jobs.deadline')
+                        ->orWhere('jobs.deadline', '>=', now()->toDateString());
+                })
+                ->whereNotNull('jobs.title')
+                ->selectRaw('MIN(COALESCE(positions.name, jobs.title)) as keyword, COUNT(*) as total')
+                ->groupByRaw('LOWER(COALESCE(positions.name, jobs.title))')
+                ->orderByDesc('total')
+                ->limit(3)
+                ->pluck('keyword');
+
+            $items = collect($searched)
+                ->merge($applied)
+                ->map(fn($keyword) => trim((string) $keyword))
+                ->filter()
+                ->unique(fn($keyword) => mb_strtolower($keyword))
+                ->take(5)
+                ->map(fn($keyword) => [
+                    'label' => $keyword,
+                    'query' => ['search' => $keyword],
+                ])
+                ->values()
+                ->all();
+
+            // Belum ada pencarian/lamaran: tampilkan posisi dengan lowongan aktif terbanyak
+            // agar tag tetap bisa diklik dan hasilnya tidak kosong.
+            if (empty($items)) {
+                $items = Job::active()
+                    ->leftJoin('positions', 'positions.id', '=', 'jobs.position_id')
+                    ->whereNotNull('jobs.title')
+                    ->selectRaw('MIN(COALESCE(positions.name, jobs.title)) as keyword')
+                    ->groupByRaw('LOWER(COALESCE(positions.name, jobs.title))')
+                    ->orderByRaw('COUNT(*) DESC')
+                    ->limit(4)
+                    ->pluck('keyword')
+                    ->map(fn($keyword) => [
+                        'label' => trim((string) $keyword),
+                        'query' => ['search' => trim((string) $keyword)],
+                    ])
+                    ->values()
+                    ->all();
+            }
+
+            return $items;
+        });
+
         $flowTitle = Setting::get('registration_flow_title') ?: 'Alur Pendaftaran & Seleksi';
         $flowSubtitle = Setting::get('registration_flow_subtitle') ?: 'Ikuti tahapan sistematis dan transparan untuk bergabung menjadi bagian dari talenta terbaik PT Mitra Karya Analitika (MIKA).';
 
@@ -183,6 +267,7 @@ class HomeController extends Controller
             'registrationSteps',
             'registrationFlow',
             'jobCountsByLevel',
+            'popularSearches',
             'heroSettings',
             'search',
             'location'

@@ -1128,13 +1128,14 @@
             <tbody>
                 @foreach ($healthPdfList as $k => $item)
                     @php
-                        $isYes = !empty($healthAnswers[$k]['is_yes']);
+                        $answered = isset($healthAnswers[$k]) && is_array($healthAnswers[$k]) && array_key_exists('is_yes', $healthAnswers[$k]) && $healthAnswers[$k]['is_yes'] !== null;
+                        $isYes = $answered && !empty($healthAnswers[$k]['is_yes']);
                         $detail = $healthAnswers[$k]['detail'] ?? '';
                     @endphp
                     <tr>
                         <td style="font-weight: bold;">{{ $item['q'] }}</td>
                         <td style="text-align: center; font-weight: bold;">{{ $isYes ? 'X' : '' }}</td>
-                        <td style="text-align: center; font-weight: bold;">{{ !$isYes ? 'X' : '' }}</td>
+                        <td style="text-align: center; font-weight: bold;">{{ ($answered && !$isYes) ? 'X' : '' }}</td>
                         <td style="font-size: 8.5px; color: #64748b;">{{ $item['if_yes'] }}</td>
                         <td>{{ $isYes ? ($detail ?: 'Iya (Tanpa rincian)') : '-' }}</td>
                     </tr>
@@ -1148,6 +1149,16 @@
         <div class="section-title">X. Informasi Tambahan & Kesiapan Kerja</div>
         @php
             $otherAns = $profile->other_answers ?? [];
+            // Tampilkan kosong ('-') jika kandidat belum menjawab pertanyaan IYA/TIDAK.
+            $yesNoPdf = function (string $key) use ($otherAns) {
+                $val = $otherAns[$key] ?? null;
+                if (!is_array($val) || !array_key_exists('is_yes', $val) || $val['is_yes'] === null) {
+                    return '-';
+                }
+                return !empty($val['is_yes'])
+                    ? 'IYA (' . ($val['detail'] ?: 'Ada riwayat') . ')'
+                    : 'TIDAK';
+            };
             $otherList = [
                 1 => [
                     'q' => 'Bagaimana cara anda menggunakan waktu luang/libur?',
@@ -1155,15 +1166,11 @@
                 ],
                 2 => [
                     'q' => 'Apakah anda pernah terlibat kasus tindakan kejahatan?',
-                    'a' => !empty($otherAns['crime_involvement']['is_yes'])
-                        ? 'IYA (' . ($otherAns['crime_involvement']['detail'] ?? 'Ada riwayat') . ')'
-                        : 'TIDAK',
+                    'a' => $yesNoPdf('crime_involvement'),
                 ],
                 3 => [
                     'q' => 'Apakah anda pernah masuk sel tahanan?',
-                    'a' => !empty($otherAns['custody']['is_yes'])
-                        ? 'IYA (' . ($otherAns['custody']['detail'] ?? 'Ada riwayat') . ')'
-                        : 'TIDAK',
+                    'a' => $yesNoPdf('custody'),
                 ],
                 4 => [
                     'q' => 'Apa alasan anda melamar di perusahaan ini?',
@@ -1176,41 +1183,35 @@
                 6 => ['q' => 'Darimana info lowongan yang anda dapat?', 'a' => $otherAns['vacancy_source'] ?? '-'],
                 7 => [
                     'q' => 'Apakah anda sedang melamar pada perusahaan lain?',
-                    'a' => !empty($otherAns['other_applications']['is_yes'])
-                        ? 'IYA (' . ($otherAns['other_applications']['detail'] ?? 'Ada lamaran lain') . ')'
-                        : 'TIDAK',
+                    'a' => $yesNoPdf('other_applications'),
                 ],
                 8 => [
                     'q' => 'Apakah anda siap melakukan perjalanan dinas?',
-                    'a' => strtoupper($otherAns['business_trip_ready'] ?? 'SIAP'),
+                    'a' => !empty($otherAns['business_trip_ready']) ? strtoupper($otherAns['business_trip_ready']) : '-',
                 ],
                 9 => [
                     'q' => 'Apakah anda siap dimutasi atau dipindahkan bagian atau posisi?',
-                    'a' => strtoupper($otherAns['mutation_position_ready'] ?? 'SIAP'),
+                    'a' => !empty($otherAns['mutation_position_ready']) ? strtoupper($otherAns['mutation_position_ready']) : '-',
                 ],
                 10 => [
                     'q' => 'Apakah anda siap dimutasi ke Group Perusahaan?',
-                    'a' => strtoupper($otherAns['mutation_group_ready'] ?? 'SIAP'),
+                    'a' => !empty($otherAns['mutation_group_ready']) ? strtoupper($otherAns['mutation_group_ready']) : '-',
                 ],
                 11 => [
                     'q' => 'Apakah anda siap ditempatkan di Kota lain?',
-                    'a' => strtoupper($otherAns['relocation_city_ready'] ?? 'SIAP'),
+                    'a' => !empty($otherAns['relocation_city_ready']) ? strtoupper($otherAns['relocation_city_ready']) : '-',
                 ],
                 12 => [
                     'q' => 'Memiliki keluarga/kerabat/teman di Perusahaan ini?',
-                    'a' => !empty($otherAns['internal_relations']['is_yes'])
-                        ? 'IYA (' . ($otherAns['internal_relations']['detail'] ?? '-') . ')'
-                        : 'TIDAK',
+                    'a' => $yesNoPdf('internal_relations'),
                 ],
                 13 => [
                     'q' => 'Apakah anda pernah melamar ke Perusahaan ini sebelumnya?',
-                    'a' => !empty($otherAns['previously_applied']['is_yes'])
-                        ? 'IYA (' . ($otherAns['previously_applied']['detail'] ?? '-') . ')'
-                        : 'TIDAK',
+                    'a' => $yesNoPdf('previously_applied'),
                 ],
                 14 => [
                     'q' => 'Jika diterima/LOLOS, kapan anda siap kerja di perusahaan ini?',
-                    'a' => $otherAns['ready_to_work'] ?? 'Dapat Segera Bekerja',
+                    'a' => !empty($otherAns['ready_to_work']) ? $otherAns['ready_to_work'] : '-',
                 ],
                 15 => [
                     'q' => 'Berapa gaji yang anda inginkan? Jelaskan!',

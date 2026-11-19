@@ -441,7 +441,7 @@
                         </p>
                         <div class="pt-2">
                             <a href="{{ route('jobs.index') }}"
-                               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#93F514]/10 hover:bg-[#93F514] text-[#93F514] hover:text-black border border-[#93F514]/30 font-bold text-xs transition">
+                               class="company-empty-jobs-cta inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#93F514]/10 hover:bg-[#93F514] text-[#93F514] hover:text-black border border-[#93F514]/30 font-bold text-xs transition">
                                 <span>{{ __('Lihat Semua Lowongan Karir') }}</span>
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />

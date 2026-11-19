@@ -1,6 +1,9 @@
 <div class="space-y-6" x-data="{
     showCropperModal: false,
     cropper: null,
+    photoError: '',
+    maxPhotoSize: 3 * 1024 * 1024,
+    maxPhotoSizeLabel: @js(__('Ukuran foto maksimal adalah 3MB.')),
 
     initCropper(imageElement) {
         if (this.cropper) {
@@ -21,6 +24,13 @@
     onFileSelect(event) {
         const file = event.target.files[0];
         if (!file) return;
+
+        if (file.size > this.maxPhotoSize) {
+            this.photoError = this.maxPhotoSizeLabel;
+            event.target.value = '';
+            return;
+        }
+        this.photoError = '';
 
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -47,6 +57,15 @@
 
         const croppedBase64 = canvas.toDataURL('image/jpeg', 0.92);
         $wire.set('cropped_photo_base64', croppedBase64);
+
+        // Foto sudah dipilih tapi belum disimpan: tandai dirty agar peringatan
+        // data belum disimpan muncul saat pindah tab / meninggalkan halaman.
+        // Flag ini bertahan walau Livewire mereset atribut dirty setelah commit.
+        window.__photoUnsaved = true;
+        const pane = this.$el.closest('[data-tab-pane]');
+        if (pane) pane.setAttribute('data-tab-dirty', 'true');
+        const form = this.$el.querySelector('form');
+        if (form) form.setAttribute('data-form-dirty', 'true');
 
         this.showCropperModal = false;
         if (this.cropper) {
@@ -160,6 +179,7 @@
                     @error('photo')
                         <span class="text-xs text-red-500">{{ $message }}</span>
                     @enderror
+                    <p x-show="photoError" x-text="photoError" class="text-xs text-red-500" style="display: none;"></p>
                 </div>
             </div>
 
