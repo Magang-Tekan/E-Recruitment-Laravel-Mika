@@ -5,7 +5,8 @@
     (function() {
         var mikaTheme = localStorage.getItem('mika-theme');
         var html = document.getElementById('html-root');
-        if (mikaTheme === 'light') {
+        // Default = light, kecuali pengguna pernah memilih dark
+        if (mikaTheme !== 'dark') {
             html.classList.add('light-mode');
             html.classList.remove('dark');
         } else {
@@ -2679,7 +2680,7 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.store('theme', {
-                isDark: localStorage.getItem('mika-theme') !== 'light',
+                isDark: localStorage.getItem('mika-theme') === 'dark',
 
                 toggle() {
                     this.isDark = !this.isDark;

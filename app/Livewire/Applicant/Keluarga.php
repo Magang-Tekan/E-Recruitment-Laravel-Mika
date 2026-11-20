@@ -447,6 +447,22 @@ class Keluarga extends Component
             }
         }
 
+        // Data Kakak & Adik wajib diisi lengkap sesuai jumlah saudara
+        foreach ($this->family_members as $index => $member) {
+            $rel = $member['relation'] ?? '';
+            if (!str_starts_with($rel, 'Kakak') && !str_starts_with($rel, 'Adik')) {
+                continue;
+            }
+            $relationLabel = preg_match('/^(Kakak|Adik)\s*(\d+)$/', $rel, $m)
+                ? __($m[1]) . ' ' . $m[2]
+                : __($rel);
+            foreach ($parentFields as $field => $config) {
+                $key = "family_members.{$index}.{$field}";
+                $rules[$key] = $config['rule'];
+                $attributes[$key] = $config['label'] . ' ' . $relationLabel;
+            }
+        }
+
         $this->validate($rules, [
             'child_sequence.required' => __('Urutan anak wajib diisi.'),
             'child_sequence.numeric' => __('Urutan anak harus berupa angka.'),

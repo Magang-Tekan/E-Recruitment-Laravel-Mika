@@ -645,7 +645,7 @@
             <!-- Jobs Content: Grid Mode -->
             <div x-show="viewMode === 'grid'" x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
-                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch auto-rows-fr">
                 @forelse($jobs as $job)
                     @php
                     // Clean description: insert spaces before strip_tags so block tags don't concatenate words
@@ -663,7 +663,7 @@ $showPositionBadge =
     strtolower(trim($job->position->name)) !== strtolower(trim($job->department?->name ?? ''));
 ?>
                     <div class="job-card-item reveal-on-scroll group relative rounded-3xl bg-gradient-to-b from-[#061506] to-[#030803] border border-[#93F514]/30 hover:border-[#93F514] p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 hover:-translate-y-1 h-full"
-                        data-delay="{{ ($loop->index % 6) * 100 }}">
+                        data-delay="{{ ($loop->index % 3) * 100 }}">
 
                         <!-- Top Content Area -->
                         <div class="flex-1 flex flex-col">

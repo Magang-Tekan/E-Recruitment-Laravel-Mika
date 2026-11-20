@@ -6,6 +6,7 @@ use App\Models\ApplicantProfile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -201,8 +202,8 @@ class Pribadi extends Component
             'driving_licenses' => 'nullable|array',
             'driving_licenses.*.type' => 'nullable|string|max:20',
             'driving_licenses.*.number' => 'nullable|string|max:50',
-            'daily_transportation' => 'nullable|string|max:100',
-            'work_distance_km' => 'nullable|numeric|min:0|max:999.9',
+            'daily_transportation' => 'required|string|max:100',
+            'work_distance_km' => 'required|numeric|min:0|max:999.9',
             'postal_code' => 'nullable|string|max:10',
             'blood_type' => 'nullable|string|in:A,B,AB,O',
             'about_me' => 'nullable|string|max:1000',
@@ -216,9 +217,11 @@ class Pribadi extends Component
         return [
             'photo.max' => __('Ukuran foto maksimal adalah 3MB.'),
             'nik.digits' => __('NIK harus terdiri dari 16 digit angka.'),
-            'nik.unique' => __('NIK ini sudah terdaftar oleh akun lain.'),
+            'nik.unique' => __('NIK ini sudah terdaftar oleh akun lain. Silakan gunakan NIK lain.'),
             'blood_type.in' => __('Pilihan golongan darah tidak valid.'),
             'work_distance_km.numeric' => __('Jarak kerja harus berupa angka.'),
+            'daily_transportation.required' => __('Transportasi sehari-hari wajib dipilih.'),
+            'work_distance_km.required' => __('Jarak rumah/kost ke tempat kerja wajib diisi.'),
         ];
     }
 
@@ -262,7 +265,14 @@ class Pribadi extends Component
             $this->nik = preg_replace('/[^0-9]/', '', $this->nik);
         }
 
-        $validatedData = $this->validate();
+        try {
+            $validatedData = $this->validate();
+        } catch (ValidationException $e) {
+            // Arahkan pengguna ke field pertama yang bermasalah (mis. NIK sudah terdaftar)
+            $this->dispatch('scroll-to-field', field: array_key_first($e->errors()));
+
+            throw $e;
+        }
 
         // Normalisasi birth_date agar berupa string Y-m-d atau null jika kosong
         if (!empty($this->birth_date)) {

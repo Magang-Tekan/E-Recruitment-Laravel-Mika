@@ -132,7 +132,7 @@ class FrontendJobController extends Controller
             });
         }
 
-        $jobs = $jobsQuery->latest('id')->paginate(6)->withQueryString();
+        $jobs = $jobsQuery->latest('id')->paginate(9)->withQueryString();
         $departments = Cache::remember('home_departments_with_jobs', 3600, function () {
             return Department::withCount(['jobs' => fn($q) => $q->active()])->get();
         });

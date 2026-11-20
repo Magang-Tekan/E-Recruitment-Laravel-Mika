@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ApplicantJobPreference;
 use Illuminate\Http\Request;
 
 class CvController extends Controller
@@ -31,6 +32,8 @@ class CvController extends Controller
                 'skills',
                 'socialMedias',
                 'languages',
+                'family',
+                'jobPreference' => fn ($query) => $query->with(ApplicantJobPreference::PREF_RELATIONS),
             ])
             ->first();
 

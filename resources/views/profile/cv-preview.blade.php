@@ -11,7 +11,8 @@
         (function () {
             var mikaTheme = localStorage.getItem('mika-theme');
             var html = document.documentElement;
-            if (mikaTheme === 'light') {
+            // Default = light, kecuali pengguna pernah memilih dark
+            if (mikaTheme !== 'dark') {
                 html.classList.add('light-mode');
                 html.classList.remove('dark');
             } else {
@@ -32,6 +33,7 @@
                 print-color-adjust: exact !important;
             }
             @page { margin: 1.5cm; }
+            .avoid-break { page-break-inside: avoid; }
         }
     </style>
 </head>
@@ -158,6 +160,112 @@
                 @endif
             </div>
         </section>
+
+        <!-- Susunan Keluarga -->
+        @php
+            $cvFamily = $profile?->family;
+            $cvFamilyMembers = collect($cvFamily?->family_members ?? [])
+                ->filter(fn($m) => ! empty(trim((string) ($m['name'] ?? ''))))
+                ->values();
+            $cvEmergencyContacts = collect($cvFamily?->emergency_contacts['same_house'] ?? [])
+                ->map(fn($c) => ['status' => 'Serumah'] + $c)
+                ->merge(collect($cvFamily?->emergency_contacts['diff_house'] ?? [])->map(fn($c) => ['status' => 'Tidak Serumah'] + $c))
+                ->filter(fn($c) => ! empty(trim((string) ($c['name'] ?? ''))))
+                ->values();
+        @endphp
+        @if($cvFamilyMembers->isNotEmpty() || $cvEmergencyContacts->isNotEmpty() || $profile?->child_sequence)
+            <section class="mb-8 avoid-break">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#93A5C9] border-b border-slate-200/80 dark:border-[#1D2E54] pb-1 mb-3">
+                    Susunan Keluarga
+                </h2>
+
+                <div class="flex flex-wrap gap-x-6 gap-y-1 text-sm mb-3">
+                    <div><span class="text-slate-500 dark:text-[#93A5C9]">Anak Ke:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->child_sequence ?: '-' }}</span></div>
+                    <div><span class="text-slate-500 dark:text-[#93A5C9]">Dari Jumlah Bersaudara:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $profile?->total_siblings ? $profile->total_siblings . ' bersaudara' : '-' }}</span></div>
+                </div>
+
+                @if($cvFamilyMembers->isNotEmpty())
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs border border-slate-200/80 dark:border-[#1D2E54]">
+                            <thead class="bg-slate-50 dark:bg-[#14203A] text-slate-600 dark:text-[#93A5C9] uppercase text-[10px] tracking-wider">
+                                <tr>
+                                    <th class="text-left font-bold px-2 py-1.5">Hubungan</th>
+                                    <th class="text-left font-bold px-2 py-1.5">Nama Lengkap</th>
+                                    <th class="text-left font-bold px-2 py-1.5">Tgl Lahir</th>
+                                    <th class="text-left font-bold px-2 py-1.5">Tempat Lahir</th>
+                                    <th class="text-left font-bold px-2 py-1.5">Pendidikan</th>
+                                    <th class="text-left font-bold px-2 py-1.5">Pekerjaan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($cvFamilyMembers as $fam)
+                                    <tr class="border-t border-slate-200/70 dark:border-[#1D2E54]">
+                                        <td class="px-2 py-1.5 font-semibold text-slate-900 dark:text-white">{{ $fam['relation'] ?? '-' }}</td>
+                                        <td class="px-2 py-1.5">{{ $fam['name'] ?? '-' }}</td>
+                                        <td class="px-2 py-1.5">{{ ! empty($fam['birth_date']) ? \Carbon\Carbon::parse($fam['birth_date'])->isoFormat('D MMM YYYY') : '-' }}</td>
+                                        <td class="px-2 py-1.5">{{ $fam['birth_place'] ?? '-' }}</td>
+                                        <td class="px-2 py-1.5">{{ $fam['education'] ?? '-' }}</td>
+                                        <td class="px-2 py-1.5">{{ $fam['occupation'] ?? '-' }}{{ ! empty($fam['company']) ? ' (' . $fam['company'] . ')' : '' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+
+                @if($cvEmergencyContacts->isNotEmpty())
+                    <div class="mt-3">
+                        <h3 class="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Kontak Darurat</h3>
+                        <ul class="space-y-1 text-xs text-slate-700 dark:text-slate-300">
+                            @foreach($cvEmergencyContacts as $ec)
+                                <li>
+                                    &bull; <span class="font-semibold text-slate-900 dark:text-white">{{ $ec['name'] ?? '-' }}</span>
+                                    @if(! empty($ec['relation'])) ({{ $ec['relation'] }}) @endif
+                                    &mdash; {{ $ec['phone'] ?? '-' }}
+                                    <span class="text-slate-500 dark:text-[#93A5C9]">({{ $ec['status'] }})</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            </section>
+        @endif
+
+        <!-- Minat & Preferensi Kerja -->
+        @php
+            $cvPref = $profile?->jobPreference;
+            $cvPrefSlots = [];
+            if ($cvPref) {
+                for ($slot = 1; $slot <= 3; $slot++) {
+                    $parts = array_values(array_filter([
+                        $cvPref->{'pref' . $slot . 'Company'}?->name,
+                        $cvPref->{'pref' . $slot . 'Department'}?->name,
+                        $cvPref->{'pref' . $slot . 'Position'}?->name,
+                    ]));
+                    if (! empty($parts)) {
+                        $cvPrefSlots[$slot] = implode(' — ', $parts);
+                    }
+                }
+            }
+        @endphp
+        @if($cvPref)
+            <section class="mb-8 avoid-break">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#93A5C9] border-b border-slate-200/80 dark:border-[#1D2E54] pb-1 mb-3">
+                    Minat & Preferensi Kerja
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-6 text-sm">
+                    @if($cvPref->expected_salary)
+                        <div><span class="text-slate-500 dark:text-[#93A5C9]">Ekspektasi Gaji:</span> <span class="font-semibold text-slate-900 dark:text-white">Rp {{ number_format((float) $cvPref->expected_salary, 0, ',', '.') }}</span></div>
+                    @endif
+                    <div><span class="text-slate-500 dark:text-[#93A5C9]">Ketersediaan Mulai Kerja:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $cvPref->notice_period ?: 'Dapat Segera Bekerja' }}</span></div>
+                    <div><span class="text-slate-500 dark:text-[#93A5C9]">Kesiapan Relokasi:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $cvPref->is_willing_to_relocate ? 'Bersedia Ditempatkan / Relokasi' : 'Tidak Bersedia' }}</span></div>
+                    <div><span class="text-slate-500 dark:text-[#93A5C9]">Status Pencarian Kerja:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $cvPref->job_search_status ?: '-' }}</span></div>
+                    @foreach($cvPrefSlots as $slot => $slotLabel)
+                        <div class="sm:col-span-2"><span class="text-slate-500 dark:text-[#93A5C9]">Minat Lowongan {{ $slot }}:</span> <span class="font-semibold text-slate-900 dark:text-white">{{ $slotLabel }}</span></div>
+                    @endforeach
+                </div>
+            </section>
+        @endif
 
         <!-- Pendidikan -->
         @if($profile?->educations && $profile->educations->count() > 0)

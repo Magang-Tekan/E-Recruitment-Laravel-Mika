@@ -44,7 +44,8 @@
         (function() {
             var mikaTheme = localStorage.getItem('mika-theme');
             var html = document.documentElement;
-            if (mikaTheme === 'light') {
+            // Default = light, kecuali pengguna pernah memilih dark
+            if (mikaTheme !== 'dark') {
                 html.classList.add('light-mode');
                 html.classList.remove('dark');
             } else {
@@ -1108,6 +1109,41 @@
                 window.__hasUnsavedChanges = true;
             });
 
+            // Deteksi error validasi yang sedang tampil di halaman (dipakai sebelum menampilkan toast sukses)
+            window.__hasVisibleFormError = function () {
+                const nav = window.__appNav;
+                const tab = nav && nav.activeTab;
+                const pane = tab
+                    ? (document.querySelector('[data-tab-pane="' + tab + '"]') || document.querySelector('[data-tab-pane*="' + tab + '"]'))
+                    : null;
+                const scope = pane || document;
+                const errorEls = scope.querySelectorAll('.text-red-500:not(label *):not(label), .text-rose-500:not(label *):not(label)');
+                for (const el of errorEls) {
+                    const text = el.textContent.trim();
+                    if (text.length > 1 && text !== '*') {
+                        return true;
+                    }
+                }
+                return false;
+            };
+
+            // Gulir ke field pertama yang error agar pengguna langsung tahu data belum tersimpan
+            window.__scrollToFirstError = function () {
+                setTimeout(() => {
+                    const el = document.querySelector('.text-red-500:not(label *):not(label), .text-rose-500:not(label *):not(label)');
+                    if (!el) return;
+                    const text = el.textContent.trim();
+                    if (text.length <= 1 || text === '*') return;
+
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    const field = el.parentElement?.querySelector('input, select, textarea');
+                    if (field && typeof field.focus === 'function') {
+                        field.focus({ preventScroll: true });
+                    }
+                }, 150);
+            };
+
             document.addEventListener('submit', (e) => {
                 const pane = e.target.closest('[data-tab-pane]');
                 if (pane) pane.removeAttribute('data-tab-dirty');
@@ -1154,6 +1190,35 @@
             });
 
             document.addEventListener('livewire:init', () => {
+                // Server meminta fokus ke field yang gagal validasi (mis. NIK sudah terdaftar)
+                Livewire.on('scroll-to-field', (payload) => {
+                    const data = Array.isArray(payload) ? (payload[0] || {}) : (payload || {});
+                    const field = data.field || (data.detail && data.detail.field);
+                    if (!field) return;
+
+                    setTimeout(() => {
+                        const baseField = String(field).split('.')[0];
+                        const target =
+                            document.querySelector('[wire\\:model="' + field + '"]') ||
+                            document.querySelector('[wire\\:model\\.live="' + field + '"]') ||
+                            document.querySelector('[wire\\:model^="' + baseField + '"]') ||
+                            document.querySelector('[name="' + baseField + '"]');
+
+                        if (!target) {
+                            if (typeof window.__scrollToFirstError === 'function') window.__scrollToFirstError();
+                            return;
+                        }
+
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        if (typeof target.focus === 'function') target.focus({ preventScroll: true });
+
+                        // Blok teks lama agar pengguna langsung bisa mengetik nilai pengganti
+                        if (target.tagName === 'INPUT' && typeof target.select === 'function') {
+                            target.select();
+                        }
+                    }, 150);
+                });
+
                 Livewire.hook('commit', ({ succeed, fail }) => {
                     succeed(() => {
                         if (window.__appNav && window.__appNav.isSavingFromModal) {
@@ -1199,6 +1264,15 @@
                         } else {
                             if (window.__wasFormSubmitted) {
                                 window.__wasFormSubmitted = false;
+
+                                // Jangan tampilkan toast sukses jika validasi gagal (mis. NIK sudah terdaftar)
+                                if (typeof window.__hasVisibleFormError === 'function' && window.__hasVisibleFormError()) {
+                                    if (typeof window.__scrollToFirstError === 'function') {
+                                        window.__scrollToFirstError();
+                                    }
+                                    return;
+                                }
+
                                 if (window.__pageReady && typeof window.showSavedToast === 'function') {
                                     window.showSavedToast('{{ __('Perubahan data Anda telah berhasil disimpan.') }}', '{{ __('Data Berhasil Diperbarui') }}', 'update');
                                 }

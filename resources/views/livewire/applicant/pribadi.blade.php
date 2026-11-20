@@ -855,7 +855,7 @@
                 <!-- Transportasi Sehari-hari yang Dipakai -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                        {{ __('Transportasi Sehari-hari yang Dipakai') }}
+                        {{ __('Transportasi Sehari-hari yang Dipakai') }} <span class="text-red-500">*</span>
                     </label>
                     <select wire:model="daily_transportation"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">
@@ -877,7 +877,7 @@
                 <!-- Jarak ke Tempat Kerja -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                        {{ __('Jarak Rumah/Kost ke Tempat Kerja') }}
+                        {{ __('Jarak Rumah/Kost ke Tempat Kerja') }} <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                         <input type="number" step="0.1" min="0" wire:model="work_distance_km" placeholder="{{ __('Contoh: 12.5') }}"

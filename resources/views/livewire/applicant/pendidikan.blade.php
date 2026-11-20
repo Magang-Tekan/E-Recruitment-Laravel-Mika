@@ -137,8 +137,8 @@
     @if ($educations->isNotEmpty())
         <div class="pt-1 flex justify-start">
             <button wire:click="openModal"
-                class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-sm rounded-xl transition shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 active:scale-95">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
                 <span>{{ __('Tambah Pendidikan') }}</span>
@@ -491,26 +491,70 @@
                             </div>
 
                             <!-- Tahun Lulus / Selesai -->
-                            <div>
-                                <div class="flex items-center justify-between mb-2">
-                                    <label
-                                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                                        {{ __('Tahun Lulus') }}
-                                    </label>
-                                    <label
-                                        class="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-emerald-600 dark:text-[#93F514] select-none">
-                                        <input type="checkbox" wire:model.live="is_ongoing"
-                                            class="w-3.5 h-3.5 rounded border-slate-300 dark:border-[#1D2E54] text-emerald-600 focus:ring-emerald-500 dark:bg-[#14203A]">
-                                        <span>{{ __('Masih Berlangsung / Belum Lulus') }}</span>
-                                    </label>
+                            <div x-data="{ ongoing: $wire.is_ongoing }">
+                                <label
+                                    class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                                    {{ __('Tahun Lulus') }}
+                                </label>
+
+                                <!-- Input hanya saat TIDAK ongoing (saat ongoing diganti banner) -->
+                                <div x-show="!ongoing"
+                                    @if ($is_ongoing) style="display: none;" @endif
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0"
+                                    x-transition:enter-end="opacity-100"
+                                    x-transition:leave="transition ease-in duration-100"
+                                    x-transition:leave-start="opacity-100"
+                                    x-transition:leave-end="opacity-0">
+                                    <input type="number" wire:model="end_year"
+                                        placeholder="{{ __('Contoh: 2024') }}"
+                                        @if ($is_ongoing) disabled @endif
+                                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition {{ $is_ongoing ? 'bg-slate-100 dark:bg-[#14203A]/50 text-slate-400 dark:text-slate-500 cursor-not-allowed select-none' : 'bg-slate-50 dark:bg-[#14203A]' }}">
+                                    @error('end_year')
+                                        <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                                    @enderror
                                 </div>
-                                <input type="number" wire:model="end_year"
-                                    placeholder="{{ $is_ongoing ? __('Masih Berlangsung') : __('Contoh: 2024') }}"
-                                    @if ($is_ongoing) disabled @endif
-                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition {{ $is_ongoing ? 'bg-slate-100 dark:bg-[#14203A]/50 text-slate-400 dark:text-slate-500 cursor-not-allowed select-none' : 'bg-slate-50 dark:bg-[#14203A]' }}">
-                                @error('end_year')
-                                    <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
-                                @enderror
+
+                                <!-- Banner status (mengisi slot input saat ongoing) -->
+                                <div x-show="ongoing"
+                                    @if (!$is_ongoing) style="display: none;" @endif
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 -translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100 translate-y-0"
+                                    x-transition:leave-end="opacity-0 -translate-y-1"
+                                    class="flex items-start gap-2 px-3.5 py-3 rounded-xl border text-xs font-medium bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/30 dark:border-emerald-800/50 dark:text-[#93F514]">
+                                    <svg class="w-3.5 h-3.5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span>{{ __('Sedang menempuh studi — tahun lulus tidak diisi, upload ijazah tidak wajib') }}</span>
+                                </div>
+
+                                <!-- Toggle Masih Berlangsung: state di-drive Alpine (instan), server tetap di-sync wire:model.live -->
+                                <label
+                                    class="mt-3 flex items-center gap-3 w-full px-4 py-2.5 rounded-xl border cursor-pointer select-none transition-colors duration-150 focus-within:ring-2 focus-within:ring-emerald-500/30 dark:focus-within:ring-[#93F514]/30"
+                                    x-bind:class="ongoing
+                                        ? 'bg-emerald-50 border-emerald-500 dark:bg-emerald-950/40 dark:border-[#93F514]/60'
+                                        : 'bg-slate-50 border-slate-200/80 hover:border-slate-300 dark:bg-[#14203A] dark:border-[#1D2E54] dark:hover:border-[#2D457C]'">
+                                    <input type="checkbox" x-model="ongoing" wire:model.live="is_ongoing"
+                                        class="w-4 h-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-[#1D2E54] dark:bg-[#14203A] dark:checked:bg-[#93F514] dark:checked:border-[#93F514]">
+                                    <svg class="w-4 h-4 shrink-0 transition-colors duration-150"
+                                        x-bind:class="ongoing ? 'text-emerald-600 dark:text-[#93F514]' : 'text-slate-400 dark:text-slate-500'"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="text-sm font-semibold leading-tight transition-colors duration-150"
+                                        x-bind:class="ongoing ? 'text-emerald-700 dark:text-[#93F514]' : 'text-slate-600 dark:text-slate-300'">
+                                        {{ __('Masih Berlangsung / Belum Lulus') }}
+                                    </span>
+                                    <span class="ml-auto text-emerald-600 dark:text-[#93F514] font-bold text-base leading-none"
+                                        x-show="ongoing" @if (!$is_ongoing) style="display: none;" @endif
+                                        x-transition.opacity>✓</span>
+                                </label>
                             </div>
 
                             <!-- IPK / Nilai Akhir -->
@@ -791,8 +835,8 @@
                     </svg>
                     <p class="text-xs font-medium text-slate-500 dark:text-[#93A5C9]">{{ __('Belum ada kemampuan bahasa ditambahkan') }}</p>
                     <button wire:click="openExtraModal('language')"
-                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-sm rounded-xl transition shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 active:scale-95">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
                         <span>{{ __('Tambah Bahasa') }}</span>
@@ -804,8 +848,8 @@
         @if ($languages->isNotEmpty())
             <div class="pt-1 flex justify-start">
                 <button wire:click="openExtraModal('language')"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-sm rounded-xl transition shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 active:scale-95">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                     <span>{{ __('Tambah Bahasa') }}</span>
@@ -922,8 +966,8 @@
         @if ($skills->isNotEmpty())
             <div class="pt-1 flex justify-start">
                 <button wire:click="openSkillModal"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-sm rounded-xl transition shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 active:scale-95">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                     <span>{{ __('Tambah Aplikasi Komputer') }}</span>
@@ -993,8 +1037,8 @@
                     </svg>
                     <p class="text-xs font-medium text-slate-500 dark:text-[#93A5C9]">{{ __('Belum ada sertifikasi ditambahkan') }}</p>
                     <button wire:click="openExtraModal('certification')"
-                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-sm rounded-xl transition shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 active:scale-95">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
                         <span>{{ __('Tambah Sertifikasi') }}</span>
@@ -1006,8 +1050,8 @@
         @if ($certifications->isNotEmpty())
             <div class="pt-1 flex justify-start">
                 <button wire:click="openExtraModal('certification')"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-sm rounded-xl transition shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 active:scale-95">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                     <span>{{ __('Tambah Sertifikasi') }}</span>
@@ -1077,8 +1121,8 @@
                     </svg>
                     <p class="text-xs font-medium text-slate-500 dark:text-[#93A5C9]">{{ __('Belum ada pelatihan ditambahkan') }}</p>
                     <button wire:click="openExtraModal('training')"
-                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-sm rounded-xl transition shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 active:scale-95">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
                         <span>{{ __('Tambah Pelatihan') }}</span>
@@ -1090,8 +1134,8 @@
         @if ($trainings->isNotEmpty())
             <div class="pt-1 flex justify-start">
                 <button wire:click="openExtraModal('training')"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-sm rounded-xl transition shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 active:scale-95">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                     <span>{{ __('Tambah Pelatihan') }}</span>

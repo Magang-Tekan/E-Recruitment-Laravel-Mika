@@ -106,15 +106,15 @@
                         </h3>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             {{ __('Lengkapi data rincian anggota keluarga pada tabel di bawah ini.') }}
-                            <span class="font-semibold text-rose-500">{{ __('Kolom Ayah & Ibu (nama, tanggal lahir, tempat lahir, pendidikan, pekerjaan) wajib diisi.') }}</span>
+                            <span class="font-semibold text-rose-500">{{ __('Kolom Ayah, Ibu, Kakak & Adik (nama, tanggal lahir, tempat lahir, pendidikan, pekerjaan) wajib diisi.') }}</span>
                         </p>
                     </div>
 
-                    <div class="flex items-center gap-2 flex-wrap">
+                    <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap sm:shrink-0">
                         @if($marital_status === 'menikah' || !collect($family_members)->contains(fn($m) => str_starts_with($m['relation'] ?? '', 'Anak')))
                             <button type="button" wire:click="addChild"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:hover:bg-purple-900/50 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/50 transition cursor-pointer">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                class="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 whitespace-nowrap text-xs font-semibold rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-[#93F514] hover:border-emerald-300 dark:hover:border-[#93F514]/50 transition cursor-pointer shadow-2xs">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
                                 <span>{{ __('Tambah Anak') }}</span>
@@ -122,8 +122,8 @@
                         @endif
 
                         <button type="button" wire:click="addSibling"
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/50 transition cursor-pointer">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            class="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 whitespace-nowrap text-xs font-semibold rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-[#93F514] hover:border-emerald-300 dark:hover:border-[#93F514]/50 transition cursor-pointer shadow-2xs">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
                             <span>{{ __('Tambah Saudara Lain') }}</span>
@@ -165,6 +165,7 @@
                                     $isParent = in_array($rel, ['Ayah', 'Ibu']);
                                     $isSpouse = str_contains(strtolower($rel), 'suami') || str_contains(strtolower($rel), 'istri');
                                     $isChild = str_starts_with($rel, 'Anak');
+                                    $isAutoSibling = str_starts_with($rel, 'Kakak') || str_starts_with($rel, 'Adik');
                                     $isSibling = str_starts_with($rel, 'Kakak') || str_starts_with($rel, 'Adik') || str_starts_with($rel, 'Saudara');
                                     $displayRel = preg_match('/^(Kakak|Adik|Anak|Saudara Lain)\s*(\d+)$/', $rel, $m)
                                         ? (__($m[1]) . ' ' . $m[2])
@@ -184,7 +185,7 @@
                                                 <span class="w-2 h-2 rounded-full bg-slate-400"></span>
                                             @endif
                                             <span class="truncate" title="{{ $displayRel }}">{{ $displayRel }}</span>
-                                            @if($isParent)
+                                            @if($isParent || $isAutoSibling)
                                                 <span class="text-red-500">*</span>
                                             @endif
                                         </div>
@@ -284,6 +285,7 @@
                             $isParent = in_array($rel, ['Ayah', 'Ibu']);
                             $isSpouse = str_contains(strtolower($rel), 'suami') || str_contains(strtolower($rel), 'istri');
                             $isChild = str_starts_with($rel, 'Anak');
+                            $isAutoSibling = str_starts_with($rel, 'Kakak') || str_starts_with($rel, 'Adik');
                             $displayRel = preg_match('/^(Kakak|Adik|Anak|Saudara Lain)\s*(\d+)$/', $rel, $m)
                                 ? (__($m[1]) . ' ' . $m[2])
                                 : __($rel);
@@ -294,7 +296,7 @@
                                     <span class="w-2.5 h-2.5 rounded-full {{ $isParent ? ($rel === 'Ayah' ? 'bg-blue-500' : 'bg-pink-500') : ($isSpouse ? 'bg-purple-500' : ($isChild ? 'bg-emerald-500' : 'bg-slate-400')) }}"></span>
                                     <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                                         {{ $displayRel }}
-                                        @if($isParent) <span class="text-red-500">*</span> @endif
+                                        @if($isParent || $isAutoSibling) <span class="text-red-500">*</span> @endif
                                     </h4>
                                 </div>
                                 @if(!empty($member['deletable']) || (!in_array($rel, ['Ayah', 'Ibu']) && ($isChild || str_starts_with($rel, 'Saudara'))))

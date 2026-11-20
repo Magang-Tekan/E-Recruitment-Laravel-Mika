@@ -257,7 +257,19 @@ class ApplicantProfile extends Model
         $membersByRelation = collect($members)->keyBy('relation');
 
         $requiredFields = ['name', 'birth_date', 'birth_place', 'education', 'occupation'];
-        foreach (['Ayah', 'Ibu'] as $relation) {
+
+        // Kakak & Adik wajib lengkap sesuai jumlah saudara
+        $childSequence = (int) $this->child_sequence;
+        $totalSiblings = (int) $this->total_siblings;
+        $requiredRelations = ['Ayah', 'Ibu'];
+        for ($i = 1; $i < $childSequence; $i++) {
+            $requiredRelations[] = 'Kakak ' . $i;
+        }
+        for ($i = 1; $i <= $totalSiblings - $childSequence; $i++) {
+            $requiredRelations[] = 'Adik ' . $i;
+        }
+
+        foreach ($requiredRelations as $relation) {
             $member = $membersByRelation->get($relation);
             if (! is_array($member)) {
                 return false;

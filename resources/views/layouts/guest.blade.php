@@ -32,11 +32,11 @@
         (function () {
             var root = document.getElementById('guest-html-root');
             var mikaTheme = localStorage.getItem('mika-theme');
-            if (mikaTheme === 'light') {
+            // Default = light, kecuali pengguna pernah memilih dark
+            if (mikaTheme !== 'dark') {
                 root.classList.add('light-mode');
                 root.classList.remove('dark');
             } else {
-                // Default = dark (sama dengan frontend)
                 root.classList.remove('light-mode');
                 root.classList.add('dark');
             }

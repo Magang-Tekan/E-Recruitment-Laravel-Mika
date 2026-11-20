@@ -13,7 +13,7 @@
                 </span>
             @else
                 <a href="{{ $paginator->previousPageUrl() }}" rel="prev"
-                   class="px-3 py-2 rounded-xl text-xs font-semibold text-gray-300 hover:text-black bg-transparent hover:bg-[#93F514] border border-transparent hover:border-[#93F514] transition-all duration-200 flex items-center gap-1 cursor-pointer">
+                   class="px-3 py-2 rounded-xl text-xs font-semibold text-gray-300 hover:text-white bg-transparent hover:bg-[#3C7800] border border-transparent hover:border-[#3C7800] transition-all duration-200 flex items-center gap-1 cursor-pointer">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
                     </svg>
@@ -35,12 +35,12 @@
                     @if (is_array($element))
                         @foreach ($element as $page => $url)
                             @if ($page == $paginator->currentPage())
-                                <span class="w-8 h-8 rounded-xl bg-[#93F514] text-black font-extrabold text-xs flex items-center justify-center shadow-md shadow-[#93F514]/30 border border-[#93F514] select-none">
+                                <span class="w-8 h-8 rounded-xl bg-[#3C7800] text-white font-extrabold text-xs flex items-center justify-center shadow-md shadow-[#3C7800]/40 border border-[#3C7800] select-none">
                                     {{ $page }}
                                 </span>
                             @else
                                 <a href="{{ $url }}"
-                                   class="w-8 h-8 rounded-xl bg-transparent hover:bg-[#93F514]/15 text-gray-300 hover:text-[#93F514] border border-transparent hover:border-[#93F514]/40 font-semibold text-xs flex items-center justify-center transition-all duration-200 cursor-pointer">
+                                   class="w-8 h-8 rounded-xl bg-transparent hover:bg-[#3C7800]/25 text-gray-300 hover:text-white border border-transparent hover:border-[#3C7800]/60 font-semibold text-xs flex items-center justify-center transition-all duration-200 cursor-pointer">
                                     {{ $page }}
                                 </a>
                             @endif
@@ -52,7 +52,7 @@
             {{-- Tombol Selanjutnya --}}
             @if ($paginator->hasMorePages())
                 <a href="{{ $paginator->nextPageUrl() }}" rel="next"
-                   class="px-3 py-2 rounded-xl text-xs font-semibold text-gray-300 hover:text-black bg-transparent hover:bg-[#93F514] border border-transparent hover:border-[#93F514] transition-all duration-200 flex items-center gap-1 cursor-pointer">
+                   class="px-3 py-2 rounded-xl text-xs font-semibold text-gray-300 hover:text-white bg-transparent hover:bg-[#3C7800] border border-transparent hover:border-[#3C7800] transition-all duration-200 flex items-center gap-1 cursor-pointer">
                     <span class="hidden sm:inline">{{ __('Selanjutnya') }}</span>
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
