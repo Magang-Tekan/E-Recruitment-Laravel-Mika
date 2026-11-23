@@ -350,6 +350,43 @@
                     @enderror
                 </div>
 
+                <!-- Status Pernikahan -->
+                <div class="md:col-span-2 p-5 bg-slate-50/80 dark:bg-[#14203A]/60 border border-slate-200/80 dark:border-[#1D2E54] rounded-2xl space-y-4">
+                    <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                        {{ __('Status Pernikahan') }} <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        @foreach([
+                            'lajang' => 'Lajang',
+                            'menikah' => 'Menikah',
+                            'janda' => 'Janda',
+                            'duda' => 'Duda',
+                        ] as $val => $label)
+                            <label class="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] cursor-pointer hover:border-emerald-500 dark:hover:border-[#93F514] transition">
+                                <input type="radio" wire:model.live="marital_status" value="{{ $val }}"
+                                    class="w-4 h-4 text-emerald-600 border-slate-300 dark:border-[#1D2E54] focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
+                                <span class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ __($label) }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('marital_status')
+                        <span class="text-xs text-red-500 block">{{ $message }}</span>
+                    @enderror
+
+                    @if($marital_status === 'menikah')
+                        <div class="pt-3 border-t border-slate-200/60 dark:border-[#1D2E54]/60 max-w-sm">
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                                {{ __('Tanggal Pernikahan') }}
+                            </label>
+                            <input type="date" wire:model.blur="marriage_date"
+                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition cursor-pointer dark:[color-scheme:dark]">
+                            @error('marriage_date')
+                                <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    @endif
+                </div>
+
                 <!-- Autocomplete Wilayah Sesuai KTP (Kota/Kabupaten & Provinsi) -->
                 <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6" x-data="{
                     provinces: [],
@@ -534,57 +571,11 @@
 
                 </div>
 
-                <!-- Status Pernikahan -->
-                <div class="md:col-span-2 p-5 bg-slate-50/80 dark:bg-[#14203A]/60 border border-slate-200/80 dark:border-[#1D2E54] rounded-2xl space-y-4">
-                    <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                        {{ __('Status Pernikahan') }} <span class="text-red-500">*</span>
-                    </label>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        @foreach([
-                            'lajang' => 'Lajang',
-                            'menikah' => 'Menikah',
-                            'janda' => 'Janda',
-                            'duda' => 'Duda',
-                        ] as $val => $label)
-                            <label class="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] cursor-pointer hover:border-emerald-500 dark:hover:border-[#93F514] transition">
-                                <input type="radio" wire:model.live="marital_status" value="{{ $val }}"
-                                    class="w-4 h-4 text-emerald-600 border-slate-300 dark:border-[#1D2E54] focus:ring-emerald-500 dark:focus:ring-[#93F514] dark:bg-[#14203A]">
-                                <span class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ __($label) }}</span>
-                            </label>
-                        @endforeach
-                    </div>
-                    @error('marital_status')
-                        <span class="text-xs text-red-500 block">{{ $message }}</span>
-                    @enderror
-
-                    @if($marital_status === 'menikah')
-                        <div class="pt-3 border-t border-slate-200/60 dark:border-[#1D2E54]/60 max-w-sm">
-                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                                {{ __('Tanggal Pernikahan') }}
-                            </label>
-                            <input type="date" wire:model.blur="marriage_date"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition cursor-pointer dark:[color-scheme:dark]">
-                            @error('marriage_date')
-                                <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    @endif
-                </div>
-
                 <!-- Alamat sesuai KTP -->
                 <div class="md:col-span-2">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2.5">
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                            {{ __('Alamat Sesuai KTP') }} <span class="text-red-500">*</span>
-                        </label>
-                        <label class="group inline-flex items-center gap-2.5 px-3 py-1.5 rounded-xl border cursor-pointer text-xs font-semibold transition-all select-none shadow-xs {{ $is_same_address ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-[#93F514]/50 text-emerald-800 dark:text-[#93F514]' : 'bg-slate-100/90 dark:bg-[#14203A] border-slate-300 dark:border-slate-600/80 hover:border-slate-400 dark:hover:border-slate-400 text-slate-700 dark:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-[#1D2E54]' }}">
-                            <input type="checkbox" wire:model.live="is_same_address"
-                                class="w-4 h-4 rounded border-2 border-slate-400 dark:border-slate-300 checked:border-emerald-600 dark:checked:border-emerald-500 text-emerald-600 dark:text-emerald-500 focus:ring-2 focus:ring-emerald-500/30 dark:focus:ring-[#93F514]/40 focus:ring-offset-0 bg-white dark:bg-[#0D1527] cursor-pointer transition">
-                            <span class="tracking-tight select-none">
-                                {{ __('Alamat & Kota Domisili sama dengan KTP') }}
-                            </span>
-                        </label>
-                    </div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2.5">
+                        {{ __('Alamat Sesuai KTP') }} <span class="text-red-500">*</span>
+                    </label>
                     <textarea wire:model.live.debounce.300ms="ktp_address" rows="2" placeholder="{{ __('Alamat lengkap seperti yang tercantum pada KTP Anda') }}"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition"></textarea>
                     @error('ktp_address')
@@ -592,16 +583,71 @@
                     @enderror
                 </div>
 
-                @if($is_same_address)
-                    <div class="md:col-span-2 p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2.5">
+                <!-- Pilihan Domisili Saat Ini -->
+                <div class="md:col-span-2 space-y-6" x-data="{ same: {{ $is_same_address ? 'true' : 'false' }} }">
+                <div class="p-4 sm:p-5 rounded-2xl bg-slate-50/80 dark:bg-[#14203A]/60 border border-slate-200/80 dark:border-[#1D2E54] space-y-3">
+                    <div>
+                        <p class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                            {{ __('Domisili Tempat Tinggal Saat Ini') }} <span class="text-red-500">*</span>
+                        </p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                            {{ __('Dipakai HR untuk menilai jarak ke lokasi kerja. Isi sesuai tempat tinggal Anda sekarang, bukan alamat KTP.') }}
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label class="flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition"
+                            :class="!same ? 'border-emerald-500 dark:border-[#93F514] bg-emerald-50/60 dark:bg-emerald-950/30' : 'border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] hover:border-emerald-400 dark:hover:border-[#93F514]/60'">
+                            <input type="radio" wire:model.live="is_same_address" value="0" @change="same = false"
+                                class="mt-0.5 w-4 h-4 text-emerald-600 border-slate-300 focus:ring-emerald-500 dark:bg-[#14203A] dark:border-[#1D2E54] cursor-pointer">
+                            <span>
+                                <span class="block text-sm font-semibold text-slate-800 dark:text-slate-200">{{ __('Berbeda dari KTP') }}</span>
+                                <span class="block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{{ __('Saya tinggal di kos/kontrakan/rumah di kota lain') }}</span>
+                            </span>
+                        </label>
+                        <label class="flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition"
+                            :class="same ? 'border-emerald-500 dark:border-[#93F514] bg-emerald-50/60 dark:bg-emerald-950/30' : 'border-slate-200 dark:border-[#1D2E54] bg-white dark:bg-[#0D1527] hover:border-emerald-400 dark:hover:border-[#93F514]/60'">
+                            <input type="radio" wire:model.live="is_same_address" value="1" @change="same = true"
+                                class="mt-0.5 w-4 h-4 text-emerald-600 border-slate-300 focus:ring-emerald-500 dark:bg-[#14203A] dark:border-[#1D2E54] cursor-pointer">
+                            <span>
+                                <span class="block text-sm font-semibold text-slate-800 dark:text-slate-200">{{ __('Sama dengan KTP') }}</span>
+                                <span class="block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{{ __('Tinggal persis di alamat & kota yang tercantum pada KTP') }}</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div x-show="same" x-cloak class="md:col-span-2 space-y-6">
+                    <div class="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2.5">
                         <svg class="w-4 h-4 text-emerald-600 dark:text-[#93F514] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
                         <span>{{ __('Alamat dan Kota Domisili tempat tinggal saat ini disamakan dengan data KTP.') }}</span>
                     </div>
-                @else
+
+                    <div class="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/25 border border-amber-300 dark:border-amber-800/60">
+                        <p class="text-xs font-bold text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                            <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                            </svg>
+                            <span>{{ __('Pastikan domisili Anda memang sama dengan KTP') }}</span>
+                        </p>
+                        <p class="text-[11px] text-amber-700 dark:text-amber-400 mt-1 leading-relaxed">
+                            {{ __('Banyak pelamar sebenarnya tinggal di kos/kontrakan kota lain. Jika demikian, pilih "Berbeda dari KTP" agar HR tidak salah menilai jarak ke lokasi kerja.') }}
+                        </p>
+                        <label class="mt-2.5 flex items-start gap-2.5 cursor-pointer select-none">
+                            <input type="checkbox" wire:model="confirm_same_address"
+                                class="mt-0.5 w-4 h-4 rounded border-2 border-amber-400 text-amber-600 focus:ring-amber-500 bg-white dark:bg-[#0D1527] cursor-pointer">
+                            <span class="text-[11.5px] font-semibold text-amber-900 dark:text-amber-200">{{ __('Ya, saya benar-benar tinggal di alamat dan kota sesuai KTP.') }}</span>
+                        </label>
+                        @error('confirm_same_address')
+                            <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+                <div x-show="!same" x-cloak class="md:col-span-2 space-y-6">
                     <!-- Section Domisili Berbeda dari KTP -->
-                    <div class="md:col-span-2 p-4 sm:p-5 rounded-2xl bg-amber-50/30 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40 space-y-4">
+                    <div class="p-4 sm:p-5 rounded-2xl bg-amber-50/30 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40 space-y-4">
                         <div class="flex items-center gap-2 pb-2 border-b border-amber-200/50 dark:border-amber-800/30 text-amber-800 dark:text-amber-300">
                             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -790,7 +836,8 @@
                             </div>
                         </div>
                     </div>
-                @endif
+                </div>
+                </div><!-- /pilihan domisili (x-data) -->
 
                 <!-- Kepemilikan SIM (Surat Izin Mengemudi) -->
                 <div class="md:col-span-2 p-5 bg-slate-50/80 dark:bg-[#14203A]/60 border border-slate-200/80 dark:border-[#1D2E54] rounded-2xl space-y-4">

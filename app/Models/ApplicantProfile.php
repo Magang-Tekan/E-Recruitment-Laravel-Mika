@@ -15,9 +15,10 @@ class ApplicantProfile extends Model
         'photo', 'npwp', 'child_sequence', 'total_siblings', 'marital_status',
         'marriage_date', 'ethnicity', 'nationality', 'driving_licenses',
         'daily_transportation', 'work_distance_km',
-        'about_me', 'generated_cv_url', 'cv_file_path',
+        'about_me', 'generated_cv_url', 'cv_file_path', 'cv_file_name',
         'religion', 'postal_code', 'blood_type',
         'health_answers', 'other_answers', 'self_concept',
+        'domicile_same_as_ktp',
     ];
 
     protected function casts(): array
@@ -30,10 +31,11 @@ class ApplicantProfile extends Model
             'marriage_date' => 'date',
             'birth_date' => 'date',
             'work_distance_km' => 'float',
+            'domicile_same_as_ktp' => 'boolean',
         ];
     }
 
-    protected $appends = ['cv_url', 'cv_file_url', 'photo_url', 'short_city', 'short_ktp_city', 'display_city', 'display_ktp_city', 'formatted_location'];
+    protected $appends = ['cv_url', 'cv_file_url', 'cv_preview_url', 'photo_url', 'short_city', 'short_ktp_city', 'display_city', 'display_ktp_city', 'formatted_location'];
 
     public function getShortCityAttribute(): string
     {
@@ -86,6 +88,53 @@ class ApplicantProfile extends Model
         return $dom;
     }
 
+    /**
+     * Deteksi data domisili yang meragukan: pelamar mengaku jaraknya dekat (<= 10 km)
+     * ke tempat kerja, tetapi kota domisili berbeda dengan lokasi penempatan lowongan.
+     * Mengembalikan array kosong jika tidak ada keanehan.
+     */
+    public function domicileDistanceMismatch(?\App\Models\Job $job): array
+    {
+        $distance = $this->work_distance_km;
+        $domicileCity = trim((string) $this->city);
+
+        if (! $job || $distance === null || $distance > 10 || $domicileCity === '') {
+            return [];
+        }
+
+        $normalize = function (?string $place): string {
+            $place = strtolower(trim((string) $place));
+            $place = preg_replace('/[^a-z0-9]+/', ' ', $place);
+            $place = preg_replace('/\b(kota|kabupaten|kab|kotamadya)\b/', ' ', $place);
+
+            return trim(preg_replace('/\s+/', ' ', $place));
+        };
+
+        $domicile = $normalize($domicileCity);
+        $jobPlaces = array_filter([
+            $job->location,
+            $job->company?->city,
+        ]);
+
+        $jobCities = array_filter(array_map($normalize, $jobPlaces));
+
+        if ($domicile === '' || empty($jobCities)) {
+            return [];
+        }
+
+        foreach ($jobCities as $jobCity) {
+            if (str_contains($jobCity, $domicile) || str_contains($domicile, $jobCity)) {
+                return [];
+            }
+        }
+
+        return [
+            'distance' => (float) $distance,
+            'domicile_city' => $this->display_city ?: $domicileCity,
+            'job_location' => $job->location ?: $job->company?->city,
+        ];
+    }
+
     public function getPhotoUrlAttribute(): ?string
     {
         // 1. Uploaded photo on applicant profile
@@ -109,6 +158,26 @@ class ApplicantProfile extends Model
     public function getCvFileUrlAttribute(): ?string
     {
         return $this->cv_file_path ? asset('storage/' . $this->cv_file_path) : null;
+    }
+
+    /**
+     * URL preview CV yang sekaligus memuat nama file asli pada URL,
+     * sehingga hasil unduhan dari preview memakai nama file yang diunggah.
+     */
+    public function getCvPreviewUrlAttribute(): ?string
+    {
+        if (! $this->cv_file_path) {
+            return null;
+        }
+
+        $name = $this->cv_file_name
+            ?: 'CV ' . ($this->full_name ?: 'Pelamar') . '.' . pathinfo($this->cv_file_path, PATHINFO_EXTENSION);
+        $name = trim(preg_replace('/[\\\\\/:*?"<>|]+/', '-', $name), ' .-');
+
+        return route('cv.preview', [
+            'profile' => $this->id,
+            'filename' => $name ?: 'CV.pdf',
+        ]);
     }
 
     public function getCvUrlAttribute(): ?string

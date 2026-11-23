@@ -360,6 +360,7 @@
                         'Interview' => ['label' => 'Wawancara', 'count' => $stats['interview'] ?? 0],
                         'Accepted' => ['label' => 'Diterima', 'count' => $stats['accepted'] ?? 0],
                         'Rejected' => ['label' => 'Ditolak', 'count' => $stats['rejected'] ?? 0],
+                        'Withdrawn' => ['label' => 'Dibatalkan', 'count' => $stats['withdrawn'] ?? 0],
                     ];
                 @endphp
                 @foreach($tabs as $tabKey => $tabData)
@@ -376,11 +377,11 @@
         </div>
         
         <!-- Filter Controls Toolbar -->
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div class="space-y-2.5">
             <!-- Search and Select Filters -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-1 lg:items-center gap-2.5">
-                <!-- Search Input (Full width on mobile, max-w-xs on desktop) -->
-                <div class="relative sm:col-span-2 lg:col-span-1 lg:flex-1 lg:max-w-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_13rem_14rem] gap-2.5">
+                <!-- Search Input (Full width di mobile, mengisi sisa ruang di desktop) -->
+                <div class="relative sm:col-span-2 lg:col-span-1">
                     <input type="text" 
                            wire:model.live.debounce.300ms="search"
                            placeholder="Cari pelamar, email, NIK, posisi..." 
@@ -393,7 +394,7 @@
                 </div>
 
                 <!-- Company Filter -->
-                <div class="relative w-full lg:w-52">
+                <div class="relative w-full">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -413,7 +414,7 @@
                 </div>
 
                 <!-- Job Filter -->
-                <div class="relative w-full lg:w-56">
+                <div class="relative w-full">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -433,8 +434,8 @@
                 </div>
             </div>
 
-            <!-- Action Buttons (Checklist Status & Atur Kolom) -->
-            <div class="flex flex-wrap items-center gap-2 pt-1 lg:pt-0">
+            <!-- Action Buttons (Filter Profil, Checklist Status, Atur Kolom & Reset) -->
+            <div class="flex flex-wrap items-center gap-2">
                 <!-- Dropdown Filter Profil (Asal Kota, Pendidikan, Kampus) -->
                 <div x-data="{ open: false }" class="relative flex-1 sm:flex-initial">
                     @php
@@ -467,7 +468,7 @@
                          x-transition:leave-start="transform opacity-100 scale-100"
                          x-transition:leave-end="transform opacity-0 scale-95"
                          x-cloak
-                         class="absolute left-0 sm:left-auto sm:right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-2.5rem)] rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-xl z-50 p-4 space-y-3.5">
+                         class="absolute left-0 right-auto mt-2 w-72 sm:w-80 max-w-[calc(100vw-2.5rem)] rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-xl z-50 p-4 space-y-3.5">
                         
                         <div class="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-slate-800">
                             <div>
@@ -603,7 +604,8 @@
                                 'Shortlisted'      => 'Lolos Ujian',
                                 'Interview'        => 'Wawancara',
                                 'Accepted'         => 'Diterima',
-                                'Rejected'         => 'Ditolak'
+                                'Rejected'         => 'Ditolak',
+                                'Withdrawn'        => 'Dibatalkan'
                             ] as $val => $label)
                                 <label class="flex items-center gap-2.5 px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-slate-800/60 rounded-xl cursor-pointer transition text-xs text-gray-700 dark:text-slate-300">
                                     <input type="checkbox" 
@@ -676,7 +678,10 @@
                 </div>
 
                 @if(!empty($selectedStatuses) || $statusFilter || $companyFilter || $jobFilter || $cityFilter || $degreeFilter || $universityFilter || $search || $sortField !== 'id')
-                    <button wire:click="resetAllFilters" class="w-full sm:w-auto px-3 py-2 text-xs rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition font-medium cursor-pointer text-center justify-center">
+                    <button wire:click="resetAllFilters" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition cursor-pointer whitespace-nowrap">
+                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                         Reset Filter
                     </button>
                 @endif
@@ -727,9 +732,13 @@
         <div class="block md:hidden divide-y divide-gray-100 dark:divide-slate-800">
             @forelse ($applications as $app)
                 @php
-                    $cvUrl = $app->applicantProfile?->cv_file_url ?? ($app->applicantProfile?->cv_file_path ? asset('storage/' . $app->applicantProfile->cv_file_path) : null);
+                    $cvUrl = $app->applicantProfile?->cv_preview_url;
+                    $isWithdrawn = in_array(strtolower((string) $app->status), ['withdrawn', 'dibatalkan']);
+                    $withdrawReason = ($isWithdrawn && $app->notes)
+                        ? trim(preg_replace('/^.*?Alasan:\s*/i', '', $app->notes))
+                        : '';
                 @endphp
-                <div class="p-4 space-y-3 hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                <div class="p-4 space-y-3 transition-colors {{ $isWithdrawn ? 'bg-rose-50/50 dark:bg-rose-950/20 border-l-4 border-l-rose-400' : 'hover:bg-gray-50/50 dark:hover:bg-slate-800/30' }}">
                     <!-- Top Row: Candidate Profile Info & Status Badge -->
                     <div class="flex items-start justify-between gap-2.5">
                         <div class="flex items-center gap-3 min-w-0">
@@ -757,7 +766,7 @@
                             <div class="min-w-0">
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     <span class="font-bold text-gray-900 dark:text-white text-sm truncate max-w-[170px] sm:max-w-xs">{{ $app->applicantProfile->full_name ?? 'Pelamar' }}</span>
-                                    @if ($app->status === 'Submitted' || \Carbon\Carbon::parse($app->applied_at)->greaterThanOrEqualTo(now()->subHours(48)))
+                                    @if (!$isWithdrawn && ($app->status === 'Submitted' || \Carbon\Carbon::parse($app->applied_at)->greaterThanOrEqualTo(now()->subHours(48))))
                                         <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9.5px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300/60 shrink-0">
                                             Baru
                                         </span>
@@ -796,6 +805,11 @@
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                                     Lolos Berkas
                                 </span>
+                            @elseif ($isWithdrawn)
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                                    <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    Dibatalkan
+                                </span>
                             @else
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
                                     Diajukan
@@ -826,6 +840,9 @@
                                 @if($app->applicantProfile && $app->applicantProfile->city)
                                     <span class="text-emerald-600 dark:text-emerald-400 font-medium">• {{ $app->applicantProfile->formatted_location }}</span>
                                 @endif
+                                @if($app->applicantProfile && $app->applicantProfile->domicile_same_as_ktp)
+                                    <span class="text-amber-600 dark:text-amber-400 font-semibold" title="Pelamar menyalin alamat & kota domisili dari KTP — perlu diverifikasi">• Domisili = KTP</span>
+                                @endif
                             </div>
                             <span class="text-[10.5px] text-gray-400 dark:text-slate-500 font-medium">
                                 {{ \Carbon\Carbon::parse($app->applied_at)->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
@@ -833,7 +850,17 @@
                         </div>
                     </div>
 
-                    @if ($app->notes)
+                    @if ($isWithdrawn)
+                        <div class="px-3 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-[11px] leading-relaxed">
+                            <p class="font-bold text-rose-800 dark:text-rose-300 flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                                Dibatalkan oleh Pelamar
+                            </p>
+                            <p class="mt-0.5 text-rose-700 dark:text-rose-400 italic break-words">
+                                Alasan: {{ $withdrawReason !== '' ? $withdrawReason : ($app->notes ?: 'Tidak ada alasan tertulis.') }}
+                            </p>
+                        </div>
+                    @elseif ($app->notes)
                         <div class="px-3 py-2 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 italic leading-relaxed">
                             "{{ $app->notes }}"
                         </div>
@@ -1025,7 +1052,13 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-slate-800/60 text-gray-700 dark:text-slate-300">
                     @forelse ($applications as $app)
-                        <tr class="hover:bg-gray-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                        @php
+                            $isWithdrawn = in_array(strtolower((string) $app->status), ['withdrawn', 'dibatalkan']);
+                            $withdrawReason = ($isWithdrawn && $app->notes)
+                                ? trim(preg_replace('/^.*?Alasan:\s*/i', '', $app->notes))
+                                : '';
+                        @endphp
+                        <tr class="transition-colors {{ $isWithdrawn ? 'bg-rose-50/60 dark:bg-rose-950/20 border-l-4 border-l-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30' : 'hover:bg-gray-50/80 dark:hover:bg-slate-800/40' }}">
                             @if(in_array('applicant', $selectedColumns))
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
@@ -1053,7 +1086,7 @@
                                         <div>
                                             <div class="flex items-center gap-1.5 flex-wrap">
                                                 <span class="font-bold text-gray-900 dark:text-white text-sm">{{ $app->applicantProfile->full_name ?? 'Pelamar' }}</span>
-                                                @if ($app->status === 'Submitted' || \Carbon\Carbon::parse($app->applied_at)->greaterThanOrEqualTo(now()->subHours(48)))
+                                                @if (!$isWithdrawn && ($app->status === 'Submitted' || \Carbon\Carbon::parse($app->applied_at)->greaterThanOrEqualTo(now()->subHours(48))))
                                                     <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300/60" title="Lamaran baru diajukan">
                                                         Baru
                                                     </span>
@@ -1078,6 +1111,13 @@
                                                              title="KTP: {{ $app->applicantProfile->ktp_city }}">
                                                             <span class="text-gray-400 dark:text-slate-500 font-mono text-[10px] leading-none">↳</span>
                                                             <span>KTP: {{ $app->applicantProfile->display_ktp_city }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if($app->applicantProfile->domicile_same_as_ktp)
+                                                        <div class="flex items-center gap-1 pl-3.5 text-[9.5px] text-amber-600 dark:text-amber-400 font-semibold whitespace-nowrap"
+                                                             title="Pelamar menyalin alamat & kota domisili dari KTP — perlu diverifikasi">
+                                                            <span class="font-mono text-[10px] leading-none">↳</span>
+                                                            <span>Domisili = KTP</span>
                                                         </div>
                                                     @endif
                                                 </div>
@@ -1186,6 +1226,11 @@
                                                     Lolos Berkas
                                                 </span>
                                             @endif
+                                        @elseif ($isWithdrawn)
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800" title="Pelamar membatalkan lamaran ini">
+                                                <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                <span>Dibatalkan</span>
+                                            </span>
                                         @else
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
                                                 Diajukan
@@ -1272,7 +1317,17 @@
                                             </div>
                                         @endif
 
-                                        @if ($app->notes)
+                                        @if ($isWithdrawn)
+                                            <div class="mt-1 px-2.5 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 max-w-xs">
+                                                <p class="text-[10.5px] font-bold text-rose-800 dark:text-rose-300 flex items-center gap-1">
+                                                    <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                                                    <span>Dibatalkan oleh Pelamar</span>
+                                                </p>
+                                                <p class="text-[10.5px] text-rose-700 dark:text-rose-400 italic mt-0.5 break-words" title="{{ $app->notes }}">
+                                                    Alasan: {{ $withdrawReason !== '' ? $withdrawReason : ($app->notes ?: 'Tidak ada alasan tertulis.') }}
+                                                </p>
+                                            </div>
+                                        @elseif ($app->notes)
                                             <p class="text-[11px] text-gray-400 dark:text-slate-500 italic truncate max-w-xs" title="{{ $app->notes }}">
                                                 "{{ $app->notes }}"
                                             </p>
@@ -1285,7 +1340,7 @@
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-1.5">
                                         @php
-                                            $cvUrl = $app->applicantProfile?->cv_file_url ?? ($app->applicantProfile?->cv_file_path ? asset('storage/' . $app->applicantProfile->cv_file_path) : null);
+                                            $cvUrl = $app->applicantProfile?->cv_preview_url;
                                         @endphp
                                         @if($cvUrl)
                                             <!-- Quick CV Document Preview Link -->

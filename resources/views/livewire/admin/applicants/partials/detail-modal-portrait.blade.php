@@ -147,7 +147,7 @@
                                           'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800': detailData.status === 'Shortlisted',
                                           'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800': detailData.status === 'Reviewed',
                                           'bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200 dark:border-sky-800': detailData.status === 'Partial Approved',
-                                          'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800': detailData.status === 'Rejected',
+                                          'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800': detailData.status === 'Rejected' || detailData.status === 'Withdrawn',
                                           'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800': detailData.status === 'Submitted' || !detailData.status
                                       }">
                                     <span class="w-1.5 h-1.5 rounded-full"
@@ -157,10 +157,10 @@
                                               'bg-purple-500': detailData.status === 'Shortlisted',
                                               'bg-amber-500': detailData.status === 'Reviewed',
                                               'bg-sky-500': detailData.status === 'Partial Approved',
-                                              'bg-rose-500': detailData.status === 'Rejected',
+                                              'bg-rose-500': detailData.status === 'Rejected' || detailData.status === 'Withdrawn',
                                               'bg-blue-500': detailData.status === 'Submitted' || !detailData.status
                                           }"></span>
-                                    <span x-text="detailData.status_label || ({'Submitted':'Diajukan','Reviewed':'Lolos Berkas','Shortlisted':'Lolos Ujian','Interview':'Wawancara','Accepted':'Diterima','Rejected':'Ditolak','Partial Approved':'Partial Approved'}[detailData.status] || detailData.status || 'Diajukan')"></span>
+                                    <span x-text="detailData.status_label || ({'Submitted':'Diajukan','Reviewed':'Lolos Berkas','Shortlisted':'Lolos Ujian','Interview':'Wawancara','Accepted':'Diterima','Rejected':'Ditolak','Withdrawn':'Dibatalkan','Partial Approved':'Partial Approved'}[detailData.status] || detailData.status || 'Diajukan')"></span>
                                 </span>
                             </div>
                         </div>
@@ -291,6 +291,12 @@
                                 <span class="font-semibold text-gray-800 dark:text-slate-200" x-text="detailData.applicant_profile ? ((detailData.applicant_profile.city || '') + (detailData.applicant_profile.province ? (', ' + detailData.applicant_profile.province) : '')) : '-'"></span>
                             </div>
                             <div>
+                                <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Sumber Domisili:</span>
+                                <span class="font-semibold"
+                                      :class="detailData.applicant_profile && detailData.applicant_profile.domicile_same_as_ktp ? 'text-amber-600 dark:text-amber-400' : 'text-gray-800 dark:text-slate-200'"
+                                      x-text="detailData.applicant_profile ? (detailData.applicant_profile.domicile_same_as_ktp ? 'Disamakan dengan KTP (perlu verifikasi)' : 'Diisi terpisah dari KTP') : '-'"></span>
+                            </div>
+                            <div>
                                 <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Kode Pos:</span>
                                 <span class="font-semibold text-gray-800 dark:text-slate-200 font-mono" x-text="detailData.applicant_profile ? (detailData.applicant_profile.postal_code || '-') : '-'"></span>
                             </div>
@@ -327,7 +333,7 @@
                             </div>
                             <div class="flex items-center gap-2 shrink-0">
                                 <template x-if="detailData.applicant_profile && (detailData.applicant_profile.cv_file_url || detailData.applicant_profile.cv_file_path)">
-                                    <a :href="detailData.applicant_profile.cv_file_url ? detailData.applicant_profile.cv_file_url : ('/storage/' + detailData.applicant_profile.cv_file_path)" target="_blank"
+                                    <a :href="detailData.applicant_profile.cv_preview_url" target="_blank"
                                         class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1000,7 +1006,7 @@
                         <div class="p-4 bg-gray-50/80 dark:bg-slate-800/40 rounded-2xl border border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                             <div>
                                 <span class="text-gray-400 dark:text-slate-500 text-[10.5px] block">Status Lamaran Saat Ini:</span>
-                                <span class="text-base font-bold text-gray-900 dark:text-white" x-text="detailData.status_label || ({'Submitted':'Diajukan','Reviewed':'Lolos Berkas','Shortlisted':'Lolos Ujian','Interview':'Wawancara','Accepted':'Diterima','Rejected':'Ditolak','Partial Approved':'Partial Approved'}[detailData.status] || detailData.status || 'Diajukan')"></span>
+                                <span class="text-base font-bold text-gray-900 dark:text-white" x-text="detailData.status_label || ({'Submitted':'Diajukan','Reviewed':'Lolos Berkas','Shortlisted':'Lolos Ujian','Interview':'Wawancara','Accepted':'Diterima','Rejected':'Ditolak','Withdrawn':'Dibatalkan','Partial Approved':'Partial Approved'}[detailData.status] || detailData.status || 'Diajukan')"></span>
                                 <p x-show="detailData.notes" class="text-gray-600 dark:text-slate-300 text-[11px] mt-0.5" x-text="'Catatan: ' + detailData.notes"></p>
                             </div>
                             <button type="button" @click="showDetailModal = false; openStatusModal({
@@ -1330,7 +1336,7 @@
                                         <div class="relative pb-2">
                                             <div class="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-indigo-600 dark:bg-indigo-400"></div>
                                             <div class="flex items-center justify-between">
-                                                <span class="font-bold text-gray-900 dark:text-white text-xs" x-text="history.status_label || ({'Submitted':'Diajukan','Reviewed':'Lolos Berkas','Shortlisted':'Lolos Ujian','Interview':'Wawancara','Accepted':'Diterima','Rejected':'Ditolak','Partial Approved':'Partial Approved'}[history.status] || history.status || 'Diajukan')"></span>
+                                                <span class="font-bold text-gray-900 dark:text-white text-xs" x-text="history.status_label || ({'Submitted':'Diajukan','Reviewed':'Lolos Berkas','Shortlisted':'Lolos Ujian','Interview':'Wawancara','Accepted':'Diterima','Rejected':'Ditolak','Withdrawn':'Dibatalkan','Partial Approved':'Partial Approved'}[history.status] || history.status || 'Diajukan')"></span>
                                                 <span class="text-[10px] text-gray-400 font-mono" x-text="formatDateTime(history.changed_at)"></span>
                                             </div>
                                             <p x-show="history.notes" class="text-gray-600 dark:text-slate-300 text-[11px] mt-0.5" x-text="'Catatan: ' + history.notes"></p>
@@ -1365,7 +1371,7 @@
                         <span>Preview & Cetak PDF</span>
                     </a>
                     <template x-if="detailData.applicant_profile && (detailData.applicant_profile.cv_file_url || detailData.applicant_profile.cv_file_path)">
-                        <a :href="detailData.applicant_profile.cv_file_url ? detailData.applicant_profile.cv_file_url : ('/storage/' + detailData.applicant_profile.cv_file_path)"
+                        <a :href="detailData.applicant_profile.cv_preview_url"
                            target="_blank"
                            class="w-full sm:w-auto px-4 py-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
                             <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

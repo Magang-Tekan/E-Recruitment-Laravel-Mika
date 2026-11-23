@@ -44,6 +44,13 @@ class JobApplicationController extends Controller
 
         $job = \App\Models\Job::findOrFail($id);
 
+        // Minta konfirmasi bila jarak yang diisi tidak konsisten dengan kota penempatan lowongan.
+        $domicileMismatch = $applicantProfile->domicileDistanceMismatch($job);
+        if (!empty($domicileMismatch) && !$request->boolean('confirm_domicile')) {
+            return redirect()->route('jobs.show', $id)->with('error',
+                'Domisili Anda tercatat di ' . $domicileMismatch['domicile_city'] . ' dengan jarak ' . $domicileMismatch['distance'] . ' km, sedangkan penempatan lowongan ini di ' . $domicileMismatch['job_location'] . '. Periksa kembali data domisili/jarak pada profil Anda, lalu centang konfirmasi saat melamar.');
+        }
+
         // Cek apakah lowongan aktif
         $isActive = $job->status === 'Open' && (!$job->deadline || $job->deadline >= now()->toDateString());
         if (!$isActive) {

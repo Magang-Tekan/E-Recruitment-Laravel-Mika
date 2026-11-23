@@ -63,6 +63,8 @@
          showIncompleteModal: false,
          isSubmitting: false,
          statementAgreed: false,
+         domicileMismatch: {{ ! empty($domicileMismatch) ? 'true' : 'false' }},
+         domicileConfirmed: false,
          isMandatoryComplete: {{ ($isMandatoryComplete ?? false) ? 'true' : 'false' }},
          hasApplied: {{ ($hasApplied ?? false) ? 'true' : 'false' }},
          missingSections: {{ json_encode($missingMandatorySections ?? []) }},
@@ -845,6 +847,25 @@
                             </div>
                         </div>
 
+                        <!-- Peringatan Domisili vs Jarak ke Lokasi Kerja -->
+                        <div x-show="domicileMismatch" x-cloak
+                             class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-[11.5px] text-amber-200 space-y-1.5">
+                            <p class="font-bold text-amber-300 flex items-center gap-2 text-[11px] uppercase tracking-wider">
+                                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                                </svg>
+                                <span>{{ __('Domisili & Jarak Perlu Dikonfirmasi') }}</span>
+                            </p>
+                            <p>
+                                {{ __('Profil Anda:') }} <strong class="text-amber-100">{{ $domicileMismatch['domicile_city'] ?? '-' }}</strong>
+                                {{ __('dengan jarak') }} <strong class="text-amber-100">{{ $domicileMismatch['distance'] ?? 0 }} km</strong>.
+                                {{ __('Penempatan lowongan ini:') }} <strong class="text-amber-100">{{ $domicileMismatch['job_location'] ?? '-' }}</strong>.
+                            </p>
+                            <p class="text-amber-200/80 leading-relaxed">
+                                {{ __('Jika Anda sebenarnya tinggal di kota lain, perbarui') }} <a href="{{ route('profile') }}" class="underline font-semibold text-amber-100">{{ __('data domisili') }}</a> {{ __('agar HR tidak salah menilai jarak Anda.') }}
+                            </p>
+                        </div>
+
                         <!-- Statement Alert & Digital Declaration -->
                         <div class="confirm-statement-box p-4 rounded-2xl bg-[#040a04] border border-[#93F514]/30 text-gray-300 text-xs space-y-3">
                             <div class="confirm-statement-title flex items-center gap-2 text-[#93F514] font-bold text-[11px] uppercase tracking-wider">
@@ -868,15 +889,20 @@
                         </div>
 
                         <!-- Actions Form -->
-                        <form action="{{ route('jobs.apply', $job->id) }}" method="POST" @submit="isSubmitting = true" class="flex items-center justify-end gap-3 pt-2">
+                        <form action="{{ route('jobs.apply', $job->id) }}" method="POST" @submit="isSubmitting = true" class="flex flex-wrap items-center justify-end gap-3 pt-2">
                             @csrf
+                            <label x-show="domicileMismatch" x-cloak class="mr-auto flex items-start gap-2 text-[11px] text-amber-200 cursor-pointer select-none max-w-xs">
+                                <input type="checkbox" name="confirm_domicile" value="1" x-model="domicileConfirmed"
+                                    class="mt-0.5 w-4 h-4 rounded border-amber-400 bg-black/60 text-[#93F514] focus:ring-[#93F514] cursor-pointer">
+                                <span>{{ __('Saya sudah memeriksa dan data domisili & jarak saya benar.') }}</span>
+                            </label>
                             <button type="button" 
                                     @click="showConfirmModal = false" 
                                     class="confirm-cancel-btn px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-gray-700 text-gray-300 hover:text-white font-semibold text-xs transition">
                                 {{ __('Batal') }}
                             </button>
                             <button type="submit" 
-                                    :disabled="isSubmitting || !statementAgreed"
+                                    :disabled="isSubmitting || !statementAgreed || (domicileMismatch && !domicileConfirmed)"
                                     class="confirm-submit-btn px-6 py-2.5 rounded-xl font-extrabold text-xs transition flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                                 <svg x-show="isSubmitting" class="animate-spin w-4 h-4 text-black" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

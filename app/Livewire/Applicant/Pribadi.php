@@ -34,6 +34,8 @@ class Pribadi extends Component
 
     public $is_same_address = false;
 
+    public $confirm_same_address = false;
+
     public $address;
 
     public $city;
@@ -118,8 +120,9 @@ class Pribadi extends Component
         $this->blood_type = $profile->blood_type;
         $this->about_me = $profile->about_me;
 
-        // Default checkbox alamat domisili sama dengan KTP dibuat belum centang (false)
-        $this->is_same_address = false;
+        // Domisili yang sebelumnya disamakan dengan KTP tetap dipertahankan, tetapi tetap perlu konfirmasi ulang saat menyimpan.
+        $this->is_same_address = (bool) $profile->domicile_same_as_ktp;
+        $this->confirm_same_address = $this->is_same_address;
 
         $photoUrl = $profile->photo_url;
         $this->current_photo_url = null;
@@ -134,7 +137,10 @@ class Pribadi extends Component
 
     public function updatedIsSameAddress($value)
     {
-        if ($value) {
+        // Setiap perubahan pilihan domisili membatalkan konfirmasi sebelumnya.
+        $this->confirm_same_address = false;
+
+        if (filter_var($value, FILTER_VALIDATE_BOOLEAN)) {
             $this->address = $this->ktp_address;
             $this->city = $this->ktp_city;
             $this->province = $this->ktp_province;
@@ -182,7 +188,7 @@ class Pribadi extends Component
     {
         return [
             'nik' => ['nullable', 'digits:16', Rule::unique('users', 'nik')->ignore(Auth::id())],
-            'full_name' => 'required|string|max:255',
+            'full_name' => ['required', 'string', 'max:255', 'regex:/^[^0-9]+$/u'],
             'gender' => 'nullable|string|in:Laki-laki,Perempuan',
             'birth_place' => 'nullable|string|max:100',
             'birth_date' => 'nullable|date',
@@ -222,6 +228,7 @@ class Pribadi extends Component
             'work_distance_km.numeric' => __('Jarak kerja harus berupa angka.'),
             'daily_transportation.required' => __('Transportasi sehari-hari wajib dipilih.'),
             'work_distance_km.required' => __('Jarak rumah/kost ke tempat kerja wajib diisi.'),
+            'full_name.regex' => __('Nama lengkap tidak boleh mengandung angka. Mohon ganti dengan nama yang benar (tanpa angka).'),
         ];
     }
 
@@ -249,8 +256,9 @@ class Pribadi extends Component
             Storage::disk('public')->delete($profile->cv_file_path);
         }
 
+        $cvOriginalName = $this->cv_file->getClientOriginalName();
         $cvPath = $this->cv_file->store('applicant-cvs', 'public');
-        $profile->update(['cv_file_path' => $cvPath]);
+        $profile->update(['cv_file_path' => $cvPath, 'cv_file_name' => $cvOriginalName]);
 
         $this->current_cv_path = $cvPath;
         $this->current_cv_url = asset('storage/' . $cvPath) . '?v=' . time();
@@ -272,6 +280,14 @@ class Pribadi extends Component
             $this->dispatch('scroll-to-field', field: array_key_first($e->errors()));
 
             throw $e;
+        }
+
+        // Cegah data domisili yang hanya disalin dari KTP tanpa konfirmasi pelamar.
+        if ($this->is_same_address && ! $this->confirm_same_address) {
+            $this->addError('confirm_same_address', __('Silakan konfirmasi bahwa Anda benar-benar tinggal di alamat sesuai KTP.'));
+            $this->dispatch('scroll-to-field', field: 'confirm_same_address');
+
+            return;
         }
 
         // Normalisasi birth_date agar berupa string Y-m-d atau null jika kosong
@@ -325,8 +341,10 @@ class Pribadi extends Component
                 if ($profile->cv_file_path && Storage::disk('public')->exists($profile->cv_file_path)) {
                     Storage::disk('public')->delete($profile->cv_file_path);
                 }
+                $cvOriginalName = $this->cv_file->getClientOriginalName();
                 $cvPath = $this->cv_file->store('applicant-cvs', 'public');
                 $validatedData['cv_file_path'] = $cvPath;
+                $validatedData['cv_file_name'] = $cvOriginalName;
                 $this->current_cv_path = $cvPath;
                 $this->current_cv_url = asset('storage/' . $cvPath) . '?v=' . time();
                 $this->cv_file = null;
@@ -375,6 +393,8 @@ class Pribadi extends Component
             $this->city = $this->ktp_city;
             $this->province = $this->ktp_province;
         }
+
+        $validatedData['domicile_same_as_ktp'] = (bool) $this->is_same_address;
 
         $profile->update($validatedData);
 

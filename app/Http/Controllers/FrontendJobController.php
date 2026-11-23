@@ -217,13 +217,17 @@ class FrontendJobController extends Controller
             }
         }
 
+        // Deteksi domisili/jarak yang meragukan terhadap lokasi penempatan lowongan.
+        $domicileMismatch = $applicantProfile ? $applicantProfile->domicileDistanceMismatch($job) : [];
+
         return view('frontend.jobs.show', compact(
             'job',
             'relatedJobs',
             'hasApplied',
             'isMandatoryComplete',
             'missingMandatorySections',
-            'applicantProfile'
+            'applicantProfile',
+            'domicileMismatch'
         ));
     }
 }

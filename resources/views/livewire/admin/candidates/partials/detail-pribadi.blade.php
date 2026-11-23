@@ -22,7 +22,8 @@
                 ['Status Pernikahan', $prof?->marital_status ? (ucfirst($prof->marital_status) . ($prof->marriage_date ? ' (' . \Carbon\Carbon::parse($prof->marriage_date)->translatedFormat('d M Y') . ')' : '')) : null],
                 ['Transportasi Harian', $prof?->daily_transportation],
                 ['Jarak ke Tempat Kerja', $prof?->work_distance_km ? $prof->work_distance_km . ' km' : null],
-                ['Kota & Provinsi Sesuai KTP', ($prof?->city ?? '') . ($prof?->province ? ', ' . $prof->province : '')],
+                ['Kota & Provinsi Domisili', ($prof?->city ?? '') . ($prof?->province ? ', ' . $prof->province : '')],
+                ['Kota & Provinsi Sesuai KTP', ($prof?->ktp_city ?? '') . ($prof?->ktp_province ? ', ' . $prof->ktp_province : '')],
                 ['Kode Pos', $prof?->postal_code],
             ] as $field)
                 <div>
@@ -69,8 +70,8 @@
             <p class="text-[11px] text-slate-400 mt-0.5">File berkas curriculum vitae yang diunggah pelamar saat pendaftaran.</p>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-            @if($prof?->cv_file_url || $prof?->cv_file_path)
-                <a href="{{ $prof->cv_file_url ?: asset('storage/' . $prof->cv_file_path) }}" target="_blank"
+            @if($prof?->cv_preview_url)
+                <a href="{{ $prof->cv_preview_url }}" target="_blank"
                     class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

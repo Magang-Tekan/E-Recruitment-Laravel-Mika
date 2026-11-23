@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AboutController;
+use App\Http\Controllers\ApplicantCvDownloadController;
 use App\Http\Controllers\CareerTrackController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyShowcaseController;
@@ -35,6 +36,11 @@ Route::get('perusahaan/{id}', [FrontendCompanyController::class, 'show'])->name(
 Route::get('lowongan', [FrontendJobController::class, 'index'])->name('jobs.index');
 Route::get('lowongan/{id}', [FrontendJobController::class, 'show'])->name('jobs.show');
 Route::post('lowongan/{id}/apply', [JobApplicationController::class, 'store'])->middleware(['auth'])->name('jobs.apply');
+
+// Preview CV pelamar dengan nama file asli (bukan nama hash di storage)
+Route::get('cv/{profile}/{filename}', [ApplicantCvDownloadController::class, 'preview'])
+    ->middleware(['auth', 'verified'])
+    ->name('cv.preview');
 
 // Session Heartbeat (Sliding Refresh di balik layar saat pengguna aktif)
 Route::post('session/keep-alive', function () {

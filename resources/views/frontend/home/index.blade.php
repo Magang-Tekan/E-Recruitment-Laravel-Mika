@@ -329,7 +329,7 @@
                                         {{ __('Atur Ulang') }}
                                     </button>
                                     <button type="button" @click="applyCompany()"
-                                        class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-sm transition cursor-pointer">
+                                        class="px-5 py-2 rounded-xl bg-black hover:bg-gray-800 text-white dark:bg-[#93F514] dark:hover:bg-[#7edc0b] dark:text-black font-bold text-xs shadow-sm transition cursor-pointer">
                                         {{ __('Pilih') }}
                                     </button>
                                 </div>
@@ -461,7 +461,7 @@
                                         {{ __('Atur Ulang') }}
                                     </button>
                                     <button type="button" @click="applyDepartment()"
-                                        class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-sm transition cursor-pointer">
+                                        class="px-5 py-2 rounded-xl bg-black hover:bg-gray-800 text-white dark:bg-[#93F514] dark:hover:bg-[#7edc0b] dark:text-black font-bold text-xs shadow-sm transition cursor-pointer">
                                         {{ __('Pilih') }}
                                     </button>
                                 </div>
@@ -568,7 +568,7 @@
                                         {{ __('Atur Ulang') }}
                                     </button>
                                     <button type="button" @click="applyType()"
-                                        class="px-5 py-2 rounded-xl bg-[#93F514] hover:bg-[#7edc0b] text-black font-bold text-xs shadow-sm transition cursor-pointer">
+                                        class="px-5 py-2 rounded-xl bg-black hover:bg-gray-800 text-white dark:bg-[#93F514] dark:hover:bg-[#7edc0b] dark:text-black font-bold text-xs shadow-sm transition cursor-pointer">
                                         {{ __('Pilih') }}
                                     </button>
                                 </div>

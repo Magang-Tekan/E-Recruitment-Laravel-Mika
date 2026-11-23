@@ -229,6 +229,7 @@ class ApplicantTable extends Component
                 'wawancara'    => 'interview',
                 'diterima'     => 'accepted',
                 'ditolak'      => 'rejected',
+                'dibatalkan'   => 'withdrawn',
             ];
             $matchedStatuses = [];
             foreach ($indoStatusMap as $indo => $eng) {
@@ -316,6 +317,7 @@ class ApplicantTable extends Component
                 'wawancara'    => 'interview',
                 'diterima'     => 'accepted',
                 'ditolak'      => 'rejected',
+                'dibatalkan'   => 'withdrawn',
             ];
             if (isset($indoParamMap[$val])) {
                 $val = $indoParamMap[$val];
@@ -380,6 +382,7 @@ class ApplicantTable extends Component
             'interview'        => $rawStatusCounts['interview'] ?? 0,
             'accepted'         => $rawStatusCounts['accepted'] ?? 0,
             'rejected'         => $rawStatusCounts['rejected'] ?? 0,
+            'withdrawn'        => $rawStatusCounts['withdrawn'] ?? 0,
         ];
 
         $companiesQuery = Company::select('id', 'name')->orderBy('name');

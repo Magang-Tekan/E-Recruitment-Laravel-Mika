@@ -16,7 +16,7 @@
         $apps = $prof?->jobApplications ?? collect();
 
         $photoUrl = $prof?->photo_url ?? $modalCandidate->avatar_url;
-        $cvUrl = $prof?->cv_file_url ?? ($prof?->cv_file_path ? asset('storage/' . $prof->cv_file_path) : null);
+        $cvUrl = $prof?->cv_preview_url;
         $candidateName = $prof?->full_name ?? $modalCandidate->name;
     @endphp
 
@@ -305,9 +305,15 @@
                                     <span class="font-semibold text-gray-800 dark:text-slate-200">{{ $prof?->work_distance_km ? ($prof->work_distance_km . ' km') : '-' }}</span>
                                 </div>
                                 <div>
-                                    <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Kota & Provinsi:</span>
+                                    <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Kota & Provinsi Domisili:</span>
                                     <span class="font-semibold text-gray-800 dark:text-slate-200">
                                         {{ trim(($prof?->city ?? '') . ($prof?->province ? ', ' . $prof->province : ''), ', ') ?: '-' }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400 dark:text-slate-500 block text-[10.5px]">Kota & Provinsi Sesuai KTP:</span>
+                                    <span class="font-semibold text-gray-800 dark:text-slate-200">
+                                        {{ trim(($prof?->ktp_city ?? '') . ($prof?->ktp_province ? ', ' . $prof->ktp_province : ''), ', ') ?: '-' }}
                                     </span>
                                 </div>
                                 <div>
