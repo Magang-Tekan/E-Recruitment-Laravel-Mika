@@ -940,11 +940,22 @@
 
         <!-- Desktop Table View (Visible on md: screens and above) -->
         <div class="hidden md:block overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
+            <table class="w-full text-left border-collapse text-xs" style="min-width:900px">
+                <colgroup>
+                    <col style="width:3rem">   {{-- No --}}
+                    @if(in_array('applicant', $selectedColumns))<col style="width:21%">@endif
+                    @if(in_array('contact', $selectedColumns))<col style="width:12%">@endif
+                    @if(in_array('job', $selectedColumns))<col style="width:17%">@endif
+                    @if(in_array('applied_at', $selectedColumns))<col style="width:13%">@endif
+                    @if(in_array('status', $selectedColumns))<col style="width:22%">@endif
+                    @if(in_array('actions', $selectedColumns))<col style="width:12rem">@endif
+                </colgroup>
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
+                        {{-- Kolom No --}}
+                        <th class="px-3 py-3 text-center">No</th>
                         @if(in_array('applicant', $selectedColumns))
-                            <th class="px-6 py-4 cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition" wire:click="sortBy('applicant')">
+                            <th class="px-3 py-3 cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition" wire:click="sortBy('applicant')">
                                 <div class="flex items-center gap-1.5">
                                     <span>Pelamar</span>
                                     @if($sortField === 'applicant')
@@ -964,11 +975,11 @@
                             </th>
                         @endif
                         @if(in_array('contact', $selectedColumns))
-                            <th class="px-6 py-4">Kontak & NIK</th>
+                            <th class="px-3 py-3">Kontak & NIK</th>
                         @endif
                         @if(in_array('job', $selectedColumns))
-                            <th class="px-6 py-4">
-                                <div class="flex items-center gap-3">
+                            <th class="px-3 py-3">
+                                <div class="flex items-center gap-2">
                                     <button type="button" wire:click="sortBy('position')" class="flex items-center gap-1 cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition">
                                         <span>Posisi</span>
                                         @if($sortField === 'position')
@@ -1006,7 +1017,7 @@
                             </th>
                         @endif
                         @if(in_array('applied_at', $selectedColumns))
-                            <th class="px-6 py-4 cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition" wire:click="sortBy('applied_at')">
+                            <th class="px-3 py-3 cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition" wire:click="sortBy('applied_at')">
                                 <div class="flex items-center gap-1.5">
                                     <span>Tanggal Melamar</span>
                                     @if($sortField === 'applied_at')
@@ -1026,7 +1037,7 @@
                             </th>
                         @endif
                         @if(in_array('status', $selectedColumns))
-                            <th class="px-6 py-4 cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition" wire:click="sortBy('status')">
+                            <th class="px-3 py-3 cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition" wire:click="sortBy('status')">
                                 <div class="flex items-center gap-1.5">
                                     <span>Status & Catatan</span>
                                     @if($sortField === 'status')
@@ -1046,7 +1057,7 @@
                             </th>
                         @endif
                         @if(in_array('actions', $selectedColumns))
-                            <th class="px-6 py-4 text-right">Aksi</th>
+                            <th class="px-3 py-3 text-center whitespace-nowrap">Aksi</th>
                         @endif
                     </tr>
                 </thead>
@@ -1059,8 +1070,12 @@
                                 : '';
                         @endphp
                         <tr class="transition-colors {{ $isWithdrawn ? 'bg-rose-50/60 dark:bg-rose-950/20 border-l-4 border-l-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30' : 'hover:bg-gray-50/80 dark:hover:bg-slate-800/40' }}">
+                            {{-- Nomor urut --}}
+                            <td class="px-3 py-3 text-center text-xs font-semibold text-gray-400 dark:text-slate-500 shrink-0">
+                                {{ ($applications->currentPage() - 1) * $applications->perPage() + $loop->iteration }}
+                            </td>
                             @if(in_array('applicant', $selectedColumns))
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-3">
                                     <div class="flex items-center gap-3">
                                         @php
                                             $applicantPhoto = $app->applicantProfile?->photo_url;
@@ -1128,7 +1143,7 @@
                             @endif
 
                             @if(in_array('contact', $selectedColumns))
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-3">
                                     <div>
                                         <span class="font-medium text-gray-800 dark:text-slate-200 block">{{ $app->applicantProfile->phone ?? '-' }}</span>
                                         <span class="text-[11px] text-gray-400 block">NIK: {{ $app->applicantProfile->nik ?? '-' }}</span>
@@ -1137,7 +1152,7 @@
                             @endif
 
                             @if(in_array('job', $selectedColumns))
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-3">
                                     <div>
                                         <span class="font-semibold text-gray-800 dark:text-slate-200 block text-xs">{{ $app->job->title ?? 'Lowongan' }}</span>
                                         <div class="flex flex-wrap items-center gap-1.5 mt-1">
@@ -1157,7 +1172,7 @@
                             @endif
 
                             @if(in_array('applied_at', $selectedColumns))
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 py-3 whitespace-nowrap">
                                     <div>
                                         <span class="text-gray-900 dark:text-white font-medium text-xs block">
                                             {{ \Carbon\Carbon::parse($app->applied_at)->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
@@ -1170,7 +1185,7 @@
                             @endif
 
                             @if(in_array('status', $selectedColumns))
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-3">
                                     <div class="space-y-1">
                                         @php
                                             $appStatus = $app->status;
@@ -1337,30 +1352,35 @@
                             @endif
 
                             @if(in_array('actions', $selectedColumns))
-                                <td class="px-6 py-4 text-right">
-                                    <div class="flex items-center justify-end gap-1.5">
+                                <td class="px-3 py-3">
+                                    <div class="flex items-center justify-end gap-1.5 flex-nowrap">
                                         @php
                                             $cvUrl = $app->applicantProfile?->cv_preview_url;
                                         @endphp
+
+                                        {{-- CV badge --}}
                                         @if($cvUrl)
-                                            <!-- Quick CV Document Preview Link -->
-                                            <a href="{{ $cvUrl }}" target="_blank" class="px-2 py-1.5 rounded-xl text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 transition-colors border border-rose-200/80 dark:border-rose-900/60 flex items-center gap-1 text-[11px] font-semibold cursor-pointer" title="Buka Dokumen CV Pelamar (PDF)">
-                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <a href="{{ $cvUrl }}" target="_blank"
+                                               class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 border border-rose-200/80 dark:border-rose-900/60 transition-colors cursor-pointer whitespace-nowrap"
+                                               title="Buka CV">
+                                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                                 </svg>
                                                 <span>CV</span>
                                             </a>
                                         @endif
 
-                                        <!-- View Detail Profile Modal Button -->
-                                        <button @click="openDetailModal({{ \Illuminate\Support\Js::from($app) }})" class="p-1.5 rounded-xl text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700 cursor-pointer" title="Lihat Profil Lengkap">
-                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        {{-- Detail (eye) icon --}}
+                                        <button @click="openDetailModal({{ \Illuminate\Support\Js::from($app) }})"
+                                                class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 transition-colors cursor-pointer"
+                                                title="Lihat Detail">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
                                         </button>
 
-                                        <!-- Update Status Button -->
+                                        {{-- Proses button --}}
                                         <button @click="openStatusModal({{ \Illuminate\Support\Js::from([
                                             'id'                           => $app->id,
                                             'applicant_name'               => $app->applicantProfile->full_name ?? 'Pelamar',
@@ -1388,20 +1408,24 @@
                                             'interview_admin_approval'     => $app->interview_admin_approval ?? 'pending',
                                             'interview_admin_notes'        => $app->interview_admin_notes ?? '',
                                             'interview_admin'              => $app->interviewAdmin ? ['name' => $app->interviewAdmin->name] : null,
-                                        ]) }})" class="px-2.5 py-1.5 rounded-xl text-emerald-700 dark:text-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 transition-colors border border-emerald-200/80 dark:border-emerald-800/80 flex items-center gap-1 text-[11px] font-semibold cursor-pointer" title="Update Status Lamaran">
-                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        ]) }})"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-white bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 border border-emerald-500 dark:border-emerald-600 transition-colors cursor-pointer whitespace-nowrap shadow-sm"
+                                                title="Proses Lamaran">
+                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                             <span>Proses</span>
                                         </button>
 
-                                        <!-- Delete Application Button -->
+                                        {{-- Delete icon --}}
                                         <button @click="openDeleteModal({{ \Illuminate\Support\Js::from([
                                             'id'             => $app->id,
                                             'applicant_name' => $app->applicantProfile->full_name ?? 'Pelamar',
                                             'job_title'      => $app->job->title ?? 'Lowongan',
-                                        ]) }})" class="p-1.5 rounded-xl text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors border border-transparent hover:border-rose-200 dark:hover:border-rose-900/50 cursor-pointer" title="Hapus Data Lamaran">
-                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        ]) }})"
+                                                class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-gray-200 dark:border-slate-700 hover:border-rose-200 dark:hover:border-rose-900/50 transition-colors cursor-pointer"
+                                                title="Hapus Lamaran">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                         </button>
@@ -1411,7 +1435,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ max(count($selectedColumns), 1) }}" class="px-6 py-12 text-center text-gray-400 dark:text-slate-500">
+                            <td colspan="{{ max(count($selectedColumns), 1) + 1 }}" class="px-6 py-12 text-center text-gray-400 dark:text-slate-500">
                                 <div class="flex flex-col items-center justify-center gap-2">
                                     <svg class="w-10 h-10 text-gray-300 dark:text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

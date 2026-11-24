@@ -1,4 +1,6 @@
 *.log
+check*.php
+fix_*.php
 .DS_Store
 .env
 .env.backup
