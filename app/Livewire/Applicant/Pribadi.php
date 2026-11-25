@@ -124,13 +124,11 @@ class Pribadi extends Component
         $this->is_same_address = (bool) $profile->domicile_same_as_ktp;
         $this->confirm_same_address = $this->is_same_address;
 
-        $photoUrl = $profile->photo_url;
-        $this->current_photo_url = null;
-        if ($photoUrl) {
-            $this->current_photo_url = \Illuminate\Support\Str::startsWith($photoUrl, ['http://', 'https://'])
-                ? $photoUrl
-                : ($photoUrl . (str_contains($photoUrl, '?') ? '&v=' : '?v=') . time());
-        }
+        // Avatar bawaan Google (URL eksternal) tidak ditampilkan sebagai foto profil;
+        // pelamar harus mengunggah foto formal sendiri.
+        $this->current_photo_url = $profile->hasUploadedPhoto()
+            ? asset('storage/' . $profile->photo) . '?v=' . time()
+            : null;
         $this->current_cv_path = $profile->cv_file_path;
         $this->current_cv_url = $profile->cv_file_path ? asset('storage/'.$profile->cv_file_path) : null;
     }

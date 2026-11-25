@@ -135,6 +135,16 @@ class ApplicantProfile extends Model
         ];
     }
 
+    /**
+     * Foto profil dianggap terisi hanya jika pelamar mengunggahnya sendiri.
+     * Avatar bawaan Google berupa URL eksternal tidak dihitung sebagai foto formal.
+     */
+    public function hasUploadedPhoto(): bool
+    {
+        return ! empty($this->photo)
+            && ! \Illuminate\Support\Str::startsWith($this->photo, ['http://', 'https://']);
+    }
+
     public function getPhotoUrlAttribute(): ?string
     {
         // 1. Uploaded photo on applicant profile
@@ -289,7 +299,7 @@ class ApplicantProfile extends Model
 
         return $this->cachedSectionStatuses = [
             'pribadi' => ! empty($this->nik) && ! empty($this->full_name) && ! empty($this->phone) && ! empty($this->address) && ! empty($this->marital_status),
-            'foto' => ! empty($this->photo),
+            'foto' => $this->hasUploadedPhoto(),
             'cv' => ! empty($this->cv_file_path) || ! empty($this->generated_cv_url),
             'keluarga' => $this->isFamilyComplete(),
             'pendidikan' => ($this->relationLoaded('educations') ? $this->educations->isNotEmpty() : $this->educations()->exists())

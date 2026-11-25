@@ -98,10 +98,8 @@ class GoogleAuthController extends Controller
             if (empty($profile->full_name)) {
                 $profileUpdates['full_name'] = $user->name;
             }
-            $avatarToUse = $googleAvatar ?: $user->avatar;
-            if ($avatarToUse && (empty($profile->photo) || str_starts_with($profile->photo, 'http'))) {
-                $profileUpdates['photo'] = $avatarToUse;
-            }
+            // Avatar Google sengaja tidak disalin ke profile->photo: foto profil pelamar
+            // hanya terisi setelah pelamar mengunggah foto formal sendiri.
             if (!empty($profileUpdates)) {
                 $profile->update($profileUpdates);
             }

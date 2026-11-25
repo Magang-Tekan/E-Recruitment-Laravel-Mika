@@ -97,14 +97,36 @@ class User extends Authenticatable
 
     protected static function booted(): void
     {
+        static::updated(function (User $user) {
+            // Sinkronkan profil saat role diubah menjadi Employee dari User Management.
+            if ($user->wasChanged('role_id')
+                && ($user->role_id == 4 || strtolower($user->role?->name ?? '') === 'employee')) {
+                // Kolom nik unik di employee_profiles; hindari kegagalan simpan bila sudah dipakai.
+                $nik = $user->nik;
+                if (! $nik || EmployeeProfile::where('nik', $nik)->where('user_id', '!=', $user->id)->exists()) {
+                    $nik = null;
+                }
+
+                EmployeeProfile::firstOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'nik'       => $nik,
+                        'full_name' => $user->name,
+                        'photo'     => $user->avatar ?? null,
+                    ]
+                );
+            }
+        });
+
         static::created(function (User $user) {
             if ($user->role_id == 3 || strtolower($user->role?->name ?? '') === 'applicant') {
+                // photo tidak diisi dari avatar (mis. foto bawaan Google); foto profil
+                // pelamar hanya terisi setelah pelamar mengunggah foto formal sendiri.
                 ApplicantProfile::firstOrCreate(
                     ['user_id' => $user->id],
                     [
                         'nik'       => $user->nik ?? null,
                         'full_name' => $user->name ?? null,
-                        'photo'     => $user->avatar ?? null,
                     ]
                 );
             } elseif ($user->role_id == 4 || strtolower($user->role?->name ?? '') === 'employee') {
