@@ -1,12 +1,14 @@
 <div class="space-y-6" x-data="{ 
-    showCreateModal: {{ $errors->any() && !old('is_edit') ? 'true' : 'false' }},
+    showCreateModal: {{ $errors->any() && !old('is_edit') && !old('default_test_deadline_days') ? 'true' : 'false' }},
     showEditModal: {{ $errors->any() && old('is_edit') ? 'true' : 'false' }},
+    showGlobalDeadlineModal: {{ $errors->has('default_test_deadline_days') ? 'true' : 'false' }},
     showDeleteModal: false,
     showDetailModal: false,
 
     isSubmittingCreate: false,
     isSubmittingEdit: false,
     isSubmittingDelete: false,
+    isSubmittingGlobalDeadline: false,
 
     createCategoryId: '{{ old('category_id', '') }}',
     createSelectedQuestions: [],
@@ -197,12 +199,23 @@
                 <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Atur durasi, KKM, jumlah soal, opsi acak, dan rakit pertanyaan tes untuk setiap lowongan kerja.</p>
             </div>
 
-            <button type="button" @click="showCreateModal = true" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 text-xs font-bold transition active:scale-95 shrink-0 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                <span>Buat Paket Ujian</span>
-            </button>
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+                <button type="button" @click="showGlobalDeadlineModal = true"
+                    title="Atur default batas waktu pengerjaan tes online (hari kerja)"
+                    class="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60 text-xs font-bold transition active:scale-95 cursor-pointer">
+                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Batas Tes Global: {{ $globalTestDeadlineDays }} Hari</span>
+                </button>
+
+                <button type="button" @click="showCreateModal = true" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 text-xs font-bold transition active:scale-95 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Buat Paket Ujian</span>
+                </button>
+            </div>
         </div>
 
         <!-- Filter & Search Toolbar Row -->
@@ -1307,5 +1320,7 @@
             </div>
         </div>
     </div>
+
+    @include('livewire.admin.partials.global-test-deadline-modal', ['globalTestDeadlineDays' => $globalTestDeadlineDays])
 
 </div>

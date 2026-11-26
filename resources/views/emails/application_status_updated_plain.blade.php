@@ -6,10 +6,18 @@
     $jobTitle = $job?->title ?? 'Posisi Pekerjaan';
     $companyName = $company?->name ?? config('app.name', 'MIKA CAREER');
 
+    $effectiveDeadlineDays = $application->effectiveTestDeadlineDays();
+    $testDeadlineText = $application->test_deadline_at
+        ? $application->test_deadline_at->copy()->timezone('Asia/Jakarta')->translatedFormat('l, d F Y \p\u\k\u\l H:i') . ' WIB'
+        : null;
+
     $statusDetails = match($status) {
         'Reviewed' => [
             'title' => 'Lolos Seleksi Berkas & Undangan Ujian Online',
-            'desc'  => 'Berdasarkan hasil penelaahan kualifikasi terhadap berkas lamaran yang Anda ajukan, berkas Anda resmi dinyatakan Lolos Seleksi Berkas. Anda kami undang untuk melanjutkan ke tahapan Ujian Seleksi Online.',
+            'desc'  => 'Berdasarkan hasil penelaahan kualifikasi terhadap berkas lamaran yang Anda ajukan, berkas Anda resmi dinyatakan Lolos Seleksi Berkas. Anda kami undang untuk melanjutkan ke tahapan Ujian Seleksi Online.'
+                . ($testDeadlineText
+                    ? "\n\nMohon segera mengerjakan ujian online dalam waktu {$effectiveDeadlineDays} hari kerja ({$effectiveDeadlineDays} x 24 jam kerja) agar proses seleksi Anda dapat lebih cepat kami tinjau. Batas akhir akses pengerjaan ujian adalah: {$testDeadlineText} (tetap dapat dikerjakan 24 jam termasuk akhir pekan sebelum batas waktu tersebut)."
+                    : ''),
             'url'   => route('profile', ['tab' => 'riwayat']),
         ],
         'Shortlisted' => [
@@ -61,6 +69,9 @@ RINGKASAN LAMARAN:
 @endif
 @if ($application->applied_at)
 - Tanggal Lamaran: {!! \Carbon\Carbon::parse($application->applied_at)->translatedFormat('d F Y, H:i') !!} WIB
+@endif
+@if ($status === 'Reviewed' && $testDeadlineText)
+- Batas Pengerjaan Tes: {!! $testDeadlineText !!}
 @endif
 
 TINDAK LANJUT / DETAIL LENGKAP:

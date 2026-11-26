@@ -8,6 +8,28 @@
     showDetailModal: false,
     showStatusModal: false,
     showDeleteModal: false,
+    showPromoteModal: false,
+    showExtendTestModal: false,
+    isSubmittingPromote: false,
+    isSubmittingExtendTest: false,
+    extendTestData: {
+        id: '',
+        applicant_name: '',
+        job_title: '',
+        current_deadline: '',
+        extend_mode: '24h',
+        custom_deadline: '',
+        extend_reason: ''
+    },
+    promoteData: {
+        id: '',
+        applicant_name: '',
+        job_title: '',
+        employee_type: 'permanent',
+        contract_start_date: '',
+        contract_end_date: '',
+        internal_note: ''
+    },
     deleteData: {
         id: '',
         candidate_name: '',
@@ -17,8 +39,17 @@
     isSubmittingDelete: false,
     detailData: {},
     activeDetailTab: 'pribadi',
+    defaultGlobalDeadlineDays: {{ \App\Models\JobApplication::defaultTestDeadlineDays() }},
+    reviewedTemplateForDays(days) {
+        const d = Math.max(1, Number(days || this.defaultGlobalDeadlineDays || 1));
+        return `Selamat! Anda lolos seleksi berkas administrasi. Mohon segera kerjakan ujian online dalam waktu ${d} hari kerja (${d} x 24 jam kerja, Senin–Jumat) melalui menu Riwayat Lamaran sebelum batas waktu yang tertera.`;
+    },
+    isReviewedTemplateNote(note) {
+        const text = (note || '').trim();
+        return text.startsWith('Selamat! Anda lolos seleksi berkas administrasi.');
+    },
     statusTemplates: {
-        'Reviewed': 'Selamat! Anda lolos seleksi berkas administrasi. Silakan lanjut kerjakan ujian online yang tersedia pada menu Riwayat Lamaran.',
+        'Reviewed': @js(\App\Models\JobApplication::reviewedNotesTemplate()),
         'Partial Approved': 'Lamaran Anda telah disetujui pada salah satu tahap verifikasi (Partial Approved) dan sedang dalam proses peninjauan akhir.',
         'Shortlisted': 'Selamat! Anda dinyatakan lolos tahap seleksi ujian online dan masuk ke dalam daftar kandidat terpilih (Shortlisted). Tim HR kami akan segera menginformasikan jadwal tahap wawancara.',
         'Interview': 'Anda diundang untuk mengikuti tahap wawancara. Silakan periksa jadwal dan informasi meeting yang tertera.',
@@ -87,14 +118,59 @@
         };
         this.showDeleteModal = true;
     },
+    openPromoteModal(data) {
+        this.isSubmittingPromote = false;
+        const jobType = (data.job_employment_type || '').toLowerCase();
+        let defaultType = 'permanent';
+        if (jobType.includes('magang') || jobType.includes('intern')) {
+            defaultType = 'internship';
+        } else if (jobType.includes('kontrak') || jobType.includes('contract') || jobType.includes('pkwt')) {
+            defaultType = 'contract';
+        } else if (jobType.includes('probation') || jobType.includes('percobaan')) {
+            defaultType = 'probation';
+        }
+        this.promoteData = {
+            id: data.id,
+            applicant_name: data.applicant_name || 'Pelamar',
+            job_title: data.job_title || 'Lowongan',
+            employee_type: defaultType,
+            contract_start_date: new Date().toISOString().slice(0, 10),
+            contract_end_date: '',
+            internal_note: '',
+            send_email: true
+        };
+        this.showPromoteModal = true;
+    },
+    openExtendTestModal(data) {
+        this.isSubmittingExtendTest = false;
+        this.extendTestData = {
+            id: data.id,
+            applicant_name: data.applicant_name || 'Pelamar',
+            job_title: data.job_title || 'Lowongan',
+            current_deadline: data.current_deadline || 'Belum diatur',
+            extend_mode: '24h',
+            custom_deadline: '',
+            extend_reason: ''
+        };
+        this.showExtendTestModal = true;
+    },
     openStatusModal(data) {
         const initialStatus = data.status || 'Submitted';
         let initialNotes = (data.notes || '').trim();
 
-        // Jika catatan kosong atau masih berupa template dari tahapan sebelumnya, sinkronkan dengan status saat ini
-        const isPreviousTemplate = Object.values(this.statusTemplates).some(t => t.trim() === initialNotes);
+        const effectiveDays = Number(data.job_test_deadline_days || this.defaultGlobalDeadlineDays || 1);
+        const reviewedNote = this.reviewedTemplateForDays(effectiveDays);
+
+        // Jika catatan kosong atau masih berupa template/catatan sistem dari tahapan sebelumnya, sinkronkan dengan status saat ini
+        const systemNotes = [
+            'Diajukan kembali setelah sebelumnya dibatalkan.',
+            ...Object.values(this.statusTemplates),
+        ];
+        const isPreviousTemplate = this.isReviewedTemplateNote(initialNotes) || systemNotes.some(t => t.trim() === initialNotes);
         if (!initialNotes || isPreviousTemplate) {
-            if (this.statusTemplates[initialStatus]) {
+            if (initialStatus === 'Reviewed') {
+                initialNotes = reviewedNote;
+            } else if (this.statusTemplates[initialStatus]) {
                 initialNotes = this.statusTemplates[initialStatus];
             }
         }
@@ -137,6 +213,7 @@
             job_accepted_count: Number(data.job_accepted_count !== undefined ? data.job_accepted_count : (data.job ? (data.job.accepted_count || 0) : 0)),
             job_remaining_quota: Number(data.job_remaining_quota !== undefined ? data.job_remaining_quota : (data.job ? (data.job.remaining_quota || 0) : 0)),
             job_is_quota_full: Boolean(data.job_is_quota_full !== undefined ? data.job_is_quota_full : (data.job ? (data.job.is_quota_full || false) : false)),
+            job_test_deadline_days: effectiveDays,
             status: initialStatus,
             initial_status: initialStatus,
             notes: initialNotes,
@@ -174,11 +251,13 @@
     },
     setDecision(dec, targetTemplateKey = null) {
         this.statusData.decision = dec;
-        if (targetTemplateKey && this.statusTemplates[targetTemplateKey]) {
+        if (targetTemplateKey && (targetTemplateKey === 'Reviewed' || this.statusTemplates[targetTemplateKey])) {
             const currentNotes = (this.statusData.notes || '').trim();
-            const isExistingTemplate = Object.values(this.statusTemplates).some(t => t.trim() === currentNotes);
+            const isExistingTemplate = this.isReviewedTemplateNote(currentNotes) || Object.values(this.statusTemplates).some(t => t.trim() === currentNotes);
             if (!currentNotes || isExistingTemplate) {
-                this.statusData.notes = this.statusTemplates[targetTemplateKey];
+                this.statusData.notes = targetTemplateKey === 'Reviewed'
+                    ? this.reviewedTemplateForDays(this.statusData.job_test_deadline_days)
+                    : this.statusTemplates[targetTemplateKey];
             }
         }
     },
@@ -208,7 +287,9 @@
                 target = this.statusData.status;
             }
         }
-        if (this.statusTemplates[target]) {
+        if (target === 'Reviewed') {
+            this.statusData.notes = this.reviewedTemplateForDays(this.statusData.job_test_deadline_days);
+        } else if (this.statusTemplates[target]) {
             this.statusData.notes = this.statusTemplates[target];
         }
     },
@@ -866,6 +947,54 @@
                         </div>
                     @endif
 
+                    @php
+                        $mobileHasTests = $app->job && $app->job->tests && $app->job->tests->isNotEmpty();
+                        $mobileAllDone = $app->hasCompletedAllTests();
+                        $mobileTestExpired = $app->isTestExpired();
+                        $mobileDeadlineWib = $app->test_deadline_at ? $app->test_deadline_at->copy()->timezone('Asia/Jakarta') : null;
+                    @endphp
+                    @if (strtolower(trim($app->status ?? '')) === 'reviewed' && $mobileHasTests && !$mobileAllDone && $mobileDeadlineWib)
+                        <div class="flex items-center justify-between gap-2 px-3 py-2 rounded-xl border text-[11px] {{ $mobileTestExpired ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/50 text-rose-700 dark:text-rose-300' : 'bg-blue-50/70 dark:bg-blue-950/30 border-blue-200/80 dark:border-blue-900/50 text-blue-700 dark:text-blue-300' }}">
+                            <span class="font-semibold">
+                                {{ $mobileTestExpired ? 'Tes Kadaluwarsa:' : 'Batas Tes:' }}
+                                {{ $mobileDeadlineWib->translatedFormat('d M Y, H:i') }} WIB
+                            </span>
+                            @if ($isAdmin)
+                                <button type="button" @click="openExtendTestModal({{ \Illuminate\Support\Js::from([
+                                    'id'               => $app->id,
+                                    'applicant_name'   => $app->applicantProfile->full_name ?? 'Pelamar',
+                                    'job_title'        => $app->job->title ?? 'Lowongan',
+                                    'current_deadline' => $mobileDeadlineWib->translatedFormat('l, d F Y • H:i') . ' WIB',
+                                ]) }})" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-current/30 font-bold text-[10.5px] shrink-0 cursor-pointer">
+                                    Perpanjang
+                                </button>
+                            @endif
+                        </div>
+                    @endif
+
+                    @if($isAdmin && strtolower(trim($app->status ?? '')) === 'accepted')
+                        @if(($app->applicantProfile->user->role_id ?? null) == 4)
+                            <div class="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Sudah menjadi karyawan</span>
+                            </div>
+                        @else
+                            <button type="button" @click="openPromoteModal({{ \Illuminate\Support\Js::from([
+                                'id'                  => $app->id,
+                                'applicant_name'      => $app->applicantProfile->full_name ?? 'Pelamar',
+                                'job_title'           => $app->job->title ?? 'Lowongan',
+                                'job_employment_type' => $app->job->employment_type ?? '',
+                            ]) }})" class="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-white bg-indigo-600 hover:bg-indigo-500 transition shadow-sm text-xs font-semibold cursor-pointer">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                <span>Angkat Jadi Karyawan</span>
+                            </button>
+                        @endif
+                    @endif
+
                     <!-- Touch-Friendly Action Buttons -->
                     <div class="flex items-center gap-2 pt-1">
                         @if($cvUrl)
@@ -894,6 +1023,7 @@
                             'job_accepted_count' => (int) ($app->job->accepted_count ?? 0),
                             'job_remaining_quota'=> (int) ($app->job->remaining_quota ?? 0),
                             'job_is_quota_full'  => (bool) ($app->job->is_quota_full ?? false),
+                            'job_test_deadline_days' => $app->effectiveTestDeadlineDays(),
                             'status'                       => $app->status ?? 'Submitted',
                             'notes'                        => $app->notes ?? '',
                             'recruiter_approval'           => $app->recruiter_approval ?? 'pending',
@@ -940,26 +1070,17 @@
 
         <!-- Desktop Table View (Visible on md: screens and above) -->
         <div class="hidden md:block overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs" style="min-width:900px">
-                <colgroup>
-                    <col style="width:3rem">   {{-- No --}}
-                    @if(in_array('applicant', $selectedColumns))<col style="width:21%">@endif
-                    @if(in_array('contact', $selectedColumns))<col style="width:12%">@endif
-                    @if(in_array('job', $selectedColumns))<col style="width:17%">@endif
-                    @if(in_array('applied_at', $selectedColumns))<col style="width:13%">@endif
-                    @if(in_array('status', $selectedColumns))<col style="width:22%">@endif
-                    @if(in_array('actions', $selectedColumns))<col style="width:12rem">@endif
-                </colgroup>
+            <table class="w-full text-center border-collapse text-xs" style="min-width:890px">
                 <thead>
-                    <tr class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
+                    <tr class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 text-[10.5px] uppercase tracking-wide font-semibold">
                         {{-- Kolom No --}}
-                        <th class="px-3 py-3 text-center">No</th>
+                        <th class="px-2 py-3 text-center w-9">No</th>
                         @if(in_array('applicant', $selectedColumns))
-                            <th class="px-3 py-3 cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition" wire:click="sortBy('applicant')">
-                                <div class="flex items-center gap-1.5">
+                            <th class="px-2.5 py-3 text-center cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition whitespace-nowrap" wire:click="sortBy('applicant')">
+                                <div class="flex items-center justify-center gap-1">
                                     <span>Pelamar</span>
                                     @if($sortField === 'applicant')
-                                        <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg class="w-3 h-3 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             @if($sortDirection === 'asc')
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
                                             @else
@@ -975,15 +1096,15 @@
                             </th>
                         @endif
                         @if(in_array('contact', $selectedColumns))
-                            <th class="px-3 py-3">Kontak & NIK</th>
+                            <th class="px-2.5 py-3 text-center whitespace-nowrap">Kontak & NIK</th>
                         @endif
                         @if(in_array('job', $selectedColumns))
-                            <th class="px-3 py-3">
-                                <div class="flex items-center gap-2">
-                                    <button type="button" wire:click="sortBy('position')" class="flex items-center gap-1 cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                            <th class="px-2.5 py-3 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <button type="button" wire:click="sortBy('position')" class="flex items-center gap-0.5 uppercase cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition">
                                         <span>Posisi</span>
                                         @if($sortField === 'position')
-                                            <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg class="w-3 h-3 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 @if($sortDirection === 'asc')
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
                                                 @else
@@ -997,10 +1118,10 @@
                                         @endif
                                     </button>
                                     <span class="text-gray-300 dark:text-slate-700">|</span>
-                                    <button type="button" wire:click="sortBy('company')" class="flex items-center gap-1 cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                                    <button type="button" wire:click="sortBy('company')" class="flex items-center gap-0.5 uppercase cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition">
                                         <span>Perusahaan</span>
                                         @if($sortField === 'company')
-                                            <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg class="w-3 h-3 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 @if($sortDirection === 'asc')
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
                                                 @else
@@ -1017,11 +1138,11 @@
                             </th>
                         @endif
                         @if(in_array('applied_at', $selectedColumns))
-                            <th class="px-3 py-3 cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition" wire:click="sortBy('applied_at')">
-                                <div class="flex items-center gap-1.5">
+                            <th class="px-2.5 py-3 text-center cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition whitespace-nowrap" wire:click="sortBy('applied_at')">
+                                <div class="flex items-center justify-center gap-1">
                                     <span>Tanggal Melamar</span>
                                     @if($sortField === 'applied_at')
-                                        <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg class="w-3 h-3 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             @if($sortDirection === 'asc')
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
                                             @else
@@ -1037,11 +1158,11 @@
                             </th>
                         @endif
                         @if(in_array('status', $selectedColumns))
-                            <th class="px-3 py-3 cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition" wire:click="sortBy('status')">
-                                <div class="flex items-center gap-1.5">
+                            <th class="px-2.5 py-3 text-center cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition whitespace-nowrap" wire:click="sortBy('status')">
+                                <div class="flex items-center justify-center gap-1">
                                     <span>Status & Catatan</span>
                                     @if($sortField === 'status')
-                                        <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg class="w-3 h-3 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             @if($sortDirection === 'asc')
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
                                             @else
@@ -1057,7 +1178,7 @@
                             </th>
                         @endif
                         @if(in_array('actions', $selectedColumns))
-                            <th class="px-3 py-3 text-center whitespace-nowrap">Aksi</th>
+                            <th class="px-2.5 py-3 text-center whitespace-nowrap">Aksi</th>
                         @endif
                     </tr>
                 </thead>
@@ -1071,43 +1192,43 @@
                         @endphp
                         <tr class="transition-colors {{ $isWithdrawn ? 'bg-rose-50/60 dark:bg-rose-950/20 border-l-4 border-l-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30' : 'hover:bg-gray-50/80 dark:hover:bg-slate-800/40' }}">
                             {{-- Nomor urut --}}
-                            <td class="px-3 py-3 text-center text-xs font-semibold text-gray-400 dark:text-slate-500 shrink-0">
+                            <td class="px-2 py-3 text-center align-middle text-xs font-semibold text-gray-400 dark:text-slate-500 shrink-0">
                                 {{ ($applications->currentPage() - 1) * $applications->perPage() + $loop->iteration }}
                             </td>
                             @if(in_array('applicant', $selectedColumns))
-                                <td class="px-3 py-3">
-                                    <div class="flex items-center gap-3">
+                                <td class="px-2.5 py-3 text-left align-middle">
+                                    <div class="flex items-center gap-2.5">
                                         @php
                                             $applicantPhoto = $app->applicantProfile?->photo_url;
                                             $applicantName = $app->applicantProfile?->full_name ?? 'Pelamar';
                                             $applicantInitials = strtoupper(substr($applicantName, 0, 2));
                                         @endphp
-                                        <div class="relative w-10 h-10 shrink-0">
+                                        <div class="relative w-9 h-9 shrink-0">
                                             @if ($applicantPhoto)
                                                 <img src="{{ $applicantPhoto }}" 
                                                      alt="{{ $applicantName }}" 
                                                      referrerpolicy="no-referrer" 
-                                                     class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm"
+                                                     class="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm"
                                                      onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
-                                                <div class="hidden w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs items-center justify-center shadow-2xs">
+                                                <div class="hidden w-9 h-9 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs items-center justify-center shadow-2xs">
                                                     {{ $applicantInitials }}
                                                 </div>
                                             @else
-                                                <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shadow-2xs">
+                                                <div class="w-9 h-9 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shadow-2xs">
                                                     {{ $applicantInitials }}
                                                 </div>
                                             @endif
                                         </div>
-                                        <div>
-                                            <div class="flex items-center gap-1.5 flex-wrap">
-                                                <span class="font-bold text-gray-900 dark:text-white text-sm">{{ $app->applicantProfile->full_name ?? 'Pelamar' }}</span>
+                                        <div class="min-w-0">
+                                            <div class="flex items-center gap-1 flex-wrap">
+                                                <span class="font-bold text-gray-900 dark:text-white text-[13px] leading-tight">{{ $app->applicantProfile->full_name ?? 'Pelamar' }}</span>
                                                 @if (!$isWithdrawn && ($app->status === 'Submitted' || \Carbon\Carbon::parse($app->applied_at)->greaterThanOrEqualTo(now()->subHours(48))))
-                                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300/60" title="Lamaran baru diajukan">
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9.5px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300/60" title="Lamaran baru diajukan">
                                                         Baru
                                                     </span>
                                                 @endif
                                             </div>
-                                            <span class="text-[11px] text-gray-500 dark:text-slate-400 block mt-0.5">{{ $app->applicantProfile->user->email ?? '-' }}</span>
+                                            <span class="text-[11px] text-gray-500 dark:text-slate-400 block mt-0.5 truncate max-w-[145px]" title="{{ $app->applicantProfile->user->email ?? '-' }}">{{ $app->applicantProfile->user->email ?? '-' }}</span>
                                             @if($app->applicantProfile && $app->applicantProfile->phone)
                                                 <span class="text-[10.5px] text-gray-400 dark:text-slate-500 block">{{ $app->applicantProfile->phone }}</span>
                                             @endif
@@ -1143,7 +1264,7 @@
                             @endif
 
                             @if(in_array('contact', $selectedColumns))
-                                <td class="px-3 py-3">
+                                <td class="px-2.5 py-3 text-center align-middle">
                                     <div>
                                         <span class="font-medium text-gray-800 dark:text-slate-200 block">{{ $app->applicantProfile->phone ?? '-' }}</span>
                                         <span class="text-[11px] text-gray-400 block">NIK: {{ $app->applicantProfile->nik ?? '-' }}</span>
@@ -1152,17 +1273,17 @@
                             @endif
 
                             @if(in_array('job', $selectedColumns))
-                                <td class="px-3 py-3">
-                                    <div>
-                                        <span class="font-semibold text-gray-800 dark:text-slate-200 block text-xs">{{ $app->job->title ?? 'Lowongan' }}</span>
-                                        <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                                <td class="px-2.5 py-3 text-center align-middle">
+                                    <div class="flex flex-col items-center">
+                                        <span class="font-semibold text-gray-800 dark:text-slate-200 block text-xs leading-snug">{{ $app->job->title ?? 'Lowongan' }}</span>
+                                        <div class="flex flex-col items-center gap-1 mt-1">
                                             @if ($app->job && $app->job->company)
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/60">
                                                     {{ $app->job->company->name }}
                                                 </span>
                                             @endif
                                             @if ($app->job && $app->job->department)
-                                                <span class="text-[11px] text-gray-400 dark:text-slate-500">
+                                                <span class="text-[10px] text-gray-400 dark:text-slate-500">
                                                     {{ $app->job->department->name }}
                                                 </span>
                                             @endif
@@ -1172,12 +1293,12 @@
                             @endif
 
                             @if(in_array('applied_at', $selectedColumns))
-                                <td class="px-3 py-3 whitespace-nowrap">
+                                <td class="px-2.5 py-3 text-center align-middle whitespace-nowrap">
                                     <div>
-                                        <span class="text-gray-900 dark:text-white font-medium text-xs block">
+                                        <span class="text-gray-900 dark:text-white font-medium text-[11.5px] block">
                                             {{ \Carbon\Carbon::parse($app->applied_at)->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
                                         </span>
-                                        <span class="text-[10.5px] text-gray-400 dark:text-slate-500 block">
+                                        <span class="text-[10.5px] text-gray-400 dark:text-slate-500 block mt-0.5">
                                             {{ \Carbon\Carbon::parse($app->applied_at)->timezone('Asia/Jakarta')->diffForHumans() }}
                                         </span>
                                     </div>
@@ -1185,8 +1306,8 @@
                             @endif
 
                             @if(in_array('status', $selectedColumns))
-                                <td class="px-3 py-3">
-                                    <div class="space-y-1">
+                                <td class="px-2.5 py-3 text-center align-middle">
+                                    <div class="flex flex-col items-center space-y-1">
                                         @php
                                             $appStatus = $app->status;
                                             $isOverride = str_contains($app->notes ?? '', 'Admin Override')
@@ -1200,62 +1321,62 @@
 
                                         @if ($appStatus === 'Accepted')
                                             @if ($isOverride)
-                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 shadow-2xs" title="Diterima melalui Admin Override / Emergency Approval">
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 shadow-2xs whitespace-nowrap" title="Diterima melalui Admin Override / Emergency Approval">
                                                     <span>Diterima (Override)</span>
                                                 </span>
                                             @else
-                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800" title="Double Approved oleh Recruiter & HR">
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 whitespace-nowrap" title="Double Approved oleh Recruiter & HR">
                                                     <svg class="w-3.5 h-3.5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                                     <span>Diterima (Double Approved)</span>
                                                 </span>
                                             @endif
                                         @elseif ($appStatus === 'Rejected')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 whitespace-nowrap">
                                                 Ditolak
                                             </span>
                                         @elseif ($appStatus === 'Interview')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 whitespace-nowrap">
                                                 Wawancara
                                             </span>
                                         @elseif ($appStatus === 'Shortlisted')
                                             @if ($isOverride)
-                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 shadow-2xs" title="Lolos Ujian melalui Admin Override (Hak Veto)">
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 shadow-2xs whitespace-nowrap" title="Lolos Ujian melalui Admin Override (Hak Veto)">
                                                     <span>Lolos Ujian (Override)</span>
                                                 </span>
                                             @else
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800 whitespace-nowrap">
                                                     Lolos Ujian
                                                 </span>
                                             @endif
                                         @elseif ($appStatus === 'Partial Approved')
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 whitespace-nowrap">
                                                 Partial Approved
                                             </span>
                                         @elseif ($appStatus === 'Reviewed')
                                             @if ($isOverride)
-                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 shadow-2xs" title="Lolos Berkas melalui Admin Override (Hak Veto)">
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 shadow-2xs whitespace-nowrap" title="Lolos Berkas melalui Admin Override (Hak Veto)">
                                                     <span>Lolos Berkas (Override)</span>
                                                 </span>
                                             @else
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 whitespace-nowrap">
                                                     Lolos Berkas
                                                 </span>
                                             @endif
                                         @elseif ($isWithdrawn)
-                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800" title="Pelamar membatalkan lamaran ini">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800 whitespace-nowrap" title="Pelamar membatalkan lamaran ini">
                                                 <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                                                 <span>Dibatalkan</span>
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 whitespace-nowrap">
                                                 Diajukan
                                             </span>
                                         @endif
 
                                         @if($appStatus === 'Interview' || $appStatus === 'Accepted')
                                             <!-- Tahap 3 (Pasca Wawancara) Double Approval Indicator -->
-                                            <div class="flex items-center gap-1.5 mt-1 text-[10.5px]">
-                                                <span class="text-[10px] text-gray-400 font-semibold">T3 Wawancara:</span>
+                                            <div class="flex items-center justify-center gap-1.5 mt-1 text-[10.5px] whitespace-nowrap">
+                                                <span class="text-[10px] text-gray-400 font-semibold shrink-0">T3 Wawancara:</span>
                                                 <span class="inline-flex items-center gap-0.5 font-medium {{ $app->interview_recruiter_approval === 'approved' ? 'text-emerald-600 dark:text-emerald-400' : ($app->interview_recruiter_approval === 'rejected' ? 'text-rose-500' : 'text-amber-600 dark:text-amber-400') }}" title="Kelayakan Recruiter: {{ ucfirst($app->interview_recruiter_approval) }}{{ $app->interview_recruiter_notes ? ' - ' . $app->interview_recruiter_notes : '' }}">
                                                     <span class="text-[9.5px]">Recruiter</span>
                                                     @if($app->interview_recruiter_approval === 'approved')
@@ -1280,8 +1401,8 @@
                                             </div>
                                         @elseif($appStatus === 'Reviewed' || $appStatus === 'Shortlisted' || $app->test_recruiter_approval !== 'pending' || $app->test_admin_approval !== 'pending')
                                             <!-- Tahap 2 (Ujian Online & Psikotes) Double Approval Indicator -->
-                                            <div class="flex items-center gap-1.5 mt-1 text-[10.5px]">
-                                                <span class="text-[10px] text-gray-400 font-semibold">T2 Ujian:</span>
+                                            <div class="flex items-center justify-center gap-1.5 mt-1 text-[10.5px] whitespace-nowrap">
+                                                <span class="text-[10px] text-gray-400 font-semibold shrink-0">T2 Ujian:</span>
                                                 <span class="inline-flex items-center gap-0.5 font-medium {{ $app->test_recruiter_approval === 'approved' ? 'text-emerald-600 dark:text-emerald-400' : ($app->test_recruiter_approval === 'rejected' ? 'text-rose-500' : 'text-amber-600 dark:text-amber-400') }}" title="Recruiter Teknis: {{ ucfirst($app->test_recruiter_approval) }}{{ $app->test_recruiter_notes ? ' - ' . $app->test_recruiter_notes : '' }}">
                                                     <span class="text-[9.5px]">Teknis</span>
                                                     @if($app->test_recruiter_approval === 'approved')
@@ -1304,10 +1425,22 @@
                                                     @endif
                                                 </span>
                                             </div>
+                                            @php
+                                                $desktopHasTests = $app->job && $app->job->tests && $app->job->tests->isNotEmpty();
+                                                $desktopAllDone = $app->hasCompletedAllTests();
+                                                $desktopTestExpired = $app->isTestExpired();
+                                                $desktopDeadlineWib = $app->test_deadline_at ? $app->test_deadline_at->copy()->timezone('Asia/Jakarta') : null;
+                                            @endphp
+                                            @if ($appStatus === 'Reviewed' && $desktopHasTests && !$desktopAllDone && $desktopDeadlineWib)
+                                                <div class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border whitespace-nowrap {{ $desktopTestExpired ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-300' : 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300' }}"
+                                                    title="Batas akhir pengerjaan tes online">
+                                                    <span>{{ $desktopTestExpired ? 'Tes Kadaluwarsa:' : 'Batas Tes:' }} {{ $desktopDeadlineWib->translatedFormat('d M, H:i') }} WIB</span>
+                                                </div>
+                                            @endif
                                         @else
                                             <!-- Tahap 1 (Berkas Administrasi) Double Approval Indicator -->
-                                            <div class="flex items-center gap-1.5 mt-1 text-[10.5px]">
-                                                <span class="text-[10px] text-gray-400 font-semibold">T1 Berkas:</span>
+                                            <div class="flex items-center justify-center gap-1.5 mt-1 text-[10.5px] whitespace-nowrap">
+                                                <span class="text-[10px] text-gray-400 font-semibold shrink-0">T1 Berkas:</span>
                                                 <span class="inline-flex items-center gap-0.5 font-medium {{ $app->recruiter_approval === 'approved' ? 'text-emerald-600 dark:text-emerald-400' : ($app->recruiter_approval === 'rejected' ? 'text-rose-500' : 'text-gray-400 dark:text-slate-500') }}" title="Verifikasi Recruiter: {{ ucfirst($app->recruiter_approval) }}{{ $app->recruiter_notes ? ' - ' . $app->recruiter_notes : '' }}">
                                                     <span class="text-[9.5px]">Recruiter</span>
                                                     @if($app->recruiter_approval === 'approved')
@@ -1333,17 +1466,17 @@
                                         @endif
 
                                         @if ($isWithdrawn)
-                                            <div class="mt-1 px-2.5 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 max-w-xs">
-                                                <p class="text-[10.5px] font-bold text-rose-800 dark:text-rose-300 flex items-center gap-1">
+                                            <div class="mt-1 px-2 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 max-w-[180px] mx-auto text-center">
+                                                <p class="text-[10px] font-bold text-rose-800 dark:text-rose-300 flex items-center justify-center gap-1 whitespace-nowrap">
                                                     <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
                                                     <span>Dibatalkan oleh Pelamar</span>
                                                 </p>
-                                                <p class="text-[10.5px] text-rose-700 dark:text-rose-400 italic mt-0.5 break-words" title="{{ $app->notes }}">
+                                                <p class="text-[10px] text-rose-700 dark:text-rose-400 italic mt-0.5 truncate" title="{{ $withdrawReason !== '' ? $withdrawReason : ($app->notes ?: 'Tidak ada alasan tertulis.') }}">
                                                     Alasan: {{ $withdrawReason !== '' ? $withdrawReason : ($app->notes ?: 'Tidak ada alasan tertulis.') }}
                                                 </p>
                                             </div>
                                         @elseif ($app->notes)
-                                            <p class="text-[11px] text-gray-400 dark:text-slate-500 italic truncate max-w-xs" title="{{ $app->notes }}">
+                                            <p class="text-[10.5px] text-gray-400 dark:text-slate-500 italic truncate max-w-[180px] mx-auto" title="{{ $app->notes }}">
                                                 "{{ $app->notes }}"
                                             </p>
                                         @endif
@@ -1352,8 +1485,8 @@
                             @endif
 
                             @if(in_array('actions', $selectedColumns))
-                                <td class="px-3 py-3">
-                                    <div class="flex items-center justify-end gap-1.5 flex-nowrap">
+                                <td class="px-2.5 py-3 text-center align-middle">
+                                    <div class="flex items-center justify-center gap-1 flex-nowrap">
                                         @php
                                             $cvUrl = $app->applicantProfile?->cv_preview_url;
                                         @endphp
@@ -1361,8 +1494,8 @@
                                         {{-- CV badge --}}
                                         @if($cvUrl)
                                             <a href="{{ $cvUrl }}" target="_blank"
-                                               class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 border border-rose-200/80 dark:border-rose-900/60 transition-colors cursor-pointer whitespace-nowrap"
-                                               title="Buka CV">
+                                               class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 border border-rose-200/80 dark:border-rose-900/60 transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
+                                               title="Buka Dokumen CV Pelamar (PDF)">
                                                 <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                                 </svg>
@@ -1372,8 +1505,8 @@
 
                                         {{-- Detail (eye) icon --}}
                                         <button @click="openDetailModal({{ \Illuminate\Support\Js::from($app) }})"
-                                                class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 transition-colors cursor-pointer"
-                                                title="Lihat Detail">
+                                                class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 bg-white hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 transition-colors cursor-pointer shadow-2xs"
+                                                title="Lihat Profil Lengkap">
                                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -1390,6 +1523,7 @@
                                             'job_accepted_count'           => (int) ($app->job->accepted_count ?? 0),
                                             'job_remaining_quota'          => (int) ($app->job->remaining_quota ?? 0),
                                             'job_is_quota_full'            => (bool) ($app->job->is_quota_full ?? false),
+                                            'job_test_deadline_days'       => $app->effectiveTestDeadlineDays(),
                                             'status'                       => $app->status ?? 'Submitted',
                                             'notes'                        => $app->notes ?? '',
                                             'recruiter_approval'           => $app->recruiter_approval ?? 'pending',
@@ -1409,13 +1543,54 @@
                                             'interview_admin_notes'        => $app->interview_admin_notes ?? '',
                                             'interview_admin'              => $app->interviewAdmin ? ['name' => $app->interviewAdmin->name] : null,
                                         ]) }})"
-                                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-white bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 border border-emerald-500 dark:border-emerald-600 transition-colors cursor-pointer whitespace-nowrap shadow-sm"
-                                                title="Proses Lamaran">
+                                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-all cursor-pointer whitespace-nowrap shadow-xs"
+                                                title="Update Status Lamaran">
                                             <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                             <span>Proses</span>
                                         </button>
+
+                                        {{-- Extend Test Deadline (Admin only, Reviewed with unfinished tests) --}}
+                                        @if ($isAdmin && strtolower(trim($app->status ?? '')) === 'reviewed' && ($app->job && $app->job->tests && $app->job->tests->isNotEmpty()) && !$app->hasCompletedAllTests())
+                                            <button type="button" @click="openExtendTestModal({{ \Illuminate\Support\Js::from([
+                                                'id'               => $app->id,
+                                                'applicant_name'   => $app->applicantProfile->full_name ?? 'Pelamar',
+                                                'job_title'        => $app->job->title ?? 'Lowongan',
+                                                'current_deadline' => $app->test_deadline_at ? $app->test_deadline_at->copy()->timezone('Asia/Jakarta')->translatedFormat('l, d F Y • H:i') . ' WIB' : 'Belum diatur',
+                                            ]) }})"
+                                                    class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-amber-600 dark:text-amber-400 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/50 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-900/60 transition-colors cursor-pointer shadow-2xs"
+                                                    title="Perpanjang Batas Waktu Tes Online">
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </button>
+                                        @endif
+
+                                        {{-- Promote to Employee --}}
+                                        @if($isAdmin && strtolower(trim($app->status ?? '')) === 'accepted')
+                                            @if(($app->applicantProfile->user->role_id ?? null) == 4)
+                                                <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60"
+                                                      title="Sudah menjadi karyawan">
+                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                </span>
+                                            @else
+                                                <button @click="openPromoteModal({{ \Illuminate\Support\Js::from([
+                                                    'id'                  => $app->id,
+                                                    'applicant_name'      => $app->applicantProfile->full_name ?? 'Pelamar',
+                                                    'job_title'           => $app->job->title ?? 'Lowongan',
+                                                    'job_employment_type' => $app->job->employment_type ?? '',
+                                                ]) }})"
+                                                        class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-indigo-600 dark:text-indigo-400 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-900/60 transition-colors cursor-pointer shadow-2xs"
+                                                        title="Angkat Jadi Karyawan">
+                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                    </svg>
+                                                </button>
+                                            @endif
+                                        @endif
 
                                         {{-- Delete icon --}}
                                         <button @click="openDeleteModal({{ \Illuminate\Support\Js::from([
@@ -1423,8 +1598,8 @@
                                             'applicant_name' => $app->applicantProfile->full_name ?? 'Pelamar',
                                             'job_title'      => $app->job->title ?? 'Lowongan',
                                         ]) }})"
-                                                class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-gray-200 dark:border-slate-700 hover:border-rose-200 dark:hover:border-rose-900/50 transition-colors cursor-pointer"
-                                                title="Hapus Lamaran">
+                                                class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 bg-white hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950/40 border border-gray-200 dark:border-slate-700 hover:border-rose-200 dark:hover:border-rose-900/50 transition-colors cursor-pointer shadow-2xs"
+                                                title="Hapus Data Lamaran">
                                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
@@ -2191,6 +2366,231 @@
             </div>
         </div>
     </div>
+
+    @if($isAdmin)
+    <!-- Promote to Employee Modal -->
+    <div x-show="showPromoteModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
+            <div x-show="showPromoteModal"
+                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                @click="showPromoteModal = false" class="fixed inset-0 transition-opacity bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm"></div>
+
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div x-show="showPromoteModal"
+                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                @keydown.escape.window="showPromoteModal = false"
+                class="inline-block align-bottom sm:align-middle bg-white dark:bg-slate-900 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-lg w-full border border-gray-200 dark:border-slate-800">
+
+                <form :action="'{{ url('/admin/applicants') }}/' + promoteData.id + '/promote'" method="POST" @submit="isSubmittingPromote = true" class="p-6 space-y-4">
+                    @csrf
+
+                    <div class="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-slate-800">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Angkat Jadi Karyawan</h3>
+                            <p class="text-xs text-gray-500 dark:text-slate-400">
+                                <span x-text="promoteData.applicant_name"></span> &middot; <span x-text="promoteData.job_title"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-2">
+                            Tipe Karyawan <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            @foreach ([
+                                'permanent'  => ['label' => 'Karyawan Tetap', 'desc' => 'Tanpa batas kontrak', 'accent' => 'emerald'],
+                                'contract'   => ['label' => 'Karyawan Kontrak', 'desc' => 'PKWT / berdurasi', 'accent' => 'blue'],
+                                'internship' => ['label' => 'Magang', 'desc' => 'Program magang / PKL', 'accent' => 'amber'],
+                                'probation'  => ['label' => 'Masa Percobaan', 'desc' => 'Tahap sebelum tetap', 'accent' => 'orange'],
+                            ] as $value => $type)
+                                <label class="relative p-3 rounded-xl border cursor-pointer transition-all"
+                                    :class="promoteData.employee_type === '{{ $value }}'
+                                        ? 'border-indigo-500 bg-indigo-50/70 dark:bg-indigo-950/40 ring-1 ring-indigo-500'
+                                        : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-indigo-300 dark:hover:border-slate-600'">
+                                    <input type="radio" name="employee_type" value="{{ $value }}" x-model="promoteData.employee_type" class="sr-only">
+                                    <span class="block text-xs font-bold text-gray-900 dark:text-white">{{ $type['label'] }}</span>
+                                    <span class="block text-[10.5px] text-gray-500 dark:text-slate-400 mt-0.5">{{ $type['desc'] }}</span>
+                                    <span class="absolute top-2.5 right-2.5 w-3.5 h-3.5 rounded-full border flex items-center justify-center"
+                                        :class="promoteData.employee_type === '{{ $value }}' ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300 dark:border-slate-600'">
+                                        <span x-show="promoteData.employee_type === '{{ $value }}'" class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label for="promote_start_date" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                Tanggal Mulai Bekerja <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="date" name="contract_start_date" id="promote_start_date" x-model="promoteData.contract_start_date" required
+                                @change="if (promoteData.contract_end_date && promoteData.contract_end_date <= promoteData.contract_start_date) promoteData.contract_end_date = ''"
+                                class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                        </div>
+                        <div x-show="promoteData.employee_type !== 'permanent'" x-transition x-cloak>
+                            <label for="promote_end_date" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                Bekerja Sampai
+                                <span x-show="promoteData.employee_type === 'contract' || promoteData.employee_type === 'internship'" class="text-rose-500">*</span>
+                                <span x-show="promoteData.employee_type === 'probation'" class="text-gray-400 dark:text-slate-500">(opsional)</span>
+                            </label>
+                            <input type="date" name="contract_end_date" id="promote_end_date" x-model="promoteData.contract_end_date"
+                                :required="promoteData.employee_type === 'contract' || promoteData.employee_type === 'internship'"
+                                :min="promoteData.contract_start_date"
+                                class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                        </div>
+                    </div>
+
+                    <p x-show="promoteData.employee_type === 'contract'" x-cloak class="text-[11px] text-blue-600 dark:text-blue-400 flex items-start gap-1.5">
+                        <span>&#8505;</span><span>PKWT wajib mencantumkan tanggal berakhir kontrak.</span>
+                    </p>
+                    <p x-show="promoteData.employee_type === 'internship'" x-cloak class="text-[11px] text-amber-600 dark:text-amber-400 flex items-start gap-1.5">
+                        <span>&#8505;</span><span>Program magang wajib ada batas waktu.</span>
+                    </p>
+                    <p x-show="promoteData.employee_type === 'probation'" x-cloak class="text-[11px] text-orange-600 dark:text-orange-400 flex items-start gap-1.5">
+                        <span>&#8505;</span><span>Masa percobaan umumnya 3 bulan. Kosongkan jika belum ditentukan.</span>
+                    </p>
+
+                    <div>
+                        <label for="promote_internal_note" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Catatan Internal</label>
+                        <input type="text" name="internal_note" id="promote_internal_note" x-model="promoteData.internal_note" maxlength="1000" placeholder="Misal: Mulai onboarding 1 Desember..."
+                            class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                    </div>
+
+                    <label class="flex items-start gap-2.5 p-2.5 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-900/50 cursor-pointer select-none">
+                        <input type="hidden" name="send_email" value="0">
+                        <input type="checkbox" name="send_email" value="1" x-model="promoteData.send_email"
+                            class="mt-0.5 rounded border-gray-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                        <span class="text-[11px] text-gray-700 dark:text-slate-300 leading-relaxed">
+                            <strong class="block text-gray-900 dark:text-white">Kirim email pemberitahuan pengangkatan ke pelamar</strong>
+                            Menginformasikan status kepegawaian, tanggal mulai bekerja, dan tautan masuk ke Portal Karyawan.
+                        </span>
+                    </label>
+
+                    <p class="text-[11px] text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-gray-200/60 dark:border-slate-700/60 leading-relaxed">
+                        Data profil karyawan (NIK, nama, gender, kontak, unit &amp; posisi) otomatis diisi dari profil pelamar dan lowongan. Role akun pelamar diubah menjadi <strong>Employee</strong> dan lamaran aktif lainnya otomatis ditutup.
+                    </p>
+
+                    <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100 dark:border-slate-800">
+                        <button type="button" @click="showPromoteModal = false" class="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer">
+                            Batal
+                        </button>
+                        <button type="submit" :disabled="isSubmittingPromote" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 active:scale-95 rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <svg x-show="isSubmittingPromote" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24" style="display: none;">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span x-text="isSubmittingPromote ? 'Memproses...' : 'Ya, Angkat Jadi Karyawan'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @if($isAdmin)
+    <!-- Extend Online Test Deadline Modal -->
+    <div x-show="showExtendTestModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
+            <div x-show="showExtendTestModal"
+                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                @click="showExtendTestModal = false" class="fixed inset-0 transition-opacity bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm"></div>
+
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div x-show="showExtendTestModal"
+                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                @keydown.escape.window="showExtendTestModal = false"
+                class="inline-block align-bottom sm:align-middle bg-white dark:bg-slate-900 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-md w-full border border-gray-200 dark:border-slate-800">
+
+                <form :action="'{{ url('/admin/applicants') }}/' + extendTestData.id + '/extend-test-deadline'" method="POST" @submit="isSubmittingExtendTest = true" class="p-6 space-y-4">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-slate-800">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Perpanjang Batas Tes Online</h3>
+                            <p class="text-xs text-gray-500 dark:text-slate-400">
+                                <span x-text="extendTestData.applicant_name"></span> &middot; <span x-text="extendTestData.job_title"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-slate-800/60 border border-gray-200/70 dark:border-slate-700/60 text-xs">
+                        <span class="text-[10.5px] uppercase font-bold text-gray-400 block">Batas Waktu Saat Ini</span>
+                        <span class="font-bold text-gray-800 dark:text-slate-200 mt-0.5 block" x-text="extendTestData.current_deadline"></span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-2">Tambahan Waktu / Mode Perpanjangan <span class="text-rose-500">*</span></label>
+                        <div class="grid grid-cols-2 gap-2">
+                            @foreach ([
+                                '24h'    => '+1 Hari Kerja (24 Jam)',
+                                '48h'    => '+2 Hari Kerja (48 Jam)',
+                                '72h'    => '+3 Hari Kerja (72 Jam)',
+                                'custom' => 'Pilih Tanggal Manual',
+                            ] as $modeVal => $modeLabel)
+                                <label class="flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer text-xs font-semibold transition"
+                                    :class="extendTestData.extend_mode === '{{ $modeVal }}'
+                                        ? 'border-amber-500 bg-amber-50/70 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300'
+                                        : 'border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300'">
+                                    <input type="radio" name="extend_mode" value="{{ $modeVal }}" x-model="extendTestData.extend_mode" class="text-amber-600 focus:ring-amber-500">
+                                    <span>{{ $modeLabel }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div x-show="extendTestData.extend_mode === 'custom'" x-cloak>
+                        <label for="extend_custom_deadline" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                            Batas Tanggal &amp; Jam Baru (WIB) <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="datetime-local" name="custom_deadline" id="extend_custom_deadline" x-model="extendTestData.custom_deadline"
+                            :required="extendTestData.extend_mode === 'custom'"
+                            class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label for="extend_reason" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Alasan Perpanjangan (Opsional)</label>
+                        <input type="text" name="extend_reason" id="extend_reason" x-model="extendTestData.extend_reason" maxlength="500"
+                            placeholder="Misal: Pelamar terkendala jaringan / baru membuka email..."
+                            class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100 dark:border-slate-800">
+                        <button type="button" @click="showExtendTestModal = false" class="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer">
+                            Batal
+                        </button>
+                        <button type="submit" :disabled="isSubmittingExtendTest" class="px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-500 active:scale-95 rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <span x-text="isSubmittingExtendTest ? 'Menyimpan...' : 'Simpan Perpanjangan'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Delete Confirmation Modal -->
     <div x-show="showDeleteModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title-delete" role="dialog" aria-modal="true">

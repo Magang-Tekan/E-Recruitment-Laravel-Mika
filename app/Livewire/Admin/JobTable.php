@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Job;
+use App\Models\JobApplication;
 use App\Models\Company;
 use App\Models\Department;
 use App\Models\Position;
@@ -134,6 +135,7 @@ class JobTable extends Component
             'filterDepartments' => $filterDepartments,
             'positions' => $positions,
             'reviewers' => $reviewers,
+            'globalTestDeadlineDays' => JobApplication::defaultTestDeadlineDays(),
         ]);
     }
 }

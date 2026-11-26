@@ -20,6 +20,8 @@ class EmployeeTable extends Component
     public $companyId = '';
     public $departmentId = '';
     public $employeeType = '';
+    public $employmentStatus = '';
+    public $expiringSoon = false;
     public $perPage = 10;
 
     // Modal Edit State
@@ -28,6 +30,8 @@ class EmployeeTable extends Component
     public $editFullName = '';
     public $editNik = '';
     public $editEmployeeType = 'permanent';
+    public $editContractStartDate = '';
+    public $editContractEndDate = '';
     public $editCompanyId = '';
     public $editDepartmentId = '';
     public $editPositionId = '';
@@ -42,14 +46,32 @@ class EmployeeTable extends Component
     public $showPromoteModal = false;
     public $promoteId = null;
     public $promoteFullName = '';
+    public $promoteOriginLabel = 'Magang';
     public $promoteCurrentPosition = '';
     public $promoteCurrentCompany = '';
     public $promoteCompanyId = '';
     public $promotePositionId = '';
     public $promoteNewPosition = '';
     public $promoteTargetType = 'permanent';
+    public $promoteContractStartDate = '';
+    public $promoteContractEndDate = '';
     public $promoteDepartmentId = '';
     public $promoteDepartmentName = '';
+
+    // Modal Perpanjangan Kontrak State
+    public $showExtendModal = false;
+    public $extendId = null;
+    public $extendName = '';
+    public $extendTypeLabel = '';
+    public $extendStartDate = null;
+    public $extendCurrentEnd = null;
+    public $extendNewEnd = '';
+
+    // Modal Konfirmasi Status Kepegawaian State
+    public $showStatusModal = false;
+    public $statusId = null;
+    public $statusName = '';
+    public $statusAction = '';
 
     // Modal Master Passkey State
     public $showPasskeyModal = false;
@@ -182,12 +204,42 @@ class EmployeeTable extends Component
         $this->resetPage();
     }
 
+    public function updatingEmploymentStatus()
+    {
+        $this->expiringSoon = false;
+        $this->resetPage();
+    }
+
+    public function setEmploymentStatus(string $status = '')
+    {
+        $this->employmentStatus = $status;
+        $this->expiringSoon = false;
+        $this->resetPage();
+    }
+
+    public function updatingExpiringSoon()
+    {
+        $this->resetPage();
+    }
+
+    public function toggleExpiringSoon()
+    {
+        $this->expiringSoon = !$this->expiringSoon;
+        if ($this->expiringSoon) {
+            $this->employmentStatus = '';
+            $this->employeeType = '';
+        }
+        $this->resetPage();
+    }
+
     public function resetFilters()
     {
         $this->search = '';
         $this->companyId = '';
         $this->departmentId = '';
         $this->employeeType = '';
+        $this->employmentStatus = '';
+        $this->expiringSoon = false;
         $this->resetPage();
     }
 
@@ -198,24 +250,27 @@ class EmployeeTable extends Component
         $this->editFullName = $employee->full_name ?? ($employee->user?->name ?? '');
         $this->editNik = $employee->nik ?? ($employee->user?->nik ?? '');
         $this->editEmployeeType = $employee->employee_type ?? 'permanent';
+        $this->editContractStartDate = $employee->contract_start_date?->format('Y-m-d') ?? '';
+        $this->editContractEndDate = $employee->contract_end_date?->format('Y-m-d') ?? '';
         $this->editCompanyId = (string) ($employee->company_id ?: ($employee->department?->company_id ?: ''));
         $this->editDepartmentId = $employee->department_id ? (string) $employee->department_id : '';
         $this->editPositionId = $employee->position_id ? (string) $employee->position_id : '';
         $this->editPositionTitle = $employee->position_title ?? ($employee->position?->name ?? '');
+        $this->resetErrorBag();
         $this->showEditModal = true;
     }
 
     public function closeEditModal()
     {
         $this->showEditModal = false;
-        $this->reset(['editId', 'editFullName', 'editNik', 'editEmployeeType', 'editCompanyId', 'editDepartmentId', 'editPositionId', 'editPositionTitle']);
+        $this->reset(['editId', 'editFullName', 'editNik', 'editEmployeeType', 'editContractStartDate', 'editContractEndDate', 'editCompanyId', 'editDepartmentId', 'editPositionId', 'editPositionTitle']);
     }
 
     public function saveEmployee()
     {
         $employee = EmployeeProfile::findOrFail($this->editId);
 
-        $this->validate([
+        $rules = [
             'editFullName' => 'required|string|max:255',
             'editNik' => [
                 'required',
@@ -224,16 +279,25 @@ class EmployeeTable extends Component
                 Rule::unique('users', 'nik')->ignore($employee->user_id),
             ],
             'editEmployeeType' => 'required|in:permanent,contract,internship,probation',
+            'editContractStartDate' => 'nullable|date',
+            'editContractEndDate' => array_filter([
+                'nullable',
+                'date',
+                $this->editContractStartDate ? 'after:editContractStartDate' : null,
+            ]),
             'editCompanyId' => 'nullable|exists:companies,id',
             'editDepartmentId' => 'nullable|exists:departments,id',
             'editPositionId' => 'nullable|exists:positions,id',
             'editPositionTitle' => 'nullable|string|max:255',
-        ], [
+        ];
+
+        $this->validate($rules, [
             'editFullName.required' => 'Nama lengkap wajib diisi.',
             'editNik.required' => 'NIK wajib diisi.',
             'editNik.digits' => 'NIK harus terdiri dari 16 digit angka.',
             'editNik.unique' => 'NIK sudah digunakan oleh pegawai/pengguna lain.',
             'editEmployeeType.required' => 'Tipe status pegawai wajib dipilih.',
+            'editContractEndDate.after' => 'Tanggal berakhir harus setelah tanggal mulai bekerja.',
         ]);
 
         $dept = $this->editDepartmentId ? Department::find($this->editDepartmentId) : null;
@@ -241,10 +305,27 @@ class EmployeeTable extends Component
         $finalPositionTitle = $this->editPositionTitle ?: ($pos?->name ?? null);
         $finalCompanyId = $this->editCompanyId ?: ($dept?->company_id ?? $employee->company_id);
 
+        $startDate = $this->editEmployeeType === 'permanent' ? null : ($this->editContractStartDate ?: null);
+        $endDate = $this->editEmployeeType === 'permanent' ? null : ($this->editContractEndDate ?: null);
+
+        // Status kepegawaian mengikuti tipe dan tanggal berakhir yang dipilih admin.
+        $employmentStatus = $employee->employment_status ?: EmployeeProfile::STATUS_ACTIVE;
+        if ($this->editEmployeeType === 'permanent') {
+            $employmentStatus = EmployeeProfile::STATUS_ACTIVE;
+        } elseif ($employmentStatus !== EmployeeProfile::STATUS_INACTIVE) {
+            $isExpired = $endDate && \Carbon\Carbon::parse($endDate)->lt(now()->startOfDay());
+            $employmentStatus = $isExpired
+                ? EmployeeProfile::STATUS_CONTRACT_ENDED
+                : EmployeeProfile::STATUS_ACTIVE;
+        }
+
         $employee->update([
             'full_name' => $this->editFullName,
             'nik' => $this->editNik,
             'employee_type' => $this->editEmployeeType,
+            'employment_status' => $employmentStatus,
+            'contract_start_date' => $startDate,
+            'contract_end_date' => $endDate,
             'company_id' => $finalCompanyId ?: null,
             'department_id' => $this->editDepartmentId ?: null,
             'position_id' => $this->editPositionId ?: null,
@@ -303,33 +384,52 @@ class EmployeeTable extends Component
     public function openPromoteModal($id)
     {
         $employee = EmployeeProfile::with(['user', 'department.company', 'company', 'position'])->findOrFail($id);
+        $isProbation = $employee->employee_type === 'probation';
+
         $this->promoteId = $employee->id;
-        $this->promoteFullName = $employee->full_name ?? ($employee->user?->name ?? 'Peserta Magang');
-        $this->promoteCurrentPosition = $employee->position?->name ?? ($employee->position_title ?? 'Intern / Magang');
+        $this->promoteFullName = $employee->full_name ?? ($employee->user?->name ?? ($isProbation ? 'Karyawan Probation' : 'Peserta Magang'));
+        $this->promoteOriginLabel = $isProbation ? 'Masa Percobaan' : 'Magang';
+        $this->promoteCurrentPosition = $employee->position?->name ?? ($employee->position_title ?? ($isProbation ? 'Staff Probation' : 'Intern / Magang'));
         $this->promoteCurrentCompany = $employee->company?->name ?? ($employee->department?->company?->name ?? '');
         $this->promoteCompanyId = (string) ($employee->company_id ?: ($employee->department?->company_id ?: ''));
         $this->promoteDepartmentId = $employee->department_id ? (string) $employee->department_id : '';
         $this->promoteDepartmentName = $employee->department?->name ?? 'Belum Diatur';
-        $this->promotePositionId = '';
-        $this->promoteNewPosition = $employee->position_title ? str_ireplace(['intern', 'magang', 'internship'], 'Staff', $employee->position_title) : 'Staff';
+        $this->promotePositionId = $employee->position_id ? (string) $employee->position_id : '';
+        $this->promoteNewPosition = $employee->position_title
+            ? trim(str_ireplace(['intern', 'magang', 'internship', 'probation'], $isProbation ? '' : 'Staff', $employee->position_title)) ?: 'Staff'
+            : 'Staff';
         $this->promoteTargetType = 'permanent';
+        $this->promoteContractStartDate = now()->toDateString();
+        $this->promoteContractEndDate = '';
+        $this->resetErrorBag();
         $this->showPromoteModal = true;
     }
 
     public function closePromoteModal()
     {
         $this->showPromoteModal = false;
-        $this->reset(['promoteId', 'promoteFullName', 'promoteCurrentPosition', 'promoteCurrentCompany', 'promoteCompanyId', 'promotePositionId', 'promoteNewPosition', 'promoteTargetType', 'promoteDepartmentId', 'promoteDepartmentName']);
+        $this->reset(['promoteId', 'promoteFullName', 'promoteOriginLabel', 'promoteCurrentPosition', 'promoteCurrentCompany', 'promoteCompanyId', 'promotePositionId', 'promoteNewPosition', 'promoteTargetType', 'promoteContractStartDate', 'promoteContractEndDate', 'promoteDepartmentId', 'promoteDepartmentName']);
     }
 
     public function confirmPromotion()
     {
-        $this->validate([
+        $rules = [
             'promoteTargetType' => 'required|in:permanent,contract',
             'promoteCompanyId' => 'nullable|exists:companies,id',
             'promoteDepartmentId' => 'nullable|exists:departments,id',
             'promotePositionId' => 'nullable|exists:positions,id',
             'promoteNewPosition' => 'required|string|max:255',
+        ];
+
+        if ($this->promoteTargetType === 'contract') {
+            $rules['promoteContractStartDate'] = 'required|date';
+            $rules['promoteContractEndDate'] = 'required|date|after:promoteContractStartDate';
+        }
+
+        $this->validate($rules, [
+            'promoteContractStartDate.required' => 'Tanggal mulai kontrak wajib diisi.',
+            'promoteContractEndDate.required' => 'Tanggal berakhir kontrak wajib diisi.',
+            'promoteContractEndDate.after' => 'Tanggal berakhir kontrak harus setelah tanggal mulai.',
         ]);
 
         $employee = EmployeeProfile::findOrFail($this->promoteId);
@@ -340,6 +440,9 @@ class EmployeeTable extends Component
 
         $employee->update([
             'employee_type' => $this->promoteTargetType,
+            'employment_status' => EmployeeProfile::STATUS_ACTIVE,
+            'contract_start_date' => $this->promoteTargetType === 'permanent' ? null : $this->promoteContractStartDate,
+            'contract_end_date' => $this->promoteTargetType === 'permanent' ? null : $this->promoteContractEndDate,
             'company_id' => $finalCompanyId ?: null,
             'department_id' => $this->promoteDepartmentId ?: null,
             'position_id' => $this->promotePositionId ?: null,
@@ -349,6 +452,130 @@ class EmployeeTable extends Component
         $statusText = $this->promoteTargetType === 'permanent' ? 'Karyawan Tetap' : 'Karyawan Kontrak';
         $this->closePromoteModal();
         session()->flash('message', 'Selamat! ' . $employee->full_name . ' berhasil diangkat menjadi ' . $statusText . ' dengan jabatan "' . $finalTitle . '".');
+    }
+
+    public function openExtendModal($id)
+    {
+        $employee = EmployeeProfile::with('user')->findOrFail($id);
+
+        $this->extendId = $employee->id;
+        $this->extendName = $employee->full_name ?? ($employee->user?->name ?? 'Karyawan');
+        $this->extendTypeLabel = match ($employee->employee_type) {
+            'contract'   => 'Karyawan Kontrak',
+            'internship' => 'Magang',
+            'probation'  => 'Masa Percobaan',
+            default      => 'Karyawan Tetap',
+        };
+        $this->extendStartDate = $employee->contract_start_date?->translatedFormat('d F Y');
+        $this->extendCurrentEnd = $employee->contract_end_date?->translatedFormat('d F Y');
+
+        // Default mengikuti tanggal berakhir yang berlaku agar tidak membingungkan admin.
+        // Bila kontraknya sudah lewat/tidak ada, pakai besok (batas minimum perpanjangan).
+        $this->extendNewEnd = $employee->contract_end_date && $employee->contract_end_date->isFuture()
+            ? $employee->contract_end_date->format('Y-m-d')
+            : now()->addDay()->format('Y-m-d');
+
+        $this->resetErrorBag('extendNewEnd');
+        $this->showExtendModal = true;
+    }
+
+    public function closeExtendModal()
+    {
+        $this->showExtendModal = false;
+        $this->reset(['extendId', 'extendName', 'extendTypeLabel', 'extendStartDate', 'extendCurrentEnd', 'extendNewEnd']);
+    }
+
+    public function extendContract()
+    {
+        $this->validate([
+            'extendNewEnd' => 'required|date|after:today',
+        ], [
+            'extendNewEnd.required' => 'Tanggal berakhir baru wajib diisi.',
+            'extendNewEnd.date'     => 'Format tanggal berakhir tidak valid.',
+            'extendNewEnd.after'    => 'Tanggal berakhir baru harus setelah hari ini.',
+        ]);
+
+        $employee = EmployeeProfile::findOrFail($this->extendId);
+
+        if ($employee->employee_type === 'permanent') {
+            $this->closeExtendModal();
+            session()->flash('message', 'Karyawan tetap tidak memiliki tanggal kontrak berakhir, jadi kontraknya tidak perlu diperpanjang.');
+
+            return;
+        }
+
+        $employee->update([
+            'contract_end_date' => $this->extendNewEnd,
+            'employment_status' => EmployeeProfile::STATUS_ACTIVE,
+        ]);
+
+        $name = $employee->full_name ?? ($employee->user?->name ?? 'Karyawan');
+        $newEnd = $employee->contract_end_date->translatedFormat('d F Y');
+
+        $this->closeExtendModal();
+        session()->flash('message', "Kontrak {$name} berhasil diperpanjang sampai {$newEnd}. Tipe dan role pegawai tidak berubah.");
+    }
+
+    public function openStatusModal($id, $action)
+    {
+        $employee = EmployeeProfile::with('user')->findOrFail($id);
+
+        $this->statusId = $employee->id;
+        $this->statusName = $employee->full_name ?? ($employee->user?->name ?? 'Karyawan');
+        $this->statusAction = $action;
+        $this->resetErrorBag('statusAction');
+        $this->showStatusModal = true;
+    }
+
+    public function closeStatusModal()
+    {
+        $this->showStatusModal = false;
+        $this->reset(['statusId', 'statusName', 'statusAction']);
+    }
+
+    public function confirmStatusChange()
+    {
+        $this->validate([
+            'statusAction' => 'required|in:permanent,inactive,reactivate',
+        ]);
+
+        $employee = EmployeeProfile::with('user')->findOrFail($this->statusId);
+        $name = $employee->full_name ?? ($employee->user?->name ?? 'Karyawan');
+
+        switch ($this->statusAction) {
+            case 'permanent':
+                $employee->update([
+                    'employee_type' => 'permanent',
+                    'employment_status' => EmployeeProfile::STATUS_ACTIVE,
+                    'contract_start_date' => null,
+                    'contract_end_date' => null,
+                ]);
+                $message = "{$name} berhasil diangkat menjadi karyawan tetap. Tanggal kontrak dikosongkan.";
+                break;
+
+            case 'inactive':
+                $employee->update(['employment_status' => EmployeeProfile::STATUS_INACTIVE]);
+                $message = "Akun {$name} dinonaktifkan. Role tetap karyawan, tetapi login diblokir sampai diaktifkan kembali.";
+                break;
+
+            default:
+                $stillExpired = $employee->employee_type !== 'permanent'
+                    && $employee->contract_end_date
+                    && $employee->contract_end_date->isPast();
+
+                $employee->update([
+                    'employment_status' => $stillExpired
+                        ? EmployeeProfile::STATUS_CONTRACT_ENDED
+                        : EmployeeProfile::STATUS_ACTIVE,
+                ]);
+                $message = $stillExpired
+                    ? "Akun {$name} diaktifkan kembali, tetapi kontraknya sudah lewat sehingga statusnya tetap 'Kontrak Berakhir'."
+                    : "Akun {$name} diaktifkan kembali.";
+                break;
+        }
+
+        $this->closeStatusModal();
+        session()->flash('message', $message);
     }
 
     public function openPasskeyModal()
@@ -464,8 +691,30 @@ class EmployeeTable extends Component
             ->when($this->employeeType, function ($query) {
                 $query->where('employee_type', $this->employeeType);
             })
+            ->when($this->employmentStatus, function ($query) {
+                $query->where('employment_status', $this->employmentStatus);
+            })
+            ->when($this->expiringSoon, function ($query) {
+                $query->where('employment_status', EmployeeProfile::STATUS_ACTIVE)
+                    ->whereIn('employee_type', ['contract', 'internship', 'probation'])
+                    ->whereNotNull('contract_end_date')
+                    ->whereDate('contract_end_date', '<=', now()->addDays(30)->toDateString());
+            })
             ->orderBy('id', 'desc')
             ->paginate($this->perPage);
+
+        $expiringSoonQuery = EmployeeProfile::query()
+            ->where('employment_status', EmployeeProfile::STATUS_ACTIVE)
+            ->whereIn('employee_type', ['contract', 'internship', 'probation'])
+            ->whereNotNull('contract_end_date')
+            ->whereDate('contract_end_date', '<=', now()->addDays(30)->toDateString());
+
+        $expiringSoonCount = (clone $expiringSoonQuery)->count();
+
+        $statusCounts = EmployeeProfile::query()
+            ->selectRaw('employment_status, COUNT(*) as total')
+            ->groupBy('employment_status')
+            ->pluck('total', 'employment_status');
 
         return view('livewire.admin.employee.table', [
             'employees' => $employees,
@@ -477,6 +726,12 @@ class EmployeeTable extends Component
             'editPositions' => $editPositions,
             'promoteDepartments' => $promoteDepartments,
             'promotePositions' => $promotePositions,
+            'expiringSoonCount' => $expiringSoonCount,
+            'statusCounts' => [
+                'active' => (int) ($statusCounts[EmployeeProfile::STATUS_ACTIVE] ?? 0),
+                'contract_ended' => (int) ($statusCounts[EmployeeProfile::STATUS_CONTRACT_ENDED] ?? 0),
+                'inactive' => (int) ($statusCounts[EmployeeProfile::STATUS_INACTIVE] ?? 0),
+            ],
         ]);
     }
 }

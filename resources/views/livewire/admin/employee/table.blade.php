@@ -119,7 +119,26 @@
                     </button>
                 </div>
 
-                @if ($search || $companyId || $departmentId || $employeeType)
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <span class="text-[11px] font-bold text-gray-400 uppercase mr-1">Status:</span>
+                    <button type="button" wire:click="setEmploymentStatus('')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ ($employmentStatus === '' && !$expiringSoon) ? 'bg-slate-800 dark:bg-slate-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                        Semua
+                    </button>
+                    <button type="button" wire:click="setEmploymentStatus('active')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $employmentStatus === 'active' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40' }}">
+                        Aktif ({{ $statusCounts['active'] }})
+                    </button>
+                    <button type="button" wire:click="setEmploymentStatus('contract_ended')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $employmentStatus === 'contract_ended' ? 'bg-amber-500 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40' }}">
+                        Kontrak Berakhir ({{ $statusCounts['contract_ended'] }})
+                    </button>
+                    <button type="button" wire:click="setEmploymentStatus('inactive')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $employmentStatus === 'inactive' ? 'bg-rose-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40' }}">
+                        Nonaktif ({{ $statusCounts['inactive'] }})
+                    </button>
+                    <button type="button" wire:click="toggleExpiringSoon" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $expiringSoon ? 'bg-orange-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800 hover:bg-orange-50 dark:hover:bg-orange-950/40' }}">
+                        Segera Berakhir &le;30 Hari ({{ $expiringSoonCount }})
+                    </button>
+                </div>
+
+                @if ($search || $companyId || $departmentId || $employeeType || $employmentStatus || $expiringSoon)
                     <button type="button" wire:click="resetFilters" class="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-1 cursor-pointer">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -131,11 +150,30 @@
         </div>
     </div>
 
+    @if ($expiringSoonCount > 0 && !$expiringSoon)
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/70 text-amber-900 dark:text-amber-200 rounded-2xl shadow-xs">
+            <div class="flex items-start sm:items-center gap-3">
+                <div class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <p class="text-xs leading-relaxed">
+                    Terdapat <strong>{{ $expiringSoonCount }} pegawai</strong> (Kontrak / Magang / Probation) yang masa berlakunya berakhir dalam <strong>30 hari ke depan</strong> atau sudah melewati batas tanggal.
+                </p>
+            </div>
+            <button type="button" wire:click="toggleExpiringSoon"
+                class="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold transition shrink-0 cursor-pointer self-start sm:self-center">
+                Tampilkan Daftar
+            </button>
+        </div>
+    @endif
+
     <!-- Card 2: Data Table Section Card -->
     <div class="relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
 
         <!-- Livewire Loading Overlay -->
-        <div wire:loading wire:target="search, companyId, departmentId, employeeType, previousPage, nextPage, gotoPage, resetFilters" class="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-10 transition">
+        <div wire:loading wire:target="search, companyId, departmentId, employeeType, employmentStatus, setEmploymentStatus, expiringSoon, toggleExpiringSoon, previousPage, nextPage, gotoPage, resetFilters" class="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-10 transition">
             <div class="flex items-center gap-2.5 px-4 py-2.5 bg-slate-900/90 dark:bg-slate-800/90 text-white rounded-xl shadow-xl text-xs font-semibold">
                 <svg class="animate-spin w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -150,13 +188,13 @@
             <table class="w-full min-w-[880px] text-left border-collapse table-fixed">
                 <colgroup>
                     <col style="width:40px">
-                    <col style="width:20%">
+                    <col style="width:19%">
                     <col style="width:9%">
-                    <col style="width:16%">
-                    <col style="width:14%">
-                    <col style="width:17%">
+                    <col style="width:15%">
                     <col style="width:13%">
-                    <col style="width:11%">
+                    <col style="width:14%">
+                    <col style="width:13%">
+                    <col style="width:17%">
                 </colgroup>
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold text-[11px]">
@@ -229,6 +267,12 @@
                                         Tetap
                                     </span>
                                 @endif
+                                @if ($emp->employee_type !== 'permanent' && $emp->contract_end_date)
+                                    <div class="mt-1 text-[10px] {{ $emp->contract_end_date->isPast() ? 'text-rose-500 font-semibold' : 'text-gray-400 dark:text-slate-500' }}"
+                                        title="{{ $emp->contract_end_date->isPast() ? 'Kontrak sudah berakhir' : 'Kontrak berlaku sampai' }}">
+                                        {{ $emp->contract_end_date->isPast() ? 'Habis ' : 's/d ' }}{{ $emp->contract_end_date->translatedFormat('d M Y') }}
+                                    </div>
+                                @endif
                             </td>
                             <td class="py-3 px-3">
                                 <div class="flex flex-col items-start gap-1">
@@ -277,7 +321,15 @@
                                 @endif
                             </td>
                             <td class="py-3 px-3 text-center">
-                                @if ($emp->employee_type === 'internship')
+                                @if ($emp->employment_status === 'inactive')
+                                    <span class="inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 font-semibold text-[11px] border border-rose-200/80 dark:border-rose-800/60">
+                                        Nonaktif
+                                    </span>
+                                @elseif ($emp->employment_status === 'contract_ended')
+                                    <span class="inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold text-[11px] border border-amber-200/80 dark:border-amber-800/60">
+                                        Kontrak Berakhir
+                                    </span>
+                                @elseif ($emp->employee_type === 'internship')
                                     <span class="inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold text-[11px] border border-amber-200/80 dark:border-amber-800/60">
                                         {{-- <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> --}}
                                         Peserta Magang
@@ -300,13 +352,51 @@
                                 @endif
                             </td>
                             <td class="py-3 px-3 text-right">
-                                <div class="flex items-center justify-end gap-1.5">
-                                     @if ($emp->employee_type === 'internship')
+                                <div class="flex items-center justify-end gap-1">
+                                     @if (in_array($emp->employee_type, ['internship', 'probation']))
                                          <button wire:click="openPromoteModal({{ $emp->id }})" 
                                                  class="p-1.5 rounded-lg text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition" 
-                                                 title="Angkat jadi Karyawan">
+                                                 title="Promosikan / Angkat jadi Karyawan">
                                              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                             </svg>
+                                         </button>
+                                     @endif
+
+                                     @if ($emp->employee_type !== 'permanent')
+                                         <button wire:click="openExtendModal({{ $emp->id }})"
+                                                 class="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition"
+                                                 title="Perpanjang Kontrak">
+                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                             </svg>
+                                         </button>
+                                     @endif
+
+                                     @if ($emp->employee_type !== 'permanent' && ($emp->employment_status === 'contract_ended' || in_array($emp->employee_type, ['contract', 'probation'])))
+                                         <button wire:click="openStatusModal({{ $emp->id }}, 'permanent')"
+                                                 class="p-1.5 rounded-lg text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition"
+                                                 title="Angkat Jadi Karyawan Tetap">
+                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                             </svg>
+                                         </button>
+                                     @endif
+
+                                     @if ($emp->employment_status === 'inactive')
+                                         <button wire:click="openStatusModal({{ $emp->id }}, 'reactivate')"
+                                                 class="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition"
+                                                 title="Aktifkan Kembali">
+                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
+                                             </svg>
+                                         </button>
+                                     @else
+                                         <button wire:click="openStatusModal({{ $emp->id }}, 'inactive')"
+                                                 class="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition"
+                                                 title="Nonaktifkan Akun">
+                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                                              </svg>
                                          </button>
                                      @endif
@@ -386,6 +476,11 @@
                                 'contract' => ['label' => 'Kontrak Aktif', 'class' => 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200/80 dark:border-blue-800/60'],
                                 default => ['label' => 'Karyawan Tetap', 'class' => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800/60'],
                             };
+                            if ($emp->employment_status === 'inactive') {
+                                $cardStatus = ['label' => 'Nonaktif', 'class' => 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200/80 dark:border-rose-800/60'];
+                            } elseif ($emp->employment_status === 'contract_ended') {
+                                $cardStatus = ['label' => 'Kontrak Berakhir', 'class' => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200/80 dark:border-amber-800/60'];
+                            }
                         @endphp
                         <div class="rounded-2xl border border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 p-3.5 flex flex-col gap-3 min-w-0">
                             <!-- Identitas -->
@@ -444,11 +539,42 @@
                                     {{ $cardStatus['label'] }}
                                 </span>
                                 <div class="flex items-center gap-1">
-                                    @if ($emp->employee_type === 'internship')
-                                        <button wire:click="openPromoteModal({{ $emp->id }})" aria-label="Angkat jadi karyawan" title="Angkat jadi Karyawan"
+                                    @if (in_array($emp->employee_type, ['internship', 'probation']))
+                                        <button wire:click="openPromoteModal({{ $emp->id }})" aria-label="Promosikan jadi karyawan" title="Promosikan / Angkat jadi Karyawan"
                                             class="p-2 rounded-lg text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 active:scale-95 transition">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                            </svg>
+                                        </button>
+                                    @endif
+                                    @if ($emp->employee_type !== 'permanent')
+                                        <button wire:click="openExtendModal({{ $emp->id }})" aria-label="Perpanjang kontrak" title="Perpanjang Kontrak"
+                                            class="p-2 rounded-lg text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-slate-700 active:scale-95 transition">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </button>
+                                    @endif
+                                    @if ($emp->employee_type !== 'permanent' && ($emp->employment_status === 'contract_ended' || in_array($emp->employee_type, ['contract', 'probation'])))
+                                        <button wire:click="openStatusModal({{ $emp->id }}, 'permanent')" aria-label="Angkat jadi karyawan tetap" title="Angkat Jadi Karyawan Tetap"
+                                            class="p-2 rounded-lg text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 active:scale-95 transition">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                            </svg>
+                                        </button>
+                                    @endif
+                                    @if ($emp->employment_status === 'inactive')
+                                        <button wire:click="openStatusModal({{ $emp->id }}, 'reactivate')" aria-label="Aktifkan kembali akun" title="Aktifkan Kembali"
+                                            class="p-2 rounded-lg text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 active:scale-95 transition">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
+                                            </svg>
+                                        </button>
+                                    @else
+                                        <button wire:click="openStatusModal({{ $emp->id }}, 'inactive')" aria-label="Nonaktifkan akun" title="Nonaktifkan Akun"
+                                            class="p-2 rounded-lg text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-gray-100 dark:hover:bg-slate-700 active:scale-95 transition">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                                             </svg>
                                         </button>
                                     @endif
@@ -492,6 +618,81 @@
             </div>
         @endif
     </div>
+
+    <!-- Konfirmasi Perubahan Status Kepegawaian -->
+    @if ($showStatusModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div wire:click="closeStatusModal" class="fixed inset-0 transition-opacity bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block align-bottom bg-white dark:bg-slate-900 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full border border-gray-200 dark:border-slate-800 p-6">
+                    @php
+                        $statusModalIcon = match ($statusAction) {
+                            'permanent' => 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z',
+                            'inactive' => 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636',
+                            default => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+                        };
+                        $statusModalTitle = match ($statusAction) {
+                            'permanent' => 'Angkat Jadi Karyawan Tetap',
+                            'inactive' => 'Nonaktifkan Akun',
+                            default => 'Aktifkan Kembali Akun',
+                        };
+                        $statusModalColor = $statusAction === 'inactive' ? 'rose' : 'emerald';
+                        $statusModalBody = match ($statusAction) {
+                            'permanent' => 'Tipe pegawai berubah menjadi Karyawan Tetap, tanggal kontrak dikosongkan, dan status kembali aktif. Role akun tetap karyawan.',
+                            'inactive' => 'Akun tidak dapat login sampai diaktifkan kembali. Role akun tetap karyawan dan data kepegawaian tetap tersimpan.',
+                            default => 'Akun dapat login kembali. Jika kontraknya sudah lewat, status tetap ditandai Kontrak Berakhir sampai diperpanjang.',
+                        };
+                    @endphp
+
+                    <div class="flex items-start justify-between gap-3 pb-4 border-b border-gray-100 dark:border-slate-800">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border {{ $statusModalColor === 'rose' ? 'bg-rose-100/70 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border-rose-200/60 dark:border-rose-800/40' : 'bg-emerald-100/70 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-800/40' }}">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $statusModalIcon }}" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white leading-tight">{{ $statusModalTitle }}</h3>
+                                <p class="text-xs text-gray-400 mt-0.5">{{ $statusName }}</p>
+                            </div>
+                        </div>
+                        <button wire:click="closeStatusModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <form wire:submit.prevent="confirmStatusChange" class="mt-4 space-y-4">
+                        <p class="text-xs text-gray-600 dark:text-slate-400 leading-relaxed bg-gray-50 dark:bg-slate-800/60 p-3 rounded-xl border border-gray-200/60 dark:border-slate-700/60">
+                            {{ $statusModalBody }}
+                        </p>
+
+                        @error('statusAction') <span class="text-[11px] text-rose-500 block">{{ $message }}</span> @enderror
+
+                        <div class="flex items-center justify-between gap-3 pt-4 border-t border-gray-100 dark:border-slate-800">
+                            <button type="button" wire:click="closeStatusModal"
+                                class="px-4 py-2.5 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-xl transition">
+                                Batal
+                            </button>
+                            <button type="submit" wire:loading.attr="disabled" wire:target="confirmStatusChange"
+                                class="px-5 py-2.5 text-xs font-bold text-white rounded-xl transition active:scale-95 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed {{ $statusModalColor === 'rose' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700' }}">
+                                <svg wire:loading wire:target="confirmStatusChange" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span wire:loading.remove wire:target="confirmStatusChange">Ya, Lanjutkan</span>
+                                <span wire:loading wire:target="confirmStatusChange">Memproses...</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <!-- DOUBLE PERMISSION MODAL: Angkat Peserta Magang Jadi Karyawan -->
     @if ($showPromoteModal)
@@ -538,7 +739,7 @@
                                 <span class="text-[10px] text-gray-400 uppercase font-semibold block">Posisi Saat Ini</span>
                                 <span class="font-bold text-gray-700 dark:text-slate-300 block truncate">{{ $promoteCurrentPosition }}</span>
                                 <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] bg-amber-100/70 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold">
-                                    Magang
+                                    {{ $promoteOriginLabel }}
                                 </span>
                             </div>
                             <div class="border-l border-gray-200/80 dark:border-slate-700 pl-3">
@@ -574,6 +775,27 @@
                             </div>
                             @error('promoteTargetType') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
+
+                        @if ($promoteTargetType === 'contract')
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-2xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/80 dark:border-blue-900/50">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                        Tanggal Mulai Kontrak <span class="text-rose-500">*</span>
+                                    </label>
+                                    <input type="date" wire:model="promoteContractStartDate" required
+                                        class="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                    @error('promoteContractStartDate') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                        Kontrak Berakhir <span class="text-rose-500">*</span>
+                                    </label>
+                                    <input type="date" wire:model="promoteContractEndDate" required min="{{ $promoteContractStartDate }}"
+                                        class="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                    @error('promoteContractEndDate') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                        @endif
 
                         <!-- 2. Penempatan Perusahaan -->
                         <div>
@@ -666,6 +888,83 @@
         </div>
     @endif
 
+    <!-- Extend Contract Modal -->
+    @if ($showExtendModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div wire:click="closeExtendModal" class="fixed inset-0 transition-opacity bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block align-bottom bg-white dark:bg-slate-900 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full border border-gray-200 dark:border-slate-800 p-6">
+
+                    <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-slate-800">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Perpanjang Kontrak</h3>
+                            <p class="text-xs text-gray-400 mt-0.5">{{ $extendName }}</p>
+                        </div>
+                        <button wire:click="closeExtendModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <form wire:submit.prevent="extendContract" class="mt-4 space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-gray-50/80 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-700/60 grid grid-cols-2 gap-3 text-xs">
+                            <div>
+                                <span class="text-[10px] text-gray-400 uppercase font-semibold block">Tipe Pegawai</span>
+                                <span class="font-bold text-gray-700 dark:text-slate-300 block truncate">{{ $extendTypeLabel }}</span>
+                            </div>
+                            <div class="border-l border-gray-200/80 dark:border-slate-700 pl-3">
+                                <span class="text-[10px] text-gray-400 uppercase font-semibold block">Mulai Bekerja</span>
+                                <span class="font-bold text-gray-700 dark:text-slate-300 block truncate">{{ $extendStartDate ?? 'Belum diatur' }}</span>
+                            </div>
+                            <div class="col-span-2 pt-2 border-t border-gray-200/80 dark:border-slate-700">
+                                <span class="text-[10px] text-gray-400 uppercase font-semibold block">Berakhir Saat Ini</span>
+                                <span class="font-bold text-gray-700 dark:text-slate-300 block">{{ $extendCurrentEnd ?? 'Belum diatur' }}</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                Berakhir Menjadi <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="date" wire:model="extendNewEnd" required min="{{ now()->addDay()->format('Y-m-d') }}"
+                                class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                            @error('extendNewEnd') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+
+                        <p class="text-[11px] text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-gray-200/60 dark:border-slate-700/60 leading-relaxed">
+                            Hanya tanggal berakhir kontrak yang diperbarui. Tipe pegawai, jabatan, dan role akun tetap sama.
+                        </p>
+
+                        <div class="pt-4 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                            <button type="button" wire:click="closeExtendModal"
+                                class="px-4 py-2.5 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-xl transition">
+                                Batal
+                            </button>
+                            <button type="submit"
+                                wire:loading.attr="disabled" wire:target="extendContract"
+                                class="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl transition flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                                <svg wire:loading.remove wire:target="extendContract" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <svg wire:loading wire:target="extendContract" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span wire:loading.remove wire:target="extendContract">Simpan Perpanjangan</span>
+                                <span wire:loading wire:target="extendContract">Menyimpan...</span>
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Edit Employee Modal -->
     @if ($showEditModal)
         <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -717,7 +1016,7 @@
                             <label class="block text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-1">
                                 Status / Kategori Hubungan Kerja <span class="text-rose-500">*</span>
                             </label>
-                            <select wire:model="editEmployeeType" required
+                            <select wire:model.live="editEmployeeType" required
                                 class="w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl bg-white dark:bg-slate-800 border border-indigo-300 dark:border-indigo-600/70 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition cursor-pointer [color-scheme:light] dark:[color-scheme:dark]">
                                 <option value="permanent" class="bg-white dark:bg-slate-800 text-gray-900 dark:text-white py-1">Karyawan Tetap (Permanent)</option>
                                 <option value="contract" class="bg-white dark:bg-slate-800 text-gray-900 dark:text-white py-1">Karyawan Kontrak (Contract)</option>
@@ -726,6 +1025,30 @@
                             </select>
                             @error('editEmployeeType') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
+
+                        @if ($editEmployeeType !== 'permanent')
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-gray-200/80 dark:border-slate-700/70">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                        Tanggal Mulai Bekerja
+                                    </label>
+                                    <input type="date" wire:model="editContractStartDate"
+                                        class="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                    @error('editContractStartDate') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                                        Bekerja Sampai
+                                        @if ($editEmployeeType === 'probation')
+                                            <span class="text-gray-400 font-normal">(opsional)</span>
+                                        @endif
+                                    </label>
+                                    <input type="date" wire:model="editContractEndDate" min="{{ $editContractStartDate }}"
+                                        class="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                    @error('editContractEndDate') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                        @endif
 
                         <!-- Perusahaan / Entitas -->
                         <div>

@@ -89,6 +89,18 @@
         </div>
     @endif
 
+    @if ($employment_status === 'contract_ended')
+        <div class="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/70 text-amber-800 dark:text-amber-200 rounded-2xl shadow-sm">
+            <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+                <p class="text-xs font-bold">Masa kontrak Anda telah berakhir{{ $contract_end_date ? ' per ' . $contract_end_date : '' }}.</p>
+                <p class="text-[11px] mt-0.5 leading-relaxed">Hubungi Admin/HR untuk perpanjangan kontrak. Data profil dan akses Anda tetap tersimpan.</p>
+            </div>
+        </div>
+    @endif
+
     <div class="bg-white dark:bg-[#0D1527] p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-[#1D2E54]">
         <form wire:submit.prevent="save" class="space-y-6">
 
@@ -127,7 +139,11 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">NIK (16 Digit Sesuai KTP)</label>
                     <input type="text" wire:model="nik" maxlength="16" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="16 digit nomor NIK"
-                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+                        @if ($isNikLocked) disabled @endif
+                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition {{ $isNikLocked ? 'bg-gray-100/80 dark:bg-gray-900/80 text-gray-500 dark:text-gray-400 cursor-not-allowed' : 'bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white' }}">
+                    @if ($isNikLocked)
+                        <span class="text-[11px] text-gray-400 dark:text-[#93A5C9] mt-1 block">NIK sudah ditetapkan. Hubungi Admin/HR apabila perlu perubahan.</span>
+                    @endif
                     @error('nik') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
@@ -140,8 +156,8 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Perusahaan</label>
-                    <select wire:model.live="company_id"
-                        class="w-full pl-4 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition cursor-pointer">
+                    <select wire:model.live="company_id" @if ($isPlacementLocked) disabled @endif
+                        class="w-full pl-4 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition {{ $isPlacementLocked ? 'bg-gray-100/80 dark:bg-gray-900/80 text-gray-500 dark:text-gray-400 cursor-not-allowed' : 'bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white cursor-pointer' }}">
                         <option value="">-- Pilih Perusahaan --</option>
                         @foreach ($companies as $company)
                             <option value="{{ $company->id }}">{{ $company->name }}</option>
@@ -152,8 +168,8 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Divisi / Departemen</label>
-                    <select wire:model.live="department_id"
-                        class="w-full pl-4 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition cursor-pointer">
+                    <select wire:model.live="department_id" @if ($isPlacementLocked) disabled @endif
+                        class="w-full pl-4 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition {{ $isPlacementLocked ? 'bg-gray-100/80 dark:bg-gray-900/80 text-gray-500 dark:text-gray-400 cursor-not-allowed' : 'bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white cursor-pointer' }}">
                         <option value="">-- Pilih Divisi --</option>
                         @foreach ($departments as $department)
                             <option value="{{ $department->id }}">
@@ -167,10 +183,10 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2 flex items-center justify-between">
                         <span>Pilih Jabatan Baku</span>
-                        <span class="text-[10px] text-gray-400 font-normal lowercase">otomatis</span>
+                        <span class="text-[10px] text-gray-400 font-normal lowercase">{{ $isPlacementLocked ? 'dikunci hr' : 'otomatis' }}</span>
                     </label>
-                    <select wire:model.live="position_id"
-                        class="w-full pl-4 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition cursor-pointer">
+                    <select wire:model.live="position_id" @if ($isPlacementLocked) disabled @endif
+                        class="w-full pl-4 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition {{ $isPlacementLocked ? 'bg-gray-100/80 dark:bg-gray-900/80 text-gray-500 dark:text-gray-400 cursor-not-allowed' : 'bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white cursor-pointer' }}">
                         <option value="">-- Pilih Posisi (Opsional) --</option>
                         @foreach ($positions as $pos)
                             @if (!$department_id || $department_id == $pos->department_id)
@@ -186,20 +202,33 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Posisi / Jabatan Spesifik</label>
                     <input type="text" wire:model="position_title" placeholder="Contoh: Staff IT, Supervisor, dll"
-                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+                        @if ($isPlacementLocked) disabled @endif
+                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition {{ $isPlacementLocked ? 'bg-gray-100/80 dark:bg-gray-900/80 text-gray-500 dark:text-gray-400 cursor-not-allowed' : 'bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white' }}">
+                    @if ($isPlacementLocked)
+                        <span class="text-[11px] text-gray-400 dark:text-[#93A5C9] mt-1 block">Penempatan perusahaan, divisi, dan jabatan dikelola oleh Admin/HR.</span>
+                    @endif
                     @error('position_title') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Kategori / Tipe Pegawai</label>
-                    <select wire:model="employee_type"
-                        class="w-full pl-4 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition cursor-pointer">
-                        <option value="permanent">Karyawan Tetap (Permanent)</option>
-                        <option value="contract">Karyawan Kontrak (Contract)</option>
-                        <option value="internship">Magang / Internship</option>
-                        <option value="probation">Masa Percobaan (Probation)</option>
-                    </select>
-                    @error('employee_type') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Status Kepegawaian</label>
+                    <div class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100/60 dark:bg-gray-900/60 text-sm flex items-center justify-between gap-3">
+                        <span class="font-semibold text-gray-800 dark:text-white">{{ $employeeTypeLabel }}</span>
+                        @php
+                            $statusBadgeClass = match ($employment_status) {
+                                'contract_ended' => 'bg-amber-100/80 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60',
+                                'inactive' => 'bg-rose-100/80 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60',
+                                default => 'bg-emerald-100/80 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60',
+                            };
+                        @endphp
+                        <span class="shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-bold border {{ $statusBadgeClass }}">{{ $employmentStatusLabel }}</span>
+                    </div>
+                    @if ($contract_start_date || $contract_end_date)
+                        <p class="text-[11px] text-gray-400 dark:text-[#93A5C9] mt-1.5">
+                            Masa kontrak: {{ $contract_start_date ?? '-' }} s/d {{ $contract_end_date ?? 'tanpa batas' }}
+                        </p>
+                    @endif
+                    <p class="text-[11px] text-gray-400 dark:text-[#93A5C9] mt-1">Tipe pegawai dan tanggal kontrak hanya dapat diubah oleh Admin/HR.</p>
                 </div>
             </div>
 

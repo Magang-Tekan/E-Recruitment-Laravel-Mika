@@ -630,6 +630,189 @@
                     </div>
                 @endif
 
+                @php
+                    $appTestProgress = $testProgressMap[$app->id] ?? null;
+                    $singleTest      = $app->job && $app->job->tests ? $app->job->tests->first() : null;
+                    $latestSingleAttempt = $singleTest
+                        ? ($app->testAttempts ? $app->testAttempts->where('test_id', $singleTest->id)->sortByDesc('id')->first() : null)
+                        : null;
+                    $canTakeTest = in_array(strtolower($status), ['reviewed', 'shortlisted', 'interview', 'accepted']);
+                    $isTestExpired = $app->isTestExpired();
+                    $testDeadlineWib = $app->test_deadline_at ? $app->test_deadline_at->copy()->timezone('Asia/Jakarta') : null;
+                    $hasAnyTest = $app->job && $app->job->tests && $app->job->tests->isNotEmpty();
+                    $allTestsCompleted = $app->hasCompletedAllTests();
+                @endphp
+
+                <!-- Dedicated Online Test & Deadline Panel -->
+                @if ($hasAnyTest && !in_array(strtolower($status), ['rejected', 'withdrawn', 'dibatalkan']))
+                    @php
+                        $testPanelBorder = $allTestsCompleted
+                            ? 'border-emerald-200/80 dark:border-emerald-800/50 border-l-4 border-l-emerald-600 dark:border-l-[#93F514] bg-emerald-50/30 dark:bg-emerald-950/15'
+                            : ($canTakeTest && $isTestExpired
+                                ? 'border-rose-200/80 dark:border-rose-900/50 border-l-4 border-l-rose-500 bg-rose-50/40 dark:bg-rose-950/15'
+                                : ($canTakeTest
+                                    ? 'border-emerald-200/80 dark:border-[#1D2E54] border-l-4 border-l-emerald-600 dark:border-l-[#93F514] bg-slate-50/70 dark:bg-[#14203A]/55'
+                                    : 'border-slate-200/80 dark:border-[#1D2E54] bg-slate-50/70 dark:bg-[#14203A]/45'));
+                    @endphp
+                    <div class="rounded-2xl p-3.5 sm:p-4 border {{ $testPanelBorder }} space-y-3">
+                        <!-- Panel Header: Title & Deadline Pill -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 {{ $canTakeTest && !$isTestExpired ? 'bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black' : ($canTakeTest && $isTestExpired ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400') }}">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                    </svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="text-xs font-bold text-slate-900 dark:text-white">
+                                            {{ __('Tes Online Seleksi') }}
+                                        </span>
+                                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white dark:bg-[#0D1527] text-slate-600 dark:text-[#93A5C9] border border-slate-200/80 dark:border-[#1D2E54] whitespace-nowrap">
+                                            {{ $app->job->tests->count() }} {{ __('Tahap') }}
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 dark:text-[#93A5C9] mt-0.5">
+                                        @if (!$canTakeTest)
+                                            {{ __('Ujian akan terbuka setelah berkas lolos verifikasi & ACC Admin.') }}
+                                        @elseif ($allTestsCompleted)
+                                            {{ __('Seluruh rangkaian tes online telah Anda selesaikan.') }}
+                                        @elseif ($appTestProgress && count($appTestProgress) > 1)
+                                            {{ __('Kerjakan tes secara berurutan sebelum batas waktu berakhir.') }}
+                                        @else
+                                            {{ $singleTest?->title ?? __('Ujian Seleksi Online') }}
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+
+                            @if ($canTakeTest && !$allTestsCompleted && $testDeadlineWib)
+                                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold border whitespace-nowrap self-start sm:self-center shrink-0 {{ $isTestExpired ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-300' : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300' }}">
+                                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>{{ $isTestExpired ? __('Batas tes berakhir:') : __('Batas tes:') }} {{ $testDeadlineWib->translatedFormat('d M Y, H:i') }} WIB</span>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Panel Body: Multi-Test Stepper or Single Test Action -->
+                        @if ($appTestProgress && count($appTestProgress) > 1)
+                            <div class="flex flex-wrap items-center gap-2 pt-1">
+                                @foreach ($appTestProgress as $idx => $step)
+                                    @php
+                                        $testLabel = $step['test']->title;
+                                    @endphp
+
+                                    @if ($idx > 0)
+                                        <svg class="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 shrink-0 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    @endif
+
+                                    @if ($step['status'] === 'completed')
+                                        <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $step['test']->id]) }}"
+                                            title="{{ $testLabel }} — {{ __('Selesai') }}"
+                                            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-[#93F514] text-xs font-semibold whitespace-nowrap transition hover:bg-emerald-100 dark:hover:bg-emerald-900/50">
+                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            <span>{{ $idx + 1 }}. {{ $testLabel }}</span>
+                                        </a>
+                                    @elseif ($step['status'] === 'in_progress')
+                                        <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $step['test']->id]) }}"
+                                            title="{{ $testLabel }} — {{ __('Sedang dikerjakan') }}"
+                                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 border border-blue-700 text-white text-xs font-bold whitespace-nowrap transition shadow-xs animate-pulse">
+                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                            <span>{{ $idx + 1 }}. {{ $testLabel }} ({{ __('Lanjutkan') }})</span>
+                                        </a>
+                                    @elseif ($step['status'] === 'unlocked' && $canTakeTest && $isTestExpired)
+                                        <div title="{{ $testLabel }} — {{ __('Batas waktu pengerjaan tes telah berakhir') }}"
+                                            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-600 dark:text-rose-300 text-xs font-semibold whitespace-nowrap cursor-not-allowed">
+                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span>{{ $idx + 1 }}. {{ $testLabel }} ({{ __('Habis') }})</span>
+                                        </div>
+                                    @elseif ($step['status'] === 'unlocked' && $canTakeTest)
+                                        <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $step['test']->id]) }}"
+                                            title="{{ $testLabel }} — {{ __('Kerjakan sekarang') }}"
+                                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 dark:bg-[#93F514] dark:hover:bg-[#82dc12] text-white dark:text-black text-xs font-bold whitespace-nowrap transition shadow-xs active:scale-[0.99]">
+                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span>{{ $idx + 1 }}. {{ $testLabel }}</span>
+                                        </a>
+                                    @elseif ($step['status'] === 'unlocked' && !$canTakeTest)
+                                        <div title="{{ $testLabel }} — {{ __('Menunggu seleksi berkas') }}"
+                                            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 text-xs font-semibold whitespace-nowrap">
+                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span>{{ $idx + 1 }}. {{ $testLabel }}</span>
+                                        </div>
+                                    @else
+                                        <div title="{{ $testLabel }} — {{ __('Selesaikan tes sebelumnya terlebih dahulu') }}"
+                                            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-[#1D2E54] text-slate-400 dark:text-[#93A5C9] text-xs font-semibold whitespace-nowrap cursor-not-allowed opacity-75">
+                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                            </svg>
+                                            <span>{{ $idx + 1 }}. {{ $testLabel }}</span>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        @elseif ($singleTest)
+                            <div class="flex flex-wrap items-center gap-2 pt-1">
+                                @if ($latestSingleAttempt && $latestSingleAttempt->status !== 'in_progress')
+                                    @php $isTestDisc = str_contains(strtolower($singleTest->category?->name ?? ''), 'disc'); @endphp
+                                    <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $singleTest->id]) }}"
+                                        class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-[#93F514] text-xs font-semibold rounded-xl whitespace-nowrap transition hover:bg-emerald-100">
+                                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>{{ $isTestDisc ? __('Lihat Status Tes') : __('Lihat Hasil Tes') }}</span>
+                                    </a>
+                                @elseif ($latestSingleAttempt && $latestSingleAttempt->status === 'in_progress')
+                                    <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $singleTest->id]) }}"
+                                        class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-xs rounded-xl shadow-xs whitespace-nowrap transition">
+                                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        <span>{{ __('Lanjutkan Ujian') }}</span>
+                                    </a>
+                                @elseif ($canTakeTest && $isTestExpired)
+                                    <div class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-300 text-xs font-semibold rounded-xl whitespace-nowrap cursor-not-allowed"
+                                        title="{{ __('Batas waktu pengerjaan tes online telah berakhir. Hubungi tim HR bila perlu perpanjangan.') }}">
+                                        <svg class="w-3.5 h-3.5 text-rose-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                        <span>{{ __('Waktu Tes Berakhir') }}</span>
+                                    </div>
+                                @elseif ($canTakeTest)
+                                    <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $singleTest->id]) }}"
+                                        class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-xs rounded-xl shadow-xs whitespace-nowrap transition">
+                                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        <span>{{ __('Mulai Ujian Online') }}</span>
+                                    </a>
+                                @else
+                                    <div class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 text-xs font-medium rounded-xl whitespace-nowrap" title="{{ __('Ujian online akan terbuka setelah berkas lamaran Anda selesai diverifikasi & disetujui tim HR.') }}">
+                                        <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                        <span>{{ __('Ujian: Menunggu Berkas') }}</span>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
                 <!-- Bottom Row: Notes & Detail Button -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-[#1D2E54]">
                     <div class="min-w-0 flex-1">
@@ -652,6 +835,10 @@
                                 </svg>
                                 <span>{{ __('Riwayat Wawancara:') }} {{ \Carbon\Carbon::parse($latestInterview->interview_date)->translatedFormat('d M Y, H:i') }} ({{ $latestInterview->status }})</span>
                             </p>
+                        @elseif (in_array(strtolower($status), ['submitted', 'pending', 'applied']))
+                            <p class="text-xs text-blue-600 dark:text-[#93A5C9] font-medium truncate" title="{{ __('Menunggu berkas dilihat & disetujui (ACC) Admin. Jika lolos administrasi, tes online akan terbuka di menu Riwayat ini.') }}">
+                                {{ __('Menunggu peninjauan berkas & ACC Admin. Pantau progress & tes online di sini.') }}
+                            </p>
                         @else
                             <p class="text-xs text-slate-400 dark:text-[#93A5C9] truncate">
                                 {{ __('Belum ada catatan tambahan dari tim rekruter.') }}
@@ -659,116 +846,9 @@
                         @endif
                     </div>
 
-                    <div class="flex flex-wrap sm:flex-nowrap items-center justify-between sm:justify-end gap-2 shrink-0 w-full sm:w-auto">
-                        @php
-                            $appTestProgress = $testProgressMap[$app->id] ?? null;
-                            $singleTest      = $app->job && $app->job->tests ? $app->job->tests->first() : null;
-                            $latestSingleAttempt = $singleTest
-                                ? ($app->testAttempts ? $app->testAttempts->where('test_id', $singleTest->id)->sortByDesc('id')->first() : null)
-                                : null;
-                            $canTakeTest = in_array(strtolower($status), ['reviewed', 'shortlisted', 'interview', 'accepted']);
-                        @endphp
-
-                        {{-- CASE A: Multiple tests → tampilkan stepper --}}
-                        @if ($appTestProgress && count($appTestProgress) > 1)
-                            @if (!in_array(strtolower($status), ['rejected']))
-                                <div class="w-full mt-1">
-                                    <p class="text-[10px] font-bold uppercase text-slate-400 dark:text-[#93A5C9] mb-2 tracking-wider">{{ __('Tahapan Tes Online') }}</p>
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        @foreach ($appTestProgress as $idx => $step)
-                                            @php
-                                                $isTestDisc = str_contains(strtolower($step['test']->category?->name ?? ''), 'disc');
-                                                $testLabel  = $step['test']->title;
-                                            @endphp
-
-                                            {{-- Connector line between steps --}}
-                                            @if ($idx > 0)
-                                                <div class="flex-1 h-px bg-slate-200 dark:bg-[#1D2E54] min-w-[12px] max-w-[24px]"></div>
-                                            @endif
-
-                                            {{-- Step item --}}
-                                            @if ($step['status'] === 'completed')
-                                                <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $step['test']->id]) }}"
-                                                    title="{{ $testLabel }} — {{ __('Selesai') }}"
-                                                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-[#93F514] text-[10px] font-bold whitespace-nowrap transition hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shrink-0">
-                                                    <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                    <span class="max-w-[80px] truncate">{{ $testLabel }}</span>
-                                                </a>
-                                            @elseif ($step['status'] === 'in_progress')
-                                                <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $step['test']->id]) }}"
-                                                    title="{{ $testLabel }} — {{ __('Sedang dikerjakan') }}"
-                                                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-600 dark:bg-blue-700 border border-blue-700 dark:border-blue-600 text-white text-[10px] font-bold whitespace-nowrap transition hover:bg-blue-700 shrink-0 animate-pulse">
-                                                    <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                    </svg>
-                                                    <span class="max-w-[80px] truncate">{{ $testLabel }}</span>
-                                                </a>
-                                            @elseif ($step['status'] === 'unlocked' && $canTakeTest)
-                                                <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $step['test']->id]) }}"
-                                                    title="{{ $testLabel }} — {{ __('Kerjakan sekarang') }}"
-                                                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-600 dark:bg-[#93F514] border border-emerald-700 dark:border-[#93F514] text-white dark:text-black text-[10px] font-bold whitespace-nowrap transition hover:bg-emerald-500 dark:hover:bg-[#82dc12] shrink-0">
-                                                    <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    <span class="max-w-[80px] truncate">{{ $testLabel }}</span>
-                                                </a>
-                                            @elseif ($step['status'] === 'unlocked' && !$canTakeTest)
-                                                <div title="{{ $testLabel }} — {{ __('Menunggu seleksi berkas') }}"
-                                                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-600 dark:text-amber-300 text-[10px] font-bold whitespace-nowrap shrink-0">
-                                                    <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    <span class="max-w-[80px] truncate">{{ $testLabel }}</span>
-                                                </div>
-                                            @else
-                                                {{-- Locked --}}
-                                                <div title="{{ $testLabel }} — {{ __('Selesaikan tes sebelumnya terlebih dahulu') }}"
-                                                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-400 dark:text-[#93A5C9] text-[10px] font-bold whitespace-nowrap shrink-0 cursor-not-allowed opacity-70">
-                                                    <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                                    </svg>
-                                                    <span class="max-w-[80px] truncate">{{ $testLabel }}</span>
-                                                </div>
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-
-                        {{-- CASE B: Single test → tombol seperti semula --}}
-                        @elseif ($singleTest && !in_array(strtolower($status), ['rejected']))
-                            @if ($latestSingleAttempt && $latestSingleAttempt->status !== 'in_progress')
-                                @php $isTestDisc = str_contains(strtolower($singleTest->category?->name ?? ''), 'disc'); @endphp
-                                <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $singleTest->id]) }}"
-                                    class="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-[#93F514] text-xs font-semibold rounded-xl transition">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <span>{{ $isTestDisc ? __('Lihat Status Tes') : __('Lihat Hasil Tes') }}</span>
-                                </a>
-                            @elseif ($canTakeTest || ($latestSingleAttempt && $latestSingleAttempt->status === 'in_progress'))
-                                <a href="{{ route('applicant.test', ['applicationId' => $app->id, 'testId' => $singleTest->id]) }}"
-                                    class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-bold text-xs rounded-xl shadow-xs transition text-center">
-                                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                    <span>{{ $latestSingleAttempt ? __('Lanjutkan Ujian') : __('Mulai Ujian Online') }}</span>
-                                </a>
-                            @else
-                                <div class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 text-xs font-medium rounded-xl text-center" title="{{ __('Ujian online akan terbuka setelah berkas lamaran Anda selesai diverifikasi & disetujui tim HR.') }}">
-                                    <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                    </svg>
-                                    <span class="truncate">{{ __('Ujian: Menunggu Berkas') }}</span>
-                                </div>
-                            @endif
-                        @endif
-
+                    <div class="flex items-center justify-end gap-2 shrink-0 w-full sm:w-auto">
                         <button wire:click="openDetail({{ $app->id }})"
-                            class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-slate-200/80 dark:border-[#1D2E54] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#14203A] text-xs font-semibold rounded-xl transition shadow-2xs text-center active:scale-95">
+                            class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-slate-200/80 dark:border-[#1D2E54] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#14203A] text-xs font-semibold rounded-xl transition shadow-2xs whitespace-nowrap text-center active:scale-95">
                             <svg class="w-4 h-4 shrink-0 text-slate-500 dark:text-[#93A5C9]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -778,7 +858,7 @@
 
                         @if (in_array(strtolower($status), ['submitted', 'pending', 'applied']))
                             <button type="button" wire:click="openWithdrawModal({{ $app->id }})"
-                                class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold rounded-xl transition shadow-2xs text-center active:scale-95"
+                                class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold rounded-xl transition shadow-2xs whitespace-nowrap text-center active:scale-95"
                                 title="{{ __('Batalkan lamaran ini jika terjadi kesalahan') }}">
                                 <svg class="w-4 h-4 shrink-0 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1072,6 +1152,142 @@
                             class="px-5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-[#1D2E54] hover:bg-slate-100 dark:hover:bg-[#14203A] rounded-xl transition">
                             {{ __('Tutup') }}
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Modal Sukses Pengiriman Lamaran -->
+    @if (session('application_submitted'))
+        @php
+            $submittedInfo = session('application_submitted');
+            $submittedJobTitle = is_array($submittedInfo) ? ($submittedInfo['job_title'] ?? __('Posisi Pekerjaan')) : __('Posisi Pekerjaan');
+            $submittedCompanyName = is_array($submittedInfo) ? ($submittedInfo['company_name'] ?? __('Perusahaan Mitra')) : __('Perusahaan Mitra');
+            $submittedHasTest = is_array($submittedInfo) ? (bool) ($submittedInfo['has_test'] ?? false) : false;
+        @endphp
+        <div x-data="{ show: true }"
+             x-show="show"
+             x-on:keydown.escape.window="show = false"
+             class="fixed inset-0 z-50 overflow-y-auto"
+             aria-labelledby="modal-title-submitted"
+             role="dialog"
+             aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <!-- Backdrop -->
+                <div x-show="show"
+                     x-transition:enter="ease-out duration-300"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="ease-in duration-200"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     @click="show = false"
+                     class="fixed inset-0 transition-opacity bg-slate-950/75 backdrop-blur-sm"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <!-- Modal Card -->
+                <div x-show="show"
+                     x-transition:enter="ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave="ease-in duration-200"
+                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     class="relative inline-block w-full sm:max-w-lg overflow-hidden text-left align-bottom sm:align-middle sm:my-8 bg-white dark:bg-[#0D1527] rounded-3xl shadow-2xl border border-slate-200 dark:border-[#1D2E54] transform transition-all">
+
+                    <div class="p-6 sm:p-7 space-y-5">
+                        <!-- Header -->
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-[#93F514]/40 flex items-center justify-center text-emerald-600 dark:text-[#93F514] shrink-0 shadow-xs">
+                                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold tracking-tight text-slate-900 dark:text-white leading-snug" id="modal-title-submitted">
+                                        {{ __('Lamaran Berhasil Dikirimkan!') }}
+                                    </h3>
+                                    <p class="text-xs font-medium text-slate-500 dark:text-[#93A5C9] mt-0.5">
+                                        <span class="font-bold text-slate-700 dark:text-slate-200">{{ $submittedJobTitle }}</span>
+                                        <span>•</span>
+                                        <span class="text-emerald-700 dark:text-[#93F514] font-semibold">{{ $submittedCompanyName }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <button type="button" @click="show = false"
+                                class="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#14203A] transition shrink-0"
+                                aria-label="{{ __('Tutup') }}">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Alur & Keterangan Tahap Berikutnya -->
+                        <div class="space-y-3">
+                            <!-- Step 1: Menunggu Dilihat Berkas & ACC Admin -->
+                            <div class="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/25 border border-emerald-200/80 dark:border-emerald-800/50 flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-emerald-600 dark:bg-[#93F514] text-white dark:text-black text-xs font-extrabold flex items-center justify-center shrink-0 mt-0.5">
+                                    1
+                                </div>
+                                <div class="text-xs space-y-0.5">
+                                    <p class="font-bold text-emerald-900 dark:text-[#93F514]">
+                                        {{ __('Menunggu Peninjauan Berkas & ACC Admin') }}
+                                    </p>
+                                    <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+                                        {{ __('Lamaran Anda sudah masuk ke sistem. Tim HR/Admin akan melihat dan memverifikasi kelengkapan berkas Anda terlebih dahulu sebelum memberikan persetujuan (ACC) ke tahap berikutnya.') }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Informasi Tes Online Setelah Lolos Administrasi -->
+                            <div class="p-3.5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/25 border border-amber-200/80 dark:border-amber-800/50 flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-extrabold flex items-center justify-center shrink-0 mt-0.5">
+                                    2
+                                </div>
+                                <div class="text-xs space-y-0.5">
+                                    <p class="font-bold text-amber-900 dark:text-amber-300">
+                                        {{ __('Informasi Pengerjaan Tes Online') }}
+                                    </p>
+                                    <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                        @if ($submittedHasTest)
+                                            {{ __('Lowongan ini memiliki Tes Online yang harus dikerjakan. Akses tes saat ini masih terkunci dan tombol "Mulai Ujian Online" akan otomatis terbuka setelah berkas Anda dinyatakan Lolos Seleksi Administrasi (di-ACC Admin).') }}
+                                        @else
+                                            {{ __('Apabila lowongan ini menyertakan Tes Online, tes baru dapat dikerjakan setelah berkas Anda dinyatakan Lolos Seleksi Administrasi (di-ACC Admin).') }}
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Step 3: Pantau Progress Melalui Menu Riwayat -->
+                            <div class="p-3.5 rounded-2xl bg-blue-50/70 dark:bg-[#14203A] border border-blue-200/80 dark:border-[#1D2E54] flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-extrabold flex items-center justify-center shrink-0 mt-0.5">
+                                    3
+                                </div>
+                                <div class="text-xs space-y-0.5">
+                                    <p class="font-bold text-blue-900 dark:text-blue-300">
+                                        {{ __('Pantau Progress di Menu Riwayat Lamaran') }}
+                                    </p>
+                                    <p class="text-slate-600 dark:text-[#93A5C9] leading-relaxed">
+                                        {{ __('Untuk melihat perkembangan status lamaran, hasil ACC berkas, akses pengerjaan tes online, hingga jadwal wawancara, silakan cek secara berkala melalui halaman Riwayat Lamaran ini.') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer Action -->
+                        <div class="pt-1 flex justify-end">
+                            <button type="button" @click="show = false"
+                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black font-semibold text-xs tracking-wide shadow-md shadow-emerald-600/20 dark:shadow-[#93F514]/20 transition active:scale-95 cursor-pointer">
+                                <span>{{ __('Mengerti, Lihat Riwayat Lamaran') }}</span>
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

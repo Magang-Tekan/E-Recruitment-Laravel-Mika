@@ -14,6 +14,8 @@ class JobApplication extends Model
         'status', 
         'applied_at', 
         'notes',
+        'test_deadline_at',
+        'test_deadline_extended_count',
         'recruiter_approval',
         'recruiter_notes',
         'recruiter_approved_at',
@@ -42,6 +44,8 @@ class JobApplication extends Model
 
     protected $casts = [
         'applied_at'                      => 'datetime',
+        'test_deadline_at'                => 'datetime',
+        'test_deadline_extended_count'    => 'integer',
         'recruiter_approved_at'           => 'datetime',
         'admin_approved_at'               => 'datetime',
         'test_recruiter_approved_at'      => 'datetime',
@@ -153,5 +157,69 @@ class JobApplication extends Model
     public function testAttempts()
     {
         return $this->hasMany(TestAttempt::class, 'job_application_id');
+    }
+
+    /**
+     * Ambil default batas waktu tes global (hari kerja) dari tabel settings.
+     */
+    public static function defaultTestDeadlineDays(): int
+    {
+        $days = (int) Setting::get('default_test_deadline_days', 1);
+
+        return max(1, min(30, $days));
+    }
+
+    /**
+     * Tentukan batas hari kerja yang berlaku untuk lamaran ini (per lowongan > global).
+     */
+    public function effectiveTestDeadlineDays(): int
+    {
+        return $this->job?->effectiveTestDeadlineDays() ?? static::defaultTestDeadlineDays();
+    }
+
+    /**
+     * Susun teks catatan standar saat pelamar lolos seleksi berkas (Reviewed).
+     */
+    public static function reviewedNotesTemplate(?int $workingDays = null): string
+    {
+        $days = max(1, min(30, $workingDays ?? static::defaultTestDeadlineDays()));
+
+        return "Selamat! Anda lolos seleksi berkas administrasi. Mohon segera kerjakan ujian online dalam waktu {$days} hari kerja ({$days} x 24 jam kerja, Senin–Jumat) melalui menu Riwayat Lamaran sebelum batas waktu yang tertera.";
+    }
+
+    /**
+     * Hitung batas akhir pengerjaan tes online berdasarkan hari kerja (Senin–Jumat).
+     * 1 hari kerja = +24 jam kerja dengan melewati Sabtu & Minggu.
+     */
+    public static function calculateTestDeadline(?\Carbon\CarbonInterface $from = null, ?int $workingDays = null): \Carbon\Carbon
+    {
+        $days = max(1, min(30, $workingDays ?? static::defaultTestDeadlineDays()));
+        $base = ($from ? \Carbon\Carbon::instance($from) : now())
+            ->copy()
+            ->timezone('Asia/Jakarta');
+
+        $deadline = $base->addWeekdays($days);
+
+        return $deadline->timezone(config('app.timezone', 'UTC'));
+    }
+
+    public function isTestExpired(): bool
+    {
+        return $this->test_deadline_at !== null && now()->gt($this->test_deadline_at);
+    }
+
+    public function hasCompletedAllTests(): bool
+    {
+        $job = $this->job;
+        if (! $job || ! $job->tests || $job->tests->isEmpty()) {
+            return false;
+        }
+
+        $completedTestIds = $this->testAttempts
+            ->whereIn('status', ['completed', 'passed', 'failed'])
+            ->pluck('test_id')
+            ->unique();
+
+        return $job->tests->pluck('id')->diff($completedTestIds)->isEmpty();
     }
 }

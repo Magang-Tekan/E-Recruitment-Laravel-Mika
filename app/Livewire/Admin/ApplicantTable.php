@@ -193,6 +193,7 @@ class ApplicantTable extends Component
             'job.company',
             'job.department',
             'job.reviewer',
+            'job.tests',
             'recruiter',
             'admin',
             'testRecruiter',

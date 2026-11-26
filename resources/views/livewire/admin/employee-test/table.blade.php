@@ -308,6 +308,9 @@
                     <button type="button" wire:click="$set('targetEmployeeType', 'contract')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $targetEmployeeType === 'contract' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
                         Karyawan Kontrak
                     </button>
+                    <button type="button" wire:click="$set('targetEmployeeType', 'probation')" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer {{ $targetEmployeeType === 'probation' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                        Probation
+                    </button>
                 </div>
 
                 @if ($search || $companyId || $departmentId || $categoryId || $targetEmployeeType)
@@ -428,6 +431,11 @@
                                             <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/80">
                                                 <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                                                 Karyawan Kontrak
+                                            </span>
+                                        @elseif ($t->target_employee_type === 'probation')
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/80">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                                                Probation
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium bg-gray-50 dark:bg-slate-800/80 text-gray-600 dark:text-slate-300 border border-gray-200/80 dark:border-slate-700">
@@ -617,6 +625,7 @@
                                     <option value="internship" {{ old('target_employee_type') == 'internship' ? 'selected' : '' }}>Magang (Internship)</option>
                                     <option value="permanent" {{ old('target_employee_type') == 'permanent' ? 'selected' : '' }}>Karyawan Tetap</option>
                                     <option value="contract" {{ old('target_employee_type') == 'contract' ? 'selected' : '' }}>Karyawan Kontrak</option>
+                                    <option value="probation" {{ old('target_employee_type') == 'probation' ? 'selected' : '' }}>Masa Percobaan (Probation)</option>
                                 </select>
                                 <span class="text-[10px] text-gray-400">Tentukan siapa saja yang dapat melihat dan mengerjakan tes ini</span>
                                 @error('target_employee_type')
@@ -906,6 +915,7 @@
                                     <option value="internship">Magang (Internship)</option>
                                     <option value="permanent">Karyawan Tetap</option>
                                     <option value="contract">Karyawan Kontrak</option>
+                                    <option value="probation">Masa Percobaan (Probation)</option>
                                 </select>
                                 <span class="text-[10px] text-gray-400">Tentukan siapa saja yang dapat melihat dan mengerjakan tes ini</span>
                                 @error('target_employee_type')
@@ -1146,7 +1156,7 @@
                         </div>
                         <div class="p-3 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
                             <span class="block text-[10px] text-gray-400 font-semibold uppercase">Target Peserta</span>
-                            <span class="text-xs font-bold text-gray-800 dark:text-slate-200 capitalize" x-text="detailData.target_employee_type === 'all' ? 'Semua Karyawan & Magang' : detailData.target_employee_type"></span>
+                            <span class="text-xs font-bold text-gray-800 dark:text-slate-200 capitalize" x-text="({ all: 'Semua Karyawan & Magang', permanent: 'Karyawan Tetap', contract: 'Karyawan Kontrak', internship: 'Magang (Internship)', probation: 'Masa Percobaan (Probation)' })[detailData.target_employee_type] || detailData.target_employee_type"></span>
                         </div>
                     </div>
 

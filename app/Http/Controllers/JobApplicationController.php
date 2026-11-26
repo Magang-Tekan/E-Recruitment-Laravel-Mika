@@ -30,6 +30,12 @@ class JobApplicationController extends Controller
             return redirect()->route('login');
         }
 
+        // Hanya akun pelamar (role 3) yang boleh mengajukan lamaran baru.
+        if ($user->role_id != 3) {
+            return redirect()->route('jobs.show', $id)
+                ->with('error', 'Hanya pelamar yang dapat mengajukan lamaran.');
+        }
+
         $applicantProfile = \App\Models\ApplicantProfile::where('user_id', $user->id)->first();
         if (!$applicantProfile) {
             return redirect()->route('profile')
@@ -42,7 +48,7 @@ class JobApplicationController extends Controller
                 ->with('error', 'Mohon lengkapi seluruh data wajib profil Anda (minimal 80%) sebelum mengajukan lamaran.');
         }
 
-        $job = \App\Models\Job::findOrFail($id);
+        $job = \App\Models\Job::with(['company', 'tests'])->findOrFail($id);
 
         // Minta konfirmasi bila jarak yang diisi tidak konsisten dengan kota penempatan lowongan.
         $domicileMismatch = $applicantProfile->domicileDistanceMismatch($job);
@@ -74,9 +80,35 @@ class JobApplicationController extends Controller
             if ($existingApp) {
                 // Aktifkan kembali lamaran yang sebelumnya pernah dibatalkan
                 $existingApp->update([
-                    'status'     => 'Submitted',
-                    'applied_at' => now(),
-                    'notes'      => 'Diajukan kembali setelah sebelumnya dibatalkan.',
+                    'status'                        => 'Submitted',
+                    'applied_at'                    => now(),
+                    'notes'                         => 'Diajukan kembali setelah sebelumnya dibatalkan.',
+                    'test_deadline_at'              => null,
+                    'test_deadline_extended_count'  => 0,
+                    'recruiter_approval'            => 'pending',
+                    'recruiter_notes'               => null,
+                    'recruiter_approved_at'         => null,
+                    'recruiter_id'                  => null,
+                    'admin_approval'                => 'pending',
+                    'admin_notes'                   => null,
+                    'admin_approved_at'             => null,
+                    'admin_id'                      => null,
+                    'test_recruiter_approval'       => 'pending',
+                    'test_recruiter_notes'          => null,
+                    'test_recruiter_approved_at'    => null,
+                    'test_recruiter_id'             => null,
+                    'test_admin_approval'           => 'pending',
+                    'test_admin_notes'              => null,
+                    'test_admin_approved_at'        => null,
+                    'test_admin_id'                 => null,
+                    'interview_recruiter_approval'  => 'pending',
+                    'interview_recruiter_notes'     => null,
+                    'interview_recruiter_approved_at' => null,
+                    'interview_recruiter_id'        => null,
+                    'interview_admin_approval'      => 'pending',
+                    'interview_admin_notes'         => null,
+                    'interview_admin_approved_at'   => null,
+                    'interview_admin_id'            => null,
                 ]);
                 $application = $existingApp;
 
@@ -109,7 +141,12 @@ class JobApplicationController extends Controller
             \Illuminate\Support\Facades\DB::commit();
 
             return redirect()->route('profile', ['tab' => 'riwayat'])
-                ->with('create', 'Lamaran Anda berhasil dikirim! Silakan pantau perkembangan seleksi dan ikuti tes online jika tersedia.');
+                ->with('application_submitted', [
+                    'job_title'    => $job->localized_title ?? $job->title,
+                    'company_name' => $job->company?->name ?? __('Perusahaan Mitra'),
+                    'has_test'     => $job->tests->isNotEmpty(),
+                ])
+                ->with('create', __('Lamaran Anda berhasil dikirim! Mohon menunggu peninjauan berkas dan persetujuan (ACC) Admin. Pantau progress seleksi serta tes online melalui menu Riwayat Lamaran.'));
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
             return redirect()->route('jobs.show', $id)
@@ -140,7 +177,7 @@ class JobApplicationController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $application = JobApplication::with(['job.company', 'job.department', 'applicantProfile.user'])->findOrFail($id);
+        $application = JobApplication::with(['job.company', 'job.department', 'job.tests', 'applicantProfile.user'])->findOrFail($id);
 
         $user = auth()->user();
         $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
@@ -211,7 +248,7 @@ class JobApplicationController extends Controller
         $customSuccessMsg = null;
 
         $defaultTemplates = [
-            'Reviewed'         => 'Selamat! Anda lolos seleksi berkas administrasi. Silakan lanjut kerjakan ujian online yang tersedia pada menu Riwayat Lamaran.',
+            'Reviewed'         => JobApplication::reviewedNotesTemplate($application->effectiveTestDeadlineDays()),
             'Partial Approved' => 'Lamaran Anda telah disetujui pada salah satu tahap verifikasi (Partial Approved) dan sedang dalam proses peninjauan akhir.',
             'Shortlisted'      => 'Selamat! Anda dinyatakan lolos tahap seleksi ujian online dan masuk ke dalam daftar kandidat terpilih (Shortlisted). Tim HR kami akan segera menginformasikan jadwal tahap wawancara.',
             'Interview'        => 'Anda diundang untuk mengikuti tahap wawancara. Silakan periksa jadwal dan informasi meeting yang tertera.',
@@ -547,6 +584,12 @@ class JobApplicationController extends Controller
             $customSuccessMsg = 'Status lamaran berhasil diperbarui menjadi ' . ($newStatus === 'Shortlisted' ? 'Lolos Ujian (Shortlisted)' : $newStatus) . '.';
         }
 
+        if ($newStatus === 'Reviewed' && $application->test_deadline_at === null) {
+            $application->test_deadline_at = JobApplication::calculateTestDeadline(
+                workingDays: $application->effectiveTestDeadlineDays()
+            );
+        }
+
         $application->status = $newStatus;
         $application->notes = $notes;
         $application->save();
@@ -629,6 +672,68 @@ class JobApplicationController extends Controller
 
         return redirect()->route($redirectRoute)
             ->with('update', $successMsg);
+    }
+
+    /**
+     * Extend online test deadline for an applicant (Admin only).
+     */
+    public function extendTestDeadline(Request $request, string $id)
+    {
+        $user = auth()->user();
+        $isAdmin = $user && ($user->role_id == 1 || in_array(strtolower($user->role?->name ?? ''), ['admin', 'superadmin']));
+        if (!$isAdmin) {
+            return redirect()->back()
+                ->with('error', 'Hanya Admin/HR yang berwenang memperpanjang batas waktu pengerjaan tes.');
+        }
+
+        $request->validate([
+            'extend_mode'     => 'required|in:24h,48h,72h,custom',
+            'custom_deadline' => 'nullable|required_if:extend_mode,custom|date|after:now',
+            'extend_reason'   => 'nullable|string|max:500',
+        ], [
+            'custom_deadline.required_if' => 'Tanggal & jam batas baru wajib diisi.',
+            'custom_deadline.after'       => 'Batas waktu baru harus lebih dari waktu saat ini.',
+        ]);
+
+        $application = JobApplication::with(['job', 'applicantProfile.user'])->findOrFail($id);
+
+        if (!in_array(strtolower(trim((string) $application->status)), ['reviewed', 'shortlisted', 'interview', 'accepted'])) {
+            return redirect()->route('admin.application')
+                ->with('error', 'Perpanjangan batas tes hanya berlaku untuk pelamar yang sudah lolos seleksi berkas.');
+        }
+
+        $mode = $request->input('extend_mode');
+        $baseTime = ($application->test_deadline_at && $application->test_deadline_at->isFuture())
+            ? $application->test_deadline_at->copy()
+            : now();
+
+        $newDeadline = match ($mode) {
+            '24h'   => JobApplication::calculateTestDeadline($baseTime, 1),
+            '48h'   => JobApplication::calculateTestDeadline($baseTime, 2),
+            '72h'   => JobApplication::calculateTestDeadline($baseTime, 3),
+            default => \Carbon\Carbon::parse($request->input('custom_deadline'), 'Asia/Jakarta')->timezone(config('app.timezone', 'UTC')),
+        };
+
+        $application->test_deadline_at = $newDeadline;
+        $application->test_deadline_extended_count = ((int) $application->test_deadline_extended_count) + 1;
+        $application->save();
+
+        $deadlineFormatted = $newDeadline->copy()->timezone('Asia/Jakarta')->translatedFormat('l, d F Y • H:i') . ' WIB';
+        $reason = trim((string) $request->input('extend_reason'));
+        $historyNote = "Batas waktu pengerjaan tes online diperpanjang oleh Admin hingga {$deadlineFormatted}." . ($reason !== '' ? " Alasan: {$reason}" : '');
+
+        ApplicationStatusHistory::create([
+            'job_applications_id' => $application->id,
+            'status'              => $application->status,
+            'notes'               => $historyNote,
+            'changed_by'          => $user->id,
+            'changed_at'          => now(),
+        ]);
+
+        $applicantName = $application->applicantProfile?->full_name ?? ($application->applicantProfile?->user?->name ?? 'Pelamar');
+
+        return redirect()->route('admin.application')
+            ->with('update', "Batas waktu tes online untuk {$applicantName} berhasil diperpanjang hingga {$deadlineFormatted}.");
     }
 
     /**

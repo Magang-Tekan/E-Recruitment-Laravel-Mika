@@ -191,6 +191,59 @@
         @endif
     </div>
 
+    @if ($isAdmin && ($expiringEmployeesCount ?? 0) > 0)
+        <!-- Pengingat Masa Kontrak / Magang / Probation Segera Berakhir -->
+        <div class="bg-amber-50/80 dark:bg-amber-950/25 border border-amber-200 dark:border-amber-800/70 rounded-2xl p-5 shadow-sm space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-start sm:items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-amber-900 dark:text-amber-200">
+                            Pengingat Kontrak / Magang / Probation ({{ $expiringEmployeesCount }} Pegawai)
+                        </h3>
+                        <p class="text-xs text-amber-800/80 dark:text-amber-300/80">
+                            Daftar pegawai dengan masa berlaku berakhir dalam 30 hari ke depan atau perlu evaluasi/perpanjangan.
+                        </p>
+                    </div>
+                </div>
+                <a href="{{ route('admin.employee') }}"
+                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shrink-0 self-start sm:self-center">
+                    <span>Kelola di Kepegawaian</span>
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                @foreach ($expiringEmployees as $expEmp)
+                    @php
+                        $daysLeft = now()->startOfDay()->diffInDays($expEmp->contract_end_date->startOfDay(), false);
+                        $typeText = match ($expEmp->employee_type) {
+                            'internship' => 'Magang',
+                            'probation' => 'Probation',
+                            default => 'Kontrak',
+                        };
+                    @endphp
+                    <div class="p-3 rounded-xl bg-white/90 dark:bg-[#0D1527] border border-amber-200/70 dark:border-[#1D2E54] flex items-center justify-between gap-2 text-xs">
+                        <div class="min-w-0">
+                            <p class="font-bold text-slate-900 dark:text-white truncate">{{ $expEmp->full_name }}</p>
+                            <p class="text-[11px] text-slate-500 dark:text-[#93A5C9] truncate">
+                                {{ $typeText }} &bull; {{ $expEmp->department?->name ?? 'Umum' }}
+                            </p>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-lg text-[10.5px] font-bold shrink-0 whitespace-nowrap {{ $daysLeft < 0 ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300' }}">
+                            {{ $daysLeft < 0 ? 'Lewat ' . abs($daysLeft) . ' hari' : ($daysLeft === 0 ? 'Hari ini' : $daysLeft . ' hari lagi') }}
+                        </span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <!-- Middle Content Grid: Recent Applications & Active Jobs -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
 

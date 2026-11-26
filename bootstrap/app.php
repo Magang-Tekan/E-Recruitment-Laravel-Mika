@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\CheckSessionTimeout::class,
             \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\EnsureEmployeeAccountIsActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -231,13 +231,21 @@
             ? $message->embed($logoPath) 
             : ($hasLogo ? asset('images/mikaaaa.png') : null);
 
+        $effectiveDeadlineDays = $application->effectiveTestDeadlineDays();
+        $testDeadlineText = $application->test_deadline_at
+            ? $application->test_deadline_at->copy()->timezone('Asia/Jakarta')->translatedFormat('l, d F Y \p\u\k\u\l H:i') . ' WIB'
+            : null;
+
         // Teks dan instruksi profesional sesuai status
         $statusInfo = match($status) {
             'Reviewed' => [
                 'border_color' => '#2563eb',
                 'bg_color'     => '#eff6ff',
                 'title'        => 'Pemberitahuan: Lolos Seleksi Berkas & Undangan Ujian Online',
-                'desc'         => 'Berdasarkan hasil penelaahan kualifikasi terhadap berkas lamaran yang Anda ajukan, kami menyampaikan bahwa berkas Anda resmi dinyatakan <strong style="color: #1d4ed8;">Lolos Seleksi Berkas</strong>. Anda kami undang untuk melanjutkan ke tahapan <strong style="color: #1d4ed8;">Ujian Seleksi Online</strong>.',
+                'desc'         => 'Berdasarkan hasil penelaahan kualifikasi terhadap berkas lamaran yang Anda ajukan, kami menyampaikan bahwa berkas Anda resmi dinyatakan <strong style="color: #1d4ed8;">Lolos Seleksi Berkas</strong>. Anda kami undang untuk melanjutkan ke tahapan <strong style="color: #1d4ed8;">Ujian Seleksi Online</strong>.'
+                    . ($testDeadlineText
+                        ? '<br><br>Mohon segera mengerjakan ujian online dalam waktu <strong style="color: #1d4ed8;">' . $effectiveDeadlineDays . ' hari kerja (' . $effectiveDeadlineDays . ' x 24 jam kerja)</strong> agar proses seleksi Anda dapat lebih cepat kami tinjau. Akses pengerjaan ujian akan ditutup otomatis pada <strong style="color: #0f172a;">' . e($testDeadlineText) . '</strong> (tetap dapat dikerjakan 24 jam termasuk akhir pekan sebelum batas waktu tersebut).'
+                        : ''),
                 'btn_text'     => 'Masuk ke Portal & Mulai Ujian',
                 'btn_url'      => route('profile', ['tab' => 'riwayat']),
                 'has_exam'     => true,
@@ -352,6 +360,12 @@
                         <tr>
                             <td class="details-label">Tanggal Lamaran</td>
                             <td class="details-val">: {{ \Carbon\Carbon::parse($application->applied_at)->translatedFormat('d F Y, H:i') }} WIB</td>
+                        </tr>
+                    @endif
+                    @if ($status === 'Reviewed' && $testDeadlineText)
+                        <tr>
+                            <td class="details-label">Batas Pengerjaan Tes</td>
+                            <td class="details-val" style="color: #b45309;">: {{ $testDeadlineText }}</td>
                         </tr>
                     @endif
                 </table>

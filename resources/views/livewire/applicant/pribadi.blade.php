@@ -201,7 +201,7 @@
                 <!-- Nama Lengkap -->
                 <div>
                     <label
-                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Nama Lengkap') }}
+                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">{{ __('Nama Lengkap WAJIB sesuai KTP') }}
                         <span class="text-red-500">*</span></label>
                     <input type="text" wire:model="full_name" placeholder="{{ __('Nama lengkap sesuai KTP') }}"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#1D2E54] bg-slate-50 dark:bg-[#14203A] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#93F514] focus:border-transparent transition">

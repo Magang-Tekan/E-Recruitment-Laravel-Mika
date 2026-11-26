@@ -14,8 +14,22 @@ class Job extends Model
         'title', 'title_en', 
         'description', 'description_en', 
         'employment_type', 'experience_level', 'location', 'salary_min', 'salary_max', 
-        'quota', 'deadline', 'status'
+        'quota', 'deadline', 'test_deadline_days', 'status'
     ];
+
+    protected $casts = [
+        'test_deadline_days' => 'integer',
+    ];
+
+    /**
+     * Jumlah hari kerja batas tes yang berlaku (khusus lowongan atau default global).
+     */
+    public function effectiveTestDeadlineDays(): int
+    {
+        return $this->test_deadline_days !== null && $this->test_deadline_days > 0
+            ? (int) $this->test_deadline_days
+            : JobApplication::defaultTestDeadlineDays();
+    }
 
     protected static function booted(): void
     {

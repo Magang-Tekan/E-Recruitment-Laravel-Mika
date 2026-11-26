@@ -1,4 +1,41 @@
 <div class="space-y-6">
+    @php
+        $empStatus = $employeeProfile?->employment_status ?? 'active';
+        $empType = $employeeProfile?->employee_type ?? 'permanent';
+        $contractEndObj = $employeeProfile?->contract_end_date;
+        $daysLeftToEnd = ($empType !== 'permanent' && $contractEndObj)
+            ? now()->startOfDay()->diffInDays($contractEndObj->copy()->startOfDay(), false)
+            : null;
+    @endphp
+
+    @if ($empStatus === 'contract_ended')
+        <div class="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/70 text-amber-900 dark:text-amber-200 rounded-2xl shadow-sm">
+            <svg class="w-5 h-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+                <p class="text-xs sm:text-sm font-bold">
+                    Masa berlaku hubungan kerja Anda telah berakhir{{ $contractEndObj ? ' per ' . $contractEndObj->translatedFormat('d F Y') : '' }}.
+                </p>
+                <p class="text-xs mt-0.5 leading-relaxed opacity-90">
+                    Silakan hubungi Admin/HR terkait perpanjangan kontrak atau pengangkatan status kepegawaian. Data profil dan akses portal Anda tetap tersimpan.
+                </p>
+            </div>
+        </div>
+    @elseif ($daysLeftToEnd !== null && $daysLeftToEnd <= 30)
+        <div class="flex items-start gap-3 p-4 bg-amber-50/80 dark:bg-amber-950/25 border border-amber-200/80 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 rounded-2xl shadow-xs">
+            <svg class="w-5 h-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+                <p class="text-xs font-bold">
+                    Pengingat Masa {{ $empType === 'internship' ? 'Magang' : ($empType === 'probation' ? 'Probation' : 'Kontrak') }}:
+                    {{ $daysLeftToEnd < 0 ? 'Sudah melewati batas tanggal (' . $contractEndObj->translatedFormat('d F Y') . ')' : ($daysLeftToEnd === 0 ? 'Berakhir hari ini (' . $contractEndObj->translatedFormat('d F Y') . ')' : 'Berakhir ' . $daysLeftToEnd . ' hari lagi (' . $contractEndObj->translatedFormat('d F Y') . ')') }}
+                </p>
+                <p class="text-[11px] mt-0.5 opacity-90">Silakan berkoordinasi dengan tim HR untuk evaluasi atau tindak lanjut status kepegawaian Anda.</p>
+            </div>
+        </div>
+    @endif
 
     <!-- 1. Header Banner: "Selamat Datang, [Nama Karyawan]" (Clean Enterprise Blueprint - Non-AI) -->
     <div
@@ -37,6 +74,18 @@
                             class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-[#93F514]/15 dark:text-[#93F514] border border-emerald-200 dark:border-[#93F514]/30 whitespace-nowrap">
                             {{ $typeLabel }}
                         </span>
+                        @if ($employeeProfile)
+                            @php
+                                $portalStatusBadge = match ($empStatus) {
+                                    'contract_ended' => ['label' => 'Kontrak Berakhir', 'class' => 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border-amber-200 dark:border-amber-800/60'],
+                                    'inactive' => ['label' => 'Nonaktif', 'class' => 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border-rose-200 dark:border-rose-800/60'],
+                                    default => ['label' => 'Aktif', 'class' => 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border-blue-200 dark:border-blue-800/60'],
+                                };
+                            @endphp
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold border whitespace-nowrap {{ $portalStatusBadge['class'] }}">
+                                {{ $portalStatusBadge['label'] }}
+                            </span>
+                        @endif
                     </div>
                     <div class="flex items-center gap-x-4 gap-y-1.5 text-xs sm:text-sm text-slate-500 dark:text-[#93A5C9] mt-2 flex-wrap">
                         <span class="flex items-center gap-1 font-medium whitespace-nowrap">
@@ -55,6 +104,16 @@
                             <span class="text-slate-400 dark:text-[#7E90B5]">Posisi:</span>
                             <span class="text-slate-700 dark:text-slate-200">{{ $employeeProfile?->position_title ?? 'Karyawan' }}</span>
                         </span>
+                        @if ($employeeProfile && ($employeeProfile->contract_start_date || $employeeProfile->contract_end_date))
+                            <span class="flex items-center gap-1 font-medium whitespace-nowrap">
+                                <span class="text-slate-400 dark:text-[#7E90B5]">Masa Kerja:</span>
+                                <span class="text-slate-700 dark:text-slate-200">
+                                    {{ $employeeProfile->contract_start_date?->translatedFormat('d M Y') ?? '-' }}
+                                    s/d
+                                    {{ $employeeProfile->contract_end_date?->translatedFormat('d M Y') ?? 'Tanpa Batas' }}
+                                </span>
+                            </span>
+                        @endif
                     </div>
                 </div>
             </div>

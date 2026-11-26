@@ -215,6 +215,7 @@ class ApplicantOnlineTest extends Component
         // Cek apakah pelamar memiliki riwayat pengerjaan sebelumnya
         $existingAttempt = TestAttempt::where('job_application_id', $this->application->id)
             ->where('test_id', $this->test->id)
+            ->latest('id')
             ->first();
 
         // VALIDASI GERBANG SELEKSI BERKAS:
@@ -224,6 +225,15 @@ class ApplicantOnlineTest extends Component
 
         if (!$existingAttempt && !in_array($currentAppStatus, $allowedStatuses)) {
             session()->flash('error', 'Anda belum dapat mengikuti ujian online. Lamaran Anda masih dalam antrean verifikasi berkas oleh tim rekruter.');
+            return redirect()->route('profile', ['tab' => 'riwayat']);
+        }
+
+        // VALIDASI BATAS WAKTU PENGERJAAN TES:
+        // Jika belum pernah memulai / tidak sedang in_progress / belum selesai, dan batas waktu sudah lewat
+        $canBypassExpiry = $existingAttempt && in_array($existingAttempt->status, ['completed', 'passed', 'failed', 'in_progress']);
+        if (!$canBypassExpiry && $this->application->isTestExpired()) {
+            $deadlineText = $this->application->test_deadline_at->copy()->timezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') . ' WIB';
+            session()->flash('error', "Batas waktu pengerjaan tes online untuk lamaran ini telah berakhir pada {$deadlineText}. Silakan hubungi tim HR apabila Anda membutuhkan perpanjangan waktu.");
             return redirect()->route('profile', ['tab' => 'riwayat']);
         }
 
@@ -365,6 +375,14 @@ class ApplicantOnlineTest extends Component
                     DB::commit();
                     return;
                 }
+            }
+
+            $this->application->refresh();
+            if ($this->application->isTestExpired()) {
+                DB::rollBack();
+                $deadlineText = $this->application->test_deadline_at->copy()->timezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') . ' WIB';
+                session()->flash('error', "Batas waktu pengerjaan tes online telah berakhir pada {$deadlineText}.");
+                return redirect()->route('profile', ['tab' => 'riwayat']);
             }
 
             // Bersihkan attempt kosong (in_progress tanpa jawaban) jika ada sebelum membuat attempt baru

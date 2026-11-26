@@ -29,6 +29,7 @@ class JobController extends Controller
             'salary_max' => 'nullable|numeric|min:0',
             'quota' => 'required|integer|min:1',
             'deadline' => 'required|date',
+            'test_deadline_days' => 'nullable|integer|min:1|max:30',
             'status' => 'required|in:Open,Closed,Draft',
         ]);
 
@@ -48,6 +49,7 @@ class JobController extends Controller
             'salary_max' => $request->salary_max,
             'quota' => (int) $request->quota,
             'deadline' => $request->deadline,
+            'test_deadline_days' => $request->filled('test_deadline_days') ? (int) $request->test_deadline_days : null,
             'status' => $request->status,
         ]);
 
@@ -82,6 +84,7 @@ class JobController extends Controller
             'salary_max' => 'sometimes|nullable|numeric|min:0',
             'quota' => 'sometimes|required|integer|min:1',
             'deadline' => 'sometimes|required|date',
+            'test_deadline_days' => 'sometimes|nullable|integer|min:1|max:30',
             'status' => 'sometimes|required|in:Open,Closed,Draft',
         ]);
 
@@ -102,6 +105,9 @@ class JobController extends Controller
             'salary_max' => $request->input('salary_max', $data->salary_max),
             'quota' => $request->filled('quota') ? (int) $request->quota : ($data->quota ?? 1),
             'deadline' => $request->input('deadline', $data->deadline),
+            'test_deadline_days' => $request->has('test_deadline_days')
+                ? ($request->filled('test_deadline_days') ? (int) $request->test_deadline_days : null)
+                : $data->test_deadline_days,
             'status' => $request->input('status', $data->status),
         ];
 

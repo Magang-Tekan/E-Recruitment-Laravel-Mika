@@ -529,11 +529,6 @@
                             <span class="text-[11px] text-gray-400 block">{{ __('Kuota Lowongan') }}</span>
                             <span class="text-xs sm:text-sm font-bold text-[#EEEEEE] mt-0.5 block">{{ $job->quota }}
                                 {{ __('Orang') }}</span>
-                            @if ($job->is_quota_full)
-                                <span class="text-[10px] font-semibold text-amber-400 block mt-0.5">{{ __('Kuota Terpenuhi') }}</span>
-                            @elseif ($job->accepted_count > 0)
-                                <span class="text-[10px] text-emerald-400 block mt-0.5">{{ __('Sisa :count slot', ['count' => $job->remaining_quota]) }}</span>
-                            @endif
                         </div>
                         <div class="p-3 rounded-xl bg-[#050c05] border {{ $job->is_expired || $job->status === 'Closed' ? 'border-rose-500/30' : ($job->days_remaining !== null && $job->days_remaining <= 3 ? 'border-amber-500/40' : 'border-[#93F514]/20') }} {{ !$hasSalary ? 'col-span-2 sm:col-span-1' : '' }}">
                             <span class="text-[11px] text-gray-400 block">{{ __('Batas Lamaran') }}</span>

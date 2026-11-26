@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
+use App\Models\EmployeeProfile;
 use App\Models\Job;
 use App\Models\JobApplication;
 use App\Models\TestAttempt;
@@ -136,6 +137,22 @@ class Dashboard extends Component
                 ->toArray();
         }
 
+        $expiringEmployeesCount = 0;
+        $expiringEmployees = collect();
+        if ($isAdmin) {
+            $expiringBase = EmployeeProfile::with(['department', 'position'])
+                ->where('employment_status', EmployeeProfile::STATUS_ACTIVE)
+                ->whereIn('employee_type', ['contract', 'internship', 'probation'])
+                ->whereNotNull('contract_end_date')
+                ->whereDate('contract_end_date', '<=', now()->addDays(30)->toDateString());
+
+            $expiringEmployeesCount = (clone $expiringBase)->count();
+            $expiringEmployees = (clone $expiringBase)
+                ->orderBy('contract_end_date', 'asc')
+                ->take(5)
+                ->get();
+        }
+
         return view('livewire.admin.dashboard', [
             'isAdmin' => $isAdmin,
             'isRecruiter' => $isRecruiter,
@@ -150,6 +167,8 @@ class Dashboard extends Component
             'recentApplications' => $recentApplications,
             'recentJobs' => $recentJobs,
             'statusCounts' => $statusCounts,
+            'expiringEmployeesCount' => $expiringEmployeesCount,
+            'expiringEmployees' => $expiringEmployees,
         ]);
     }
 }

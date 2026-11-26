@@ -16,3 +16,6 @@ Schedule::command('app:send-job-recommendations Bulanan')->monthlyOn(1, '08:00')
 // Jadwal Otomatis Penutupan Lowongan yang Melewati Batas Tanggal (Deadline)
 Schedule::command('app:close-expired-jobs')->hourly();
 
+// Jadwal Penanda Kontrak Karyawan yang Sudah Berakhir (role akun tidak diubah)
+Schedule::command('app:mark-expired-contracts')->dailyAt('00:10');
+

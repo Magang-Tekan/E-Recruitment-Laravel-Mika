@@ -405,6 +405,24 @@
                 <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Hasil & Evaluasi Ujian Pelamar</h3>
                 <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Tinjau riwayat pengerjaan tes pelamar, berikan penilaian (grading) soal essay, dan evaluasi hasil tes.</p>
             </div>
+
+            <!-- Switcher Mode Tampilan: Per Pelamar (Rekap) vs Per Sesi Ujian (Detail) -->
+            <div class="inline-flex p-1 bg-gray-100 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-semibold self-start sm:self-auto shrink-0 shadow-2xs">
+                <button type="button" wire:click="$set('viewMode', 'by_applicant')"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer {{ $viewMode === 'by_applicant' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700 dark:text-slate-400 hover:dark:text-slate-200' }}">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Per Pelamar (Rekap)</span>
+                </button>
+                <button type="button" wire:click="$set('viewMode', 'by_attempt')"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer {{ $viewMode === 'by_attempt' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700 dark:text-slate-400 hover:dark:text-slate-200' }}">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Per Sesi Ujian (Detail)</span>
+                </button>
+            </div>
         </div>
 
         <!-- Filter & Search Toolbar Row -->
@@ -566,7 +584,7 @@
     <div class="relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
         
         <!-- Livewire Loading Overlay -->
-        <div wire:loading wire:target="search, companyId, jobId, testId, status, sortField, sortDirection, sortBy, previousPage, nextPage, gotoPage, resetFilters" class="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-10 transition">
+        <div wire:loading wire:target="search, companyId, jobId, testId, status, viewMode, sortField, sortDirection, sortBy, previousPage, nextPage, gotoPage, resetFilters" class="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-10 transition">
             <div class="flex items-center gap-2.5 px-4 py-2.5 bg-slate-900/90 dark:bg-slate-800/90 text-white rounded-xl shadow-xl text-xs font-semibold">
                 <svg class="animate-spin w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -576,7 +594,441 @@
             </div>
         </div>
 
-        <!-- Desktop & tablet landscape: tabel penuh -->
+        @if ($viewMode === 'by_applicant')
+            <!-- Desktop: Mode Per Pelamar (Rekap) -->
+            <div class="hidden lg:block overflow-x-auto">
+                <table class="w-full min-w-[960px] text-left border-collapse table-fixed">
+                    <colgroup>
+                        <col style="width:40px">
+                        <col style="width:22%">
+                        <col style="width:16%">
+                        <col style="width:33%">
+                        <col style="width:15%">
+                        <col style="width:14%">
+                    </colgroup>
+                    <thead>
+                        <tr class="border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 uppercase tracking-wider font-semibold text-[11px]">
+                            <th class="py-3 px-3 text-center">No</th>
+                            <th class="py-3 px-3 cursor-pointer select-none hover:text-indigo-600 transition" wire:click="sortBy('applicant')">
+                                <div class="flex items-center gap-1">
+                                    <span>Pelamar</span>
+                                    @if ($sortField === 'applicant')
+                                        <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                                    @endif
+                                </div>
+                            </th>
+                            <th class="py-3 px-3">Lowongan</th>
+                            <th class="py-3 px-3">Tes yang Dikerjakan</th>
+                            <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-indigo-600 transition" wire:click="sortBy('status')">
+                                <div class="flex items-center justify-center gap-1">
+                                    <span>Status & Approval</span>
+                                    @if ($sortField === 'status')
+                                        <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                                    @endif
+                                </div>
+                            </th>
+                            <th class="py-3 px-3 text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-slate-800/60 text-xs text-gray-700 dark:text-slate-300">
+                        @forelse ($applications as $index => $appItem)
+                            @php
+                                $profile = $appItem->applicantProfile;
+                                $applicantName = $profile?->full_name ?? 'Pelamar';
+                                $candPhotoUrl = $profile?->photo_url ?? ($profile?->user?->avatar ? (\Illuminate\Support\Str::startsWith($profile->user->avatar, ['http://', 'https://']) ? $profile->user->avatar : asset('storage/' . $profile->user->avatar)) : null);
+                                $appStatus = $appItem->status ?? 'Reviewed';
+                                $appBadgeClass = match(strtolower($appStatus)) {
+                                    'accepted' => 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800',
+                                    'rejected' => 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800',
+                                    'interview' => 'text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800',
+                                    'shortlisted' => 'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800',
+                                    'reviewed' => 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800',
+                                    default => 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800',
+                                };
+
+                                $testRecruiterAppr = $appItem->test_recruiter_approval ?? 'pending';
+                                $testAdminAppr = $appItem->test_admin_approval ?? 'pending';
+                                $isTestDoubleApproved = ($testRecruiterAppr === 'approved' && $testAdminAppr === 'approved');
+                                $isTestRejected = ($testRecruiterAppr === 'rejected' || $testAdminAppr === 'rejected');
+                                
+                                // Cek apakah ada essay yang belum dikoreksi
+                                $hasUnreviewedEssay = $appItem->testAttempts->contains(function($att) {
+                                    return $att->answers->contains(function($ans) {
+                                        return $ans->question && $ans->question->question_type === 'essay' && is_null($ans->reviewed_by);
+                                    });
+                                });
+
+                                // Sesi ujian pertama untuk tombol evaluasi cepat
+                                $firstAttempt = $appItem->testAttempts->first();
+                            @endphp
+                            <tr class="hover:bg-gray-50/80 dark:hover:bg-slate-800/40 transition duration-150">
+                                <td class="py-3.5 px-3 text-center font-medium text-gray-400 dark:text-slate-500">
+                                    {{ $applications->firstItem() + $index }}
+                                </td>
+                                <td class="py-3.5 px-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="relative w-9 h-9 shrink-0">
+                                            @if ($candPhotoUrl)
+                                                <img src="{{ $candPhotoUrl }}" alt="{{ $applicantName }}" referrerpolicy="no-referrer" class="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-[#1D2E54] shadow-2xs" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                                <div class="hidden w-9 h-9 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs items-center justify-center shadow-2xs">
+                                                    {{ strtoupper(substr($applicantName, 0, 2)) }}
+                                                </div>
+                                            @else
+                                                <div class="w-9 h-9 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shadow-2xs">
+                                                    {{ strtoupper(substr($applicantName, 0, 2)) }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="font-bold text-gray-900 dark:text-white text-sm truncate">
+                                                {{ $applicantName }}
+                                            </div>
+                                            <div class="text-[11px] text-gray-400 dark:text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                                                @if($profile?->nik)
+                                                    <span>NIK: {{ $profile->nik }}</span>
+                                                    <span>•</span>
+                                                @endif
+                                                <span class="truncate">{{ $profile?->user?->email ?? '-' }}</span>
+                                            </div>
+                                            <div class="mt-1">
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border {{ $appBadgeClass }}">
+                                                    Lamaran: {{ $appItem->status_label ?? $appStatus }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-3">
+                                    <div class="font-semibold text-gray-800 dark:text-slate-200 truncate">
+                                        {{ $appItem->job?->title ?? '-' }}
+                                    </div>
+                                    <div class="text-[11px] text-gray-400 dark:text-slate-500 truncate mt-0.5">
+                                        {{ $appItem->job?->company?->name ?? '-' }}
+                                    </div>
+                                    @if ($appItem->job?->department)
+                                        <div class="text-[10px] text-gray-400 dark:text-slate-600 truncate">
+                                            {{ $appItem->job->department->name }}
+                                        </div>
+                                    @endif
+                                </td>
+                                <td class="py-3.5 px-3">
+                                    <div class="space-y-1.5">
+                                        @forelse ($appItem->testAttempts as $attItem)
+                                            @php
+                                                $attPapi = $attItem->papiTestResult;
+                                                $attDisc = $attItem->discTestResult;
+                                                $isAttPapi = $attPapi ||
+                                                    str_contains(strtolower($attItem->test?->category?->name ?? ''), 'papi') ||
+                                                    str_contains(strtolower($attItem->test?->title ?? ''), 'papi') ||
+                                                    $attItem->answers->contains(fn($ans) => $ans->question?->question_type === 'papi_kostick');
+                                                $isAttDisc = !$isAttPapi && (
+                                                    $attDisc ||
+                                                    str_contains(strtolower($attItem->test?->title ?? ''), 'disc') ||
+                                                    str_contains(strtolower($attItem->test?->category?->name ?? ''), 'disc') ||
+                                                    str_contains(strtolower($attItem->test?->category?->name ?? ''), 'kepribadian') ||
+                                                    $attItem->answers->contains(fn($ans) => $ans->question?->question_type === 'disc' || in_array($ans->answer_type, ['most', 'least']))
+                                                );
+                                                $attHasUnreviewedEssay = $attItem->answers->contains(function($ans) {
+                                                    return $ans->question && $ans->question->question_type === 'essay' && is_null($ans->reviewed_by);
+                                                });
+                                            @endphp
+
+                                            <div class="flex items-center justify-between gap-2.5 px-3 py-1.5 rounded-lg border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/40 hover:bg-gray-100/60 dark:hover:bg-slate-800/70 transition">
+                                                <div class="flex items-center gap-2 min-w-0">
+                                                    @if ($isAttDisc)
+                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/60 shrink-0">
+                                                            DISC
+                                                        </span>
+                                                        <span class="text-xs font-medium text-gray-800 dark:text-slate-200 truncate">
+                                                            {{ $attDisc?->discProfile?->pattern_name ?? ($attDisc?->primary_trait ?? 'DISC Profil') }}
+                                                        </span>
+                                                    @elseif ($isAttPapi)
+                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60 shrink-0">
+                                                            PAPI
+                                                        </span>
+                                                        <span class="text-xs font-medium text-gray-800 dark:text-slate-200 truncate">
+                                                            {{ $attPapi ? ($attPapi->is_valid ? 'Valid (45/45)' : 'Perlu Cek') : 'PAPI Kostick' }}
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
+                                                            Teknis
+                                                        </span>
+                                                        <span class="text-xs font-medium text-gray-800 dark:text-slate-200 truncate" title="{{ $attItem->test?->title }}">
+                                                            {{ $attItem->test?->title ?? 'Tes' }}
+                                                        </span>
+                                                        <span class="text-[11px] font-bold {{ $attItem->status === 'passed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                                                            ({{ (float)($attItem->total_score ?? 0) }})
+                                                        </span>
+                                                        @if ($attHasUnreviewedEssay)
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shrink-0">
+                                                                Esai ?
+                                                            </span>
+                                                        @endif
+                                                    @endif
+                                                </div>
+
+                                                <div class="shrink-0 flex items-center">
+                                                    @if ($isAttDisc)
+                                                        <button type="button" @click="openGradingModal({{ \Illuminate\Support\Js::from($attItem) }}, true, false)"
+                                                            class="px-2.5 py-1 text-xs font-medium rounded-lg text-purple-700 bg-purple-50 hover:bg-purple-100 dark:text-purple-300 dark:bg-purple-950/60 dark:hover:bg-purple-900/60 border border-purple-200 dark:border-purple-800/80 transition cursor-pointer">
+                                                            Profil
+                                                        </button>
+                                                    @elseif ($isAttPapi)
+                                                        <button type="button" @click="openGradingModal({{ \Illuminate\Support\Js::from($attItem) }}, false, true)"
+                                                            class="px-2.5 py-1 text-xs font-medium rounded-lg text-amber-700 bg-amber-50 hover:bg-amber-100 dark:text-amber-300 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-800/80 transition cursor-pointer">
+                                                            Diagram
+                                                        </button>
+                                                    @else
+                                                        <button type="button" @click="openGradingModal({{ \Illuminate\Support\Js::from($attItem) }}, false, false)"
+                                                            class="px-2.5 py-1 text-xs font-medium rounded-lg {{ $attHasUnreviewedEssay ? 'text-amber-700 bg-amber-50 hover:bg-amber-100 dark:text-amber-300 dark:bg-amber-950/60 border-amber-300 dark:border-amber-700' : 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:text-indigo-300 dark:bg-indigo-950/60 border-indigo-200 dark:border-indigo-800/80' }} border transition cursor-pointer">
+                                                            {{ $attHasUnreviewedEssay ? 'Koreksi' : 'Detail' }}
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <div class="text-[11px] text-gray-400 dark:text-slate-500 italic py-1">
+                                                Belum ada sesi tes yang dikerjakan.
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-3 text-center">
+                                    <div class="inline-flex flex-col items-center">
+                                        @if ($hasUnreviewedEssay)
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-semibold text-[11px] border border-amber-200 dark:border-amber-800">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                                <span>Perlu Koreksi</span>
+                                            </span>
+                                            <span class="text-[10px] text-amber-600 dark:text-amber-400 mt-1 font-medium">Esai Belum Dinilai</span>
+                                        @elseif ($isTestDoubleApproved)
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800" title="Ujian telah disetujui oleh Recruiter Teknis dan HR/Admin (Double Approved).">
+                                                <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                                <span>Double Approved</span>
+                                            </span>
+                                            <div class="flex items-center justify-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 mt-1 font-medium">
+                                                <span>Teknis ✓</span>
+                                                <span class="text-gray-300 dark:text-slate-700">•</span>
+                                                <span>HR ✓</span>
+                                            </div>
+                                        @elseif ($testRecruiterAppr === 'approved' && $testAdminAppr !== 'approved')
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-300 dark:border-sky-800" title="Recruiter Teknis telah menyetujui. Menunggu keputusan verifikasi HR.">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
+                                                <span>Menunggu HR</span>
+                                            </span>
+                                            <div class="flex items-center justify-center gap-1 text-[10px] text-gray-500 dark:text-slate-400 mt-1">
+                                                <span class="text-emerald-600 dark:text-emerald-400 font-medium">Teknis ✓</span>
+                                                <span class="text-gray-300 dark:text-slate-700">•</span>
+                                                <span class="text-amber-600 dark:text-amber-400 font-medium">HR ⏳</span>
+                                            </div>
+                                        @elseif ($testAdminAppr === 'approved' && $testRecruiterAppr !== 'approved')
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-800" title="HR telah menyetujui. Menunggu konfirmasi koreksi teknis Recruiter.">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                                <span>Menunggu Recruiter</span>
+                                            </span>
+                                            <div class="flex items-center justify-center gap-1 text-[10px] text-gray-500 dark:text-slate-400 mt-1">
+                                                <span class="text-amber-600 dark:text-amber-400 font-medium">Teknis ⏳</span>
+                                                <span class="text-gray-300 dark:text-slate-700">•</span>
+                                                <span class="text-emerald-600 dark:text-emerald-400 font-medium">HR ✓</span>
+                                            </div>
+                                        @elseif ($isTestRejected)
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                                                <svg class="w-3.5 h-3.5 text-rose-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1.414-1.414L10 10.586l1.414 1.414a1 1 0 001.414-1.414L11.414 9.172l1.414-1.414a1 1 0 00-1.414-1.414L10 7.758 8.586 6.344a1 1 0 00-1.414 1.414l1.414 1.414-1.414 1.414a1 1 0 001.414 1.414z" clip-rule="evenodd" /></svg>
+                                                <span>Ujian Ditolak</span>
+                                            </span>
+                                            <span class="text-[10px] text-rose-500 mt-1">Tidak Direkomendasikan</span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700">
+                                                Evaluasi Ujian
+                                            </span>
+                                            <div class="flex items-center justify-center gap-1 text-[10px] text-gray-400 mt-1">
+                                                <span>Teknis ⏳</span>
+                                                <span>•</span>
+                                                <span>HR ⏳</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-3 text-right">
+                                    @if ($firstAttempt)
+                                        @php
+                                            $firstPapi = $firstAttempt->papiTestResult;
+                                            $firstDisc = $firstAttempt->discTestResult;
+                                            $isFirstPapi = $firstPapi || str_contains(strtolower($firstAttempt->test?->category?->name ?? ''), 'papi') || str_contains(strtolower($firstAttempt->test?->title ?? ''), 'papi');
+                                            $isFirstDisc = !$isFirstPapi && ($firstDisc || str_contains(strtolower($firstAttempt->test?->title ?? ''), 'disc') || str_contains(strtolower($firstAttempt->test?->category?->name ?? ''), 'disc'));
+                                        @endphp
+                                        <button @click="openGradingModal({{ \Illuminate\Support\Js::from($firstAttempt) }}, {{ $isFirstDisc ? 'true' : 'false' }}, {{ $isFirstPapi ? 'true' : 'false' }})"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/30 transition shadow-2xs cursor-pointer"
+                                            title="Evaluasi Hasil Tes & Keputusan Tahap">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                            </svg>
+                                            <span>Evaluasi</span>
+                                        </button>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="py-12 text-center text-gray-400 dark:text-slate-500">
+                                    <div class="flex flex-col items-center justify-center gap-2">
+                                        <svg class="w-8 h-8 text-gray-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                        <span>Belum ada pelamar yang mengerjakan tes.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile: Mode Per Pelamar (Rekap) -->
+            <div class="lg:hidden">
+                @if ($applications->isEmpty())
+                    <div class="py-12 px-4 text-center text-gray-400 dark:text-slate-500">
+                        <div class="flex flex-col items-center justify-center gap-2">
+                            <svg class="w-8 h-8 text-gray-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            <span>Belum ada pelamar yang mengerjakan tes.</span>
+                        </div>
+                    </div>
+                @else
+                    <div class="p-3.5 sm:p-4 grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        @foreach ($applications as $index => $appItem)
+                            @php
+                                $profile = $appItem->applicantProfile;
+                                $applicantName = $profile?->full_name ?? 'Pelamar';
+                                $candPhotoUrl = $profile?->photo_url ?? ($profile?->user?->avatar ? (\Illuminate\Support\Str::startsWith($profile->user->avatar, ['http://', 'https://']) ? $profile->user->avatar : asset('storage/' . $profile->user->avatar)) : null);
+                                $appStatus = $appItem->status ?? 'Reviewed';
+                                $appBadgeClass = match(strtolower($appStatus)) {
+                                    'accepted' => 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800',
+                                    'rejected' => 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800',
+                                    'interview' => 'text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800',
+                                    'shortlisted' => 'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800',
+                                    'reviewed' => 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800',
+                                    default => 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800',
+                                };
+                                $testRecruiterAppr = $appItem->test_recruiter_approval ?? 'pending';
+                                $testAdminAppr = $appItem->test_admin_approval ?? 'pending';
+                                $isTestDoubleApproved = ($testRecruiterAppr === 'approved' && $testAdminAppr === 'approved');
+                                $isTestRejected = ($testRecruiterAppr === 'rejected' || $testAdminAppr === 'rejected');
+                                $hasUnreviewedEssay = $appItem->testAttempts->contains(function($att) {
+                                    return $att->answers->contains(function($ans) {
+                                        return $ans->question && $ans->question->question_type === 'essay' && is_null($ans->reviewed_by);
+                                    });
+                                });
+                                $firstAttempt = $appItem->testAttempts->first();
+                            @endphp
+                            <div class="bg-gray-50/60 dark:bg-slate-800/40 rounded-xl p-3.5 border border-gray-200 dark:border-slate-800 space-y-3">
+                                <!-- Pelamar & Info Lowongan -->
+                                <div class="flex items-start justify-between gap-2.5">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div class="relative w-9 h-9 shrink-0">
+                                            @if ($candPhotoUrl)
+                                                <img src="{{ $candPhotoUrl }}" alt="{{ $applicantName }}" referrerpolicy="no-referrer" class="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-[#1D2E54]" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                                <div class="hidden w-9 h-9 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs items-center justify-center">
+                                                    {{ strtoupper(substr($applicantName, 0, 2)) }}
+                                                </div>
+                                            @else
+                                                <div class="w-9 h-9 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center">
+                                                    {{ strtoupper(substr($applicantName, 0, 2)) }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h4 class="font-bold text-gray-900 dark:text-white text-xs truncate">{{ $applicantName }}</h4>
+                                            <p class="text-[11px] text-gray-400 dark:text-slate-400 truncate">{{ $profile?->user?->email ?? '-' }}</p>
+                                            <p class="text-[11px] text-gray-500 dark:text-slate-300 font-medium truncate mt-0.5">{{ $appItem->job?->title }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9.5px] font-semibold border {{ $appBadgeClass }} shrink-0">
+                                        {{ $appItem->status_label ?? $appStatus }}
+                                    </span>
+                                </div>
+
+                                <!-- List Tes yang Dikerjakan -->
+                                <div class="space-y-1.5 pt-2 border-t border-gray-200/60 dark:border-slate-700/50">
+                                    <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500">Ujian yang Dikerjakan:</div>
+                                    @forelse ($appItem->testAttempts as $attItem)
+                                        @php
+                                            $attPapi = $attItem->papiTestResult;
+                                            $attDisc = $attItem->discTestResult;
+                                            $isAttPapi = $attPapi || str_contains(strtolower($attItem->test?->category?->name ?? ''), 'papi') || str_contains(strtolower($attItem->test?->title ?? ''), 'papi');
+                                            $isAttDisc = !$isAttPapi && ($attDisc || str_contains(strtolower($attItem->test?->title ?? ''), 'disc') || str_contains(strtolower($attItem->test?->category?->name ?? ''), 'disc'));
+                                            $attHasUnreviewedEssay = $attItem->answers->contains(function($ans) {
+                                                return $ans->question && $ans->question->question_type === 'essay' && is_null($ans->reviewed_by);
+                                            });
+                                        @endphp
+                                        <div class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-850">
+                                            <div class="flex items-center gap-1.5 min-w-0">
+                                                @if ($isAttDisc)
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 shrink-0">DISC</span>
+                                                    <span class="text-xs font-medium text-gray-800 dark:text-slate-200 truncate">{{ $attDisc?->discProfile?->pattern_name ?? ($attDisc?->primary_trait ?? 'DISC Profil') }}</span>
+                                                @elseif ($isAttPapi)
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 shrink-0">PAPI</span>
+                                                    <span class="text-xs font-medium text-gray-800 dark:text-slate-200 truncate">{{ $attPapi ? ($attPapi->is_valid ? 'Valid (45/45)' : 'Perlu Cek') : 'PAPI' }}</span>
+                                                @else
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 shrink-0">Teknis</span>
+                                                    <span class="text-xs font-medium text-gray-800 dark:text-slate-200 truncate">{{ $attItem->test?->title ?? 'Tes' }}</span>
+                                                    <span class="text-[11px] font-bold {{ $attItem->status === 'passed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">({{ (float)($attItem->total_score ?? 0) }})</span>
+                                                @endif
+                                            </div>
+                                            <div class="shrink-0">
+                                                @if ($isAttDisc)
+                                                    <button type="button" @click="openGradingModal({{ \Illuminate\Support\Js::from($attItem) }}, true, false)"
+                                                        class="px-2 py-0.5 rounded text-[11px] font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 dark:text-purple-300 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/80 transition cursor-pointer">
+                                                        Profil
+                                                    </button>
+                                                @elseif ($isAttPapi)
+                                                    <button type="button" @click="openGradingModal({{ \Illuminate\Support\Js::from($attItem) }}, false, true)"
+                                                        class="px-2 py-0.5 rounded text-[11px] font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 dark:text-amber-300 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/80 transition cursor-pointer">
+                                                        Diagram
+                                                    </button>
+                                                @else
+                                                    <button type="button" @click="openGradingModal({{ \Illuminate\Support\Js::from($attItem) }}, false, false)"
+                                                        class="px-2 py-0.5 rounded text-[11px] font-medium {{ $attHasUnreviewedEssay ? 'text-amber-700 bg-amber-50 border-amber-300 dark:border-amber-700' : 'text-indigo-700 bg-indigo-50 border-indigo-200 dark:border-indigo-800/80' }} dark:bg-slate-900 border transition cursor-pointer">
+                                                        {{ $attHasUnreviewedEssay ? 'Koreksi' : 'Detail' }}
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <p class="text-[11px] text-gray-400 italic">Belum ada ujian.</p>
+                                    @endforelse
+                                </div>
+
+                                <!-- Footer Status & Action -->
+                                <div class="flex items-center justify-between gap-2 pt-2 border-t border-gray-200/60 dark:border-slate-700/50">
+                                    <div>
+                                        @if ($isTestDoubleApproved)
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                                <span>✓ Double Approved</span>
+                                            </span>
+                                        @elseif ($testRecruiterAppr === 'approved')
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-sky-600 dark:text-sky-400">
+                                                <span>Teknis ✓ • Menunggu HR</span>
+                                            </span>
+                                        @else
+                                            <span class="text-[10px] text-gray-400">Evaluasi Ujian</span>
+                                        @endif
+                                    </div>
+                                    @if ($firstAttempt)
+                                        <button @click="openGradingModal({{ \Illuminate\Support\Js::from($firstAttempt) }}, false, false)"
+                                            class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/30 transition cursor-pointer">
+                                            Evaluasi
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        @else
+            <!-- Desktop & tablet landscape: tabel penuh (Mode Per Sesi Ujian) -->
         <div class="hidden lg:block overflow-x-auto">
             <table class="w-full min-w-[960px] text-left border-collapse table-fixed">
                 <colgroup>
@@ -1180,8 +1632,12 @@
                 </div>
             @endif
         </div>
+        @endif
 
-        @if ($attempts->hasPages() || $perPage != 10)
+        @php
+            $paginationRecords = ($viewMode === 'by_applicant') ? ($applications ?? $attempts) : $attempts;
+        @endphp
+        @if ($paginationRecords && ($paginationRecords->hasPages() || $perPage != 10))
             <div class="px-4 sm:px-6 py-4 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                     <span class="text-xs text-gray-500 dark:text-slate-400">Tampilkan</span>
@@ -1191,11 +1647,11 @@
                         <option value="50">50</option>
                         <option value="100">100</option>
                     </select>
-                    <span class="text-xs text-gray-500 dark:text-slate-400">data per halaman</span>
+                    <span class="text-xs text-gray-500 dark:text-slate-400">{{ $viewMode === 'by_applicant' ? 'pelamar per halaman' : 'data per halaman' }}</span>
                 </div>
-                @if ($attempts->hasPages())
+                @if ($paginationRecords->hasPages())
                     <div>
-                        {{ $attempts->links() }}
+                        {{ $paginationRecords->links() }}
                     </div>
                 @endif
             </div>
@@ -1263,46 +1719,67 @@
     @endphp
 
     <!-- Modal Evaluasi & Essay Grading -->
-    <div x-show="showGradingModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto custom-scrollbar" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen px-2.5 sm:px-4 py-4 sm:py-8 text-center sm:block sm:p-0">
-            <div x-show="showGradingModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="showGradingModal = false" class="fixed inset-0 transition-opacity bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm"></div>
+    <div x-show="showGradingModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <!-- Backdrop -->
+        <div x-show="showGradingModal" 
+             x-transition:enter="ease-out duration-300" 
+             x-transition:enter-start="opacity-0" 
+             x-transition:enter-end="opacity-100" 
+             x-transition:leave="ease-in duration-200" 
+             x-transition:leave-start="opacity-100" 
+             x-transition:leave-end="opacity-0" 
+             @click="showGradingModal = false" 
+             class="fixed inset-0 transition-opacity bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm"></div>
 
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-            <div x-show="showGradingModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl w-full border border-gray-200 dark:border-slate-800 max-h-[92vh] overflow-y-auto custom-scrollbar">
+        <div class="flex items-center justify-center min-h-screen p-3 sm:p-5 md:p-6 text-center">
+            <div x-show="showGradingModal" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95" 
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:scale-95" 
+                 class="relative inline-block w-full max-w-4xl bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-200 dark:border-slate-800 flex flex-col max-h-[90vh] sm:max-h-[88vh] z-10 text-left overflow-hidden my-auto">
                 
-                <div class="p-4 sm:p-6">
-                    <!-- Modal Header -->
-                    <div class="flex items-start justify-between pb-4 border-b border-gray-100 dark:border-slate-800 gap-3">
-                        <div class="flex items-start gap-3 min-w-0">
-                            <template x-if="gradingData.applicant_photo">
-                                <img :src="gradingData.applicant_photo" :alt="gradingData.applicant_name" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm shrink-0">
-                            </template>
-                            <template x-if="!gradingData.applicant_photo">
-                                <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
-                                    <span x-text="gradingData.applicant_name ? gradingData.applicant_name.substring(0, 2).toUpperCase() : 'P'"></span>
-                                </div>
-                            </template>
-                            <div class="min-w-0">
-                                <h3 class="text-base font-bold text-gray-900 dark:text-white leading-snug" x-text="gradingData.is_papi ? 'Riwayat Jawaban & Interpretasi PAPI Kostick Pelamar' : (gradingData.is_disc ? 'Riwayat Jawaban & Profil Kepribadian Pelamar' : 'Evaluasi & Penilaian Jawaban Pelamar')">
-                                    Evaluasi & Penilaian Jawaban Pelamar
-                                </h3>
-                                <p class="text-xs text-gray-500 dark:text-slate-400 mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                                    <span>Pelamar: <span class="font-bold text-gray-800 dark:text-gray-200" x-text="gradingData.applicant_name"></span></span>
-                                    <span>•</span>
-                                    <span>Lowongan: <span class="font-medium text-indigo-600 dark:text-indigo-400" x-text="gradingData.job_title"></span></span>
-                                </p>
+                <!-- Modal Header (Pinned / Sticky at top) -->
+                <div class="flex items-start justify-between p-4 sm:p-6 pb-4 border-b border-gray-100 dark:border-slate-800 gap-3 shrink-0 bg-white dark:bg-slate-900">
+                    <div class="flex items-start gap-3 min-w-0">
+                        <template x-if="gradingData.applicant_photo">
+                            <img :src="gradingData.applicant_photo" :alt="gradingData.applicant_name" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm shrink-0">
+                        </template>
+                        <template x-if="!gradingData.applicant_photo">
+                            <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#14203A] border border-slate-200 dark:border-[#1D2E54] text-slate-800 dark:text-[#93F514] font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                                <span x-text="gradingData.applicant_name ? gradingData.applicant_name.substring(0, 2).toUpperCase() : 'P'"></span>
                             </div>
+                        </template>
+                        <div class="min-w-0">
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white leading-snug" x-text="gradingData.is_papi ? 'Riwayat Jawaban & Interpretasi PAPI Kostick Pelamar' : (gradingData.is_disc ? 'Riwayat Jawaban & Profil Kepribadian Pelamar' : 'Evaluasi & Penilaian Jawaban Pelamar')">
+                                Evaluasi & Penilaian Jawaban Pelamar
+                            </h3>
+                            <p class="text-xs text-gray-500 dark:text-slate-400 mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                                <span>Pelamar: <span class="font-bold text-gray-800 dark:text-gray-200" x-text="gradingData.applicant_name"></span></span>
+                                <span>•</span>
+                                <span>Lowongan: <span class="font-medium text-indigo-600 dark:text-indigo-400" x-text="gradingData.job_title"></span></span>
+                            </p>
                         </div>
-                        <button @click="showGradingModal = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 shrink-0 transition cursor-pointer">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
                     </div>
+                    <button @click="showGradingModal = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 shrink-0 transition cursor-pointer">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
 
-                    <!-- Double Approval Tahap 2: Status Banner -->
-                    <div class="my-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 space-y-2.5">
+                <!-- Form Wrapping Scrollable Body & Sticky Footer -->
+                <form :action="'{{ $gradeActionPrefix }}' + gradingData.id + '/grade'" method="POST" @submit="isSubmittingGrading = true" class="flex flex-col flex-1 overflow-hidden min-h-0">
+                    @csrf
+                    @method('PUT')
+
+                    <!-- Scrollable Modal Body (Bisa scroll atas-bawah, tidak terpotong) -->
+                    <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 custom-scrollbar">
+
+                        <!-- Double Approval Tahap 2: Status Banner -->
+                        <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 space-y-2.5">
                         <div class="flex items-center justify-between flex-wrap gap-2">
                             <span class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                 <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1356,6 +1833,174 @@
                             </div>
                         </div>
                     </div>
+
+                    @if($isAdmin)
+                        <!-- KEPUTUSAN KELULUSAN UJIAN OLEH HR / ADMIN (GATE 2 - DITARUH DI ATAS AGAR MUDAH DIAKSES) -->
+                        <div class="p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 space-y-3.5 shadow-2xs">
+                            <div class="flex items-center justify-between gap-2 flex-wrap">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                                        ✓
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-bold text-gray-900 dark:text-white">
+                                            Keputusan Kelulusan Ujian HR / Admin (Gate 2)
+                                        </h4>
+                                        <p class="text-[11px] text-gray-500 dark:text-slate-400">
+                                            Tentukan keputusan verifikasi kelulusan ujian pelamar dan perbarui status lamaran
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <template x-if="gradingData.applicant_email">
+                                    <span class="inline-flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 font-medium bg-white dark:bg-slate-900 px-2.5 py-1 rounded-lg border border-indigo-200 dark:border-indigo-800 shadow-2xs">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                        <span x-text="gradingData.applicant_email"></span>
+                                    </span>
+                                </template>
+                            </div>
+
+                            <!-- Pilihan Keputusan Double Approval HR -->
+                            <div class="space-y-2 pt-1">
+                                <label class="block text-[11px] font-bold text-gray-700 dark:text-slate-300">
+                                    Pilih Keputusan Verifikasi HR:
+                                </label>
+                                <input type="hidden" name="test_decision" :value="gradingData.test_decision">
+
+                                <div class="space-y-2">
+                                    <!-- Opsi 1: Setujui HR (Normal Double Approval) -->
+                                    <button type="button" 
+                                        @click="gradingData.test_decision = 'approved'; if (gradingData.test_recruiter_approval === 'approved') { gradingData.application_status = 'Shortlisted'; applyTemplate('Shortlisted'); }"
+                                        :class="gradingData.test_decision === 'approved' ? 'border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 ring-2 ring-emerald-500/20' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-emerald-300'"
+                                        class="w-full p-2.5 rounded-xl border text-left transition flex items-start justify-between cursor-pointer">
+                                        <div>
+                                            <span class="font-bold text-xs flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                                                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                Persetujuan HR (Normal Double Approval)
+                                            </span>
+                                            <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5">
+                                                Setujui profil karakter & hasil tes. Jika Recruiter Teknis sudah setuju esai ≥ KKM, status otomatis menjadi <strong>Lolos Ujian (Siap Wawancara)</strong>.
+                                            </p>
+                                        </div>
+                                        <span class="w-3.5 h-3.5 mt-0.5 rounded-full border shrink-0 flex items-center justify-center" :class="gradingData.test_decision === 'approved' ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 dark:border-slate-600'">
+                                            <span x-show="gradingData.test_decision === 'approved'" class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                        </span>
+                                    </button>
+
+                                    <!-- Opsi 2: Admin Override / Hak Veto -->
+                                    <button type="button" 
+                                        @click="gradingData.test_decision = 'override_shortlisted'; gradingData.application_status = 'Shortlisted'; applyTemplate('Shortlisted');"
+                                        :class="gradingData.test_decision === 'override_shortlisted' ? 'border-amber-500 bg-amber-50/80 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 ring-2 ring-amber-500/20' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-amber-300'"
+                                        class="w-full p-2.5 rounded-xl border text-left transition flex items-start justify-between cursor-pointer">
+                                        <div>
+                                            <span class="font-bold text-xs flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                                                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                </svg>
+                                                Admin Override / Hak Veto (Loloskan Langsung)
+                                            </span>
+                                            <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5">
+                                                Bypass koreksi recruiter & seketika nyatakan pelamar lolos ujian <strong>(Lolos Ujian / Siap Wawancara)</strong>.
+                                            </p>
+                                        </div>
+                                        <span class="w-3.5 h-3.5 mt-0.5 rounded-full border shrink-0 flex items-center justify-center" :class="gradingData.test_decision === 'override_shortlisted' ? 'border-amber-500 bg-amber-500' : 'border-gray-300 dark:border-slate-600'">
+                                            <span x-show="gradingData.test_decision === 'override_shortlisted'" class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                        </span>
+                                    </button>
+
+                                    <!-- Opsi 3: Tolak Hasil Ujian -->
+                                    <button type="button" 
+                                        @click="gradingData.test_decision = 'rejected'; gradingData.application_status = 'Rejected'; applyTemplate('Rejected');"
+                                        :class="gradingData.test_decision === 'rejected' ? 'border-rose-500 bg-rose-50/80 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 ring-2 ring-rose-500/20' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-rose-300'"
+                                        class="w-full p-2.5 rounded-xl border text-left transition flex items-start justify-between cursor-pointer">
+                                        <div>
+                                            <span class="font-bold text-xs flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
+                                                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                                Tolak Hasil Ujian (Reject)
+                                            </span>
+                                            <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5">
+                                                Hasil evaluasi tidak memenuhi kualifikasi lowongan (status langsung <strong>Rejected</strong>).
+                                            </p>
+                                        </div>
+                                        <span class="w-3.5 h-3.5 mt-0.5 rounded-full border shrink-0 flex items-center justify-center" :class="gradingData.test_decision === 'rejected' ? 'border-rose-500 bg-rose-500' : 'border-gray-300 dark:border-slate-600'">
+                                            <span x-show="gradingData.test_decision === 'rejected'" class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Feedback & Status Override -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                                <div>
+                                    <label for="eval_app_status" class="block text-[11px] font-bold text-gray-700 dark:text-slate-300 mb-1">
+                                        Status Lamaran yang Diterapkan:
+                                    </label>
+                                    <select name="application_status" id="eval_app_status" x-model="gradingData.application_status" @change="onStatusChange($event.target.value)" class="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                        <option value="Reviewed">Lolos Berkas</option>
+                                        <option value="Shortlisted">Lolos Ujian</option>
+                                        <option value="Interview">Wawancara</option>
+                                        <option value="Accepted">Diterima</option>
+                                        <option value="Rejected">Ditolak</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <label for="eval_app_notes" class="block text-[11px] font-bold text-gray-700 dark:text-slate-300">
+                                            Catatan Evaluasi HR:
+                                        </label>
+                                        <button type="button" @click="applyTemplate()" class="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-0.5">
+                                            <span>Terapkan Pesan Template</span>
+                                        </button>
+                                    </div>
+                                    <textarea name="application_notes" id="eval_app_notes" rows="2" x-model="gradingData.application_notes" placeholder="Tambahkan catatan hasil tes untuk pelamar ini..." class="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition leading-relaxed"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Opsi Kirim Email Notifikasi Otomatis -->
+                            <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/60 shadow-2xs">
+                                <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                                    <input type="hidden" name="send_email" value="0">
+                                    <input type="checkbox" name="send_email" value="1" x-model="gradingData.send_email" class="w-4 h-4 mt-0.5 text-indigo-600 rounded border-gray-300 dark:border-slate-600 focus:ring-indigo-500 transition">
+                                    <div class="space-y-0.5">
+                                        <span class="text-xs font-semibold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                            <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            </svg>
+                                            <span>Kirim notifikasi email otomatis ke pelamar</span>
+                                        </span>
+                                        <p class="text-[11px] text-gray-500 dark:text-slate-400 leading-tight">
+                                            Pelamar akan menerima email resmi berisi pembaruan status kelulusan tes dan instruksi langkah berikutnya.
+                                        </p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    @else
+                        <!-- KETERANGAN KHUSUS RECRUITER DEPARTEMEN (GATE 1) -->
+                        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2.5">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                                    📝
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-gray-900 dark:text-white">
+                                        Koreksi Esai & Persetujuan Teknis (Recruiter - Gate 1)
+                                    </h4>
+                                    <p class="text-[11px] text-gray-500 dark:text-slate-400 leading-relaxed">
+                                        Recruiter berwenang menilai jawaban esai teknis. Jika total nilai mencapai atau melampaui KKM, sistem akan <strong>otomatis mencatat persetujuan teknis Anda</strong> dan meneruskan kandidat ke tahap evaluasi psikotes & kuota oleh HR/Admin (Double Approval).
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="send_email" value="0">
+                    @endif
 
                     <!-- DISC Personality Analysis Report (If DISC Result exists) -->
                     <template x-if="gradingData.disc_result">
@@ -1897,13 +2542,9 @@
                         </div>
                     </template>
 
-                    <!-- Form Penilaian Essay -->
-                    <form :action="'{{ $gradeActionPrefix }}' + gradingData.id + '/grade'" method="POST" @submit="isSubmittingGrading = true" class="space-y-4">
-                        @csrf
-                        @method('PUT')
-
-                        <template x-if="!gradingData.is_papi">
-                            <div class="max-h-96 overflow-y-auto space-y-4 pr-1">
+                    <!-- Daftar Butir Soal & Penilaian Jawaban -->
+                    <template x-if="!gradingData.is_papi">
+                        <div class="space-y-4">
                                 <template x-if="getGroupedQuestions().length === 0">
                                     <div class="py-10 text-center text-gray-400 dark:text-slate-500 bg-gray-50/50 dark:bg-slate-800/30 rounded-2xl border border-dashed border-gray-200 dark:border-slate-700/60">
                                         <svg class="w-8 h-8 mx-auto text-gray-300 dark:text-slate-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2246,188 +2887,23 @@
                             </div>
                         </template>
 
-                        @if($isAdmin)
-                            <!-- KEPUTUSAN KELULUSAN UJIAN OLEH HR (DOUBLE APPROVAL GATE 2) -->
-                            <div class="mt-6 p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 space-y-3.5">
-                                <div class="flex items-center justify-between gap-2 flex-wrap">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                                            ✓
-                                        </div>
-                                        <div>
-                                            <h4 class="text-xs font-bold text-gray-900 dark:text-white">
-                                                Keputusan Kelulusan Ujian HR / Admin (Gate 2)
-                                            </h4>
-                                            <p class="text-[11px] text-gray-500 dark:text-slate-400">
-                                                Tinjau hasil teknis, grafik DISC & PAPI, lalu tentukan keputusan verifikasi HR
-                                            </p>
-                                        </div>
-                                    </div>
+                    </div>
+                    <!-- End Scrollable Modal Body -->
 
-                                    <template x-if="gradingData.applicant_email">
-                                        <span class="inline-flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 font-medium bg-white dark:bg-slate-900 px-2.5 py-1 rounded-lg border border-indigo-200 dark:border-indigo-800 shadow-2xs">
-                                            <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                            </svg>
-                                            <span x-text="gradingData.applicant_email"></span>
-                                        </span>
-                                    </template>
-                                </div>
-
-                                <!-- Pilihan Keputusan Double Approval HR -->
-                                <div class="space-y-2 pt-1">
-                                    <label class="block text-[11px] font-bold text-gray-700 dark:text-slate-300">
-                                        Pilih Keputusan Verifikasi HR:
-                                    </label>
-                                    <input type="hidden" name="test_decision" :value="gradingData.test_decision">
-
-                                    <div class="space-y-2">
-                                        <!-- Opsi 1: Setujui HR (Normal Double Approval) -->
-                                        <button type="button" 
-                                            @click="gradingData.test_decision = 'approved'; if (gradingData.test_recruiter_approval === 'approved') { gradingData.application_status = 'Shortlisted'; applyTemplate('Shortlisted'); }"
-                                            :class="gradingData.test_decision === 'approved' ? 'border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 ring-2 ring-emerald-500/20' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-emerald-300'"
-                                            class="w-full p-2.5 rounded-xl border text-left transition flex items-start justify-between cursor-pointer">
-                                            <div>
-                                                <span class="font-bold text-xs flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-                                                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                    Persetujuan HR (Normal Double Approval)
-                                                </span>
-                                                <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5">
-                                                    Setujui profil karakter & hasil tes. Jika Recruiter Teknis sudah setuju esai ≥ KKM, status otomatis menjadi <strong>Lolos Ujian (Siap Wawancara)</strong>.
-                                                </p>
-                                            </div>
-                                            <span class="w-3.5 h-3.5 mt-0.5 rounded-full border shrink-0 flex items-center justify-center" :class="gradingData.test_decision === 'approved' ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 dark:border-slate-600'">
-                                                <span x-show="gradingData.test_decision === 'approved'" class="w-1.5 h-1.5 rounded-full bg-white"></span>
-                                            </span>
-                                        </button>
-
-                                        <!-- Opsi 2: Admin Override / Hak Veto -->
-                                        <button type="button" 
-                                            @click="gradingData.test_decision = 'override_shortlisted'; gradingData.application_status = 'Shortlisted'; applyTemplate('Shortlisted');"
-                                            :class="gradingData.test_decision === 'override_shortlisted' ? 'border-amber-500 bg-amber-50/80 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 ring-2 ring-amber-500/20' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-amber-300'"
-                                            class="w-full p-2.5 rounded-xl border text-left transition flex items-start justify-between cursor-pointer">
-                                            <div>
-                                                <span class="font-bold text-xs flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
-                                                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                                    </svg>
-                                                    Admin Override / Hak Veto (Loloskan Langsung)
-                                                </span>
-                                                <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5">
-                                                    Bypass koreksi recruiter & seketika nyatakan pelamar lolos ujian <strong>(Lolos Ujian / Siap Wawancara)</strong>.
-                                                </p>
-                                            </div>
-                                            <span class="w-3.5 h-3.5 mt-0.5 rounded-full border shrink-0 flex items-center justify-center" :class="gradingData.test_decision === 'override_shortlisted' ? 'border-amber-500 bg-amber-500' : 'border-gray-300 dark:border-slate-600'">
-                                                <span x-show="gradingData.test_decision === 'override_shortlisted'" class="w-1.5 h-1.5 rounded-full bg-white"></span>
-                                            </span>
-                                        </button>
-
-                                        <!-- Opsi 3: Tolak Hasil Ujian -->
-                                        <button type="button" 
-                                            @click="gradingData.test_decision = 'rejected'; gradingData.application_status = 'Rejected'; applyTemplate('Rejected');"
-                                            :class="gradingData.test_decision === 'rejected' ? 'border-rose-500 bg-rose-50/80 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 ring-2 ring-rose-500/20' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-rose-300'"
-                                            class="w-full p-2.5 rounded-xl border text-left transition flex items-start justify-between cursor-pointer">
-                                            <div>
-                                                <span class="font-bold text-xs flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
-                                                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                    Tolak Hasil Ujian (Reject)
-                                                </span>
-                                                <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5">
-                                                    Hasil evaluasi tidak memenuhi kualifikasi lowongan (status langsung <strong>Rejected</strong>).
-                                                </p>
-                                            </div>
-                                            <span class="w-3.5 h-3.5 mt-0.5 rounded-full border shrink-0 flex items-center justify-center" :class="gradingData.test_decision === 'rejected' ? 'border-rose-500 bg-rose-500' : 'border-gray-300 dark:border-slate-600'">
-                                                <span x-show="gradingData.test_decision === 'rejected'" class="w-1.5 h-1.5 rounded-full bg-white"></span>
-                                            </span>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Feedback & Status Override -->
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                                    <div>
-                                        <label for="eval_app_status" class="block text-[11px] font-bold text-gray-700 dark:text-slate-300 mb-1">
-                                            Status Lamaran yang Diterapkan:
-                                        </label>
-                                        <select name="application_status" id="eval_app_status" x-model="gradingData.application_status" @change="onStatusChange($event.target.value)" class="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
-                                            <option value="Reviewed">Lolos Berkas</option>
-                                            <option value="Shortlisted">Lolos Ujian</option>
-                                            <option value="Interview">Wawancara</option>
-                                            <option value="Accepted">Diterima</option>
-                                            <option value="Rejected">Ditolak</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <div class="flex items-center justify-between mb-1">
-                                            <label for="eval_app_notes" class="block text-[11px] font-bold text-gray-700 dark:text-slate-300">
-                                                Catatan Evaluasi HR:
-                                            </label>
-                                            <button type="button" @click="applyTemplate()" class="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-0.5">
-                                                <span>Terapkan Pesan Template</span>
-                                            </button>
-                                        </div>
-                                        <textarea name="application_notes" id="eval_app_notes" rows="2" x-model="gradingData.application_notes" placeholder="Tambahkan catatan hasil tes untuk pelamar ini..." class="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition leading-relaxed"></textarea>
-                                    </div>
-                                </div>
-
-                                <!-- Opsi Kirim Email Notifikasi Otomatis -->
-                                <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/60 shadow-2xs">
-                                    <label class="flex items-start gap-2.5 cursor-pointer select-none">
-                                        <input type="hidden" name="send_email" value="0">
-                                        <input type="checkbox" name="send_email" value="1" x-model="gradingData.send_email" class="w-4 h-4 mt-0.5 text-indigo-600 rounded border-gray-300 dark:border-slate-600 focus:ring-indigo-500 transition">
-                                        <div class="space-y-0.5">
-                                            <span class="text-xs font-semibold text-gray-900 dark:text-white flex items-center gap-1.5">
-                                                <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                                </svg>
-                                                <span>Kirim notifikasi email otomatis ke pelamar</span>
-                                            </span>
-                                            <p class="text-[11px] text-gray-500 dark:text-slate-400 leading-tight">
-                                                Pelamar akan menerima email resmi berisi pembaruan status kelulusan tes dan instruksi langkah berikutnya.
-                                            </p>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-                        @else
-                            <!-- KETERANGAN KHUSUS RECRUITER DEPARTEMEN (GATE 1) -->
-                            <div class="mt-6 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2.5">
-                                <div class="flex items-center gap-2.5">
-                                    <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                                        📝
-                                    </div>
-                                    <div>
-                                        <h4 class="text-xs font-bold text-gray-900 dark:text-white">
-                                            Koreksi Esai & Persetujuan Teknis (Recruiter - Gate 1)
-                                        </h4>
-                                        <p class="text-[11px] text-gray-500 dark:text-slate-400 leading-relaxed">
-                                            Recruiter berwenang menilai jawaban esai teknis. Jika total nilai mencapai atau melampaui KKM, sistem akan <strong>otomatis mencatat persetujuan teknis Anda</strong> dan meneruskan kandidat ke tahap evaluasi psikotes & kuota oleh HR/Admin (Double Approval).
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <input type="hidden" name="send_email" value="0">
-                        @endif
-
-                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-slate-800">
-                            <button type="button" @click="showGradingModal = false" class="px-4 py-2.5 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer">
-                                Batal
-                            </button>
-                            <button type="submit" :disabled="isSubmittingGrading" class="px-5 py-2.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">
-                                <svg x-show="isSubmittingGrading" class="animate-spin w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                <span x-text="isSubmittingGrading ? 'Menyimpan...' : ('{{ $isAdmin ? 'Simpan Evaluasi & Perbarui Status' : 'Simpan Nilai Koreksi Esai' }}')"></span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <!-- Sticky Modal Footer (Selalu terlihat, tidak terpotong) -->
+                    <div class="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 px-4 sm:px-6 py-3.5 border-t border-gray-100 dark:border-slate-800 bg-gray-50/90 dark:bg-slate-850">
+                        <button type="button" @click="showGradingModal = false" class="px-4 py-2.5 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer">
+                            Batal
+                        </button>
+                        <button type="submit" :disabled="isSubmittingGrading" class="px-5 py-2.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">
+                            <svg x-show="isSubmittingGrading" class="animate-spin w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span x-text="isSubmittingGrading ? 'Menyimpan...' : ('{{ $isAdmin ? 'Simpan Evaluasi & Perbarui Status' : 'Simpan Nilai Koreksi Esai' }}')"></span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

@@ -3,12 +3,41 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Job;
+use App\Models\JobApplication;
+use App\Models\Setting;
 use App\Models\Test;
 use App\Models\QuestionBank;
 use Illuminate\Support\Facades\DB;
 
 class TestController extends Controller
 {
+    /**
+     * Perbarui default global batas pengerjaan tes online (hari kerja Senin-Jumat).
+     */
+    public function updateDefaultDeadline(Request $request)
+    {
+        $validated = $request->validate([
+            'default_test_deadline_days' => 'required|integer|min:1|max:30',
+        ], [
+            'default_test_deadline_days.required' => 'Jumlah hari kerja default wajib diisi.',
+            'default_test_deadline_days.integer'  => 'Jumlah hari kerja harus berupa angka bulat.',
+            'default_test_deadline_days.min'      => 'Minimal batas waktu tes adalah 1 hari kerja.',
+            'default_test_deadline_days.max'      => 'Maksimal batas waktu tes default adalah 30 hari kerja.',
+        ]);
+
+        $days = (int) $validated['default_test_deadline_days'];
+        Setting::set(
+            'default_test_deadline_days',
+            (string) $days,
+            'Batas waktu default pengerjaan tes online pelamar (hari kerja Senin-Jumat)'
+        );
+
+        return redirect()->back()->with(
+            'update',
+            "Default batas waktu tes global berhasil diatur menjadi {$days} hari kerja (berlaku untuk lowongan tanpa pengaturan khusus)."
+        );
+    }
     public function store(Request $request)
     {
         $request->validate([
@@ -54,6 +83,7 @@ class TestController extends Controller
 
             // Sync many-to-many jobs
             $test->jobs()->sync($jobIds);
+            $this->assignDeadlineForReviewedApplications($jobIds);
 
             if (!empty($selectedQuestions)) {
                 $orderedQuestions = QuestionBank::whereIn('id', $selectedQuestions)->get()->sortBy(function ($q) {
@@ -127,6 +157,7 @@ class TestController extends Controller
 
             // Sync many-to-many jobs
             $test->jobs()->sync($jobIds);
+            $this->assignDeadlineForReviewedApplications($jobIds);
 
             if (!empty($selectedQuestions)) {
                 $orderedQuestions = QuestionBank::whereIn('id', $selectedQuestions)->get()->sortBy(function ($q) {
@@ -150,6 +181,29 @@ class TestController extends Controller
             DB::rollBack();
             return redirect()->route('admin.test')
                 ->with('error', 'Gagal memperbarui paket ujian: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Isi batas tes bagi lamaran berstatus Reviewed yang sebelumnya belum punya paket tes.
+     */
+    private function assignDeadlineForReviewedApplications(array $jobIds): void
+    {
+        if (empty($jobIds)) {
+            return;
+        }
+
+        $groupedJobIds = Job::whereIn('id', $jobIds)
+            ->get()
+            ->groupBy(fn (Job $job) => $job->effectiveTestDeadlineDays());
+
+        foreach ($groupedJobIds as $days => $jobs) {
+            $deadline = JobApplication::calculateTestDeadline(workingDays: (int) $days);
+
+            JobApplication::whereIn('job_id', $jobs->pluck('id')->all())
+                ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) = 'reviewed'")
+                ->whereNull('test_deadline_at')
+                ->update(['test_deadline_at' => $deadline]);
         }
     }
 

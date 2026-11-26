@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\TestAttempt;
+use App\Models\JobApplication;
 use App\Models\Company;
 use App\Models\Job;
 use App\Models\Test;
@@ -17,6 +18,7 @@ class TestEvaluationTable extends Component
     use WithPagination, WithTableSkeleton;
 
     public $search = '';
+    public $viewMode = 'by_attempt';
     public $companyId = '';
     public $jobId = '';
     public $testId = '';
@@ -27,6 +29,11 @@ class TestEvaluationTable extends Component
     public $sortDirection = 'desc';
 
     public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingViewMode()
     {
         $this->resetPage();
     }
@@ -129,195 +136,374 @@ class TestEvaluationTable extends Component
               ->orWhereNull('test_type');
         })->orderBy('title', 'asc')->get();
 
-        $query = TestAttempt::with([
-            'jobApplication.applicantProfile.user',
-            'jobApplication.job.company',
-            'jobApplication.testRecruiter',
-            'jobApplication.testAdmin',
-            'test.category',
-            'answers.question.options',
-            'answers.question.subCategory',
-            'answers.option',
-            'answers.reviewer',
-            'discTestResult.discProfile',
-            'papiTestResult',
-        ])
-        ->where('attempt_type', 'applicant')
-        ->when($isRecruiter && $user, function ($q) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
-            $q->where(function ($sq) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
-                $sq->whereHas('jobApplication.job', function ($jq) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
-                    if ($isDesignatedRecruiter) {
-                        $jq->where(function ($ssq) use ($user, $userPosId) {
-                            $ssq->where('reviewer_id', $user->id);
-                            if ($userPosId) {
-                                $ssq->orWhere('position_id', $userPosId);
-                            }
+        if ($this->viewMode === 'by_applicant') {
+            $appQuery = JobApplication::with([
+                'applicantProfile.user',
+                'job.company',
+                'job.department',
+                'testRecruiter',
+                'testAdmin',
+                'testAttempts' => function ($tq) {
+                    $tq->where('attempt_type', 'applicant')
+                       ->with([
+                           'test.category',
+                           'discTestResult.discProfile',
+                           'papiTestResult',
+                           'answers.question.options',
+                           'answers.question.subCategory',
+                           'answers.option',
+                           'answers.reviewer',
+                       ])
+                       ->orderBy('id', 'asc');
+                }
+            ])
+            ->whereHas('testAttempts', function ($tq) {
+                $tq->where('attempt_type', 'applicant');
+            })
+            ->when($isRecruiter && $user, function ($q) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
+                $q->where(function ($sq) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
+                    $sq->whereHas('job', function ($jq) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
+                        if ($isDesignatedRecruiter) {
+                            $jq->where(function ($ssq) use ($user, $userPosId) {
+                                $ssq->where('reviewer_id', $user->id);
+                                if ($userPosId) {
+                                    $ssq->orWhere('position_id', $userPosId);
+                                }
+                            });
+                        } elseif ($userDeptId) {
+                            $jq->where('department_id', $userDeptId);
+                        }
+                    });
+                    if (!$isDesignatedRecruiter && $userDeptId) {
+                        $sq->orWhereHas('testAttempts.test', function ($tq) use ($userDeptId) {
+                            $tq->where('department_id', $userDeptId);
                         });
-                    } elseif ($userDeptId) {
-                        $jq->where('department_id', $userDeptId);
                     }
                 });
-                if (!$isDesignatedRecruiter && $userDeptId) {
-                    $sq->orWhereHas('test', function ($tq) use ($userDeptId) {
-                        $tq->where('department_id', $userDeptId);
+            });
+
+            // Search Filter
+            if (!empty($this->search)) {
+                $search = strtolower(trim($this->search));
+                $appQuery->where(function ($q) use ($search) {
+                    $q->whereHas('applicantProfile', function ($p) use ($search) {
+                        $p->whereRaw('LOWER(full_name) LIKE ?', ['%' . $search . '%'])
+                          ->orWhereRaw('LOWER(nik) LIKE ?', ['%' . $search . '%'])
+                          ->orWhereHas('user', function ($uq) use ($search) {
+                              $uq->whereRaw('LOWER(email) LIKE ?', ['%' . $search . '%']);
+                          });
+                    })
+                    ->orWhereHas('job', function ($j) use ($search) {
+                        $j->whereRaw('LOWER(title) LIKE ?', ['%' . $search . '%']);
+                    })
+                    ->orWhereHas('testAttempts.test', function ($t) use ($search) {
+                        $t->whereRaw('LOWER(title) LIKE ?', ['%' . $search . '%']);
                     });
-                }
-            });
-        });
-
-        // Search Filter
-        if (!empty($this->search)) {
-            $search = strtolower(trim($this->search));
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('jobApplication.applicantProfile', function ($p) use ($search) {
-                    $p->whereRaw('LOWER(full_name) LIKE ?', ['%' . $search . '%'])
-                      ->orWhereRaw('LOWER(nik) LIKE ?', ['%' . $search . '%'])
-                      ->orWhereHas('user', function ($uq) use ($search) {
-                          $uq->whereRaw('LOWER(email) LIKE ?', ['%' . $search . '%']);
-                      });
-                })
-                ->orWhereHas('test', function ($t) use ($search) {
-                    $t->whereRaw('LOWER(title) LIKE ?', ['%' . $search . '%']);
-                })
-                ->orWhereHas('jobApplication.job', function ($j) use ($search) {
-                    $j->whereRaw('LOWER(title) LIKE ?', ['%' . $search . '%']);
                 });
-            });
-        }
+            }
 
-        // Filter Perusahaan
-        if (!empty($this->companyId)) {
-            $query->whereHas('jobApplication.job', function ($j) {
-                $j->where('company_id', $this->companyId);
-            });
-        }
-
-        // Filter Lowongan
-        if (!empty($this->jobId)) {
-            $query->whereHas('jobApplication', function ($j) {
-                $j->where('job_id', $this->jobId);
-            });
-        }
-
-        // Filter Paket Ujian
-        if (!empty($this->testId)) {
-            $query->where('test_id', $this->testId);
-        }
-
-        // Filter Status Ujian / Hasil Evaluasi
-        if (!empty($this->status)) {
-            if ($this->status === 'needs_grading') {
-                $query->whereHas('answers.question', function ($q) {
-                    $q->where('question_type', 'essay');
-                })->whereHas('answers', function ($a) {
-                    $a->whereNull('reviewed_by');
+            // Filter Perusahaan
+            if (!empty($this->companyId)) {
+                $appQuery->whereHas('job', function ($j) {
+                    $j->where('company_id', $this->companyId);
                 });
-            } elseif ($this->status === 'waiting_hr') {
-                // Menunggu persetujuan HR (Teknis sudah disetujui / esai >= KKM)
-                $query->whereHas('jobApplication', function ($jq) {
-                    $jq->where('test_recruiter_approval', 'approved')
-                       ->where('test_admin_approval', '!=', 'approved');
+            }
+
+            // Filter Lowongan
+            if (!empty($this->jobId)) {
+                $appQuery->where('job_id', $this->jobId);
+            }
+
+            // Filter Paket Ujian
+            if (!empty($this->testId)) {
+                $appQuery->whereHas('testAttempts', function ($t) {
+                    $t->where('test_id', $this->testId);
                 });
-            } elseif ($this->status === 'double_approved') {
-                // Double Approved (Kedua pihak setuju atau status Shortlisted / Interview / Accepted)
-                $query->whereHas('jobApplication', function ($jq) {
-                    $jq->where(function ($sub) {
+            }
+
+            // Filter Status Ujian / Approval
+            if (!empty($this->status)) {
+                if ($this->status === 'needs_grading') {
+                    $appQuery->whereHas('testAttempts.answers.question', function ($q) {
+                        $q->where('question_type', 'essay');
+                    })->whereHas('testAttempts.answers', function ($a) {
+                        $a->whereNull('reviewed_by');
+                    });
+                } elseif ($this->status === 'waiting_hr') {
+                    $appQuery->where('test_recruiter_approval', 'approved')
+                             ->where('test_admin_approval', '!=', 'approved');
+                } elseif ($this->status === 'double_approved') {
+                    $appQuery->where(function ($sub) {
                         $sub->where(function ($s) {
                             $s->where('test_recruiter_approval', 'approved')
                               ->where('test_admin_approval', 'approved');
                         })->orWhereIn(DB::raw('LOWER(status)'), ['shortlisted', 'interview', 'accepted']);
                     });
-                });
-            } elseif ($this->status === 'passed') {
-                $query->where('status', 'passed');
-            } elseif ($this->status === 'failed') {
-                // Gagal Tes / Ditolak (tanpa mencampurkan yang Shortlisted/Interview/Accepted)
-                $query->where(function ($q) {
-                    $q->where('status', 'failed')
-                      ->orWhereHas('jobApplication', function ($jq) {
-                          $jq->where('status', 'Rejected');
-                      });
-                })
-                ->whereDoesntHave('discTestResult')
-                ->where(function ($q) {
-                    $q->whereDoesntHave('jobApplication')
-                      ->orWhereHas('jobApplication', function ($jq) {
-                          $jq->whereNotIn(DB::raw('LOWER(status)'), ['shortlisted', 'interview', 'accepted']);
-                      });
-                });
-            } elseif ($this->status === 'disc') {
-                // Khusus Tes Kepribadian DISC
-                $query->where(function ($q) {
-                    $q->whereHas('discTestResult')
-                      ->orWhereHas('test', function ($t) {
-                          $t->whereRaw('LOWER(title) LIKE ?', ['%disc%'])
-                            ->orWhereRaw('LOWER(title) LIKE ?', ['%personality%']);
-                      });
-                });
-            } elseif ($this->status === 'papi') {
-                // Khusus Tes Kepribadian PAPI Kostick
-                $query->where(function ($q) {
-                    $q->whereHas('papiTestResult')
-                      ->orWhereHas('test', function ($t) {
-                          $t->whereRaw('LOWER(title) LIKE ?', ['%papi%'])
-                            ->orWhereRaw('LOWER(title) LIKE ?', ['%kostick%']);
-                      });
-                });
-            } elseif ($this->status === 'psychometric') {
-                // Semua Psikotes (DISC & PAPI)
-                $query->where(function ($q) {
-                    $q->whereHas('discTestResult')
-                      ->orWhereHas('papiTestResult')
-                      ->orWhereHas('test', function ($t) {
-                          $t->whereRaw('LOWER(title) LIKE ?', ['%disc%'])
-                            ->orWhereRaw('LOWER(title) LIKE ?', ['%papi%'])
-                            ->orWhereRaw('LOWER(title) LIKE ?', ['%kostick%'])
-                            ->orWhereRaw('LOWER(title) LIKE ?', ['%personality%'])
-                            ->orWhereRaw('LOWER(title) LIKE ?', ['%kepribadian%']);
-                      });
-                });
-            } elseif ($this->status === 'in_progress') {
-                $query->where('status', 'in_progress');
-            } else {
-                $query->where('status', $this->status);
+                } elseif ($this->status === 'passed') {
+                    $appQuery->whereHas('testAttempts', function ($q) {
+                        $q->where('status', 'passed');
+                    });
+                } elseif ($this->status === 'failed') {
+                    $appQuery->where(function ($q) {
+                        $q->where('status', 'Rejected')
+                          ->orWhereHas('testAttempts', function ($tq) {
+                              $tq->where('status', 'failed');
+                          });
+                    });
+                } elseif ($this->status === 'disc') {
+                    $appQuery->whereHas('testAttempts', function ($tq) {
+                        $tq->whereHas('discTestResult')
+                           ->orWhereHas('test', function ($t) {
+                               $t->whereRaw('LOWER(title) LIKE ?', ['%disc%'])
+                                 ->orWhereRaw('LOWER(title) LIKE ?', ['%personality%']);
+                           });
+                    });
+                } elseif ($this->status === 'papi') {
+                    $appQuery->whereHas('testAttempts', function ($tq) {
+                        $tq->whereHas('papiTestResult')
+                           ->orWhereHas('test', function ($t) {
+                               $t->whereRaw('LOWER(title) LIKE ?', ['%papi%'])
+                                 ->orWhereRaw('LOWER(title) LIKE ?', ['%kostick%']);
+                           });
+                    });
+                } elseif ($this->status === 'psychometric') {
+                    $appQuery->whereHas('testAttempts', function ($tq) {
+                        $tq->whereHas('discTestResult')
+                           ->orWhereHas('papiTestResult')
+                           ->orWhereHas('test', function ($t) {
+                               $t->whereRaw('LOWER(title) LIKE ?', ['%disc%'])
+                                 ->orWhereRaw('LOWER(title) LIKE ?', ['%papi%'])
+                                 ->orWhereRaw('LOWER(title) LIKE ?', ['%kostick%'])
+                                 ->orWhereRaw('LOWER(title) LIKE ?', ['%personality%'])
+                                 ->orWhereRaw('LOWER(title) LIKE ?', ['%kepribadian%']);
+                           });
+                    });
+                } elseif ($this->status === 'in_progress') {
+                    $appQuery->whereHas('testAttempts', function ($q) {
+                        $q->where('status', 'in_progress');
+                    });
+                }
             }
-        }
 
-        // Filter out orphaned in-progress attempts with no answers when another attempt exists for the same application and test
-        $query->where(function ($q) {
-            $q->where('test_attempts.status', '!=', 'in_progress')
-              ->orWhereHas('answers')
-              ->orWhereNotExists(function ($sub) {
-                  $sub->select(DB::raw(1))
-                      ->from('test_attempts as ta2')
-                      ->whereColumn('ta2.job_application_id', 'test_attempts.job_application_id')
-                      ->whereColumn('ta2.test_id', 'test_attempts.test_id')
-                      ->where('ta2.id', '!=', DB::raw('test_attempts.id'));
-              });
-        });
+            // Sorting
+            if ($this->sortField === 'applicant') {
+                $appQuery->join('applicant_profile', 'job_applications.profile_id', '=', 'applicant_profile.id')
+                         ->orderBy('applicant_profile.full_name', $this->sortDirection)
+                         ->select('job_applications.*');
+            } elseif ($this->sortField === 'status') {
+                $appQuery->orderBy('status', $this->sortDirection);
+            } else {
+                $appQuery->orderBy('id', $this->sortDirection);
+            }
 
-        // Sorting
-        if ($this->sortField === 'applicant') {
-            $query->join('job_applications', 'test_attempts.job_application_id', '=', 'job_applications.id')
-                  ->join('applicant_profile', 'job_applications.profile_id', '=', 'applicant_profile.id')
-                  ->orderBy('applicant_profile.full_name', $this->sortDirection)
-                  ->select('test_attempts.*');
-        } elseif ($this->sortField === 'score') {
-            $query->orderBy('total_score', $this->sortDirection);
-        } elseif ($this->sortField === 'started_at') {
-            $query->orderBy('started_at', $this->sortDirection);
-        } elseif ($this->sortField === 'status') {
-            $query->orderBy('status', $this->sortDirection);
+            $applications = $appQuery->paginate($this->perPage);
+
+            // Hitung Nilai per Aspek untuk semua attempts di halaman ini
+            $allAttempts = collect();
+            foreach ($applications->getCollection() as $appItem) {
+                foreach ($appItem->testAttempts as $attItem) {
+                    $attItem->setRelation('jobApplication', $appItem);
+                }
+                $allAttempts = $allAttempts->concat($appItem->testAttempts);
+            }
+            if ($allAttempts->isNotEmpty()) {
+                AspectEvaluationService::attachToAttempts($allAttempts);
+            }
+
+            $attempts = $applications; // Agar kompatibel dengan variabel paginasi jika dibutuhkan
         } else {
-            $query->orderBy('id', $this->sortDirection);
+            $query = TestAttempt::with([
+                'jobApplication.applicantProfile.user',
+                'jobApplication.job.company',
+                'jobApplication.testRecruiter',
+                'jobApplication.testAdmin',
+                'test.category',
+                'answers.question.options',
+                'answers.question.subCategory',
+                'answers.option',
+                'answers.reviewer',
+                'discTestResult.discProfile',
+                'papiTestResult',
+            ])
+            ->where('attempt_type', 'applicant')
+            ->when($isRecruiter && $user, function ($q) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
+                $q->where(function ($sq) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
+                    $sq->whereHas('jobApplication.job', function ($jq) use ($user, $userPosId, $userDeptId, $isDesignatedRecruiter) {
+                        if ($isDesignatedRecruiter) {
+                            $jq->where(function ($ssq) use ($user, $userPosId) {
+                                $ssq->where('reviewer_id', $user->id);
+                                if ($userPosId) {
+                                    $ssq->orWhere('position_id', $userPosId);
+                                }
+                            });
+                        } elseif ($userDeptId) {
+                            $jq->where('department_id', $userDeptId);
+                        }
+                    });
+                    if (!$isDesignatedRecruiter && $userDeptId) {
+                        $sq->orWhereHas('test', function ($tq) use ($userDeptId) {
+                            $tq->where('department_id', $userDeptId);
+                        });
+                    }
+                });
+            });
+
+            // Search Filter
+            if (!empty($this->search)) {
+                $search = strtolower(trim($this->search));
+                $query->where(function ($q) use ($search) {
+                    $q->whereHas('jobApplication.applicantProfile', function ($p) use ($search) {
+                        $p->whereRaw('LOWER(full_name) LIKE ?', ['%' . $search . '%'])
+                          ->orWhereRaw('LOWER(nik) LIKE ?', ['%' . $search . '%'])
+                          ->orWhereHas('user', function ($uq) use ($search) {
+                              $uq->whereRaw('LOWER(email) LIKE ?', ['%' . $search . '%']);
+                          });
+                    })
+                    ->orWhereHas('test', function ($t) use ($search) {
+                        $t->whereRaw('LOWER(title) LIKE ?', ['%' . $search . '%']);
+                    })
+                    ->orWhereHas('jobApplication.job', function ($j) use ($search) {
+                        $j->whereRaw('LOWER(title) LIKE ?', ['%' . $search . '%']);
+                    });
+                });
+            }
+
+            // Filter Perusahaan
+            if (!empty($this->companyId)) {
+                $query->whereHas('jobApplication.job', function ($j) {
+                    $j->where('company_id', $this->companyId);
+                });
+            }
+
+            // Filter Lowongan
+            if (!empty($this->jobId)) {
+                $query->whereHas('jobApplication', function ($j) {
+                    $j->where('job_id', $this->jobId);
+                });
+            }
+
+            // Filter Paket Ujian
+            if (!empty($this->testId)) {
+                $query->where('test_id', $this->testId);
+            }
+
+            // Filter Status Ujian / Hasil Evaluasi
+            if (!empty($this->status)) {
+                if ($this->status === 'needs_grading') {
+                    $query->whereHas('answers.question', function ($q) {
+                        $q->where('question_type', 'essay');
+                    })->whereHas('answers', function ($a) {
+                        $a->whereNull('reviewed_by');
+                    });
+                } elseif ($this->status === 'waiting_hr') {
+                    // Menunggu persetujuan HR (Teknis sudah disetujui / esai >= KKM)
+                    $query->whereHas('jobApplication', function ($jq) {
+                        $jq->where('test_recruiter_approval', 'approved')
+                           ->where('test_admin_approval', '!=', 'approved');
+                    });
+                } elseif ($this->status === 'double_approved') {
+                    // Double Approved (Kedua pihak setuju atau status Shortlisted / Interview / Accepted)
+                    $query->whereHas('jobApplication', function ($jq) {
+                        $jq->where(function ($sub) {
+                            $sub->where(function ($s) {
+                                $s->where('test_recruiter_approval', 'approved')
+                                  ->where('test_admin_approval', 'approved');
+                            })->orWhereIn(DB::raw('LOWER(status)'), ['shortlisted', 'interview', 'accepted']);
+                        });
+                    });
+                } elseif ($this->status === 'passed') {
+                    $query->where('status', 'passed');
+                } elseif ($this->status === 'failed') {
+                    // Gagal Tes / Ditolak (tanpa mencampurkan yang Shortlisted/Interview/Accepted)
+                    $query->where(function ($q) {
+                        $q->where('status', 'failed')
+                          ->orWhereHas('jobApplication', function ($jq) {
+                              $jq->where('status', 'Rejected');
+                          });
+                    })
+                    ->whereDoesntHave('discTestResult')
+                    ->where(function ($q) {
+                        $q->whereDoesntHave('jobApplication')
+                          ->orWhereHas('jobApplication', function ($jq) {
+                              $jq->whereNotIn(DB::raw('LOWER(status)'), ['shortlisted', 'interview', 'accepted']);
+                          });
+                    });
+                } elseif ($this->status === 'disc') {
+                    // Khusus Tes Kepribadian DISC
+                    $query->where(function ($q) {
+                        $q->whereHas('discTestResult')
+                          ->orWhereHas('test', function ($t) {
+                              $t->whereRaw('LOWER(title) LIKE ?', ['%disc%'])
+                                ->orWhereRaw('LOWER(title) LIKE ?', ['%personality%']);
+                          });
+                    });
+                } elseif ($this->status === 'papi') {
+                    // Khusus Tes Kepribadian PAPI Kostick
+                    $query->where(function ($q) {
+                        $q->whereHas('papiTestResult')
+                          ->orWhereHas('test', function ($t) {
+                              $t->whereRaw('LOWER(title) LIKE ?', ['%papi%'])
+                                ->orWhereRaw('LOWER(title) LIKE ?', ['%kostick%']);
+                          });
+                    });
+                } elseif ($this->status === 'psychometric') {
+                    // Semua Psikotes (DISC & PAPI)
+                    $query->where(function ($q) {
+                        $q->whereHas('discTestResult')
+                          ->orWhereHas('papiTestResult')
+                          ->orWhereHas('test', function ($t) {
+                              $t->whereRaw('LOWER(title) LIKE ?', ['%disc%'])
+                                ->orWhereRaw('LOWER(title) LIKE ?', ['%papi%'])
+                                ->orWhereRaw('LOWER(title) LIKE ?', ['%kostick%'])
+                                ->orWhereRaw('LOWER(title) LIKE ?', ['%personality%'])
+                                ->orWhereRaw('LOWER(title) LIKE ?', ['%kepribadian%']);
+                          });
+                    });
+                } elseif ($this->status === 'in_progress') {
+                    $query->where('status', 'in_progress');
+                } else {
+                    $query->where('status', $this->status);
+                }
+            }
+
+            // Filter out orphaned in-progress attempts with no answers when another attempt exists for the same application and test
+            $query->where(function ($q) {
+                $q->where('test_attempts.status', '!=', 'in_progress')
+                  ->orWhereHas('answers')
+                  ->orWhereNotExists(function ($sub) {
+                      $sub->select(DB::raw(1))
+                          ->from('test_attempts as ta2')
+                          ->whereColumn('ta2.job_application_id', 'test_attempts.job_application_id')
+                          ->whereColumn('ta2.test_id', 'test_attempts.test_id')
+                          ->where('ta2.id', '!=', DB::raw('test_attempts.id'));
+                  });
+            });
+
+            // Sorting
+            if ($this->sortField === 'applicant') {
+                $query->join('job_applications', 'test_attempts.job_application_id', '=', 'job_applications.id')
+                      ->join('applicant_profile', 'job_applications.profile_id', '=', 'applicant_profile.id')
+                      ->orderBy('applicant_profile.full_name', $this->sortDirection)
+                      ->select('test_attempts.*');
+            } elseif ($this->sortField === 'score') {
+                $query->orderBy('total_score', $this->sortDirection);
+            } elseif ($this->sortField === 'started_at') {
+                $query->orderBy('started_at', $this->sortDirection);
+            } elseif ($this->sortField === 'status') {
+                $query->orderBy('status', $this->sortDirection);
+            } else {
+                $query->orderBy('id', $this->sortDirection);
+            }
+
+            $attempts = $query->paginate($this->perPage);
+
+            // Hitung Nilai per Aspek sekali untuk seluruh baris halaman ini (satu query soal).
+            AspectEvaluationService::attachToAttempts($attempts->getCollection());
         }
-
-        $attempts = $query->paginate($this->perPage);
-
-        // Hitung Nilai per Aspek sekali untuk seluruh baris halaman ini (satu query soal).
-        AspectEvaluationService::attachToAttempts($attempts->getCollection());
 
         return view('livewire.admin.test-evaluation.table', [
+            'viewMode'              => $this->viewMode,
+            'applications'          => $applications ?? null,
             'attempts'              => $attempts,
             'companies'             => $companies,
             'jobs'                  => $jobs,

@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Test;
 use App\Models\Job;
+use App\Models\JobApplication;
 use App\Models\Company;
 use App\Models\TestCategory;
 use App\Models\QuestionBank;
@@ -121,6 +122,7 @@ class TestTable extends Component
             'allJobs' => $allJobs,
             'categories' => $categories,
             'allQuestions' => $allQuestions,
+            'globalTestDeadlineDays' => JobApplication::defaultTestDeadlineDays(),
         ]);
     }
 }

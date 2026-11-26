@@ -30,6 +30,20 @@ class EmployeeProfileSettings extends Component
 
     public $employee_type = 'permanent';
 
+    public $employeeTypeLabel = 'Karyawan Tetap';
+
+    public $employment_status = 'active';
+
+    public $employmentStatusLabel = 'Aktif';
+
+    public $contract_start_date = null;
+
+    public $contract_end_date = null;
+
+    public $isNikLocked = false;
+
+    public $isPlacementLocked = false;
+
     public $photo;
 
     public $cropped_photo_base64;
@@ -46,6 +60,7 @@ class EmployeeProfileSettings extends Component
                 'nik' => $user->nik,
             ]
         );
+        $profile->loadMissing(['company', 'department.company', 'position']);
 
         $this->nik = $profile->nik ?? $user->nik;
         $this->full_name = $profile->full_name ?? $user->name;
@@ -54,6 +69,25 @@ class EmployeeProfileSettings extends Component
         $this->position_id = $profile->position_id ? (string) $profile->position_id : null;
         $this->position_title = $profile->position_title ?? ($profile->position?->name ?? '');
         $this->employee_type = $profile->employee_type ?? 'permanent';
+        $this->employment_status = $profile->employment_status ?? 'active';
+
+        $this->isNikLocked = ! empty($profile->nik);
+        $this->isPlacementLocked = ! empty($profile->company_id)
+            || ! empty($profile->department_id)
+            || ! empty($profile->position_id)
+            || ! empty($profile->position_title);
+
+        // Tipe pegawai & tanggal kontrak hanya boleh diubah Admin/HR.
+        $this->employeeTypeLabel = match ($this->employee_type) {
+            'contract' => 'Karyawan Kontrak',
+            'internship' => 'Magang / Internship',
+            'probation' => 'Masa Percobaan (Probation)',
+            default => 'Karyawan Tetap',
+        };
+        $this->employmentStatusLabel = $profile->employmentStatusLabel();
+        $this->contract_start_date = $profile->contract_start_date?->translatedFormat('d F Y');
+        $this->contract_end_date = $profile->contract_end_date?->translatedFormat('d F Y');
+
         $this->current_photo_url = $profile->photo
             ? asset('storage/' . $profile->photo) . '?v=' . time()
             : null;
@@ -113,7 +147,6 @@ class EmployeeProfileSettings extends Component
             'department_id' => 'nullable|exists:departments,id',
             'position_id' => 'nullable|exists:positions,id',
             'position_title' => 'nullable|string|max:255',
-            'employee_type' => 'required|in:permanent,contract,internship,probation',
             'photo' => 'nullable|image|max:5120',
         ];
     }
@@ -128,14 +161,37 @@ class EmployeeProfileSettings extends Component
 
     public function save(): void
     {
+        $user = Auth::user();
+        $profile = EmployeeProfile::firstOrCreate(['user_id' => $user->id]);
+
+        $nikLocked = ! empty($profile->nik);
+        $placementLocked = ! empty($profile->company_id)
+            || ! empty($profile->department_id)
+            || ! empty($profile->position_id)
+            || ! empty($profile->position_title);
+
+        if ($nikLocked) {
+            $this->nik = $profile->nik;
+        }
+        if ($placementLocked) {
+            $this->company_id = $profile->company_id;
+            $this->department_id = $profile->department_id;
+            $this->position_id = $profile->position_id ? (string) $profile->position_id : null;
+            $this->position_title = $profile->position_title;
+        }
+
         $this->company_id = $this->company_id ?: null;
         $this->department_id = $this->department_id ?: null;
         $this->position_id = $this->position_id ?: null;
 
         $validatedData = $this->validate();
 
-        $user = Auth::user();
-        $profile = EmployeeProfile::firstOrCreate(['user_id' => $user->id]);
+        if ($nikLocked) {
+            unset($validatedData['nik']);
+        }
+        if ($placementLocked) {
+            unset($validatedData['company_id'], $validatedData['department_id'], $validatedData['position_id'], $validatedData['position_title']);
+        }
 
         if ($this->cropped_photo_base64) {
             if ($profile->photo && Storage::disk('public')->exists($profile->photo)) {
@@ -169,7 +225,7 @@ class EmployeeProfileSettings extends Component
             unset($validatedData['photo']);
         }
 
-        if ($this->department_id && empty($this->company_id)) {
+        if (! $placementLocked && $this->department_id && empty($this->company_id)) {
             $department = Department::find($this->department_id);
             if ($department?->company_id) {
                 $validatedData['company_id'] = $department->company_id;
@@ -177,6 +233,12 @@ class EmployeeProfileSettings extends Component
         }
 
         $profile->update($validatedData);
+
+        $this->isNikLocked = ! empty($profile->nik);
+        $this->isPlacementLocked = ! empty($profile->company_id)
+            || ! empty($profile->department_id)
+            || ! empty($profile->position_id)
+            || ! empty($profile->position_title);
 
         $userUpdates = [];
         if ($user->name !== $this->full_name) {

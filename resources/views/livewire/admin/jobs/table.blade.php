@@ -1,15 +1,18 @@
 <div class="space-y-6" x-data="{ 
-    showCreateModal: {{ $errors->any() && !old('is_edit') ? 'true' : 'false' }},
+    showCreateModal: {{ $errors->any() && !old('is_edit') && !old('default_test_deadline_days') ? 'true' : 'false' }},
     showEditModal: {{ $errors->any() && old('is_edit') ? 'true' : 'false' }},
+    showGlobalDeadlineModal: {{ $errors->has('default_test_deadline_days') ? 'true' : 'false' }},
     showDeleteModal: false,
     isSubmittingCreate: false,
     isSubmittingEdit: false,
     isSubmittingDelete: false,
+    isSubmittingGlobalDeadline: false,
     createStep: {{ $errors->has('description') ? '2' : '1' }},
     editStep: {{ $errors->has('description') ? '2' : '1' }},
     createCompanyId: '{{ old('company_id', '') }}',
     createDepartmentId: '{{ old('department_id', '') }}',
     createPositionId: '{{ old('position_id', '') }}',
+    createTestDeadlineDays: '{{ old('test_deadline_days', '') }}',
     createQuill: null,
     editQuill: null,
     createQuillFailed: false,
@@ -151,6 +154,7 @@
         salary_max: '{{ old('salary_max', '') }}',
         quota: '{{ old('quota', '1') }}',
         deadline: '{{ old('deadline', '') }}',
+        test_deadline_days: '{{ old('test_deadline_days', '') }}',
         reviewer_id: '{{ old('reviewer_id', '') }}',
         status: '{{ old('status', 'Open') }}'
     },
@@ -284,6 +288,7 @@
         this.createCompanyId = '';
         this.createDepartmentId = '';
         this.createPositionId = '';
+        this.createTestDeadlineDays = '';
         let titleInput = document.getElementById('title');
         if (titleInput) {
             titleInput.value = '';
@@ -317,6 +322,7 @@
             salary_max: job.salary_max || '',
             quota: job.quota !== undefined && job.quota !== null && job.quota !== '' ? Number(job.quota) : 1,
             deadline: job.deadline ? job.deadline.split('T')[0] : '',
+            test_deadline_days: (job.test_deadline_days !== undefined && job.test_deadline_days !== null && job.test_deadline_days !== '') ? String(job.test_deadline_days) : '',
             reviewer_id: job.reviewer_id ? String(job.reviewer_id) : '',
             status: job.status || 'Open'
         };
@@ -591,12 +597,23 @@
                 <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Kelola dan publikasikan lowongan pekerjaan baru.</p>
             </div>
 
-            <button type="button" @click="openCreateModal()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 text-xs font-bold transition active:scale-95 shrink-0 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-                </svg>
-                <span>Tambah Lowongan</span>
-            </button>
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+                <button type="button" @click="showGlobalDeadlineModal = true"
+                    title="Atur default batas waktu pengerjaan tes online (hari kerja)"
+                    class="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60 text-xs font-bold transition active:scale-95 cursor-pointer">
+                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Batas Tes Global: {{ $globalTestDeadlineDays }} Hari</span>
+                </button>
+
+                <button type="button" @click="openCreateModal()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 dark:bg-[#93F514] dark:hover:bg-[#82dc12] dark:text-black dark:shadow-[#93F514]/20 text-xs font-bold transition active:scale-95 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Tambah Lowongan</span>
+                </button>
+            </div>
         </div>
 
         <!-- Filter & Search Toolbar Row -->
@@ -857,6 +874,16 @@
                                         <span>Deadline: {{ $job->deadline ? \Carbon\Carbon::parse($job->deadline)->format('d M Y') : 'Hingga Terpenuhi' }}</span>
                                         @if ($job->is_expired)
                                             <span class="text-[10px] text-rose-500 font-semibold">(Lewat)</span>
+                                        @endif
+                                    </div>
+                                    <div class="text-[10.5px] flex items-center gap-1 {{ $job->test_deadline_days ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-400 dark:text-slate-500' }}">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        @if ($job->test_deadline_days)
+                                            <span>Batas Tes: {{ $job->test_deadline_days }} hari kerja (Khusus)</span>
+                                        @else
+                                            <span>Batas Tes: Default Waktu Global ({{ $globalTestDeadlineDays }} hari)</span>
                                         @endif
                                     </div>
                                 </div>
@@ -1147,6 +1174,29 @@
                                         <option value="Draft">Draft</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <!-- Per-Job Online Test Deadline Override -->
+                            <div class="pt-2 border-t border-gray-100 dark:border-slate-800">
+                                <div class="flex items-center justify-between gap-2 mb-1">
+                                    <label for="test_deadline_days" class="block text-xs font-semibold text-gray-700 dark:text-slate-300">
+                                        Batas Waktu Pengerjaan Tes (Hari Kerja)
+                                        <span class="text-gray-400 font-normal">(Opsional)</span>
+                                    </label>
+                                    <span x-show="!createTestDeadlineDays" class="text-[10.5px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                        Default Waktu Global ({{ $globalTestDeadlineDays }} hari)
+                                    </span>
+                                    <span x-show="createTestDeadlineDays" x-cloak class="text-[10.5px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                        Khusus: <span x-text="createTestDeadlineDays"></span> hari kerja
+                                    </span>
+                                </div>
+                                <input type="number" name="test_deadline_days" id="test_deadline_days" min="1" max="30"
+                                    x-model="createTestDeadlineDays"
+                                    placeholder="Kosongkan untuk ikut Default Waktu Global ({{ $globalTestDeadlineDays }} hari kerja)"
+                                    class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <p class="text-[11px] text-gray-400 dark:text-slate-500 mt-1">
+                                    Kosongkan jika ingin mengikuti <strong>Default Waktu Global ({{ $globalTestDeadlineDays }} hari kerja)</strong>. Isi angka (1–30) jika lowongan ini memakai tenggat tes khusus (Senin–Jumat).
+                                </p>
                             </div>
 
                             <!-- Reviewer Selection (Double Approval) -->
@@ -1489,6 +1539,29 @@
                                 </div>
                             </div>
 
+                            <!-- Per-Job Online Test Deadline Override -->
+                            <div class="pt-2 border-t border-gray-100 dark:border-slate-800">
+                                <div class="flex items-center justify-between gap-2 mb-1">
+                                    <label for="edit_test_deadline_days" class="block text-xs font-semibold text-gray-700 dark:text-slate-300">
+                                        Batas Waktu Pengerjaan Tes (Hari Kerja)
+                                        <span class="text-gray-400 font-normal">(Opsional)</span>
+                                    </label>
+                                    <span x-show="!editData.test_deadline_days" class="text-[10.5px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                        Default Waktu Global ({{ $globalTestDeadlineDays }} hari)
+                                    </span>
+                                    <span x-show="editData.test_deadline_days" x-cloak class="text-[10.5px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                        Khusus: <span x-text="editData.test_deadline_days"></span> hari kerja
+                                    </span>
+                                </div>
+                                <input type="number" name="test_deadline_days" id="edit_test_deadline_days" min="1" max="30"
+                                    x-model="editData.test_deadline_days"
+                                    placeholder="Kosongkan untuk ikut Default Waktu Global ({{ $globalTestDeadlineDays }} hari kerja)"
+                                    class="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                                <p class="text-[11px] text-gray-400 dark:text-slate-500 mt-1">
+                                    Kosongkan jika ingin mengikuti <strong>Default Waktu Global ({{ $globalTestDeadlineDays }} hari kerja)</strong>. Isi angka (1–30) jika lowongan ini memakai tenggat tes khusus (Senin–Jumat).
+                                </p>
+                            </div>
+
                             <!-- Reviewer Selection (Double Approval) -->
                             <div class="pt-2 border-t border-gray-100 dark:border-slate-800">
                                 <label for="edit_reviewer_id" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
@@ -1667,4 +1740,6 @@
             </div>
         </div>
     </div>
+
+    @include('livewire.admin.partials.global-test-deadline-modal', ['globalTestDeadlineDays' => $globalTestDeadlineDays])
 </div>

@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmployeeProfile extends Model
 {
+    public const STATUS_ACTIVE = 'active';
+
+    public const STATUS_CONTRACT_ENDED = 'contract_ended';
+
+    public const STATUS_INACTIVE = 'inactive';
+
     protected $fillable = [
         'user_id',
         'nik',
@@ -16,6 +22,9 @@ class EmployeeProfile extends Model
         'position_id',
         'position_title',
         'employee_type',
+        'employment_status',
+        'contract_start_date',
+        'contract_end_date',
         'phone_number',
         'gender',
         'birth_date',
@@ -24,7 +33,18 @@ class EmployeeProfile extends Model
 
     protected $casts = [
         'birth_date' => 'date',
+        'contract_start_date' => 'date',
+        'contract_end_date' => 'date',
     ];
+
+    public function employmentStatusLabel(): string
+    {
+        return match ($this->employment_status) {
+            self::STATUS_CONTRACT_ENDED => 'Kontrak Berakhir',
+            self::STATUS_INACTIVE => 'Nonaktif',
+            default => 'Aktif',
+        };
+    }
 
     public function user(): BelongsTo
     {

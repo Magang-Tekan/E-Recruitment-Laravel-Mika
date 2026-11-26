@@ -17,6 +17,7 @@ use App\Http\Controllers\JobApplicationController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\MajorController;
 use App\Http\Controllers\PositionController;
+use App\Http\Controllers\PromoteToEmployeeController;
 use App\Http\Controllers\QuestionBankController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TestCategoryController;
@@ -160,7 +161,9 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':admin'])
         // Recruitment Management - Selection CV & Candidate View
         Route::view('applicants', 'livewire.admin.applicants.index')->name('application');
         Route::put('applicants/{id}', [JobApplicationController::class, 'update'])->name('application.update');
+        Route::put('applicants/{id}/extend-test-deadline', [JobApplicationController::class, 'extendTestDeadline'])->name('application.extend_test_deadline');
         Route::delete('applicants/{id}', [JobApplicationController::class, 'destroy'])->name('application.destroy');
+        Route::post('applicants/{id}/promote', [PromoteToEmployeeController::class, 'promote'])->name('application.promote');
         Route::get('applicants/{id}/profile-pdf', [CandidateProfilePdfController::class, 'downloadApplicantPdf'])->name('application.profile_pdf');
         Route::view('candidates', 'livewire.admin.candidates.index')->name('candidate');
         Route::get('candidates/{id}/pdf', [CandidateProfilePdfController::class, 'downloadCandidatePdf'])->name('candidate.pdf');
@@ -276,6 +279,7 @@ Route::middleware(['auth', 'verified', RoleMiddleware::class.':admin'])
             Route::post('tests', [TestController::class, 'store'])->name('test.store');
             Route::put('tests/{id}', [TestController::class, 'update'])->name('test.update');
             Route::delete('tests/{id}', [TestController::class, 'destroy'])->name('test.destroy');
+            Route::put('settings/test-deadline', [TestController::class, 'updateDefaultDeadline'])->name('settings.test_deadline');
 
             // Evaluation & Essay Grading / Evaluasi Hasil & Nilai Ujian
             Route::view('test-evaluations', 'livewire.admin.test-evaluation.index')->name('test_evaluation');
